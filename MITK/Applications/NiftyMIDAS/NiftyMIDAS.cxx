@@ -28,6 +28,7 @@ class NiftyMIDAS : public BaseApplication
 public:
   static const QString PROP_VIEWER_NUMBER;
   static const QString PROP_DRAG_AND_DROP;
+  static const QString PROP_WINDOW_LAYOUT;
 
   NiftyMIDAS(int argc, char **argv)
     : BaseApplication(argc, argv)
@@ -60,12 +61,34 @@ public:
         "<data nodes> is a comma separated list of data node names, as given with the\n"
         "'--open' option. At least one node has to be given.\n"
         "\n"
-        "<viewers> is a comma separated list of viewer indices. A viewer index is in the\n"
-        "form '[<row>x]<column>' where the indexing starts from 1. If the <viewers> part is\n"
-        "omitted, the data nodes will be loaded into the first viewer.\n");
+        "<viewers> is a comma separated list of viewer indices. Viewer indices are\n"
+        "integer numbers starting from 1 and increasing row-wise. For instance, with\n"
+        "2x3 viewers the index of the first viewer of the second row is 4. If no viewer\n"
+        "index is given, the data nodes will be loaded into the first viewer.\n");
     dragAndDropOption.argument("<data nodes>[:<viewers>]").repeatable(true);
     dragAndDropOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &NiftyMIDAS::HandleRepeatableOption));
     options.addOption(dragAndDropOption);
+
+    Poco::Util::Option windowLayoutOption("window-layout", "l",
+        "\n"
+        "Sets the window layout of the given viewers. The window layout tells which\n"
+        "windows of a viewer are visible and in which arrangement."
+        "\n"
+        "<viewers> is a comma separated list of viewer indices. Viewer indices are\n"
+        "integer numbers starting from 1 and increasing row-wise. For instance, with\n"
+        "2x3 viewers the index of the first viewer of the second row is 4. If no viewer\n"
+        "index is given, the layout will be applied on the first viewer.\n"
+        "\n"
+        "Valid layout names are the followings: 'axial', 'sagittal', 'coronal', 'as acquired'\n"
+        "(the original orientation as the displayed image was acquired), '3D', '2x2'\n"
+        "(coronal, sagittal, axial and 3D windows in a 2x2 arrangement), '3H' (coronal,\n"
+        "sagittal and axial windows in horizontal arrangement), '3V' (sagittal, coronal\n"
+        "and axial windows in vertical arrangement), 'cor sag H', 'cor sag V', 'cor ax H',\n"
+        "'cor ax V', 'sag ax H' and 'sag ax V' (2D windows of the given orientation in\n"
+        "horizontal or vertical arrangement, respectively).\n");
+    windowLayoutOption.argument("[<viewers>:]<layout>").repeatable(true);
+    windowLayoutOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &NiftyMIDAS::HandleRepeatableOption));
+    options.addOption(windowLayoutOption);
   }
 
   virtual Poco::Util::HelpFormatter* CreateHelpFormatter() override

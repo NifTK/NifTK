@@ -266,41 +266,17 @@ void MultiViewerEditorPrivate::ProcessCommandLineArguments()
     {
       for (const QString& viewerIndexPart: dndArgParts[1].split(","))
       {
-        QStringList rowAndColumn = viewerIndexPart.split("x");
-
-        int row = 0;
-        int column = 0;
-
-        if (rowAndColumn.size() == 1)
+        bool ok;
+        int viewerIndex = viewerIndexPart.toInt(&ok) - 1;
+        int rows = m_MultiViewer->GetNumberOfRows();
+        int columns = m_MultiViewer->GetNumberOfColumns();
+        if (!ok || viewerIndex < 0 || viewerIndex >= rows * columns)
         {
-          bool ok;
-          column = rowAndColumn[0].toInt(&ok) - 1;
-          if (!ok || column < 0 || column >= m_MultiViewer->GetNumberOfColumns())
-          {
-            MITK_ERROR << "Invalid viewer index: " << viewerIndexPart.toStdString();
-            continue;
-          }
-        }
-        else if (rowAndColumn.size() == 2)
-        {
-          bool ok1, ok2;
-          row = rowAndColumn[0].toInt(&ok1) - 1;
-          column = rowAndColumn[1].toInt(&ok2) - 1;
-          if (!ok1 || !ok2
-              || row < 0 || row >= m_MultiViewer->GetNumberOfRows()
-              || column < 0 || column >= m_MultiViewer->GetNumberOfColumns())
-          {
-            MITK_ERROR << "Invalid viewer index." << viewerIndexPart.toStdString();
-            continue;
-          }
-        }
-        else
-        {
-          MITK_ERROR << "Invalid viewer index." << viewerIndexPart.toStdString();
+          MITK_ERROR << "Invalid viewer index: " << viewerIndexPart.toStdString();
           continue;
         }
 
-        viewerIndices.insert(row * m_MultiViewer->GetNumberOfColumns() + column);
+        viewerIndices.insert(viewerIndex);
       }
     }
     else if (dndArgParts.size() > 2)
@@ -321,6 +297,84 @@ void MultiViewerEditorPrivate::ProcessCommandLineArguments()
       assert(selectedWindow);
 
       this->DropNodes(selectedWindow, nodes);
+    }
+  }
+
+  for (QString windowLayoutArg: pluginContext->getProperty("applicationArgs.window-layout").toStringList())
+  {
+    QStringList windowLayoutArgParts = windowLayoutArg.split(":");
+
+    if (windowLayoutArgParts.size() == 0)
+    {
+      MITK_ERROR << "Window layout not specified for the --window-layout option. Skipping option.";
+      continue;
+    }
+
+    int rows = m_MultiViewer->GetNumberOfRows();
+    int columns = m_MultiViewer->GetNumberOfColumns();
+
+    QSet<int> viewerIndices;
+
+    QString windowLayoutName;
+    if (windowLayoutArgParts.size() == 1)
+    {
+      windowLayoutName = windowLayoutArgParts[0];
+      viewerIndices.insert(0);
+    }
+    else if (windowLayoutArgParts.size() == 2)
+    {
+      QString viewerIndicesPart = windowLayoutArgParts[0];
+      windowLayoutName = windowLayoutArgParts[1];
+
+      QStringList viewerIndexParts = viewerIndicesPart.split(",");
+      if (viewerIndexParts.empty())
+      {
+        MITK_ERROR << "Viewer not specified for the --window-layout option. Skipping option.";
+        continue;
+      }
+
+      for (const QString& viewerIndexPart: viewerIndexParts)
+      {
+        bool ok = false;
+        int viewerIndex = viewerIndexPart.toInt(&ok) - 1;
+        if (!ok || viewerIndex < 0 || viewerIndex >= rows * columns)
+        {
+          MITK_ERROR << "Invalid viewer index: " << viewerIndexPart.toStdString();
+          continue;
+        }
+
+        viewerIndices.insert(viewerIndex);
+      }
+    }
+
+    if (viewerIndices.empty())
+    {
+      MITK_ERROR << "No valid viewer specified for the --window-layout option. Skipping option.";
+      continue;
+    }
+
+    WindowLayout windowLayout = niftk::GetWindowLayout(windowLayoutName.toStdString());
+
+    if (windowLayout == WINDOW_LAYOUT_UNKNOWN)
+    {
+      MITK_ERROR << "Invalid window layout name: " << windowLayoutName.toStdString();
+      continue;
+    }
+
+    for (int viewerIndex: viewerIndices)
+    {
+      int row = viewerIndex / columns;
+      int column = viewerIndex % columns;
+      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(row, column);
+
+      if (!viewer)
+      {
+        MITK_ERROR << "Invalid argument: the specified viewer does not exist.\n"
+                      "Use the --viewer-number option to specify the number of viewers.";
+        continue;
+      }
+
+      viewer->SetWindowLayout(windowLayout);
     }
   }
 
