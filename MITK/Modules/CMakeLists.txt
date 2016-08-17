@@ -82,6 +82,7 @@ if(BUILD_IGI)
     NDITrackerDataSourceService
     NiftyLinkDataSourceService
     NVidiaSDIDataSourceService
+    QtCameraVideoDataSourceService
   )
 endif()
 
