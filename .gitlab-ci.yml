@@ -41,6 +41,7 @@ Linux continuous build:
         -DDESIRED_QT_VERSION:STRING=4
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
         ${src_dir}
   - make -j 8
 
@@ -137,6 +138,7 @@ Mac continuous build:
         -DNIFTYLINK_CHECK_COVERAGE=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
         ${src_dir}
   - make -j 8
 

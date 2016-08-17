@@ -98,6 +98,12 @@ public:
   /// we may have to manually ask each viewer to re-render.
   void RequestUpdateAll();
 
+  /// \brief Gets the number of rows of viewers.
+  int GetNumberOfRows() const;
+
+  /// \brief Gets the number of columns of viewers.
+  int GetNumberOfColumns() const;
+
   /// \brief Sets the number of viewers.
   void SetViewerNumber(int viewerRows, int viewerColumns);
 

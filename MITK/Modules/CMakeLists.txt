@@ -28,6 +28,7 @@ set(MODULE_DIRS
   Core
   CoreIO
   CoreGui
+  CoreApp
 )
 
 if(BUILD_MIDAS)

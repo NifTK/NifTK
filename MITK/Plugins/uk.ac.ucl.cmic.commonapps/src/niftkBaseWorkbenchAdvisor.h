@@ -64,6 +64,8 @@ public:
    */
   virtual bool PreShutdown() override;
 
+  void SetPerspective(const QString& perspectiveLabel);
+
 protected:
 
   /**

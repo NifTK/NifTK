@@ -736,6 +736,20 @@ void MultiViewerWidget::SetBackgroundColour(QColor backgroundColour)
 
 
 //-----------------------------------------------------------------------------
+int MultiViewerWidget::GetNumberOfRows() const
+{
+  return m_ViewerRows;
+}
+
+
+//-----------------------------------------------------------------------------
+int MultiViewerWidget::GetNumberOfColumns() const
+{
+  return m_ViewerColumns;
+}
+
+
+//-----------------------------------------------------------------------------
 SingleViewerWidget* MultiViewerWidget::GetViewer(int row, int column) const
 {
   SingleViewerWidget* viewer = 0;

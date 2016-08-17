@@ -25,22 +25,19 @@
 #include <berryIPreferencesService.h>
 
 #include <mitkCoreServices.h>
-#include <mitkDataNodeFactory.h>
 #include <mitkDataStorage.h>
 #include <mitkExceptionMacro.h>
 #include <mitkFloatPropertyExtension.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
+#include <mitkIOUtil.h>
 #include <mitkIPropertyExtensions.h>
 #include <mitkLevelWindowProperty.h>
 #include <mitkLogMacros.h>
 #include <mitkProgressBar.h>
 #include <mitkProperties.h>
 #include <mitkRenderingModeProperty.h>
-#include <mitkSceneIO.h>
 #include <mitkVersion.h>
-#include <mitkLogMacros.h>
-#include <mitkDataStorage.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
@@ -126,7 +123,7 @@ PluginActivator* PluginActivator::s_Instance = nullptr;
 
 //-----------------------------------------------------------------------------
 PluginActivator::PluginActivator()
-: m_DataStorageServiceTracker(NULL)
+: m_DataStorageServiceTracker(nullptr)
 , m_InDataStorageChanged(false)
 {
   s_Instance = this;
@@ -162,27 +159,7 @@ void PluginActivator::start(ctkPluginContext* context)
   propertyExtensions->AddExtension("Image Rendering.Lowest Value Opacity", opacityPropertyExtension.GetPointer());
   propertyExtensions->AddExtension("Image Rendering.Highest Value Opacity", opacityPropertyExtension.GetPointer());
 
-  // Get the property whether to process application arguments here.
-  // By default, the arguments are processed by MITK, but custom applications
-  // can suppress this and do the processing themselves, for example to introduce
-  // new switches or options.
-  QVariant processArgsByMITKProperty = context->getProperty("applicationArgs.processByMITK");
-  bool processArgs = processArgsByMITKProperty.isValid() && !processArgsByMITKProperty.toBool();
-
-  if (processArgs)
-  {
-    /// Note:
-    /// Reimplementing functionality from QmitkCommonExtPlugin:
-
-    if (qApp->metaObject()->indexOfSignal("messageReceived(QByteArray)") > -1)
-    {
-      connect(qApp, SIGNAL(messageReceived(QByteArray)), this, SLOT(handleIPCMessage(QByteArray)));
-    }
-
-    QStringList args = berry::Platform::GetApplicationArgs();
-    // This is a potentially long running operation.
-    this->LoadDataFromDisk(args, true);
-  }
+  this->ProcessOptions();
 }
 
 
@@ -196,7 +173,7 @@ void PluginActivator::stop(ctkPluginContext* context)
 
 
 //-----------------------------------------------------------------------------
-const mitk::DataStorage* PluginActivator::GetDataStorage()
+mitk::DataStorage::Pointer PluginActivator::GetDataStorage()
 {
   mitk::DataStorage::Pointer dataStorage = NULL;
 
@@ -259,6 +236,13 @@ void PluginActivator::BlankDepartmentalLogo()
 
   berry::IPreferences::Pointer logoPref = prefService->GetSystemPreferences()->Node("org.mitk.editors.stdmultiwidget");
   logoPref->Put("DepartmentLogo", "");
+}
+
+
+//-----------------------------------------------------------------------------
+QString PluginActivator::GetHelpHomePageURL() const
+{
+  return QString::null;
 }
 
 
@@ -699,280 +683,153 @@ void PluginActivator::RegisterBinaryImageProperties(const QString& preferencesNo
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::LoadDataFromDisk(const QStringList &arguments, bool globalReinit)
+void PluginActivator::ProcessOptions()
 {
-  if (!arguments.empty())
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+  QStringList openArgs = this->GetContext()->getProperty("applicationArgs.open").toStringList();
+  int layer = openArgs.size() - 1;
+
+  for (QString openArg: openArgs)
   {
-    ctkServiceReference serviceRef = this->GetContext()->getServiceReference<mitk::IDataStorageService>();
-    if (serviceRef)
+    int colonIndex = openArg.indexOf(':');
+    QString nodeName = openArg.mid(0, colonIndex);
+    QString filePath = openArg.mid(colonIndex + 1);
+
+    if (filePath.right(5) == ".mitk")
     {
-      mitk::IDataStorageService* dataStorageService = this->GetContext()->getService<mitk::IDataStorageService>(serviceRef);
-      mitk::DataStorage::Pointer dataStorage = dataStorageService->GetDefaultDataStorage()->GetDataStorage();
+      MITK_WARN << "Invalid syntax for opening an MITK project. The '--open' option is for opening single data files with a given name." << std::endl
+                << "Omit the '--open' option and provide the file path only." << std::endl;
+      continue;
+    }
 
-      std::vector<mitk::DataNode::Pointer> lastOpenedNodes;
+    if (nodeName.isEmpty())
+    {
+      MITK_WARN << "Invalid syntax for opening a file. Provide a name for the file. For example:" << std::endl
+                << std::endl
+                << "    --open T1:/path/to/reference-image.nii.gz" << std::endl
+                << std::endl
+                << "If you want to use the original name, omit the '--open' option and provide the file path only." << std::endl
+                << std::endl;
+      continue;
+    }
 
-      int filesOpened = 0;
-      int layer = 0;
+    if (filePath.isEmpty())
+    {
+      MITK_WARN << "Invalid syntax for opening a file. Provide a path to the file. For example:" << std::endl
+                << std::endl
+                << "    --open T1:/path/to/reference-image.nii.gz" << std::endl
+                << std::endl;
+      continue;
+    }
 
-      for (int i = 0; i < arguments.size(); ++i)
+    try
+    {
+      mitk::DataStorage::SetOfObjects::Pointer nodes = mitk::IOUtil::Load(filePath.toStdString(), *dataStorage);
+      int counter = 0;
+      for (auto& node: *nodes)
       {
-        if (arguments[i] == "-o"
-            || arguments[i] == "--open")
+        if (counter == 0)
         {
-          /// --open should be followed by a file path, not an option.
-          if (i + 1 == arguments.size()
-              || arguments[i + 1].isEmpty()
-              || arguments[i + 1][0] == '-')
-          {
-            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
-            continue;
-          }
-        }
-        else if (arguments[i] == "-p"
-                 || arguments[i] == "--parents")
-        {
-          /// --parents should be followed by data node names, not by an option.
-          if (i + 1 == arguments.size()
-              || arguments[i + 1].isEmpty()
-              || arguments[i + 1][0] == '-')
-          {
-            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
-            continue;
-          }
-
-          ++i;
-          QString sourcesArg = arguments[i];
-
-          QStringList sourceNodeNames = sourcesArg.split(",");
-          if (sourceNodeNames.empty())
-          {
-            MITK_ERROR << "Invalid argument: You must specify data names with the " << arguments[i - 1].toStdString() << " option.";
-            continue;
-          }
-
-          mitk::DataStorage::SetOfObjects::Pointer lastOpenedNodesSources = mitk::DataStorage::SetOfObjects::New();
-          foreach (QString sourceNodeName, sourceNodeNames)
-          {
-            mitk::DataNode::Pointer sourceNode = dataStorage->GetNamedNode(sourceNodeName.toStdString());
-            if (sourceNode.IsNull())
-            {
-              MITK_ERROR << "The name has not be given to any data: " << sourceNodeName.toStdString();
-              continue;
-            }
-            lastOpenedNodesSources->push_back(sourceNode);
-          }
-
-          for (std::vector<mitk::DataNode::Pointer>::iterator lastOpenedNodesIt = lastOpenedNodes.begin();
-               lastOpenedNodesIt != lastOpenedNodes.end();
-               ++lastOpenedNodesIt)
-          {
-            if (dataStorage->Exists(*lastOpenedNodesIt))
-            {
-              dataStorage->Remove(*lastOpenedNodesIt);
-            }
-            dataStorage->Add(*lastOpenedNodesIt, lastOpenedNodesSources);
-          }
-        }
-        else if (arguments[i] == "-P"
-                 || arguments[i] == "--properties")
-        {
-          /// --properties should be followed by property values, not an option.
-          if (i + 1 == arguments.size()
-              || arguments[i + 1].isEmpty()
-              || arguments[i + 1][0] == '-')
-          {
-            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
-            continue;
-          }
-
-          ++i;
-          QString propertiesArg = arguments[i];
-          QStringList propertiesArgParts = propertiesArg.split(":");
-          QString propertyKeysAndValuesPart;
-
-          std::vector<mitk::DataNode::Pointer> nodesToSet;
-          if (propertiesArgParts.size() == 1)
-          {
-            nodesToSet = lastOpenedNodes;
-            propertyKeysAndValuesPart = propertiesArgParts[0];
-          }
-          else if (propertiesArgParts.size() == 2)
-          {
-            QString nodeNamesPart = propertiesArgParts[0];
-            QStringList nodeNames = nodeNamesPart.split(",");
-            foreach (QString nodeName, nodeNames)
-            {
-              mitk::DataNode::Pointer node = dataStorage->GetNamedNode(nodeName.toStdString());
-              if (node.IsNull())
-              {
-                MITK_ERROR << "The name has not be given to any data: " << nodeName.toStdString();
-                continue;
-              }
-              nodesToSet.push_back(node);
-            }
-
-            propertyKeysAndValuesPart = propertiesArgParts[1];
-          }
-          else
-          {
-            MITK_ERROR << "Invalid syntax for the " << arguments[i - 1].toStdString() << " option.";
-            continue;
-          }
-
-          QStringList propertyKeyAndValueParts = propertyKeysAndValuesPart.split(",");
-          if (propertyKeyAndValueParts.empty())
-          {
-            MITK_ERROR << "Invalid argument: You must specify properties with the " << arguments[i - 1].toStdString() << " option.";
-            continue;
-          }
-
-          foreach (QString propertyKeyAndValuePart, propertyKeyAndValueParts)
-          {
-            QStringList propertyKeyAndValue = propertyKeyAndValuePart.split("=");
-            if (propertyKeyAndValue.size() != 2)
-            {
-              MITK_ERROR << "Invalid argument: You must specify property values in the form <property name>=<value>.";
-              continue;
-            }
-
-            QString propertyKey = propertyKeyAndValue[0];
-            QString propertyValue = propertyKeyAndValue[1];
-
-            for (std::vector<mitk::DataNode::Pointer>::iterator nodesIt = nodesToSet.begin();
-                 nodesIt != nodesToSet.end();
-                 ++nodesIt)
-            {
-              QVariant value = this->ParsePropertyValue(propertyValue);
-              this->SetNodeProperty(*nodesIt, propertyKey, value);
-            }
-          }
-        }
-        else if (arguments[i] == "--perspective"
-                 || arguments[i] == "--window-layout"
-                 || arguments[i] == "--dnd"
-                 || arguments[i] == "--drag-and-drop"
-                 || arguments[i] == "--viewer-number"
-                 || arguments[i] == "--bind-viewers"
-                 || arguments[i] == "--bind-windows"
-                 )
-        {
-          /// Note:
-          /// These arguments are processed by the NiftyMIDAS workbench advisor.
-
-          if (i + 1 == arguments.size()
-              || arguments[i + 1].isEmpty()
-              || arguments[i + 1][0] == '-')
-          {
-            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
-            continue;
-          }
-
-          ++i;
-        }
-        else if (arguments[i].right(5) == ".mitk")
-        {
-          lastOpenedNodes.clear();
-
-          mitk::SceneIO::Pointer sceneIO = mitk::SceneIO::New();
-
-          bool clearDataStorageFirst(false);
-          mitk::ProgressBar::GetInstance()->AddStepsToDo(2);
-          dataStorage = sceneIO->LoadScene( arguments[i].toLocal8Bit().constData(), dataStorage, clearDataStorageFirst );
-          mitk::ProgressBar::GetInstance()->Progress(2);
-          ++filesOpened;
+          node->SetName(nodeName.toStdString().c_str());
         }
         else
         {
-          QString fileArg = arguments[i];
-
-          QStringList fileArgParts = fileArg.split(":");
-          QString nodeName;
-          QString filePath;
-          if (fileArgParts.size() == 1)
-          {
-            filePath = fileArgParts[0];
-          }
-          else if (fileArgParts.size() == 2)
-          {
-            nodeName = fileArgParts[0];
-            filePath = fileArgParts[1];
-          }
-          else
-          {
-            MITK_ERROR << "Invalid syntax for specifying input file.";
-            break;
-          }
-
-          lastOpenedNodes.clear();
-
-          /// If parents are specified for these nodes then the --parents option should follow
-          /// this argument either directly or after the properties option.
-          bool parentsSpecified;
-          if ((i + 1 < arguments.size()
-               && (arguments[i + 1] == "-p" || arguments[i + 1] == "--parents"))
-              || (i + 3 < arguments.size()
-                  && (arguments[i + 1] == "-P" || arguments[i + 1] == "--properties")
-                  && (arguments[i + 3] == "-p" || arguments[i + 3] == "--parents")))
-          {
-            parentsSpecified = true;
-          }
-          else
-          {
-            parentsSpecified = false;
-          }
-
-          mitk::DataNodeFactory::Pointer nodeReader = mitk::DataNodeFactory::New();
-          try
-          {
-            nodeReader->SetFileName(filePath.toStdString());
-            nodeReader->Update();
-            for (unsigned int j = 0 ; j < nodeReader->GetNumberOfOutputs(); ++j)
-            {
-              mitk::DataNode::Pointer node = nodeReader->GetOutput(j);
-              if (node->GetData() != 0)
-              {
-                lastOpenedNodes.push_back(node);
-
-                if (!nodeName.isEmpty())
-                {
-                  if (j == 0)
-                  {
-                    node->SetName(nodeName.toStdString().c_str());
-                  }
-                  else
-                  {
-                    node->SetName(QString("%1 #%2").arg(nodeName, j + 1).toStdString().c_str());
-                  }
-                  ++filesOpened;
-                }
-
-                ++layer;
-                node->SetIntProperty("layer", layer);
-                node->SetBoolProperty("fixedLayer", true);
-
-                if (!parentsSpecified)
-                {
-                  dataStorage->Add(node);
-                }
-              }
-            }
-          }
-          catch (...)
-          {
-            MITK_ERROR << "Failed to open file: " << filePath.toStdString();
-          }
+          node->SetName(QString("%1 #%2").arg(nodeName, counter + 1).toStdString().c_str());
         }
-      } // end for each command line argument
 
-      if (filesOpened > 0 && globalReinit)
-      {
-        // calculate bounding geometry
-        mitk::RenderingManager::GetInstance()->InitializeViews(dataStorage->ComputeBoundingGeometry3D());
+        node->SetIntProperty("layer", layer--);
       }
     }
-    else
+    catch (const mitk::Exception& exception)
     {
-      MITK_ERROR << "A service reference for mitk::IDataStorageService does not exist";
+      MITK_ERROR << "Failed to open file: " << filePath.toStdString();
+      MITK_ERROR << exception.what();
+    }
+  }
+
+  std::map<mitk::DataNode::Pointer, mitk::DataStorage::SetOfObjects::Pointer> sourcesOfDerivedNodes;
+
+  for (QString derivesFromArg: this->GetContext()->getProperty("applicationArgs.derives-from").toStringList())
+  {
+    int colonIndex = derivesFromArg.indexOf(':');
+    QString sourceDataName = derivesFromArg.mid(0, colonIndex);
+    QString derivedDataNamesPart = derivesFromArg.mid(colonIndex + 1);
+    QStringList derivedDataNames = derivedDataNamesPart.split(",");
+
+    mitk::DataNode::Pointer sourceNode = dataStorage->GetNamedNode(sourceDataName.toStdString());
+
+    if (sourceNode.IsNull())
+    {
+      MITK_ERROR << "Data not found with the name: " << sourceDataName.toStdString() << std::endl
+                 << "Make sure you specified a data file with this name or used the '--open' option "
+                    "to open a data file with this name." << std::endl
+                 << "Skipping adding these as derived data for this source: " << derivedDataNamesPart.toStdString() << ".";
+      continue;
+    }
+
+    for (const QString& derivedDataName: derivedDataNames)
+    {
+      mitk::DataNode::Pointer derivedNode = dataStorage->GetNamedNode(derivedDataName.toStdString());
+
+      if (derivedNode.IsNull())
+      {
+        MITK_ERROR << "Data not found with the name: " << derivedDataName.toStdString() << std::endl
+                   << "Make sure you specified a data file with this name or used the '--open' option"
+                      "to open a data file with this name." << std::endl
+                   << "Skipping adding this data as derived data for the source: " << sourceDataName.toStdString() << ".";
+        continue;
+      }
+
+      auto sourcesOfDerivedNodesIt = sourcesOfDerivedNodes.find(sourceNode);
+      if (sourcesOfDerivedNodesIt == sourcesOfDerivedNodes.end())
+      {
+        mitk::DataStorage::SetOfObjects::Pointer sourceDataNodes = mitk::DataStorage::SetOfObjects::New();
+        sourcesOfDerivedNodesIt = sourcesOfDerivedNodes.insert(std::make_pair(derivedNode, sourceDataNodes)).first;
+      }
+      sourcesOfDerivedNodesIt->second->InsertElement(0, sourceNode);
+    }
+  }
+
+  for (const auto& sourcesOfDerivedNode: sourcesOfDerivedNodes)
+  {
+    const auto& derivedNode = sourcesOfDerivedNode.first;
+    const auto& sourceNodes = sourcesOfDerivedNode.second;
+    dataStorage->Remove(derivedNode);
+    dataStorage->Add(derivedNode, sourceNodes);
+  }
+
+  for (QString propertyArg: this->GetContext()->getProperty("applicationArgs.property").toStringList())
+  {
+    int colonIndex = propertyArg.indexOf(':');
+    QString dataNodeName = propertyArg.mid(0, colonIndex);
+    QString propertyNamesAndValuesPart = propertyArg.mid(colonIndex + 1);
+
+    mitk::DataNode::Pointer dataNode = dataStorage->GetNamedNode(dataNodeName.toStdString());
+
+    if (dataNode.IsNull())
+    {
+      MITK_ERROR << "Data not found with the name: " << dataNodeName.toStdString() << std::endl
+                 << "Make sure you specified a data file with this name or used the '--open' option "
+                    "to open a data file with this name." << std::endl
+                 << "Skipping setting properties for this data: " << dataNodeName.toStdString() << ".";
+      continue;
+    }
+
+    for (QString propertyNameAndValuePart: propertyNamesAndValuesPart.split(","))
+    {
+      QStringList propertyNameAndValue = propertyNameAndValuePart.split("=");
+      if (propertyNameAndValue.size() != 2)
+      {
+        MITK_ERROR << "Invalid argument: You must specify property values in the form <property name>=<value>.";
+        continue;
+      }
+
+      const QString& propertyName = propertyNameAndValue[0];
+      const QString& propertyValue = propertyNameAndValue[1];
+
+      QVariant value = this->ParsePropertyValue(propertyValue);
+      this->SetNodeProperty(dataNode, propertyName, value);
     }
   }
 }
@@ -1004,44 +861,47 @@ QVariant PluginActivator::ParsePropertyValue(const QString& propertyValue)
   else
   {
     bool ok = false;
-    int intValue = propertyValue.toInt(&ok);
+    double doubleValue = propertyValue.toDouble(&ok);
     if (ok)
     {
-      propertyTypedValue.setValue(intValue);
-    }
-    else
-    {
-      double doubleValue = propertyValue.toDouble(&ok);
-      if (ok)
+      if (propertyValue.contains('.') || propertyValue.contains('e') || propertyValue.contains('E'))
       {
         propertyTypedValue.setValue(doubleValue);
       }
       else
       {
-        int hyphenIndex = propertyValue.indexOf('-', 1);
-        if (hyphenIndex != -1)
+        int intValue = propertyValue.toInt(&ok);
+        if (ok)
         {
-          /// It might be a level window min-max range.
-          QString minPart = propertyValue.mid(0, hyphenIndex);
-          QString maxPart = propertyValue.mid(hyphenIndex + 1, propertyValue.length() - hyphenIndex);
-          double minValue = minPart.toDouble(&ok);
-          if (ok)
-          {
-            double maxValue = maxPart.toDouble(&ok);
-            if (ok)
-            {
-              QLevelWindow range;
-              range.SetWindowBounds(minValue, maxValue);
-              propertyTypedValue.setValue(range);
-            }
-          }
-        }
-
-        if (!ok)
-        {
-          propertyTypedValue.setValue(propertyValue);
+          propertyTypedValue.setValue(intValue);
         }
       }
+    }
+    else
+    {
+      int hyphenIndex = propertyValue.indexOf('-', 1);
+      if (hyphenIndex != -1)
+      {
+        /// It might be a level window min-max range.
+        QString minPart = propertyValue.mid(0, hyphenIndex);
+        QString maxPart = propertyValue.mid(hyphenIndex + 1, propertyValue.length() - hyphenIndex);
+        double minValue = minPart.toDouble(&ok);
+        if (ok)
+        {
+          double maxValue = maxPart.toDouble(&ok);
+          if (ok)
+          {
+            QLevelWindow range;
+            range.SetWindowBounds(minValue, maxValue);
+            propertyTypedValue.setValue(range);
+          }
+        }
+      }
+    }
+
+    if (!ok)
+    {
+      propertyTypedValue.setValue(propertyValue);
     }
   }
 
@@ -1090,112 +950,6 @@ void PluginActivator::SetNodeProperty(mitk::DataNode* node, const QString& prope
   {
     node->GetPropertyList(rendererName.toStdString())->SetProperty(propertyName.toStdString().c_str(), mitkProperty);
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::startNewInstance(const QStringList &args, const QStringList& files)
-{
-  QStringList newArgs(args);
-#ifdef Q_OS_UNIX
-  newArgs << QString("--") + berry::Platform::PROP_NEWINSTANCE;
-#else
-  newArgs << QString("/") + berry::Platform::PROP_NEWINSTANCE;
-#endif
-  newArgs << files;
-  QProcess::startDetached(qApp->applicationFilePath(), newArgs);
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::handleIPCMessage(const QByteArray& msg)
-{
-  QDataStream ds(msg);
-  QString msgType;
-  ds >> msgType;
-
-  // we only handle messages containing command line arguments
-  if (msgType != "$cmdLineArgs") return;
-
-  // activate the current workbench window
-  berry::IWorkbenchWindow::Pointer window =
-      berry::PlatformUI::GetWorkbench()->GetActiveWorkbenchWindow();
-
-  QMainWindow* mainWindow =
-   static_cast<QMainWindow*> (window->GetShell()->GetControl());
-
-  mainWindow->setWindowState(mainWindow->windowState() & ~Qt::WindowMinimized);
-  mainWindow->raise();
-  mainWindow->activateWindow();
-
-  // Get the preferences for the instantiation behavior
-  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node("/General");
-  bool newInstanceAlways = prefs->GetBool("newInstance.always", false);
-  bool newInstanceScene = prefs->GetBool("newInstance.scene", true);
-
-  QStringList args;
-  ds >> args;
-
-  QStringList fileArgs;
-  QStringList sceneArgs;
-
-  QStringList applicationArgs = berry::Platform::GetApplicationArgs();
-  args.pop_front();
-  QStringList::Iterator it = args.begin();
-  while (it != args.end())
-  {
-    if (it->startsWith("-"))
-    {
-      ++it;
-    }
-    else
-    {
-      if (it->endsWith(".mitk"))
-      {
-        sceneArgs << *it;
-      }
-      else
-      {
-        fileArgs << *it;
-      }
-      it = args.erase(it);
-    }
-  }
-
-  if (newInstanceAlways)
-  {
-    if (newInstanceScene)
-    {
-      startNewInstance(args, fileArgs);
-
-      foreach(QString sceneFile, sceneArgs)
-      {
-        startNewInstance(args, QStringList(sceneFile));
-      }
-    }
-    else
-    {
-      fileArgs.append(sceneArgs);
-      startNewInstance(args, fileArgs);
-    }
-  }
-  else
-  {
-    LoadDataFromDisk(fileArgs, false);
-    if (newInstanceScene)
-    {
-      foreach(QString sceneFile, sceneArgs)
-      {
-        startNewInstance(args, QStringList(sceneFile));
-      }
-    }
-    else
-    {
-      LoadDataFromDisk(sceneArgs, false);
-    }
-  }
-
 }
 
 }

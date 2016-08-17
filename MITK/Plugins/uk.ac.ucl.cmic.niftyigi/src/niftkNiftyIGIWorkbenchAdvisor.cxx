@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkNiftyIGIAppWorkbenchAdvisor.h"
+#include "niftkNiftyIGIWorkbenchAdvisor.h"
 #include "niftkNiftyIGIWorkbenchWindowAdvisor.h"
 #include <mitkNifTKIGIObjectFactory.h>
 
@@ -21,19 +21,19 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-QString NiftyIGIAppWorkbenchAdvisor::GetInitialWindowPerspectiveId()
+QString NiftyIGIWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 {
   return "uk.ac.ucl.cmic.niftyigi.igiperspective";
 }
 
 //-----------------------------------------------------------------------------
-QString NiftyIGIAppWorkbenchAdvisor::GetWindowIconResourcePath() const
+QString NiftyIGIWorkbenchAdvisor::GetWindowIconResourcePath() const
 {
   return ":/NiftyIGIApplication/icon_cmic.xpm";
 }
 
 //-----------------------------------------------------------------------------
-BaseWorkbenchWindowAdvisor* NiftyIGIAppWorkbenchAdvisor::CreateBaseWorkbenchWindowAdvisor(
+BaseWorkbenchWindowAdvisor* NiftyIGIWorkbenchAdvisor::CreateBaseWorkbenchWindowAdvisor(
     berry::IWorkbenchWindowConfigurer::Pointer configurer)
 {
   return new NiftyIGIWorkbenchWindowAdvisor(this, configurer);

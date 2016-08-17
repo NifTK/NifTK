@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkNiftyViewApplication.h"
-#include "niftkNiftyViewAppWorkbenchAdvisor.h"
+#include "niftkNiftyViewWorkbenchAdvisor.h"
 
 
 namespace niftk
@@ -36,7 +36,7 @@ NiftyViewApplication::NiftyViewApplication(const NiftyViewApplication& other)
 //-----------------------------------------------------------------------------
 berry::WorkbenchAdvisor* NiftyViewApplication::GetWorkbenchAdvisor()
 {
-  return new NiftyViewAppWorkbenchAdvisor();
+  return new NiftyViewWorkbenchAdvisor();
 }
 
 }
