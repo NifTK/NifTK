@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkNiftyIGIAppWorkbenchAdvisor_h
-#define niftkNiftyIGIAppWorkbenchAdvisor_h
+#ifndef niftkNiftyIGIWorkbenchAdvisor_h
+#define niftkNiftyIGIWorkbenchAdvisor_h
 
 #ifdef __MINGW32__
 // We need to inlclude winbase.h here in order to declare
@@ -30,11 +30,11 @@ namespace niftk
 {
 
 /**
- * \class NiftyIGIAppWorkbenchAdvisor
+ * \class NiftyIGIWorkbenchAdvisor
  * \brief Advisor class to set up the initial NiftyIGI workbench.
  * \ingroup uk_ac_ucl_cmic_niftyigi
  */
-class NIFTYIGI_EXPORT NiftyIGIAppWorkbenchAdvisor: public BaseWorkbenchAdvisor
+class NIFTYIGI_EXPORT NiftyIGIWorkbenchAdvisor: public BaseWorkbenchAdvisor
 {
 public:
 

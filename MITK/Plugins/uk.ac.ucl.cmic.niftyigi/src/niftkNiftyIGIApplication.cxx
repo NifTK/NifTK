@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkNiftyIGIApplication.h"
-#include "niftkNiftyIGIAppWorkbenchAdvisor.h"
+#include "niftkNiftyIGIWorkbenchAdvisor.h"
 
 
 namespace niftk
@@ -36,7 +36,7 @@ NiftyIGIApplication::NiftyIGIApplication(const NiftyIGIApplication& other)
 //-----------------------------------------------------------------------------
 berry::WorkbenchAdvisor* NiftyIGIApplication::GetWorkbenchAdvisor()
 {
-  return new NiftyIGIAppWorkbenchAdvisor();
+  return new NiftyIGIWorkbenchAdvisor();
 }
 
 }

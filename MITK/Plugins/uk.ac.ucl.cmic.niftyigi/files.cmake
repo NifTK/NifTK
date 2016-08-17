@@ -14,7 +14,7 @@
 
 set(SRC_CPP_FILES
   niftkNiftyIGIApplication.cxx
-  niftkNiftyIGIAppWorkbenchAdvisor.cxx
+  niftkNiftyIGIWorkbenchAdvisor.cxx
   niftkNiftyIGIWorkbenchWindowAdvisor.cxx
 )
 

@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 <plugin>
+
+  <extension point="org.blueberry.ui.perspectives">
+    <perspective
+      id="uk.ac.ucl.cmic.commonapps.minimal_perspective"
+      name="Minimal Perspective"
+      class="niftk::MinimalPerspective"
+      icon="resources/icon_ucl.xpm">
+    </perspective>
+  </extension>
+
 </plugin>
