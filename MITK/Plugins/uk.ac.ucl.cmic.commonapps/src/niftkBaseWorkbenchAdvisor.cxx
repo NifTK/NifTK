@@ -88,27 +88,6 @@ mitk::DataStorage* BaseWorkbenchAdvisor::GetDataStorage()
 //-----------------------------------------------------------------------------
 void BaseWorkbenchAdvisor::PostStartup()
 {
-  /// Note:
-  /// The fixedLayer property is set to true for all the images opened from the command line, so that
-  /// the order of the images is not overwritten by the DataManager when it opens everything from the
-  /// data storage.
-  /// Now that the workbench is up and the data manager plugin loaded everything, we can clear the
-  /// fixedLayer property, so that the user can rearrange the layers by drag and drop in the data manager.
-
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-  mitk::DataStorage::SetOfObjects::ConstPointer nodes = dataStorage->GetAll();
-
-  for (mitk::DataStorage::SetOfObjects::ConstIterator it = nodes->Begin(); it != nodes->End(); ++it)
-  {
-    mitk::DataNode* node = it->Value();
-    bool fixedLayer = false;
-    node->GetBoolProperty("fixedLayer", fixedLayer);
-    if (fixedLayer)
-    {
-      node->SetBoolProperty("fixedLayer", false);
-    }
-  }
-
   QString perspectiveLabel = PluginActivator::GetInstance()->GetContext()->getProperty("applicationArgs.perspective").toString();
 
   if (!perspectiveLabel.isEmpty())
