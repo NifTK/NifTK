@@ -25,7 +25,6 @@
 #include <berryIPreferencesService.h>
 
 #include <mitkCoreServices.h>
-#include <mitkDataNodeFactory.h>
 #include <mitkDataStorage.h>
 #include <mitkExceptionMacro.h>
 #include <mitkFloatPropertyExtension.h>
@@ -38,7 +37,6 @@
 #include <mitkProgressBar.h>
 #include <mitkProperties.h>
 #include <mitkRenderingModeProperty.h>
-#include <mitkSceneIO.h>
 #include <mitkVersion.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkGlobalInteraction.h>
