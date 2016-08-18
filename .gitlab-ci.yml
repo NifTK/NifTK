@@ -58,6 +58,7 @@ Linux continuous test:
 
   script:
   - cd ${pb_dir}
+  - export NIFTK_DRC_ANALYZE=ON
   - ctest -S CTestContinuous.cmake -V
 
   only:
@@ -155,6 +156,7 @@ Mac continuous test:
 
   script:
   - cd ${pb_dir}
+  - export NIFTK_DRC_ANALYZE=ON
   - ctest -S CTestContinuous.cmake -V
 
   only:
