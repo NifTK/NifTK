@@ -104,15 +104,15 @@ public:
   /// and the bottom-left-back corner of the bottom-left-back voxel for non-image geometries.
   static mitk::Point3D GetWorldBottomLeftBackCorner(const mitk::BaseGeometry* geometry);
 
-  /// \brief Converts a cursor position in a render window to a point on the screen.
-  /// The cursor position is a relative position within the render window normalised to the render window size.
+  /// \brief Converts a display position in a render window to a point on the screen.
+  /// The display position is a relative position within the render window normalised by the render window size.
   /// The bottom left position is (0.0, 0.0), the top right position is (1.0, 1.0).
-  static QPoint GetPointAtCursorPosition(QmitkRenderWindow *renderWindow, const mitk::Vector2D& cursorPosition);
+  QPoint GetPointAtDisplayPosition(int windowIndex, const mitk::Vector2D& displayPosition);
 
-  /// \brief Converts a point on the screen to a cursor position in a render window.
-  /// The cursor position is a relative position within the render window normalised to the render window size.
+  /// \brief Converts a point on the screen to a display position in a render window.
+  /// The display position is a relative position within the render window normalised by the render window size.
   /// The bottom left position is (0.0, 0.0), the top right position is (1.0, 1.0).
-  static mitk::Vector2D GetDisplayPositionAtPoint(QmitkRenderWindow *renderWindow, const QPoint& point);
+  mitk::Vector2D GetDisplayPositionAtPoint(int windowIndex, const QPoint& point);
 
   mitk::Point3D GetWorldPositionAtDisplayPosition(int orientation, const mitk::Vector2D& displayPosition);
 
