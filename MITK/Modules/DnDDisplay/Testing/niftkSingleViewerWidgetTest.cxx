@@ -792,6 +792,7 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
   mitk::Point3D axialCentre = axialGeometry->GetCenter();
   mitk::Point3D sagittalCentre = sagittalGeometry->GetCenter();
   mitk::Point3D coronalCentre = coronalGeometry->GetCenter();
+
   mitk::Point3D axialBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(axialGeometry);
   mitk::Point3D sagittalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(sagittalGeometry);
   mitk::Point3D coronalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(coronalGeometry);
@@ -880,16 +881,28 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
   /// Note:
   /// The renderer geometries are half voxel shifted along the renderer axis.
 
-
   mitk::Point3D expectedAxialOrigin = worldBottomLeftBackCorner;
   /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
   expectedAxialOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
+  expectedAxialOrigin[2] += 0.5 * d->WorldSpacings[2];
   mitk::Point3D expectedSagittalOrigin = worldBottomLeftBackCorner;
+  expectedSagittalOrigin[0] += 0.5 * d->WorldSpacings[0];
   mitk::Point3D expectedCoronalOrigin = worldBottomLeftBackCorner;
+  expectedCoronalOrigin[1] += 0.5 * d->WorldSpacings[1];
 
   mitk::Point3D expectedAxialCentre = worldCentre;
+  expectedAxialCentre[2] += 0.5 * d->WorldSpacings[2];
   mitk::Point3D expectedSagittalCentre = worldCentre;
+  expectedSagittalCentre[0] += 0.5 * d->WorldSpacings[0];
   mitk::Point3D expectedCoronalCentre = worldCentre;
+  expectedCoronalCentre[1] += 0.5 * d->WorldSpacings[1];
+
+  mitk::Point3D expectedAxialBottomLeftBackCorner = worldBottomLeftBackCorner;
+  expectedAxialBottomLeftBackCorner[2] += 0.5 * d->WorldSpacings[2];
+  mitk::Point3D expectedSagittalBottomLeftBackCorner = worldBottomLeftBackCorner;
+  expectedSagittalBottomLeftBackCorner[0] += 0.5 * d->WorldSpacings[0];
+  mitk::Point3D expectedCoronalBottomLeftBackCorner = worldBottomLeftBackCorner;
+  expectedCoronalBottomLeftBackCorner[1] += 0.5 * d->WorldSpacings[1];
 
   mitk::Point3D expectedAxialFirstPlaneOrigin = worldBottomLeftBackCorner;
   /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
@@ -962,9 +975,9 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
   QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
   QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
   QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
-  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(axialBottomLeftBackCorner, expectedAxialBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, expectedSagittalBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, expectedCoronalBottomLeftBackCorner, 0.001));
   QVERIFY(Self::Equals(axialFirstPlaneOrigin, expectedAxialFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(sagittalFirstPlaneOrigin, expectedSagittalFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(coronalFirstPlaneOrigin, expectedCoronalFirstPlaneOrigin, 0.001));
