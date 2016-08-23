@@ -54,6 +54,7 @@ if(BUILD_IGI)
     NDICAPI 
     OpenCVUtils
     OpenCVImageConversion
+    QImageConversion
     PointReg
     ICPReg
     OpenCV

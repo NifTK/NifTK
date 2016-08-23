@@ -12,16 +12,11 @@
 #
 #============================================================================*/
 
-if(MITK_USE_Qt5)
+MITK_CREATE_MODULE(
+  DEPENDS niftkCore
+  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui  
+)
 
-  MITK_CREATE_MODULE(
-    DEPENDS niftkIGIDataSources niftkQImageConversion
-    PACKAGE_DEPENDS Qt5|Widgets+Multimedia
-    AUTOLOAD_WITH niftkIGIServices
-  )
-
-  if (NIFTK_USE_COTIRE AND COMMAND cotire)
-    cotire(niftkQtCameraVideoDataSourceService)
-  endif()
-
+if (NIFTK_USE_COTIRE AND COMMAND cotire)
+  cotire(niftkQImageConversion)
 endif()

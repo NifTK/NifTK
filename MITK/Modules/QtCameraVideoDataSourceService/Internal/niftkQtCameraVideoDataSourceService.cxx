@@ -16,7 +16,7 @@
 #include "niftkQtCameraVideoDataType.h"
 #include <niftkIGIDataSourceI.h>
 #include <niftkIGIDataSourceUtils.h>
-#include <niftkQImageToMitkImageFilter.h>
+#include <niftkQImageConversion.h>
 #include <mitkExceptionMacro.h>
 #include <mitkImage.h>
 #include <mitkImageReadAccessor.h>
@@ -406,13 +406,24 @@ std::vector<IGIDataItemInfo> QtCameraVideoDataSourceService::Update(const niftk:
   }
   else
   {
-    niftk::QImageToMitkImageFilter::Pointer filter = niftk::QImageToMitkImageFilter::New();
-    filter->SetQImage(img);
-    filter->Update();
+    int imageDepth = img->depth();
+    mitk::Image::Pointer convertedImage;
+    if (img->format() == QImage::Format_RGB888
+        || img->format() == QImage::Format_RGBA8888
+        || img->format() == QImage::Format_Indexed8
+        )
+    {
+      convertedImage = niftk::CreateMitkImage(img);
+    }
+    else
+    {
+      QImage tmp = img->convertToFormat(QImage::Format_RGB888);
+      convertedImage = niftk::CreateMitkImage(&tmp);
+      imageDepth = tmp.depth();
+    }
 
-    mitk::Image::Pointer convertedImage = filter->GetOutput();
     mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-    if (imageInNode.IsNull() || imageInNode.IsNotNull())
+    if (imageInNode.IsNull())
     {
       // We remove and add to trigger the NodeAdded event,
       // which is not emmitted if the node was added with no data.
@@ -432,7 +443,7 @@ std::vector<IGIDataItemInfo> QtCameraVideoDataSourceService::Update(const niftk:
         mitk::ImageWriteAccessor writeAccess(imageInNode);
         void* vPointer = writeAccess.GetData();
 
-        memcpy(vPointer, cPointer, img->width() * img->height() * 3);
+        memcpy(vPointer, cPointer, img->width() * img->height() * (imageDepth / 8));
       }
       catch(mitk::Exception& e)
       {
