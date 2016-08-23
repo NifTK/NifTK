@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  DEPENDS MitkCore niftkOpenCVUtils
+  DEPENDS niftkCore
   PACKAGE_DEPENDS OpenCV 
 )
 
