@@ -72,51 +72,6 @@
 US_INITIALIZE_MODULE
 
 
-/// \brief Helper class to store a pair of double values in a QVariant.
-class QLevelWindow : private QPair<double, double>
-{
-public:
-  QLevelWindow()
-  {
-  }
-
-  void SetWindowBounds(double lowerWindowBound, double upperWindowBound)
-  {
-    this->first = lowerWindowBound;
-    this->second = upperWindowBound;
-  }
-
-  void SetLevelWindow(double level, double window)
-  {
-    this->first = level - window / 2.0;
-    this->second = level + window / 2.0;
-  }
-
-  double GetLowerWindowBound() const
-  {
-    return this->first;
-  }
-
-  double GetUpperWindowBound() const
-  {
-    return this->second;
-  }
-
-  double GetLevel() const
-  {
-    return (this->first + this->second) / 2.0;
-  }
-
-  double GetWindow() const
-  {
-    return this->second - this->first;
-  }
-
-};
-
-Q_DECLARE_METATYPE(QLevelWindow)
-
-
 namespace niftk
 {
 
@@ -688,6 +643,15 @@ void PluginActivator::RegisterBinaryImageProperties(const QString& preferencesNo
 //-----------------------------------------------------------------------------
 void PluginActivator::ProcessOptions()
 {
+  this->ProcessOpenOptions();
+  this->ProcessDerivesFromOptions();
+  this->ProcessPropertyOptions();
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::ProcessOpenOptions()
+{
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
 
   QStringList openArgs = this->GetContext()->getProperty("applicationArgs.open").toStringList();
@@ -696,7 +660,7 @@ void PluginActivator::ProcessOptions()
   for (QString openArg: openArgs)
   {
     int colonIndex = openArg.indexOf(':');
-    QString nodeName = openArg.mid(0, colonIndex);
+    QString nodeNamesPart = openArg.mid(0, colonIndex);
     QString filePath = openArg.mid(colonIndex + 1);
 
     if (filePath.right(5) == ".mitk")
@@ -706,42 +670,45 @@ void PluginActivator::ProcessOptions()
       continue;
     }
 
-    if (nodeName.isEmpty())
+    if (nodeNamesPart.isEmpty())
     {
-      MITK_WARN << "Invalid syntax for opening a file. Provide a name for the file. For example:" << std::endl
-                << std::endl
-                << "    --open T1:/path/to/reference-image.nii.gz" << std::endl
-                << std::endl
-                << "If you want to use the original name, omit the '--open' option and provide the file path only." << std::endl
-                << std::endl;
+      MITK_WARN << "Invalid syntax for opening a file. Provide a name for the file. For example:\n"
+                   "\n"
+                   "    --open T1:/path/to/reference-image.nii.gz\n"
+                   "\n"
+                   "If you want to use the original name, omit the '--open' option and provide the file path only.\n"
+                   "\n";
       continue;
     }
 
     if (filePath.isEmpty())
     {
-      MITK_WARN << "Invalid syntax for opening a file. Provide a path to the file. For example:" << std::endl
-                << std::endl
-                << "    --open T1:/path/to/reference-image.nii.gz" << std::endl
-                << std::endl;
+      MITK_WARN << "Invalid syntax for opening a file. Provide a path to the file. For example:\n"
+                   "\n"
+                   "    --open T1:/path/to/reference-image.nii.gz\n"
+                   "\n";
       continue;
     }
 
     try
     {
-      mitk::DataStorage::SetOfObjects::Pointer nodes = mitk::IOUtil::Load(filePath.toStdString(), *dataStorage);
-      int counter = 0;
-      for (auto& node: *nodes)
+      for (const QString& nodeName: nodeNamesPart.split(","))
       {
-        if (counter == 0)
+        mitk::DataStorage::SetOfObjects::Pointer nodes = mitk::IOUtil::Load(filePath.toStdString(), *dataStorage);
+        int counter = 0;
+        for (auto& node: *nodes)
         {
-          node->SetName(nodeName.toStdString().c_str());
-        }
-        else
-        {
-          node->SetName(QString("%1 #%2").arg(nodeName, counter + 1).toStdString().c_str());
-        }
+          if (counter == 0)
+          {
+            node->SetName(nodeName.toStdString().c_str());
+          }
+          else
+          {
+            node->SetName(QString("%1 #%2").arg(nodeName, counter + 1).toStdString().c_str());
+          }
 
-        node->SetIntProperty("layer", layer--);
+          node->SetIntProperty("layer", layer--);
+        }
       }
     }
     catch (const mitk::Exception& exception)
@@ -750,74 +717,123 @@ void PluginActivator::ProcessOptions()
       MITK_ERROR << exception.what();
     }
   }
+}
 
-  std::map<mitk::DataNode::Pointer, mitk::DataStorage::SetOfObjects::Pointer> sourcesOfDerivedNodes;
+
+//-----------------------------------------------------------------------------
+void PluginActivator::ProcessDerivesFromOptions()
+{
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+  /// This set contains the name of the derived nodes from every application of the
+  /// --derives-from option. Data node names can occur only once on the right side.
+  QSet<QString> everyDerivedNodeName;
 
   for (QString derivesFromArg: this->GetContext()->getProperty("applicationArgs.derives-from").toStringList())
   {
     int colonIndex = derivesFromArg.indexOf(':');
-    QString sourceDataName = derivesFromArg.mid(0, colonIndex);
-    QString derivedDataNamesPart = derivesFromArg.mid(colonIndex + 1);
-    QStringList derivedDataNames = derivedDataNamesPart.split(",");
+    QString sourceNodeNamesPart = derivesFromArg.mid(0, colonIndex);
+    QString derivedNodeNamesPart = derivesFromArg.mid(colonIndex + 1);
 
-    mitk::DataNode::Pointer sourceNode = dataStorage->GetNamedNode(sourceDataName.toStdString());
-
-    if (sourceNode.IsNull())
+    if (sourceNodeNamesPart.isEmpty())
     {
-      MITK_ERROR << "Data not found with the name: " << sourceDataName.toStdString() << std::endl
-                 << "Make sure you specified a data file with this name or used the '--open' option "
-                    "to open a data file with this name." << std::endl
-                 << "Skipping adding these as derived data for this source: " << derivedDataNamesPart.toStdString() << ".";
+      MITK_ERROR << "Source data node not specified for the '--derives-from'' option. Skipping option.";
       continue;
     }
 
-    for (const QString& derivedDataName: derivedDataNames)
+    if (derivedNodeNamesPart.isEmpty())
     {
-      mitk::DataNode::Pointer derivedNode = dataStorage->GetNamedNode(derivedDataName.toStdString());
+      MITK_ERROR << "Data node not specified for the '--derives-from'' option. Skipping option.";
+      continue;
+    }
+
+    bool invalidOption = false;
+
+    mitk::DataStorage::SetOfObjects::Pointer sourceNodes = mitk::DataStorage::SetOfObjects::New();
+    for (const QString& sourceNodeName: sourceNodeNamesPart.split(","))
+    {
+      mitk::DataNode::Pointer sourceNode = dataStorage->GetNamedNode(sourceNodeName.toStdString());
+
+      if (sourceNode.IsNull())
+      {
+        MITK_ERROR << "Data node not found with the name: " << sourceNodeName.toStdString() << ".\n"
+                   << "Make sure you specified a data file with this name or used the '--open' option to open a data file with this name.";
+        invalidOption = true;
+        break;
+      }
+
+      sourceNodes->InsertElement(sourceNodes->Size(), sourceNode);
+    }
+
+    if (invalidOption)
+    {
+      MITK_ERROR << "Skipping option.";
+      break;
+    }
+
+    for (const QString& derivedNodeName: derivedNodeNamesPart.split(","))
+    {
+      mitk::DataNode::Pointer derivedNode = dataStorage->GetNamedNode(derivedNodeName.toStdString());
 
       if (derivedNode.IsNull())
       {
-        MITK_ERROR << "Data not found with the name: " << derivedDataName.toStdString() << std::endl
-                   << "Make sure you specified a data file with this name or used the '--open' option"
-                      "to open a data file with this name." << std::endl
-                   << "Skipping adding this data as derived data for the source: " << sourceDataName.toStdString() << ".";
-        continue;
+        MITK_ERROR << "Data node not found with the name: " << derivedNodeName.toStdString() << ".\n"
+                      "Make sure you specified a data file with this name or used the '--open' option to open a data file with this name.";
+        invalidOption = true;
+        break;
       }
 
-      auto sourcesOfDerivedNodesIt = sourcesOfDerivedNodes.find(sourceNode);
-      if (sourcesOfDerivedNodesIt == sourcesOfDerivedNodes.end())
+      if (everyDerivedNodeName.contains(derivedNodeName))
       {
-        mitk::DataStorage::SetOfObjects::Pointer sourceDataNodes = mitk::DataStorage::SetOfObjects::New();
-        sourcesOfDerivedNodesIt = sourcesOfDerivedNodes.insert(std::make_pair(derivedNode, sourceDataNodes)).first;
+        MITK_ERROR << "Source nodes have already been defined for this data node: " << derivedNodeName.toStdString() << ".";
+        invalidOption = true;
+        break;
       }
-      sourcesOfDerivedNodesIt->second->InsertElement(0, sourceNode);
+
+      dataStorage->Remove(derivedNode);
+      dataStorage->Add(derivedNode, sourceNodes);
+    }
+
+    if (invalidOption)
+    {
+      MITK_ERROR << "Skipping option.";
+      break;
     }
   }
+}
 
-  for (const auto& sourcesOfDerivedNode: sourcesOfDerivedNodes)
-  {
-    const auto& derivedNode = sourcesOfDerivedNode.first;
-    const auto& sourceNodes = sourcesOfDerivedNode.second;
-    dataStorage->Remove(derivedNode);
-    dataStorage->Add(derivedNode, sourceNodes);
-  }
+
+//-----------------------------------------------------------------------------
+void PluginActivator::ProcessPropertyOptions()
+{
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
 
   for (QString propertyArg: this->GetContext()->getProperty("applicationArgs.property").toStringList())
   {
     int colonIndex = propertyArg.indexOf(':');
-    QString dataNodeName = propertyArg.mid(0, colonIndex);
+    QString dataNodeNamesPart = propertyArg.mid(0, colonIndex);
     QString propertyNamesAndValuesPart = propertyArg.mid(colonIndex + 1);
 
-    mitk::DataNode::Pointer dataNode = dataStorage->GetNamedNode(dataNodeName.toStdString());
+    QStringList dataNodeNames = dataNodeNamesPart.split(",");
+    std::vector<mitk::DataNode::Pointer> dataNodes(dataNodeNames.size());
+    std::size_t index = 0;
 
-    if (dataNode.IsNull())
+    for (const QString& dataNodeName: dataNodeNames)
     {
-      MITK_ERROR << "Data not found with the name: " << dataNodeName.toStdString() << std::endl
-                 << "Make sure you specified a data file with this name or used the '--open' option "
-                    "to open a data file with this name." << std::endl
-                 << "Skipping setting properties for this data: " << dataNodeName.toStdString() << ".";
-      continue;
+      mitk::DataNode::Pointer dataNode = dataStorage->GetNamedNode(dataNodeName.toStdString());
+
+      if (dataNode.IsNull())
+      {
+        MITK_ERROR << "Data node not found with the name: " << dataNodeName.toStdString() << ".\n"
+                      "Make sure you specified a data file with this name or used the '--open' option "
+                      "to open a data file with this name.\n"
+                      "Skipping setting properties for this data: " << dataNodeName.toStdString() << ".";
+        continue;
+      }
+
+      dataNodes[index++] = dataNode;
     }
+
 
     for (QString propertyNameAndValuePart: propertyNamesAndValuesPart.split(","))
     {
@@ -831,35 +847,57 @@ void PluginActivator::ProcessOptions()
       const QString& propertyName = propertyNameAndValue[0];
       const QString& propertyValue = propertyNameAndValue[1];
 
-      QVariant value = this->ParsePropertyValue(propertyValue);
-      this->SetNodeProperty(dataNode, propertyName, value);
+      mitk::BaseProperty::Pointer property = this->ParsePropertyValue(propertyValue);
+
+      for (mitk::DataNode::Pointer dataNode: dataNodes)
+      {
+        /// The level-window property values contain only the lower and upper window
+        /// bounds. So that we do not loose other components of the property like the
+        /// range min and max values, we retrieve the original level window, and over-
+        /// write it with the values specified on the command line.
+        /// Note also that we set these properties for the data as well, not only the
+        /// node.
+        if (mitk::LevelWindowProperty* levelWindowProperty =
+            dynamic_cast<mitk::LevelWindowProperty*>(property.GetPointer()))
+        {
+          mitk::LevelWindow nodeLevelWindow;
+          dataNode->GetLevelWindow(nodeLevelWindow, nullptr, propertyName.toStdString().c_str());
+          mitk::LevelWindow newLevelWindow = levelWindowProperty->GetLevelWindow();
+          nodeLevelWindow.SetWindowBounds(newLevelWindow.GetLowerWindowBound(), newLevelWindow.GetUpperWindowBound());
+          levelWindowProperty->SetLevelWindow(nodeLevelWindow);
+
+          dataNode->GetData()->SetProperty(propertyName.toStdString().c_str(), levelWindowProperty);
+        }
+
+        dataNode->SetProperty(propertyName.toStdString().c_str(), property);
+      }
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-QVariant PluginActivator::ParsePropertyValue(const QString& propertyValue)
+mitk::BaseProperty::Pointer PluginActivator::ParsePropertyValue(const QString& propertyValue)
 {
-  QVariant propertyTypedValue;
+  mitk::BaseProperty::Pointer property;
 
   if (propertyValue == QString("true")
       || propertyValue == QString("on")
       || propertyValue == QString("yes"))
   {
-    propertyTypedValue.setValue(true);
+    property = mitk::BoolProperty::New(true);
   }
   else if (propertyValue == QString("false")
            || propertyValue == QString("off")
            || propertyValue == QString("no"))
   {
-    propertyTypedValue.setValue(false);
+    property = mitk::BoolProperty::New(false);
   }
   else if (propertyValue.size() >= 2
            && ((propertyValue[0] == '\'' && propertyValue[propertyValue.size() - 1] == '\'')
                || (propertyValue[0] == '"' && propertyValue[propertyValue.size() - 1] == '"')))
   {
-    propertyTypedValue.setValue(propertyValue.mid(1, propertyValue.size() - 2));
+    property = mitk::StringProperty::New(propertyValue.mid(1, propertyValue.size() - 2).toStdString());
   }
   else
   {
@@ -869,14 +907,14 @@ QVariant PluginActivator::ParsePropertyValue(const QString& propertyValue)
     {
       if (propertyValue.contains('.') || propertyValue.contains('e') || propertyValue.contains('E'))
       {
-        propertyTypedValue.setValue(doubleValue);
+        property = mitk::FloatProperty::New(doubleValue);
       }
       else
       {
         int intValue = propertyValue.toInt(&ok);
         if (ok)
         {
-          propertyTypedValue.setValue(intValue);
+          property = mitk::IntProperty::New(intValue);
         }
       }
     }
@@ -894,9 +932,9 @@ QVariant PluginActivator::ParsePropertyValue(const QString& propertyValue)
           double maxValue = maxPart.toDouble(&ok);
           if (ok)
           {
-            QLevelWindow range;
-            range.SetWindowBounds(minValue, maxValue);
-            propertyTypedValue.setValue(range);
+            mitk::LevelWindow levelWindow;
+            levelWindow.SetWindowBounds(minValue, maxValue);
+            property = mitk::LevelWindowProperty::New(levelWindow);
           }
         }
       }
@@ -904,55 +942,11 @@ QVariant PluginActivator::ParsePropertyValue(const QString& propertyValue)
 
     if (!ok)
     {
-      propertyTypedValue.setValue(propertyValue);
+      property = mitk::StringProperty::New(propertyValue.toStdString());
     }
   }
 
-  return propertyTypedValue;
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::SetNodeProperty(mitk::DataNode* node, const QString& propertyName, const QVariant& propertyValue, const QString& rendererName)
-{
-  mitk::BaseProperty::Pointer mitkProperty;
-  if (propertyValue.type() == QVariant::Bool)
-  {
-    mitkProperty = mitk::BoolProperty::New(propertyValue.toBool());
-  }
-  else if (propertyValue.type() == QVariant::Int)
-  {
-    mitkProperty = mitk::IntProperty::New(propertyValue.toInt());
-  }
-  else if (propertyValue.type() == QVariant::Double)
-  {
-    mitkProperty = mitk::FloatProperty::New(propertyValue.toFloat());
-  }
-  else if (propertyValue.type() == QVariant::String)
-  {
-    mitkProperty = mitk::StringProperty::New(propertyValue.toString().toStdString());
-  }
-  else if (propertyValue.type() == QVariant::UserType)
-  {
-    if (propertyValue.canConvert<QLevelWindow>())
-    {
-      QLevelWindow qLevelWindow = propertyValue.value<QLevelWindow>();
-      mitk::LevelWindow levelWindow;
-      node->GetLevelWindow(levelWindow);
-      levelWindow.SetWindowBounds(qLevelWindow.GetLowerWindowBound(), qLevelWindow.GetUpperWindowBound());
-      node->SetLevelWindow(levelWindow);
-      node->GetData()->SetProperty("levelwindow", mitk::LevelWindowProperty::New(levelWindow));
-    }
-  }
-
-  if (rendererName.isEmpty())
-  {
-    node->SetProperty(propertyName.toStdString().c_str(), mitkProperty);
-  }
-  else
-  {
-    node->GetPropertyList(rendererName.toStdString())->SetProperty(propertyName.toStdString().c_str(), mitkProperty);
-  }
+  return property;
 }
 
 }
