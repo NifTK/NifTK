@@ -112,12 +112,6 @@ protected:
 
 private:
 
-  /// \brief Parses a node property value that was specified on the command line.
-  QVariant ParsePropertyValue(const QString& propertyValue);
-
-  /// \brief Sets node properties from a map of QVariant values per renderer name per property name.
-  void SetNodeProperty(mitk::DataNode* node, const QString& propertyName, const QVariant& propertyValue, const QString& rendererName = QString());
-
   /// \brief Private method that checks whether or not we are already updating and if not, calls NodeAdded()
   void NodeAddedProxy(const mitk::DataNode *node);
 
@@ -143,7 +137,17 @@ private:
   /// \brief Processes the command line options defined by niftk::BaseApplication.
   void ProcessOptions();
 
-private:
+  /// \brief Processes the '--open' command line options.
+  void ProcessOpenOptions();
+
+  /// \brief Processes the '--derives-from' command line options.
+  void ProcessDerivesFromOptions();
+
+  /// \brief Processes the '--property' command line options.
+  void ProcessPropertyOptions();
+
+  /// \brief Parses a node property value that was specified on the command line.
+  mitk::BaseProperty::Pointer ParsePropertyValue(const QString& propertyValue);
 
   ctkServiceTracker<mitk::IDataStorageService*>* m_DataStorageServiceTracker;
 

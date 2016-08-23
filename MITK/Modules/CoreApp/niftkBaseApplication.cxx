@@ -47,44 +47,70 @@ void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
 
   Poco::Util::Option openOption("open", "o",
       "\n"
-      "Opens a file with the given name. Several files can be opened by repeating this\n"
-      "option. The data nodes will appear in the Data Manager in the same order as listed\n"
-      "on the command line, i.e. the first data will be in the uppermost layer.\n");
-  openOption.argument("<name>:<file>").repeatable(true);
+      "Opens a file with the given name(s).\n"
+      "\n"
+      "Several files can be opened by repeating this option. The data nodes will appear "
+      "in the Data Manager in the same order as listed on the command line, i.e. the first "
+      "data node will be in the uppermost layer.\n"
+      "\n"
+      "<data node names> is a comma separated list of data node names. It is typically one "
+      "name only, but you can specify multiple names to open copies of the same data. "
+      "At least one name has to be given.\n");
+  openOption.argument("<data node names>:<file>").repeatable(true);
   openOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::HandleRepeatableOption));
   options.addOption(openOption);
 
   Poco::Util::Option derivesFromOption("derives-from", "d",
       "\n"
-      "Makes the data nodes derive from the given source data. The data nodes will appear\n"
-      "as children of the source data in the Data Manager, in the same order as listed\n"
-      "on the command line, i.e. first data will be in the uppermost layer.\n");
-  derivesFromOption.argument("<source data name>:<data name>[,<data name>]...").repeatable(true);
+      "Makes the data nodes derive from the given source data node.\n"
+      "\n"
+      "The data nodes will appear as children of the source data node in the Data Manager, "
+      "in the same order as listed on the command line, i.e. first data node will be in the "
+      "uppermost layer.\n"
+      "\n"
+      "<source data node> is the name of the data node from which the other data nodes "
+      "have to derive from. The name must be used with the '--open' option.\n"
+      "\n"
+      "It is also possible to specify several source data nodes, separated by commas, "
+      "but it is better not to do so. "
+      "Although the MITK data storage model allows data nodes to have multiple sources, "
+      "the Data Manager renders the data nodes into a tree and displays only one of them.\n"
+      "\n"
+      "<data nodes> is a comma separated list of data node names. The data nodes "
+      "will be derived from the source data node. The names must be used with "
+      "the '--open' option.\n");
+  derivesFromOption.argument("<source data node>:<data nodes>").repeatable(true);
   derivesFromOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::HandleRepeatableOption));
   options.addOption(derivesFromOption);
 
   Poco::Util::Option propertyOption("property", "p",
       "\n"
-      "Sets properties of a data node to the given values.\n"
-      "The type of the property is determined as follows:\n"
+      "Sets properties of data nodes to the given values.\n"
+      "\n"
+      "<data nodes> is a comma separated list of data node names. If you specify multiple "
+      "names, the property values will be set for each data node. At least one data node "
+      "name has to be given. The names must be used with the '--open' option.\n"
+      "\n"
+      "<property assignments> is a comma separated list of property assignments of "
+      "the following form:\n"
+      "\n"
+      "    <property name>=<value>\n"
+      "\n"
+      "The type of the property is determined from the given value as follows:\n"
+      "\n"
       "    - 'true', 'on' and 'yes' will become a bool property with 'true' value.\n"
       "    - 'false', 'off' and 'no' will become a bool property with 'false' value.\n"
-      "    - Decimal numbers without fractional and exponential part will become an\n"
-      "      int property.\n"
-      "    - Other decimal numbers (with fractional and/or exponential part) will\n"
-      "      become a float property. If you want an integer number to be interpreted\n"
-      "      as a float property, specify it with a '.0' fractional part.\n"
-      "    - Number ranges in the form '<number>-<number>' will become a level-window\n"
-      "      property with the given lower and upper bound.\n"
-      "    - Anything else will become a string property. String values can be enclosed\n"
-      "      within single or double quotes. This is necessary if the value contains\n"
-      "      white space or when it is in any of the previous form (boolean, decimal\n"
-      "      number or number range) but you want it to be interpreted as a string.\n"
+      "    - Decimal numbers without fractional and exponential part will become an int property.\n"
+      "    - Other decimal numbers (with fractional and/or exponential part) will become a float property.\n"
+      "      If you want an integer number to be interpreted as a float property, specify it with a '.0' fractional part.\n"
+      "    - Number ranges in the form '<number>-<number>' will become a level-window property with the given lower and upper bound.\n"
+      "    - Anything else will become a string property. String values can be enclosed within single or double quotes.\n"
+      "      This is necessary if the value contains white space or when it is in any of the previous form (boolean,\n"
+      "      decimal number or number range) but you want it to be interpreted as a string.\n"
       "      The leading and trailing quote will be removed from the final string value.\n"
-      "      You will likely need to protect the quotes and spaces by backslash because\n"
-      "      of your shell.\n"
+      "      You will likely need to protect the quotes and spaces by backslash because of your shell.\n"
       "");
-  propertyOption.argument("<data name>:<property>=<value>[,<property>=<value>]...").repeatable(true);
+  propertyOption.argument("<data nodes>:<property assignments>").repeatable(true);
   propertyOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::HandleRepeatableOption));
   options.addOption(propertyOption);
 
@@ -162,8 +188,8 @@ Poco::Util::HelpFormatter* BaseApplication::CreateHelpFormatter()
   QString examples =
       "Examples:\n"
       "\n"
-      "The following command will open 'image.nii.gz' as 'T1', 'left-hippocampus.nii.gz' as\n"
-      "'l-hippo' and 'right-hippocampus.nii.gz' as 'r-hippo', and it makes the segmentations\n"
+      "The following command will open 'image.nii.gz' as 'T1', 'left-hippocampus.nii.gz' as "
+      "'l-hippo' and 'right-hippocampus.nii.gz' as 'r-hippo', and it makes the segmentations "
       "derived images ('children') of T1:\n"
       "\n"
       "    ${commandName} --open T1:/path/to/image.nii.gz --open l-hippo:/path/to/left-hippocampus.nii.gz \\\n"
@@ -175,13 +201,18 @@ Poco::Util::HelpFormatter* BaseApplication::CreateHelpFormatter()
       "    ${commandName} -o T1:/path/to/image.nii.gz -o l-hippo:/path/to/left-hippocampus.nii.gz\\\n"
       "         -o r-hippo:/path/to/right-hippocampus.nii.gz -d T1:l-hippo,r-hippo\n"
       "\n"
-      "The following command opens a reference image and a mask, sets the intensity range of\n"
-      "the reference image to 100-3500, disables the feature of outlining the binary images\n"
-      "so that the mask is rendered as a solid layer rather than a contour, and sets the opacity\n"
+      "The following command opens a reference image and a mask, sets the intensity range of "
+      "the reference image to 100-3500, disables the feature of outlining the binary images "
+      "so that the mask is rendered as a solid layer rather than a contour, and sets the opacity "
       "to make it transparent.\n"
       "\n"
       "    ${commandName} -o T1:image.nii.gz -o mask:segmentation.nii.gz -d T1:mask \\\n"
       "        -p T1:levelwindow=100-3500 -p mask:outline\\ binary=false,opacity=0.3\n"
+      "\n"
+      "The following command opens two grey scale images and switches off the texture interpolation for both.\n"
+      "\n"
+      "    ${commandName} -o T1-1:image1.nii.gz -o T1-2:image2.nii.gz \\\n"
+      "        -p T1-1,T1-2:texture\\ interpolation=off\n"
       "\n"
       "The following command opens ${commandName} in 'Minimal' perspective, in which you have "
       "only the viewer and the Data Manager open.\n"
