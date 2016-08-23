@@ -66,6 +66,7 @@
 #include <niftkNamedLookupTableProperty.h>
 
 #include "niftkBaseApplicationPreferencePage.h"
+#include "niftkMinimalPerspective.h"
 
 
 US_INITIALIZE_MODULE
@@ -147,6 +148,8 @@ PluginActivator* PluginActivator::GetInstance()
 void PluginActivator::start(ctkPluginContext* context)
 {
   BaseApplicationPluginActivator::start(context);
+
+  BERRY_REGISTER_EXTENSION_CLASS(MinimalPerspective, context);
 
   this->RegisterDataStorageListener();
   this->BlankDepartmentalLogo();

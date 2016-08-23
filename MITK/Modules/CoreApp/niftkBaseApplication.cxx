@@ -182,6 +182,11 @@ Poco::Util::HelpFormatter* BaseApplication::CreateHelpFormatter()
       "\n"
       "    ${commandName} -o T1:image.nii.gz -o mask:segmentation.nii.gz -d T1:mask \\\n"
       "        -p T1:levelwindow=100-3500 -p mask:outline\\ binary=false,opacity=0.3\n"
+      "\n"
+      "The following command opens ${commandName} in 'Minimal' perspective, in which you have "
+      "only the viewer and the Data Manager open.\n"
+      "\n"
+      "    ${commandName} --perspective Minimal\n"
       "";
   examples.replace("${commandName}", QString::fromStdString(this->commandName()));
 

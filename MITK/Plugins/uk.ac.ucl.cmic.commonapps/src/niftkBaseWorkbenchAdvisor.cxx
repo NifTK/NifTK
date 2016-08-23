@@ -19,8 +19,6 @@
 #include <mitkDataStorage.h>
 #include <mitkLogMacros.h>
 
-#include <berryPlatform.h>
-
 #include "niftkBaseWorkbenchWindowAdvisor.h"
 #include "internal/niftkPluginActivator.h"
 
@@ -93,31 +91,6 @@ void BaseWorkbenchAdvisor::PostStartup()
   if (!perspectiveLabel.isEmpty())
   {
     this->SetPerspective(perspectiveLabel);
-  }
-
-  /// For compatibility, we accept the --perspective argument among the extended arguments as well,
-  /// that is when it is given after the "--" separator.
-  /// E.g. NiftyView --BlueBerry.consoleLog -- --perspective
-
-  QStringList args = berry::Platform::GetApplicationArgs();
-
-  for (QStringList::const_iterator it = args.begin(); it != args.end(); ++it)
-  {
-    QString arg = *it;
-    if (arg == QString("--perspective"))
-    {
-      if (it + 1 == args.end()
-          || (it + 1)->isEmpty()
-          || (*(it + 1))[0] == '-')
-      {
-        MITK_ERROR << "Invalid arguments: perspective name missing.";
-        continue;
-      }
-
-      ++it;
-      perspectiveLabel = *it;
-      this->SetPerspective(perspectiveLabel);
-    }
   }
 }
 
