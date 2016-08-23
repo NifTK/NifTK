@@ -5,7 +5,7 @@
   <extension point="org.blueberry.ui.perspectives">
     <perspective
       id="uk.ac.ucl.cmic.commonapps.minimal_perspective"
-      name="Minimal Perspective"
+      name="Minimal"
       class="niftk::MinimalPerspective"
       icon="resources/icon_ucl.xpm">
     </perspective>
