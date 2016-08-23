@@ -16,6 +16,7 @@
 #define niftkQtCameraVideoDataType_h
 
 #include <niftkIGIDataType.h>
+#include <QImage>
 
 namespace niftk
 {
@@ -31,6 +32,13 @@ public:
   mitkClassMacro(QtCameraVideoDataType, IGIDataType)
   itkNewMacro(QtCameraVideoDataType)
 
+  void CloneImage(const QImage& image);
+
+  /**
+  * \brief Returns the internal image, so do not modify it.
+  */
+  const QImage* GetImage();
+
 protected:
 
   QtCameraVideoDataType(); // Purposefully hidden.
@@ -40,6 +48,8 @@ protected:
   QtCameraVideoDataType& operator=(const QtCameraVideoDataType&); // Purposefully not implemented.
 
 private:
+
+  QImage m_Image;
 
 };
 

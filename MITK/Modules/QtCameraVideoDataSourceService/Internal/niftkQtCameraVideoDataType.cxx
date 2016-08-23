@@ -28,4 +28,18 @@ QtCameraVideoDataType::~QtCameraVideoDataType()
 {
 }
 
+
+//-----------------------------------------------------------------------------
+void QtCameraVideoDataType::CloneImage(const QImage& image)
+{
+  m_Image = image.copy();
+}
+
+
+//-----------------------------------------------------------------------------
+const QImage* QtCameraVideoDataType::GetImage()
+{
+  return &m_Image;
+}
+
 } // end namespace

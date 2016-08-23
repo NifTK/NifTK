@@ -14,6 +14,7 @@
 
 #include "niftkQtCameraVideoDataSourceFactory.h"
 #include "niftkQtCameraVideoDataSourceService.h"
+#include "niftkQtCameraDialog.h"
 #include <niftkLagDialog.h>
 
 namespace niftk
@@ -22,8 +23,8 @@ namespace niftk
 //-----------------------------------------------------------------------------
 QtCameraVideoDataSourceFactory::QtCameraVideoDataSourceFactory()
 : IGIDataSourceFactoryServiceI("Qt Video",
-                               false, // don't need to configure at startup
-                               true   // can configure lag while running
+                               true, // can pick which camera source
+                               true  // can configure lag while running
                                )
 {
 }
@@ -53,8 +54,7 @@ IGIDataSourceI::Pointer QtCameraVideoDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* QtCameraVideoDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  mitkThrow() << "QtCameraVideoDataSourceService does not provide an initialisation dialog.";
-  return NULL;
+  return new niftk::QtCameraDialog(parent);
 }
 
 

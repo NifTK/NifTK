@@ -17,7 +17,6 @@
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
 #include <niftkIGIDataSourceBuffer.h>
-#include <niftkIGILocalDataSourceI.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGICleanableDataSourceI.h>
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
@@ -27,6 +26,10 @@
 #include <QSet>
 #include <QMutex>
 #include <QString>
+#include <QVideoFrame>
+
+class QCamera;
+class CameraFrameGrabber;
 
 namespace niftk
 {
@@ -40,10 +43,11 @@ namespace niftk
 class QtCameraVideoDataSourceService
     : public QObject
     , public IGIDataSource
-    , public IGILocalDataSourceI
     , public IGICleanableDataSourceI
     , public IGIBufferedSaveableDataSourceI
 {
+
+  Q_OBJECT
 
 public:
 
@@ -77,11 +81,6 @@ public:
   virtual void CleanBuffer() override;
 
   /**
-  * \see niftk::IGILocalDataSourceI::GrabData()
-  */
-  virtual void GrabData() override;
-
-  /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
   bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
@@ -105,6 +104,10 @@ protected:
                                );
   virtual ~QtCameraVideoDataSourceService();
 
+private slots:
+
+  void OnFrameAvailable(const QImage &image);
+
 private:
 
   QtCameraVideoDataSourceService(const QtCameraVideoDataSourceService&); // deliberately not implemented
@@ -115,11 +118,14 @@ private:
   static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;
   int                                             m_ChannelNumber;
+  QCamera*                                        m_Camera;
+  CameraFrameGrabber*                             m_CameraFrameGrabber;
   niftk::IGIDataType::IGIIndexType                m_FrameId;
+
   niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
   niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
-  niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
   std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
+
 
 }; // end class
 

@@ -16,13 +16,17 @@
 #include "niftkQtCameraVideoDataType.h"
 #include <niftkIGIDataSourceI.h>
 #include <niftkIGIDataSourceUtils.h>
+#include <niftkQImageToMitkImageFilter.h>
 #include <mitkExceptionMacro.h>
 #include <mitkImage.h>
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include <QDir>
+#include <QList>
 #include <QMutexLocker>
 #include <QCamera>
+#include <QCameraInfo>
+#include "cameraframegrabber.h"
 
 namespace niftk
 {
@@ -39,43 +43,52 @@ QtCameraVideoDataSourceService::QtCameraVideoDataSourceService(
                 factoryName.toStdString(),
                 dataStorage)
 , m_Lock(QMutex::Recursive)
+, m_Camera(nullptr)
 , m_FrameId(0)
-, m_Buffer(NULL)
-, m_BackgroundDeleteThread(NULL)
-, m_DataGrabbingThread(NULL)
+, m_Buffer(nullptr)
+, m_BackgroundDeleteThread(nullptr)
 {
   this->SetStatus("Initialising");
+
+  QString deviceName = this->GetName();
+  m_ChannelNumber = (deviceName.remove(0, 8)).toInt(); // Should match string QtVideo- above
+
+  if(!properties.contains("name"))
+  {
+    mitkThrow() << "Video device name not specified!";
+  }
+  QString videoDeviceName = (properties.value("name")).toString();
+
+  QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+  foreach (const QCameraInfo &cameraInfo, cameras)
+  {
+    if (cameraInfo.deviceName() == videoDeviceName)
+    {
+      m_Camera = new QCamera(cameraInfo);
+    }
+  }
+  if (m_Camera == nullptr)
+  {
+    mitkThrow() << "Failed to create video source:" << videoDeviceName.toStdString();
+  }
+  m_Camera->setCaptureMode(QCamera::CaptureVideo);
+  m_CameraFrameGrabber = new CameraFrameGrabber();
+  m_Camera->setViewfinder(m_CameraFrameGrabber);
+
+  bool ok = QObject::connect(m_CameraFrameGrabber, SIGNAL(frameAvailable(QImage)),
+                             this, SLOT(OnFrameAvailable(QImage)));
+  assert(ok);
+
+  m_Camera->start();
 
   int defaultFramesPerSecond = 25;
   m_Buffer = niftk::IGIDataSourceBuffer::New(defaultFramesPerSecond * 2);
 
-  QString deviceName = this->GetName();
-  m_ChannelNumber = (deviceName.remove(0, 7)).toInt(); // Should match string QtCamera- above
-/*
-  m_VideoSource = mitk::QtCameraVideoSource::New();
-  m_VideoSource->SetVideoCameraInput(m_ChannelNumber);
-  if (!m_VideoSource->IsCapturingEnabled())
-  {
-    m_VideoSource->StartCapturing();
-  }
-
-  // Check we can actually grab, as MITK class doesn't throw exceptions on creation.
-  m_VideoSource->FetchFrame();
-
-  const IplImage* img = m_VideoSource->GetCurrentFrame();
-  if (img == NULL)
-  {
-    s_Lock.RemoveSource(m_ChannelNumber);
-    mitkThrow() << "Failed to create " << this->GetName().toStdString()
-                << ", please check log file!";
-  }
-*/
   // Set the interval based on desired number of frames per second.
   // So, 25 fps = 40 milliseconds.
   // However: If system slows down (eg. saving images), then Qt will
   // drop clock ticks, so in effect, you will get less than this.
   int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
-
   this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.5 /* fudge factor*/);
   this->SetShouldUpdate(true);
   this->SetProperties(properties);
@@ -88,14 +101,6 @@ QtCameraVideoDataSourceService::QtCameraVideoDataSourceService(
     mitkThrow() << "Failed to start background deleting thread";
   }
 
-  m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
-  m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
-  m_DataGrabbingThread->start();
-  if (!m_DataGrabbingThread->isRunning())
-  {
-    mitkThrow() << "Failed to start data grabbing thread";
-  }
-
   this->SetDescription("Local video source, (via QtCamera), e.g. web-cam.");
   this->SetStatus("Initialised");
   this->Modified();
@@ -105,17 +110,17 @@ QtCameraVideoDataSourceService::QtCameraVideoDataSourceService(
 //-----------------------------------------------------------------------------
 QtCameraVideoDataSourceService::~QtCameraVideoDataSourceService()
 {
-  /*
-  if (m_VideoSource->IsCapturingEnabled())
+  if (m_Camera != nullptr)
   {
-    m_VideoSource->StopCapturing();
+    m_Camera->stop();
+    delete m_Camera;
   }
-  */
+  if (m_CameraFrameGrabber != nullptr)
+  {
+    delete m_CameraFrameGrabber;
+  }
 
   s_Lock.RemoveSource(m_ChannelNumber);
-
-  m_DataGrabbingThread->ForciblyStop();
-  delete m_DataGrabbingThread;
 
   m_BackgroundDeleteThread->ForciblyStop();
   delete m_BackgroundDeleteThread;
@@ -146,6 +151,37 @@ IGIDataSourceProperties QtCameraVideoDataSourceService::GetProperties() const
             << "):Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
 
   return props;
+}
+
+
+//-----------------------------------------------------------------------------
+void QtCameraVideoDataSourceService::OnFrameAvailable(const QImage &image)
+{
+  niftk::QtCameraVideoDataType::Pointer wrapper = niftk::QtCameraVideoDataType::New();
+  wrapper->CloneImage(image);
+  wrapper->SetTimeStampInNanoSeconds(this->GetTimeStampInNanoseconds());
+  wrapper->SetFrameId(m_FrameId++);
+  wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+  wrapper->SetShouldBeSaved(this->GetIsRecording());
+
+  // Save synchronously.
+  // This has the side effect that if saving is too slow,
+  // the QTimers just won't keep up, and start missing pulses.
+  if (this->GetIsRecording())
+  {
+    this->SaveItem(wrapper.GetPointer());
+    this->SetStatus("Saving");
+  }
+  else
+  {
+    this->SetStatus("Grabbing");
+  }
+
+  // Putting this after the save, as we don't want to
+  // add to the buffer in this grabbing thread, then the
+  // m_BackgroundDeleteThread deletes the object while
+  // we are trying to save the data.
+  m_Buffer->AddToBuffer(wrapper.GetPointer());
 }
 
 
@@ -268,61 +304,6 @@ bool QtCameraVideoDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITi
 
 
 //-----------------------------------------------------------------------------
-void QtCameraVideoDataSourceService::GrabData()
-{
-  {
-    QMutexLocker locker(&m_Lock);
-
-    if (this->GetIsPlayingBack())
-    {
-      return;
-    }
-  }
-
-  // Somehow this can become null, probably a race condition during destruction.
-/*
-  if (m_VideoSource.IsNull())
-  {
-    mitkThrow() << "Video source is null. This should not happen! It's most likely a race-condition.";
-  }
-
-  // Grab a video image.
-  m_VideoSource->FetchFrame();
-  const IplImage* img = m_VideoSource->GetCurrentFrame();
-  if (img == NULL)
-  {
-    mitkThrow() << "Failed to get a valid video frame!";
-  }
-*/
-  niftk::QtCameraVideoDataType::Pointer wrapper = niftk::QtCameraVideoDataType::New();
-//  wrapper->CloneImage(img);
-  wrapper->SetTimeStampInNanoSeconds(this->GetTimeStampInNanoseconds());
-  wrapper->SetFrameId(m_FrameId++);
-  wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-  wrapper->SetShouldBeSaved(this->GetIsRecording());
-
-  // Save synchronously.
-  // This has the side effect that if saving is too slow,
-  // the QTimers just won't keep up, and start missing pulses.
-  if (this->GetIsRecording())
-  {
-    this->SaveItem(wrapper.GetPointer());
-    this->SetStatus("Saving");
-  }
-  else
-  {
-    this->SetStatus("Grabbing");
-  }
-
-  // Putting this after the save, as we don't want to
-  // add to the buffer in this grabbing thread, then the
-  // m_BackgroundDeleteThread deletes the object while
-  // we are trying to save the data.
-  m_Buffer->AddToBuffer(wrapper.GetPointer());
-}
-
-
-//-----------------------------------------------------------------------------
 void QtCameraVideoDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 {
   niftk::QtCameraVideoDataType::Pointer dataType = static_cast<niftk::QtCameraVideoDataType*>(data.GetPointer());
@@ -415,60 +396,23 @@ std::vector<IGIDataItemInfo> QtCameraVideoDataSourceService::Update(const niftk:
     mitkThrow() << "Can't find mitk::DataNode with name "
                 << this->GetName().toStdString() << std::endl;
   }
-/*
+
   // Get Image from the dataType;
-  const IplImage* img = dataType->GetImage();
+  const QImage* img = dataType->GetImage();
   if (img == NULL)
   {
     this->SetStatus("Failed Update");
-    mitkThrow() << "Failed to extract QtCamera image from buffer!";
+    mitkThrow() << "Failed to extract QImage image from buffer!";
   }
   else
   {
-    // QtCamera's cannonical channel layout is bgr (instead of rgb),
-    // while everything usually else expects rgb...
-    IplImage* rgbaQtCameraImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, 4);
-    cvCvtColor( img, rgbaQtCameraImage,  CV_BGR2RGBA );
+    niftk::QImageToMitkImageFilter::Pointer filter = niftk::QImageToMitkImageFilter::New();
+    filter->SetQImage(img);
+    filter->Update();
 
-    // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
-    // we should make sure we got the layout right. (QtCamera itself does not use this in any way.)
-    std::memcpy(&rgbaQtCameraImage->channelSeq[0], "RGBA", 4);
-
-    // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
-    mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(rgbaQtCameraImage);
-
-  #ifdef XXX_USE_CUDA
-    // a compatibility stop-gap to interface with new renderer and cuda bits.
-    {
-      CUDAManager*    cm = CUDAManager::GetInstance();
-      if (cm != 0)
-      {
-        cudaStream_t    mystream = cm->GetStream("QmitkIGIQtCameraDataSource::Update");
-        WriteAccessor   wa       = cm->RequestOutputImage(rgbaQtCameraImage->width, rgbaQtCameraImage->height, 4);
-
-        assert(rgbaQtCameraImage->widthStep >= (rgbaQtCameraImage->width * 4));
-        cudaMemcpy2DAsync(wa.m_DevicePointer,
-                          wa.m_BytePitch,
-                          rgbaQtCameraImage->imageData,
-                          rgbaQtCameraImage->widthStep,
-                          rgbaQtCameraImage->width * 4,
-                          rgbaQtCameraImage->height,
-                          cudaMemcpyHostToDevice,
-                          mystream);
-        // no error handling...
-
-        LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
-
-        CUDAImageProperty::Pointer    lwciprop = CUDAImageProperty::New();
-        lwciprop->Set(lwci);
-
-        convertedImage->SetProperty("CUDAImageProperty", lwciprop);
-      }
-    }
-  #endif
-
+    mitk::Image::Pointer convertedImage = filter->GetOutput();
     mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
-    if (imageInNode.IsNull())
+    if (imageInNode.IsNull() || imageInNode.IsNotNull())
     {
       // We remove and add to trigger the NodeAdded event,
       // which is not emmitted if the node was added with no data.
@@ -488,15 +432,12 @@ std::vector<IGIDataItemInfo> QtCameraVideoDataSourceService::Update(const niftk:
         mitk::ImageWriteAccessor writeAccess(imageInNode);
         void* vPointer = writeAccess.GetData();
 
-        memcpy(vPointer, cPointer, img->width * img->height * 4);
+        memcpy(vPointer, cPointer, img->width() * img->height() * 3);
       }
       catch(mitk::Exception& e)
       {
         MITK_ERROR << "Failed to copy QtCamera image to DataStorage due to " << e.what() << std::endl;
       }
-  #ifdef _USE_CUDA
-      imageInNode->SetProperty("CUDAImageProperty", convertedImage->GetProperty("CUDAImageProperty"));
-  #endif
     }
 
     // We tell the node that it is modified so the next rendering event
@@ -504,13 +445,9 @@ std::vector<IGIDataItemInfo> QtCameraVideoDataSourceService::Update(const niftk:
     imageInNode->GetVtkImageData()->Modified();
     node->Modified();
 
-    cvReleaseImage(&rgbaQtCameraImage);
-
     infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
     infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
-
   }
-  */
   return infos;
 }
 
