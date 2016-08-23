@@ -20,7 +20,7 @@
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <niftkFileHelper.h>
-#include <niftkImageConversion.h>
+#include <niftkOpenCVImageConversion.h>
 
 #include <niftkCoordinateAxesData.h>
 #include <niftkMatrixUtilities.h>

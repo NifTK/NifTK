@@ -15,7 +15,7 @@
 #include "niftkNVidiaSDIDataSourceService.h"
 #include "niftkNVidiaSDIDataType.h"
 #include "niftkNVidiaSDIDataSourceImpl.h"
-#include <niftkImageConversion.h>
+#include <niftkOpenCVImageConversion.h>
 #include <niftkIGIDataSourceI.h>
 #include <niftkIGIDataSourceUtils.h>
 #include <mitkExceptionMacro.h>

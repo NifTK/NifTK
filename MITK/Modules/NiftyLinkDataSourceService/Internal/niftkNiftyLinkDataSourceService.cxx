@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkNiftyLinkDataSourceService.h"
-#include <niftkImageConversion.h>
+#include <niftkOpenCVImageConversion.h>
 #include <niftkIGIDataSourceUtils.h>
 #include <NiftyLinkImageMessageHelpers.h>
 

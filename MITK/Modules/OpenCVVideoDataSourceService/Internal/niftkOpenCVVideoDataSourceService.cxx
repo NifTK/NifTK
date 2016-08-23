@@ -14,9 +14,9 @@
 
 #include "niftkOpenCVVideoDataSourceService.h"
 #include "niftkOpenCVVideoDataType.h"
+#include <niftkOpenCVImageConversion.h>
 #include <niftkIGIDataSourceI.h>
 #include <niftkIGIDataSourceUtils.h>
-#include <niftkImageConversion.h>
 #include <mitkExceptionMacro.h>
 #include <mitkImage.h>
 #include <mitkImageReadAccessor.h>

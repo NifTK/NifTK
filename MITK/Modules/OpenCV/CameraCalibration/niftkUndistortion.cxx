@@ -17,7 +17,7 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include <mitkProperties.h>
-#include <Conversion/ImageConversion.h>
+#include <niftkOpenCVImageConversion.h>
 #include <stdexcept>
 
 #ifdef _USE_CUDA

@@ -14,6 +14,7 @@
 
 set(H_FILES
   Common/niftkImageOrientation.h
+  Common/niftkImageConversion.h
 )
 
 set(CPP_FILES

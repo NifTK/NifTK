@@ -12,12 +12,11 @@
 
 =============================================================================*/
 
-#ifndef niftkImageConversion_h
-#define niftkImageConversion_h
+#ifndef niftkOpenCVImageConversion_h
+#define niftkOpenCVImageConversion_h
 
 #include "niftkOpenCVImageConversionExports.h"
-#include <mitkITKImageImport.txx>
-#include <opencv2/core/types_c.h>
+#include <mitkImage.h>
 #include <cv.h>
 
 namespace niftk
@@ -41,4 +40,4 @@ cv::Mat NIFTKOPENCVIMAGECONVERSION_EXPORT MitkImageToOpenCVMat ( const mitk::Ima
 
 } // namespace
 
-#endif // niftkImageConversion_h
+#endif // niftkOpenCVImageConversion_h
