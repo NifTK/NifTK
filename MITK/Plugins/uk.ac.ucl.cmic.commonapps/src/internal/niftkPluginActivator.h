@@ -158,6 +158,8 @@ private:
   std::map<mitk::BaseProperty*, mitk::DataNode*> m_PropertyToNodeMap;
   std::map<mitk::DataNode*, unsigned long int>   m_NodeToLowestOpacityObserverMap;
   std::map<mitk::DataNode*, unsigned long int>   m_NodeToHighestOpacityObserverMap;
+  std::map<mitk::DataNode*, unsigned long int>   m_NodeToLookupTableNameObserverMap;
+
 };
 
 }
