@@ -246,31 +246,42 @@ void PluginActivator::NodeRemoved(const mitk::DataNode *constNode)
 {
   mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
 
-  // Removing observers on a node thats being deleted?
+  // Removing observers on a node that is being deleted.
 
   if (niftk::IsNodeAGreyScaleImage(node))
   {
-    std::map<mitk::DataNode*, unsigned long int>::iterator lowestIter;
-    lowestIter = m_NodeToLowestOpacityObserverMap.find(node);
+    std::map<mitk::DataNode*, unsigned long int>::iterator it;
 
-    std::map<mitk::DataNode*, unsigned long int>::iterator highestIter;
-    highestIter = m_NodeToHighestOpacityObserverMap.find(node);
+    it = m_NodeToLowestOpacityObserverMap.find(node);
 
-    if (lowestIter != m_NodeToLowestOpacityObserverMap.end())
+    if (it != m_NodeToLowestOpacityObserverMap.end())
     {
-      if (highestIter != m_NodeToHighestOpacityObserverMap.end())
-      {
-        mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
-        lowestIsOpaqueProperty->RemoveObserver(lowestIter->second);
+      mitk::BaseProperty::Pointer property = node->GetProperty("Image Rendering.Lowest Value Opacity");
+      property->RemoveObserver(it->second);
+      m_NodeToLowestOpacityObserverMap.erase(it->first);
+      m_PropertyToNodeMap.erase(property.GetPointer());
+    }
 
-        mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
-        highestIsOpaqueProperty->RemoveObserver(highestIter->second);
+    it = m_NodeToHighestOpacityObserverMap.find(node);
 
-        m_NodeToLowestOpacityObserverMap.erase(lowestIter->first);
-        m_NodeToHighestOpacityObserverMap.erase(highestIter->first);
-        m_PropertyToNodeMap.erase(lowestIsOpaqueProperty.GetPointer());
-        m_PropertyToNodeMap.erase(highestIsOpaqueProperty.GetPointer());
-      }
+    if (it != m_NodeToHighestOpacityObserverMap.end())
+    {
+      mitk::BaseProperty::Pointer property = node->GetProperty("Image Rendering.Highest Value Opacity");
+      property->RemoveObserver(it->second);
+
+      m_NodeToHighestOpacityObserverMap.erase(it->first);
+      m_PropertyToNodeMap.erase(property.GetPointer());
+    }
+
+    it = m_NodeToLookupTableNameObserverMap.find(node);
+
+    if (it != m_NodeToLookupTableNameObserverMap.end())
+    {
+      mitk::BaseProperty::Pointer property = node->GetProperty("LookupTableName");
+      property->RemoveObserver(it->second);
+
+      m_NodeToLookupTableNameObserverMap.erase(it->first);
+      m_PropertyToNodeMap.erase(property.GetPointer());
     }
   }
 }
@@ -460,36 +471,36 @@ void PluginActivator::RegisterLevelWindowProperty(
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::OnLookupTablePropertyChanged(const itk::Object *object, const itk::EventObject & event)
+void PluginActivator::OnLookupTablePropertyChanged(const itk::Object* object, const itk::EventObject& /*event*/)
 {
   const mitk::BaseProperty* prop = dynamic_cast<const mitk::BaseProperty*>(object);
-  if (prop != NULL)
+  assert(prop);
+
+  std::map<mitk::BaseProperty*, mitk::DataNode*>::const_iterator it =
+      m_PropertyToNodeMap.find(const_cast<mitk::BaseProperty*>(prop));
+
+  if (it != m_PropertyToNodeMap.end())
   {
-    std::map<mitk::BaseProperty*, mitk::DataNode*>::const_iterator iter;
-    iter = m_PropertyToNodeMap.find(const_cast<mitk::BaseProperty*>(prop));
-    if (iter != m_PropertyToNodeMap.end())
+    mitk::DataNode *node = it->second;
+    if (node != NULL && niftk::IsNodeAGreyScaleImage(node))
     {
-      mitk::DataNode *node = iter->second;
-      if (node != NULL && niftk::IsNodeAGreyScaleImage(node))
+      float lowestOpacity = 1;
+      bool gotLowest = node->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+
+      float highestOpacity = 1;
+      bool gotHighest = node->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+
+      std::string defaultName = "grey";
+      bool gotIndex = node->GetStringProperty("LookupTableName", defaultName);
+
+      QString lutName = QString::fromStdString(defaultName);
+
+      if (gotLowest && gotHighest && gotIndex)
       {
-        float lowestOpacity = 1;
-        bool gotLowest = node->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
-
-        float highestOpacity = 1;
-        bool gotHighest = node->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
-
-        std::string defaultName = "grey";
-        bool gotIndex = node->GetStringProperty("LookupTableName", defaultName);
-
-        QString lutName = QString::fromStdString(defaultName);
-
-        if (gotLowest && gotHighest && gotIndex)
-        {
-          // Get LUT from Micro Service.
-          niftk::LookupTableProviderService *lutService = this->GetLookupTableProvider();
-          niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
-          node->SetProperty("LookupTable", mitkLUTProperty);
-        }
+        // Get LUT from Micro Service.
+        niftk::LookupTableProviderService *lutService = this->GetLookupTableProvider();
+        niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
+        node->SetProperty("LookupTable", mitkLUTProperty);
       }
     }
   }
@@ -545,19 +556,23 @@ void PluginActivator::RegisterImageRenderingModeProperties(const QString& prefer
       {
         unsigned long int observerId;
 
-        itk::MemberCommand<PluginActivator>::Pointer lowestIsOpaqueCommand = itk::MemberCommand<PluginActivator>::New();
-        lowestIsOpaqueCommand->SetCallbackFunction(this, &PluginActivator::OnLookupTablePropertyChanged);
+        itk::MemberCommand<PluginActivator>::Pointer lookupTablePropertyChangedCommand = itk::MemberCommand<PluginActivator>::New();
+        lookupTablePropertyChangedCommand->SetCallbackFunction(this, &PluginActivator::OnLookupTablePropertyChanged);
+
         mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
-        observerId = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lowestIsOpaqueCommand);
-        m_PropertyToNodeMap.insert(std::pair<mitk::BaseProperty*, mitk::DataNode*>(lowestIsOpaqueProperty.GetPointer(), node));
+        observerId = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lookupTablePropertyChangedCommand);
+        m_PropertyToNodeMap.insert(std::make_pair(lowestIsOpaqueProperty.GetPointer(), node));
         m_NodeToLowestOpacityObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
 
-        itk::MemberCommand<PluginActivator>::Pointer highestIsOpaqueCommand = itk::MemberCommand<PluginActivator>::New();
-        highestIsOpaqueCommand->SetCallbackFunction(this, &PluginActivator::OnLookupTablePropertyChanged);
         mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
-        observerId = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), highestIsOpaqueCommand);
-        m_PropertyToNodeMap.insert(std::pair<mitk::BaseProperty*, mitk::DataNode*>(highestIsOpaqueProperty.GetPointer(), node));
+        observerId = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lookupTablePropertyChangedCommand);
+        m_PropertyToNodeMap.insert(std::make_pair(highestIsOpaqueProperty.GetPointer(), node));
         m_NodeToHighestOpacityObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
+
+        mitk::BaseProperty::Pointer lookupTableNameProperty = node->GetProperty("LookupTableName");
+        observerId = lookupTableNameProperty->AddObserver(itk::ModifiedEvent(), lookupTablePropertyChangedCommand);
+        m_PropertyToNodeMap.insert(std::make_pair(lookupTableNameProperty.GetPointer(), node));
+        m_NodeToLookupTableNameObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
       }
     } // end if have pref node
   } // end if node is grey image
@@ -663,6 +678,18 @@ void PluginActivator::ProcessOpenOptions()
     QString nodeNamesPart = openArg.mid(0, colonIndex);
     QString filePath = openArg.mid(colonIndex + 1);
 
+    if (nodeNamesPart.isEmpty())
+    {
+      MITK_ERROR << "Data node not specified for the '--open' option. Skipping option.";
+      continue;
+    }
+
+    if (filePath.isEmpty())
+    {
+      MITK_ERROR << "Data file not specified for the '--open' option. Skipping option.";
+      continue;
+    }
+
     if (filePath.right(5) == ".mitk")
     {
       MITK_WARN << "Invalid syntax for opening an MITK project. The '--open' option is for opening single data files with a given name." << std::endl
@@ -732,18 +759,19 @@ void PluginActivator::ProcessDerivesFromOptions()
   for (QString derivesFromArg: this->GetContext()->getProperty("applicationArgs.derives-from").toStringList())
   {
     int colonIndex = derivesFromArg.indexOf(':');
+
     QString sourceNodeNamesPart = derivesFromArg.mid(0, colonIndex);
     QString derivedNodeNamesPart = derivesFromArg.mid(colonIndex + 1);
 
     if (sourceNodeNamesPart.isEmpty())
     {
-      MITK_ERROR << "Source data node not specified for the '--derives-from'' option. Skipping option.";
+      MITK_ERROR << "Source data node not specified for the '--derives-from' option. Skipping option.";
       continue;
     }
 
     if (derivedNodeNamesPart.isEmpty())
     {
-      MITK_ERROR << "Data node not specified for the '--derives-from'' option. Skipping option.";
+      MITK_ERROR << "Data node not specified for the '--derives-from' option. Skipping option.";
       continue;
     }
 
@@ -814,6 +842,18 @@ void PluginActivator::ProcessPropertyOptions()
     QString dataNodeNamesPart = propertyArg.mid(0, colonIndex);
     QString propertyNamesAndValuesPart = propertyArg.mid(colonIndex + 1);
 
+    if (dataNodeNamesPart.isEmpty())
+    {
+      MITK_ERROR << "Data node not specified for the '--property' option. Skipping option.";
+      continue;
+    }
+
+    if (propertyNamesAndValuesPart.isEmpty())
+    {
+      MITK_ERROR << "Property assignments not specified for the '--property' option. Skipping option.";
+      continue;
+    }
+
     QStringList dataNodeNames = dataNodeNamesPart.split(",");
     std::vector<mitk::DataNode::Pointer> dataNodes(dataNodeNames.size());
     std::size_t index = 0;
@@ -834,6 +874,7 @@ void PluginActivator::ProcessPropertyOptions()
       dataNodes[index++] = dataNode;
     }
 
+    dataNodes.resize(index);
 
     for (QString propertyNameAndValuePart: propertyNamesAndValuesPart.split(","))
     {
