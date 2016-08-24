@@ -940,6 +940,11 @@ mitk::BaseProperty::Pointer PluginActivator::ParsePropertyValue(const QString& p
   {
     property = mitk::StringProperty::New(propertyValue.mid(1, propertyValue.size() - 2).toStdString());
   }
+  else if (QColor::isValidColor(propertyValue))
+  {
+    QColor colour(propertyValue);
+    property = mitk::ColorProperty::New(colour.redF(), colour.greenF(), colour.blue());
+  }
   else
   {
     bool ok = false;
