@@ -25,6 +25,7 @@ set(CPP_FILES
   DataSource/niftkIGIDataSourceLocker.cxx
   DataSource/niftkIGIDataSourceBuffer.cxx
   DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
+  DataSource/niftkSingleVideoFrameDataSourceService.cxx
   Threads/niftkIGITimerBasedThread.cxx
   Threads/niftkIGIDataSourceGrabbingThread.cxx
   Threads/niftkIGIDataSourceBackgroundSaveThread.cxx
