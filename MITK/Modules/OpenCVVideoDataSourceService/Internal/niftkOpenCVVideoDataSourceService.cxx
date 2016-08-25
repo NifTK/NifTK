@@ -116,7 +116,7 @@ void OpenCVVideoDataSourceService::SaveImage(const std::string& filename,
   bool success = cvSaveImage(filename.c_str(), imageFrame);
   if (!success)
   {
-    mitkThrow() << "Failed to save OpenCVVideoDataType in cvSaveImage!";
+    mitkThrow() << "Failed to save OpenCVVideoDataType to file:" << filename;
   }
 
   data->SetIsSaved(true);
