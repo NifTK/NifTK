@@ -14,19 +14,7 @@
 #ifndef niftkQtCameraVideoDataSourceService_h
 #define niftkQtCameraVideoDataSourceService_h
 
-#include <niftkIGIDataSource.h>
-#include <niftkIGIDataSourceLocker.h>
-#include <niftkIGIDataSourceBuffer.h>
-#include <niftkIGIDataSourceGrabbingThread.h>
-#include <niftkIGICleanableDataSourceI.h>
-#include <niftkIGIDataSourceBackgroundDeleteThread.h>
-#include <niftkIGIBufferedSaveableDataSourceI.h>
-
-#include <QObject>
-#include <QSet>
-#include <QMutex>
-#include <QString>
-#include <QVideoFrame>
+#include <niftkSingleVideoFrameDataSourceService.h>
 
 class QCamera;
 class CameraFrameGrabber;
@@ -40,61 +28,19 @@ namespace niftk
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class QtCameraVideoDataSourceService
-    : public QObject
-    , public IGIDataSource
-    , public IGICleanableDataSourceI
-    , public IGIBufferedSaveableDataSourceI
+class QtCameraVideoDataSourceService : public SingleVideoFrameDataSourceService
 {
 
   Q_OBJECT
 
 public:
 
-  mitkClassMacroItkParent(QtCameraVideoDataSourceService, IGIDataSource)
-  mitkNewMacro3Param(QtCameraVideoDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer)
+  mitkClassMacroItkParent(QtCameraVideoDataSourceService,
+                          SingleVideoFrameDataSourceService)
 
-  /**
-  * \see  IGIDataSourceI::StartPlayback()
-  */
-  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                             niftk::IGIDataType::IGITimeType lastTimeStamp) override;
-
-  /**
-  * \see IGIDataSourceI::PlaybackData()
-  */
-  void PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp) override;
-
-  /**
-  * \see IGIDataSourceI::StopPlayback()
-  */
-  virtual void StopPlayback() override;
-
-  /**
-  * \see IGIDataSourceI::Update()
-  */
-  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
-
-  /**
-  * \see niftk::IGIDataSource::CleanBuffer()
-  */
-  virtual void CleanBuffer() override;
-
-  /**
-  * \see IGIDataSourceI::ProbeRecordedData()
-  */
-  bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
-
-  /**
-  * \brief IGIDataSourceI::SetProperties()
-  */
-  virtual void SetProperties(const IGIDataSourceProperties& properties) override;
-
-  /**
-  * \brief IGIDataSourceI::GetProperties()
-  */
-  virtual IGIDataSourceProperties GetProperties() const override;
+  mitkNewMacro3Param(QtCameraVideoDataSourceService, QString,
+                     const IGIDataSourceProperties&,
+                     mitk::DataStorage::Pointer)
 
 protected:
 
@@ -103,6 +49,27 @@ protected:
                                mitk::DataStorage::Pointer dataStorage
                                );
   virtual ~QtCameraVideoDataSourceService();
+
+  /**
+   * \see niftk::SingleVideoFrameDataSourceService::GrabImage().
+   */
+  virtual niftk::IGIDataType::Pointer GrabImage() override;
+
+  /**
+   * \see niftk::SingleVideoFrameDataSourceService::SaveImage().
+   */
+  virtual void SaveImage(const std::string& filename, niftk::IGIDataType::Pointer item) override;
+
+  /**
+   * \see niftk::SingleVideoFrameDataSourceService::LoadImage().
+   */
+  virtual niftk::IGIDataType::Pointer LoadImage(const std::string& filename) override;
+
+  /**
+   * \see niftk::SingleVideoFrameDataSourceService::ConvertImage().
+   */
+  virtual mitk::Image::Pointer ConvertImage(niftk::IGIDataType::Pointer inputImage,
+                                            unsigned int& outputNumberOfBytes) override;
 
 private slots:
 
@@ -113,20 +80,9 @@ private:
   QtCameraVideoDataSourceService(const QtCameraVideoDataSourceService&); // deliberately not implemented
   QtCameraVideoDataSourceService& operator=(const QtCameraVideoDataSourceService&); // deliberately not implemented
 
-  void SaveItem(niftk::IGIDataType::Pointer item) override;
-
-  static niftk::IGIDataSourceLocker               s_Lock;
-  QMutex                                          m_Lock;
-  int                                             m_ChannelNumber;
-  QCamera*                                        m_Camera;
-  CameraFrameGrabber*                             m_CameraFrameGrabber;
-  niftk::IGIDataType::IGIIndexType                m_FrameId;
-
-  niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
-  niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
-  std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
-
-
+  QCamera*             m_Camera;
+  CameraFrameGrabber*  m_CameraFrameGrabber;
+  mutable QImage*      m_TemporaryWrapper;
 }; // end class
 
 } // end namespace

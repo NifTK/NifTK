@@ -19,31 +19,46 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-mitk::Image::Pointer CreateMitkImage(const QImage* image)
+mitk::Image::Pointer CreateMitkImage(const QImage* image,
+                                     unsigned int& outputNumberOfBytes)
 {
+  QImage *imageToConvert = const_cast<QImage*>(image);
+
+  QImage tmp;
+  if (image->format() != QImage::Format_Indexed8
+      && image->format() != QImage::Format_RGB888
+      && image->format() != QImage::Format_RGBA8888
+      )
+  {
+    tmp = image->convertToFormat(QImage::Format_RGBA8888);
+    imageToConvert = &tmp;
+  }
+
+  outputNumberOfBytes = imageToConvert->byteCount();
+
   // FIXME: check for channel layout: rgb vs bgr
-  switch (image->format())
+  switch (imageToConvert->format())
   {
     case QImage::Format_Indexed8:
-      return CreateMitkImageInternal<unsigned char>(reinterpret_cast<const char*>(image->bits()),
+      return CreateMitkImageInternal<unsigned char>(reinterpret_cast<const char*>(imageToConvert->bits()),
                                                     1,
-                                                    image->width(),
-                                                    image->width(),
-                                                    image->height()
+                                                    imageToConvert->width(),
+                                                    imageToConvert->width(),
+                                                    imageToConvert->height()
                                                     );
     case QImage::Format_RGB888:
-      return CreateMitkImageInternal<UCRGBPixelType>(reinterpret_cast<const char*>(image->bits()),
+      return CreateMitkImageInternal<UCRGBPixelType>(reinterpret_cast<const char*>(imageToConvert->bits()),
                                                      3,
-                                                     image->width(),
-                                                     image->width() * 3,
-                                                     image->height()
+                                                     imageToConvert->width(),
+                                                     imageToConvert->width() * 3,
+                                                     imageToConvert->height()
                                                      );
     case QImage::Format_RGBA8888:
-      return CreateMitkImageInternal<UCRGBAPixelType>(reinterpret_cast<const char*>(image->bits()),
+      return CreateMitkImageInternal<UCRGBAPixelType>(reinterpret_cast<const char*>(imageToConvert->bits()),
                                                       4,
-                                                      image->width(),
-                                                      image->width() * 4,
-                                                      image->height()
+                                                      imageToConvert->width(),
+                                                      imageToConvert->width() * 4,
+                                                      imageToConvert->height()
                                                       );
   }
 

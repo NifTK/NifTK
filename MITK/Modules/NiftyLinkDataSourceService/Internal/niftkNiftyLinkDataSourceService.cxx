@@ -577,7 +577,8 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
       niftk::GetQImage(imageMessage, qImage);
       qImage.detach();
 
-      mitk::Image::Pointer image = niftk::CreateMitkImage(&qImage);
+      unsigned int numberOfBytes = 0;
+      mitk::Image::Pointer image = niftk::CreateMitkImage(&qImage, numberOfBytes);
 
       image->GetGeometry()->SetSpacing(spacing);
       image->GetGeometry()->SetIndexToWorldTransformByVtkMatrixWithoutChangingSpacing(vtkMatrix);
@@ -902,9 +903,11 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
     }
   }
 
+  unsigned int numberOfBytes = 0;
+
   if (imageInNode.IsNull())
   {
-    mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&qImage);
+    mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&qImage, numberOfBytes);
 
     // cycle the node listeners. mitk wont fire listeners properly, in cases where data is missing.
     this->GetDataStorage()->Remove(node);
