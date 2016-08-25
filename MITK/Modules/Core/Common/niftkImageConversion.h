@@ -33,8 +33,8 @@ static mitk::Image::Pointer CreateMitkImageInternal(const char* imageData,
                                                     unsigned int height
                                                     )
 {
-  typedef itk::Image<ITKPixelType, 2>             ItkImageType;
-  typedef itk::ImportImageFilter<ITKPixelType, 2> ImportFilterType;
+  typedef itk::Image<ITKPixelType, 3>             ItkImageType;
+  typedef itk::ImportImageFilter<ITKPixelType, 3> ImportFilterType;
 
   // we do not do pixel type conversions!
   if (numberOfChannels != sizeof(ITKPixelType))
@@ -43,6 +43,7 @@ static mitk::Image::Pointer CreateMitkImageInternal(const char* imageData,
   }
 
   typename ImportFilterType::SizeType size;
+  size.Fill(1);
   size[0] = width;
   size[1] = height;
 
@@ -53,15 +54,17 @@ static mitk::Image::Pointer CreateMitkImageInternal(const char* imageData,
   region.SetIndex( start );
   region.SetSize(  size  );
 
-  double origin[ 2 ];
+  double origin[ 3 ];
   origin[0] = 0.0;    // X coordinate
   origin[1] = 0.0;    // Y coordinate
+  origin[2] = 0.0;    // Z coordinate
 
-  double spacing[ 2 ];
+  double spacing[ 3 ];
   spacing[0] = 1.0;    // along X direction
   spacing[1] = 1.0;    // along Y direction
+  spacing[2] = 1.0;    // along Y direction
 
-  const unsigned int numberOfPixels = size[0] * size[1];
+  const unsigned int numberOfPixels = size[0] * size[1] * size[2];
 
   typename ImportFilterType::Pointer importFilter = ImportFilterType::New();
   importFilter->SetRegion(region);
