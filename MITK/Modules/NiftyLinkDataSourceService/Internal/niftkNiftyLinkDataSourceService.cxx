@@ -13,8 +13,11 @@
 =============================================================================*/
 
 #include "niftkNiftyLinkDataSourceService.h"
-#include <niftkOpenCVImageConversion.h>
 #include <niftkIGIDataSourceUtils.h>
+#include <niftkQImageConversion.h>
+#include <niftkFileIOUtils.h>
+#include <niftkCoordinateAxesData.h>
+#include <niftkAffineTransformDataNodeProperty.h>
 #include <NiftyLinkImageMessageHelpers.h>
 
 #include <mitkImage.h>
@@ -24,17 +27,9 @@
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 
-#include <itkNiftiImageIO.h>
-
 #include <QDir>
 #include <QMutexLocker>
 #include <QFileInfo>
-
-#include <cv.h>
-
-#include <niftkFileIOUtils.h>
-#include <niftkCoordinateAxesData.h>
-#include <niftkAffineTransformDataNodeProperty.h>
 
 namespace niftk
 {
@@ -541,99 +536,59 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
   QDir directory(outputPath);
   if (directory.mkpath(outputPath))
   {
+    QString fileName = outputPath + QDir::separator() + tr("%1.nii").arg(dataType->GetTimeStampInNanoSeconds());
+
     int nx;
     int ny;
     int nz;
     imageMessage->GetDimensions(nx, ny, nz);
 
-    float sx;
-    float sy;
-    float sz;
-    imageMessage->GetSpacing(sx, sy, sz);
-
-    // Transformation matrices can be saved with the image.
-    // So, we need an image format the preserves this.
-    // I don't want to save a matrix as a separate file.
-    // If the remote end wants to send additional info such
-    // as a motor position, then this is meta data, and should
-    // be saved separately, such as via a string message.
-    igtl::Matrix4x4 matrix;
-    imageMessage->GetMatrix(matrix);
-
-    std::vector<double> directions[3];
-    for (int i = 0; i < 3; i++)
+    if (nz == 0 || nz == 1)
     {
-      directions[i].push_back(matrix[0][i]);
-      directions[i].push_back(matrix[1][i]);
-      directions[i].push_back(matrix[2][i]);
-    }
+      float sx;
+      float sy;
+      float sz;
+      imageMessage->GetSpacing(sx, sy, sz);
 
-    QString fileName = outputPath + QDir::separator() + tr("%1.nii").arg(dataType->GetTimeStampInNanoSeconds());
+      mitk::Vector3D spacing;
+      spacing[0] = sx;
+      spacing[1] = sy;
+      spacing[2] = sz;
 
-    itk::NiftiImageIO::Pointer  io = itk::NiftiImageIO::New();
-    io->SetFileName(fileName.toStdString());
-    io->SetNumberOfDimensions(3); // i.e. we always save a 3D image, even if its only 1 slice.
-    io->SetDimensions(0, nx);
-    io->SetDimensions(1, ny);
-    io->SetDimensions(2, nz);
-    io->SetSpacing(0, sx);
-    io->SetSpacing(1, sy);
-    io->SetSpacing(2, sz);
-    io->SetDirection(0, directions[0]);
-    io->SetDirection(1, directions[1]);
-    io->SetDirection(2, directions[2]);
+      // Transformation matrices can be saved with the image.
+      // So, we need an image format the preserves this.
+      // I don't want to save a matrix as a separate file.
+      // If the remote end wants to send additional info such
+      // as a motor position, then this is meta data, and should
+      // be saved separately, such as via a string message.
+      igtl::Matrix4x4 matrix;
+      imageMessage->GetMatrix(matrix);
 
-    if (nz == 0)
-    {
-      io->SetDimensions(2, 1); // just in case a 2D image comes through with nz = 0;
-    }
+      vtkSmartPointer<vtkMatrix4x4> vtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+      for (int r = 0; r < 4; r++)
+      {
+        for (int c = 0; c < 4; c++)
+        {
+          vtkMatrix->SetElement(r, c, matrix[r][c]);
+        }
+      }
 
-    if (nz == 1)
-    {
       QImage qImage;
       niftk::GetQImage(imageMessage, qImage);
       qImage.detach();
 
-      io->SetComponentType(itk::ImageIOBase::UCHAR);
+      mitk::Image::Pointer image = niftk::CreateMitkImage(&qImage);
 
-      switch (qImage.format())
-      {
-        case QImage::Format_ARGB32:
-        {
-          // temporary opencv image, just for swapping bgr to rgb
-          IplImage  ocvimg;
-          cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, 4);
-          cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
-          // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
-          // so should be fine to do this here...
-          cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
+      image->GetGeometry()->SetSpacing(spacing);
+      image->GetGeometry()->SetIndexToWorldTransformByVtkMatrixWithoutChangingSpacing(vtkMatrix);
 
-          io->SetPixelType(itk::ImageIOBase::RGBA);
-          io->SetNumberOfComponents(4);
-          break;
-        }
-
-        case QImage::Format_Indexed8:
-          io->SetPixelType(itk::ImageIOBase::SCALAR);
-          io->SetNumberOfComponents(1);
-          break;
-
-        default:
-          MITK_ERROR << "Trying to save images with unsupported pixel type.";
-          // all the smartpointer goodness should take care of cleaning up.
-      }
-
-      // i wonder how itk knows the buffer layout from just the few parameters up there.
-      // this is all a bit fishy...
-      io->Write(qImage.bits());
-
+      mitk::IOUtil::Save(image, fileName.toStdString());
     }
     else
     {
       mitkThrow() << "3D images not yet supported, please implement me!";
     }
-
-  } // end if directory to write to ok
+  }
   else
   {
     mitkThrow() << "Failed to create directory:" << directoryPath.toStdString();
@@ -918,51 +873,14 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
     return infos;
   }
 
-  QImage qImage;
-  niftk::GetQImage(imgMsg, qImage);
-
-  // Slow. Not necessary?
-/*
-  if (m_FlipHorizontally || m_FlipVertically)
-  {
-    qImage = qImage.mirrored(m_FlipHorizontally, m_FlipVertically);
-  }
-*/
-
-  // wrap the qimage in an opencv image
-  IplImage  ocvimg;
-  int nchannels = 0;
-  switch (qImage.format())
-  {
-    // this corresponds to BGRA channel order.
-    // we are flipping to RGBA below.
-    case QImage::Format_ARGB32:
-      nchannels = 4;
-      break;
-    case QImage::Format_Indexed8:
-      // we totally ignore the (missing?) colour table here.
-      nchannels = 1;
-      break;
-
-    default:
-      MITK_ERROR << "NiftyLinkDataSourceService received an unsupported image format";
-  }
-  cvInitImageHeader(&ocvimg, cvSize(qImage.width(), qImage.height()), IPL_DEPTH_8U, nchannels);
-  cvSetData(&ocvimg, (void*) qImage.constScanLine(0), qImage.constScanLine(1) - qImage.constScanLine(0));
-  // qImage, which owns the buffer that ocvimg references, is our own copy independent of the niftylink message.
-  // so should be fine to do this here...
-  if (ocvimg.nChannels == 4)
-  {
-    cvCvtColor(&ocvimg, &ocvimg, CV_BGRA2RGBA);
-    // mark layout as rgba instead of the opencv-default bgr
-    std::memcpy(&ocvimg.channelSeq[0], "RGBA", 4);
-  }
-
   mitk::DataNode::Pointer node = this->GetDataNode(deviceName); // this should create if none exists.
   if (node.IsNull())
   {
     mitkThrow() << this->GetName().toStdString() << ":Can't find mitk::DataNode with name " << deviceName.toStdString();
   }
+
+  QImage qImage;
+  niftk::GetQImage(imgMsg, qImage);
 
   mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
   if (!imageInNode.IsNull())
@@ -972,9 +890,11 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
     haswrongsize |= imageInNode->GetDimension(0) != nx;
     haswrongsize |= imageInNode->GetDimension(1) != ny;
     haswrongsize |= imageInNode->GetDimension(2) != nz;
+
     // check image type as well.
-    haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent() != ocvimg.depth;
-    haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != ocvimg.nChannels;
+    haswrongsize |= (((imageInNode->GetPixelType().GetBitsPerComponent()
+                      * imageInNode->GetPixelType().GetNumberOfComponents()
+                      * nx * ny * nz) / 8) != qImage.byteCount());
 
     if (haswrongsize)
     {
@@ -984,7 +904,8 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
 
   if (imageInNode.IsNull())
   {
-    mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&ocvimg);
+    mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(&qImage);
+
     // cycle the node listeners. mitk wont fire listeners properly, in cases where data is missing.
     this->GetDataStorage()->Remove(node);
     node->SetData(convertedImage);
@@ -994,27 +915,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
   {
     mitk::ImageWriteAccessor writeAccess(imageInNode);
     void* vPointer = writeAccess.GetData();
-
-    // the mitk image is tightly packed
-    // but the opencv image might not
-    const unsigned int numberOfBytesPerLine = ocvimg.width * ocvimg.nChannels;
-    if (numberOfBytesPerLine == static_cast<unsigned int>(ocvimg.widthStep))
-    {
-      std::memcpy(vPointer, ocvimg.imageData, numberOfBytesPerLine * ocvimg.height);
-    }
-    else
-    {
-      // if that is not true then something is seriously borked
-      assert(ocvimg.widthStep >= numberOfBytesPerLine);
-
-      // "slow" path: copy line by line
-      for (int y = 0; y < ocvimg.height; ++y)
-      {
-        // widthStep is in bytes while width is in pixels
-        std::memcpy(&(((char*) vPointer)[y * numberOfBytesPerLine]),
-            &(ocvimg.imageData[y * ocvimg.widthStep]), numberOfBytesPerLine);
-      }
-    }
+    std::memcpy(vPointer, qImage.bits(), qImage.bytesPerLine() * qImage.height());
   }
 
   node->Modified();
