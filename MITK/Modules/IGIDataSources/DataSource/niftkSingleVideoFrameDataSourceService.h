@@ -11,8 +11,8 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-#ifndef niftkOpenCVVideoDataSourceService_h
-#define niftkOpenCVVideoDataSourceService_h
+#ifndef niftkSingleVideoFrameDataSourceService_h
+#define niftkSingleVideoFrameDataSourceService_h
 
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
@@ -100,7 +100,8 @@ public:
 
 protected:
 
-  SingleVideoFrameDataSourceService(QString factoryName,
+  SingleVideoFrameDataSourceService(QString deviceName,
+                                    QString factoryName,
                                     const IGIDataSourceProperties& properties,
                                     mitk::DataStorage::Pointer dataStorage
                                    );
@@ -127,6 +128,10 @@ protected:
   virtual mitk::Image::Pointer ConvertImage(niftk::IGIDataType::Pointer inputImage,
                                             unsigned int& outputNumberOfBytes) = 0;
 
+  static niftk::IGIDataSourceLocker                s_Lock;
+  int GetChannelNumber() const                     { return m_ChannelNumber;}
+  int GetApproximateIntervalInMilliseconds() const { return m_ApproxIntervalInMilliseconds; }
+
 private:
 
   SingleVideoFrameDataSourceService(const SingleVideoFrameDataSourceService&); // deliberately not implemented
@@ -134,13 +139,13 @@ private:
 
   void SaveItem(niftk::IGIDataType::Pointer item) override;
 
-  static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;
   int                                             m_ChannelNumber;
   niftk::IGIDataType::IGIIndexType                m_FrameId;
   niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
   niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
   std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
+  int                                             m_ApproxIntervalInMilliseconds;
 
 }; // end class
 

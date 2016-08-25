@@ -29,22 +29,24 @@ niftk::IGIDataSourceLocker SingleVideoFrameDataSourceService::s_Lock;
 
 //-----------------------------------------------------------------------------
 SingleVideoFrameDataSourceService::SingleVideoFrameDataSourceService(
+  QString deviceName,
   QString factoryName,
   const IGIDataSourceProperties& properties,
   mitk::DataStorage::Pointer dataStorage)
-: IGIDataSource((QString("SingleVideoFrame-")
-                 + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
+: IGIDataSource((deviceName + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
                 factoryName.toStdString(),
                 dataStorage)
 , m_Lock(QMutex::Recursive)
+, m_ChannelNumber(0)
 , m_FrameId(0)
 , m_Buffer(nullptr)
 , m_BackgroundDeleteThread(nullptr)
+, m_ApproxIntervalInMilliseconds(0)
 {
   this->SetStatus("Initialising");
 
-  QString deviceName = this->GetName();
-  m_ChannelNumber = (deviceName.remove(0, 17)).toInt(); // Should match string SingleVideoFrame- above
+  QString fullDeviceName = this->GetName();
+  m_ChannelNumber = (fullDeviceName.remove(0, deviceName.length())).toInt();
 
   int defaultFramesPerSecond = 25;
   m_Buffer = niftk::IGIDataSourceBuffer::New(defaultFramesPerSecond * 2);
@@ -53,9 +55,9 @@ SingleVideoFrameDataSourceService::SingleVideoFrameDataSourceService(
   // So, 25 fps = 40 milliseconds.
   // However: If system slows down (eg. saving images), then Qt will
   // drop clock ticks, so in effect, you will get less than this.
-  int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
+  m_ApproxIntervalInMilliseconds = 1000 / defaultFramesPerSecond;
 
-  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*1.5);
+  this->SetTimeStampTolerance(m_ApproxIntervalInMilliseconds*1000000*1.5); // nanoseconds, 1.5. frames.
   this->SetShouldUpdate(true);
   this->SetProperties(properties);
 
@@ -209,8 +211,12 @@ void SingleVideoFrameDataSourceService::PlaybackData(niftk::IGIDataType::IGITime
       niftk::IGIDataType::Pointer wrapper = this->LoadImage(filename.str());
       if (wrapper.IsNull())
       {
-        mitkThrow() << "Failed to load image:" << filename.str();
+        mitkThrow() << "Failed to create wrapper for:" << filename.str();
       }
+      wrapper->SetTimeStampInNanoSeconds(*i);
+      wrapper->SetFrameId(m_FrameId++);
+      wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+      wrapper->SetShouldBeSaved(false);
       m_Buffer->AddToBuffer(wrapper.GetPointer());
     }
     this->SetStatus("Playing back");
@@ -289,6 +295,12 @@ std::vector<IGIDataItemInfo> SingleVideoFrameDataSourceService::Update(const nif
   info.m_LagInMilliseconds = 0;
   infos.push_back(info);
 
+  // If we are not actually updating data, bail out.
+  if (!this->GetShouldUpdate())
+  {
+    return infos;
+  }
+
   // This loads playback-data into the buffers, so must
   // come before the check for empty buffer.
   if (this->GetIsPlayingBack())
@@ -310,26 +322,22 @@ std::vector<IGIDataItemInfo> SingleVideoFrameDataSourceService::Update(const nif
     return infos;
   }
 
-  niftk::IGIDataType::Pointer dataType = m_Buffer->GetItem(time);
-  if (dataType.IsNull())
-  {
-    MITK_DEBUG << "Failed to find data for time " << time
-               << ", size=" << m_Buffer->GetBufferSize()
-               << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
-    return infos;
-  }
-
-  // If we are not actually updating data, bail out.
-  if (!this->GetShouldUpdate())
-  {
-    return infos;
-  }
-
   mitk::DataNode::Pointer node = this->GetDataNode(this->GetName());
   if (node.IsNull())
   {
     mitkThrow() << "Can't find mitk::DataNode with name "
                 << this->GetName().toStdString() << std::endl;
+  }
+
+  niftk::IGIDataType::Pointer dataType = m_Buffer->GetItem(time);
+  if (dataType.IsNull())
+  {
+    // Can have no data at that time, if the update thread triggers before the grab thread.
+
+    MITK_DEBUG << "Failed to find data for time " << time
+               << ", size=" << m_Buffer->GetBufferSize()
+               << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
+    return infos;
   }
 
   unsigned int numberOfBytes = 0;
@@ -367,6 +375,13 @@ std::vector<IGIDataItemInfo> SingleVideoFrameDataSourceService::Update(const nif
       MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
     }
   }
+
+#ifdef _USE_CUDA
+  if (convertedImage->GetProperty("CUDAImageProperty").IsNotNull())
+  {
+    imageInNode->SetProperty("CUDAImageProperty", convertedImage->GetProperty("CUDAImageProperty"));
+  }
+#endif
 
   // We tell the node that it is modified so the next rendering event
   // will redraw it. Triggering this does not in itself guarantee a re-rendering.
