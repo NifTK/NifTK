@@ -26,6 +26,7 @@ add_subdirectory(Parcellation)
 add_subdirectory(MAPS)
 add_subdirectory(Slicer)
 add_subdirectory(IGI)
+add_subdirectory(Matlab)
 
 if(NOT WIN32)
   add_subdirectory(MSTools)

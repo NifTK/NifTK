@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>Calculate ReProjection Errors</title>
+  <description><![CDATA[Interrogates a tracking and video directory for tracking data and a .framemap.log file, given model and video points and a model to world transform it calculates the reprojection error and writes to a user specified file. Optionally we can write out images of each frame used.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Stephen Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <directory>
+      <name>trackingInputDirectory</name>
+      <longflag>tracking</longflag>
+      <description>The directory containing the corresponding tracking matrices and video.</description>
+      <label>Tracking Matrix Input directory.</label>
+    </directory>    
+   
+    <directory>
+      <name>calibrationInputDirectory</name>
+      <longflag>calibration</longflag>
+      <description>The directory containing the camera calibration files.</description>
+      <label>calibration Input directory.</label>
+    </directory>    
+
+    <directory>
+      <name>input3DDirectory</name>
+      <longflag>input3DDirectory</longflag>
+      <description>The 3D model points, stored as a directory of .mps files, names line_XX.mps and points.mps</description>
+      <label>The 3D model points directory</label>
+    </directory>    
+   
+    <file fileExtensions=".4x4">
+      <name>modelToWorld</name>
+      <longflag>modelToWorld</longflag>
+      <description>The model to world transform</description>
+      <label>The Model to world transform</label>
+      <channel>input</channel>
+    </file>
+    
+    <directory>
+      <name>goldStandardDirectory</name>
+      <longflag>goldStandardDirectory</longflag>
+      <description>The measured points in all screens, as a directory of picked object xml files</description>
+      <label>The measured points in all screens, as a directory of picked object xml files</label>
+      <channel>input</channel>
+    </directory>
+  
+    <boolean>
+      <name>saveImages</name>
+      <longflag>saveImages</longflag>
+      <description>Save frames annotated with gold standard selections</description>
+      <label>Save frames annotated with gold standard selections</label>
+      <channel>output</channel>
+    </boolean>
+
+    <file>
+      <name>outputFile</name>
+      <longflag>outputFile</longflag>
+      <description>Name of file to write reprojection errors to.</description>
+      <label>Name of file to write reprojection errors to.</label>
+      <channel>output</channel>
+    </file>
+
+    <integer>
+      <name>videoLag</name>
+      <longflag>videoLag</longflag>
+      <description>The lag between tracking and video in milliseconds</description>
+      <label>The video lag</label>
+      <default>50</default>
+    </integer>
+  
+    <integer>
+      <name>maxTimingError</name>
+      <longflag>maxTimingError</longflag>
+      <description>The maximum timing error in  milliseconds</description>
+      <label>The maximum timing error in millisecond</label>
+      <default>20</default>
+    </integer>
+ 
+  </parameters>
+  
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the calibration]]></description>
+   
+    <integer>
+	<name>trackerIndex</name>
+	<longflag>trackerIndex</longflag>
+	<description>The tracker index to use</description>
+	<label>The tracker index to use</label>
+	<default>0</default>
+    </integer>
+
+  </parameters>
+  
+</executable>

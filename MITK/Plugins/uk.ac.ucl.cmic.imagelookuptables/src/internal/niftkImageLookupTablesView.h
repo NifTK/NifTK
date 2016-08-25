@@ -15,7 +15,7 @@
 #ifndef niftkImageLookupTablesView_h
 #define niftkImageLookupTablesView_h
 
-#include "ui_ImageLookupTablesViewControls.h"
+#include "ui_niftkImageLookupTablesViewControls.h"
 
 #include <niftkBaseView.h>
 #include <mitkLevelWindowManager.h>
@@ -252,7 +252,7 @@ private:
   /**
    * \brief All the controls for the main view part.
    */
-  Ui::ImageLookupTablesViewControls* m_Controls;
+  Ui::niftkImageLookupTablesViewControls* m_Controls;
 
   /**
    * \brief Tracks the currently selected node.

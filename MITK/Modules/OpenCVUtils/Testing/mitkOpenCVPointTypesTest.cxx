@@ -20,6 +20,7 @@
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
 #include <mitkOpenCVPointTypes.h>
+#include <mitkOpenCVMaths.h>
 #include <cmath>
 
 /**
@@ -50,10 +51,10 @@ void TestPickedObjectCompare()
 
   MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing headers don't match for different framenumbers" );
   MITK_TEST_CONDITION ( p2 < p1 , "Testing < operator for frame number = 200");
-  
+
   p2.m_FrameNumber = 200;
   p2.m_Channel = "left";
-  
+
   MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing headers don't match for different channels" );
 
   p1.m_Channel = "left";
@@ -65,10 +66,64 @@ void TestPickedObjectCompare()
 
   MITK_TEST_CONDITION ( ! p1.HeadersMatch(p2) , "Testing wild card for p1 doesn't  match" );
   MITK_TEST_CONDITION ( p2.HeadersMatch(p1) , "Testing wild card for p2 does match" );
-  
+
   p1.m_TimeStamp = 100;
   MITK_TEST_CONDITION ( ! p2.HeadersMatch (p1, 10) , "Testing timing error check works - no match" );
   MITK_TEST_CONDITION ( p2.HeadersMatch (p1, 101) , "Testing timing error check works - match" );
+
+}
+
+void TestPickedObjectMultipy()
+{
+  mitk::PickedObject p1;
+  cv::Mat* mat = new cv::Mat(4,4,CV_64FC1);
+
+  for ( unsigned int i = 0 ; i < 4 ; ++i )
+  {
+    for ( unsigned int j = 0 ; j < 4 ; ++j )
+    {
+      if ( i != j )
+      {
+        mat->at<double>(i,j) = 0.0;
+      }
+      else
+      {
+        mat->at<double>(i,j) = 1.0;
+      }
+    }
+  }
+  mat->at<double>(0,3) = 20;
+  mat->at<double>(1,3) = -30;
+  mat->at<double>(2,3) = 0;
+  mat->at<double>(3,3) = 1.0;
+
+  p1.m_Points.push_back ( cv::Point3d ( 0.0, 0.0, 0.0 ) );
+  p1.m_Points.push_back ( cv::Point3d ( 1.0, 0.0, 5.0 ) );
+  p1.m_Points.push_back ( cv::Point3d ( 0.0, 100.0, 0.0 ) );
+
+  mitk::PickedObject p2 = p1 * mat;
+  MITK_TEST_CONDITION ( p2.HeadersMatch ( p1, 1 ), "Testing that header for multiplied picked objects matches input");
+  MITK_TEST_CONDITION ( p2.m_Points.size() == 3, "Testing that there are 3 points in the output vector");
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[0],cv::Point3d ( 20.0, -30.0 ,0.0 ), 1e-6), "Testing value of multiplied picked object 0 " << p2.m_Points[0] << p1.m_Points[0]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[1],cv::Point3d ( 21.0, -30.0 ,5.0 ), 1e-6), "Testing value of multiplied picked object 1 " << p2.m_Points[1]<< p1.m_Points[1]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(p2.m_Points[2],cv::Point3d ( 20.0, 70.0 , 0.0 ), 1e-6), "Testing value of multiplied picked object 2 " << p2.m_Points[2]<< p1.m_Points[2]);
+
+  //let's also test these in the context of transforming a point list
+  std::vector<mitk::PickedObject> vector1;
+  vector1.push_back(p1);
+
+  mitk::PickedPointList::Pointer list1 = mitk::PickedPointList::New();
+  list1->SetPickedObjects (vector1);
+
+  mitk::PickedPointList::Pointer list2 = list1->TransformPointList(mat);
+
+  std::vector<mitk::PickedObject> vector2 = list2->GetPickedObjects();
+
+  MITK_TEST_CONDITION ( vector2[0].HeadersMatch ( p1, 1 ), "Testing that header for multiplied picked objects matches input");
+  MITK_TEST_CONDITION ( vector2[0].m_Points.size() == 3, "Testing that there are 3 points in the output vector using PickedPointListWrapper");
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(vector2[0].m_Points[0],cv::Point3d ( 20.0, -30.0 ,0.0 ), 1e-6), "Testing value of multiplied picked object 0 using PickedPointList wrapper" << vector2[0].m_Points[0]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(vector2[0].m_Points[1],cv::Point3d ( 21.0, -30.0 ,5.0 ), 1e-6), "Testing value of multiplied picked object 1 using PickedPointList wrapper" << vector2[0].m_Points[1]);
+  MITK_TEST_CONDITION ( mitk::NearlyEqual(vector2[0].m_Points[2],cv::Point3d ( 20.0, 70.0 , 0.0 ), 1e-6), "Testing value of multiplied picked object 2 using PickedPointList wrapper" << vector2[0].m_Points[2]);
 
 }
 
@@ -77,7 +132,7 @@ int mitkOpenCVPointTypesTest(int argc, char * argv[])
   // always start with this!
   MITK_TEST_BEGIN("mitkPointTypesTest");
 
-  mitk::ProjectedPointPair point1 = mitk::ProjectedPointPair ( 
+  mitk::ProjectedPointPair point1 = mitk::ProjectedPointPair (
       cv::Point2d ( std::numeric_limits<double>::quiet_NaN(), 0.0),
       cv::Point2d ( 0.0, 0.0));
   mitk::ProjectedPointPair point2 = mitk::ProjectedPointPair ();
@@ -103,6 +158,7 @@ int mitkOpenCVPointTypesTest(int argc, char * argv[])
   mitk::WorldPoint x;
 
   TestPickedObjectCompare();
+  TestPickedObjectMultipy();
   MITK_TEST_END();
 }
 

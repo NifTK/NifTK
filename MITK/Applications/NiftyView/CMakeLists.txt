@@ -52,11 +52,10 @@ set(_include_plugins
   uk.ac.ucl.cmic.xnat
 )
 
-
 if(BUILD_VL)
   set(_include_plugins
     ${_include_plugins}
-    uk.ac.ucl.cmic.vlrenderer
+#    uk.ac.ucl.cmic.vlstandarddisplayeditor
   )
 endif()
 

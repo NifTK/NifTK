@@ -64,9 +64,13 @@ FootpedalHotkeyView::~FootpedalHotkeyView()
       if (eventAdmin)
       {
         eventAdmin->unsubscribeSlot(m_IGIRecordingStartedSubscriptionID);
-        eventAdmin->unpublishSignal(this, SIGNAL(OnStartRecording(ctkDictionary)), "uk/ac/ucl/cmic/IGISTARTRECORDING");
-        eventAdmin->unpublishSignal(this, SIGNAL(OnStopRecording(ctkDictionary)),  "uk/ac/ucl/cmic/IGISTOPRECORDING");
-      }
+        eventAdmin->unpublishSignal(this, SIGNAL(OnFootSwitch1Start(ctkDictionary)), "uk/ac/ucl/cmic/IGIFOOTSWITCH1START");
+        eventAdmin->unpublishSignal(this, SIGNAL(OnFootSwitch1Stop(ctkDictionary)),  "uk/ac/ucl/cmic/IGIFOOTSWITCH1STOP");
+        eventAdmin->unpublishSignal(this, SIGNAL(OnFootSwitch2Start(ctkDictionary)), "uk/ac/ucl/cmic/IGIFOOTSWITCH2START");
+        eventAdmin->unpublishSignal(this, SIGNAL(OnFootSwitch2Stop(ctkDictionary)),  "uk/ac/ucl/cmic/IGIFOOTSWITCH2STOP");
+        eventAdmin->unpublishSignal(this, SIGNAL(OnFootSwitch3Start(ctkDictionary)), "uk/ac/ucl/cmic/IGIFOOTSWITCH3START");
+        eventAdmin->unpublishSignal(this, SIGNAL(OnFootSwitch3Stop(ctkDictionary)),  "uk/ac/ucl/cmic/IGIFOOTSWITCH3STOP");
+	  }
     }
   }
 }
@@ -95,8 +99,12 @@ void FootpedalHotkeyView::CreateQtPartControl(QWidget* parent)
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTARTED";
     m_IGIRecordingStartedSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnRecordingStarted(ctkEvent)), properties);
 
-    eventAdmin->publishSignal(this, SIGNAL(OnStartRecording(ctkDictionary)), "uk/ac/ucl/cmic/IGISTARTRECORDING");
-    eventAdmin->publishSignal(this, SIGNAL(OnStopRecording(ctkDictionary)),  "uk/ac/ucl/cmic/IGISTOPRECORDING");
+    eventAdmin->publishSignal(this, SIGNAL(OnFootSwitch1Start(ctkDictionary)), "uk/ac/ucl/cmic/IGIFOOTSWITCH1START");
+    eventAdmin->publishSignal(this, SIGNAL(OnFootSwitch1Stop(ctkDictionary)),  "uk/ac/ucl/cmic/IGIFOOTSWITCH1STOP");
+    eventAdmin->publishSignal(this, SIGNAL(OnFootSwitch2Start(ctkDictionary)), "uk/ac/ucl/cmic/IGIFOOTSWITCH2START");
+    eventAdmin->publishSignal(this, SIGNAL(OnFootSwitch2Stop(ctkDictionary)),  "uk/ac/ucl/cmic/IGIFOOTSWITCH2STOP");
+    eventAdmin->publishSignal(this, SIGNAL(OnFootSwitch3Start(ctkDictionary)), "uk/ac/ucl/cmic/IGIFOOTSWITCH3START");
+    eventAdmin->publishSignal(this, SIGNAL(OnFootSwitch3Stop(ctkDictionary)),  "uk/ac/ucl/cmic/IGIFOOTSWITCH3STOP");
   }
 
   bool ok = false;
@@ -133,9 +141,9 @@ void FootpedalHotkeyView::CreateQtPartControl(QWidget* parent)
 //-----------------------------------------------------------------------------
 void FootpedalHotkeyView::OnTimer1()
 {
-  MITK_INFO << "Stopping recording due to footpedal/hotkey 1";
+  MITK_INFO << "Stopping footpedal/hotkey 1.";
   ctkDictionary   properties;
-  emit OnStopRecording(properties);
+  emit OnFootSwitch1Stop(properties);
 
   m_LeftLabel->setText("");
 }
@@ -144,8 +152,9 @@ void FootpedalHotkeyView::OnTimer1()
 //-----------------------------------------------------------------------------
 void FootpedalHotkeyView::OnTimer2()
 {
-  // what action?
-  MITK_INFO << "Unassigned footpedal 2 release.";
+  MITK_INFO << "Stopping footpedal/hotkey 2.";
+  ctkDictionary   properties;
+  emit OnFootSwitch2Stop(properties);
 
   m_MiddleLabel->setText("");
 }
@@ -154,8 +163,9 @@ void FootpedalHotkeyView::OnTimer2()
 //-----------------------------------------------------------------------------
 void FootpedalHotkeyView::OnTimer3()
 {
-  // what action?
-  MITK_INFO << "Unassigned footpedal 3 release.";
+  MITK_INFO << "Stopping footpedal/hotkey 3.";
+  ctkDictionary   properties;
+  emit OnFootSwitch3Stop(properties);
 
   m_RightLabel->setText("");
 }
@@ -171,9 +181,9 @@ void FootpedalHotkeyView::OnHotkeyPressed(niftk::WindowsHotkeyHandler* sender, i
     case niftk::WindowsHotkeyHandler::CTRL_ALT_F5:
       if (!m_Footswitch1OffTimer->isActive())
       {
-        MITK_INFO << "Starting recording due to footpedal/hotkey 1.";
+        MITK_INFO << "Starting footpedal/hotkey 1.";
         m_LeftLabel->setText("X");
-        emit OnStartRecording(properties);
+        emit OnFootSwitch1Start(properties);
       }
 
       // if we get another hotkey event shortly, i.e. user is still pressing the key,
@@ -185,9 +195,9 @@ void FootpedalHotkeyView::OnHotkeyPressed(niftk::WindowsHotkeyHandler* sender, i
     case niftk::WindowsHotkeyHandler::CTRL_ALT_F6:
       if (!m_Footswitch2OffTimer->isActive())
       {
-        MITK_INFO << "Unassigned footpedal 2 press.";
+        MITK_INFO << "Starting footpedal/hotkey 2.";
         m_MiddleLabel->setText("X");
-        // what action?
+        emit OnFootSwitch2Start(properties);
       }
       m_Footswitch2OffTimer->start();
       break;
@@ -195,9 +205,9 @@ void FootpedalHotkeyView::OnHotkeyPressed(niftk::WindowsHotkeyHandler* sender, i
     case niftk::WindowsHotkeyHandler::CTRL_ALT_F7:
       if (!m_Footswitch3OffTimer->isActive())
       {
-        MITK_INFO << "Unassigned footpedal 3 press.";
+        MITK_INFO << "Starting footpedal/hotkey 3.";
         m_RightLabel->setText("X");
-        // what action?
+        emit OnFootSwitch3Start(properties);
       }
       m_Footswitch3OffTimer->start();
       break;

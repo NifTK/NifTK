@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <mitkBaseApplication.h>
+#include <niftkBaseApplication.h>
 
 #include <QVariant>
 
@@ -20,15 +20,9 @@
 /// \brief Main entry point for NiftyIGI application.
 int main(int argc, char** argv)
 {
-  mitk::BaseApplication myApp(argc, argv);
-  myApp.setApplicationName("NiftyIGI");
-  myApp.setOrganizationName("CMIC");
+  niftk::BaseApplication app(argc, argv);
+  app.setApplicationName("NiftyIGI");
+  app.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.niftyigi");
 
-  myApp.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.niftyigi");
-
-  /// We disable processing command line arguments by MITK so that we can introduce
-  /// new options. See the uk.ac.ucl.cmic.commonapps plugin activator for details.
-  myApp.setProperty("applicationArgs.processByMITK", false);
-
-  return myApp.run();
+  return app.run();
 }

@@ -2,9 +2,9 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  niftkImageLookupTablesViewActivator.cxx
   niftkImageLookupTablesPreferencePage.cxx
   niftkImageLookupTablesView.cxx
+  niftkPluginActivator.cxx
 )
 
 set(UI_FILES
@@ -13,8 +13,8 @@ set(UI_FILES
 
 set(MOC_H_FILES
   src/internal/niftkImageLookupTablesPreferencePage.h
-  src/internal/niftkImageLookupTablesViewActivator.h
   src/internal/niftkImageLookupTablesView.h
+  src/internal/niftkPluginActivator.h
 )
 
 set(CACHED_RESOURCE_FILES

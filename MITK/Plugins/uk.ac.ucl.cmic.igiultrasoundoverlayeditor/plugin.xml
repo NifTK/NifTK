@@ -6,13 +6,13 @@
       id="org.mitk.editors.igiultrasoundoverlayeditor"
       name="Ultrasound Overlay Display"
       extensions="mitk"
-      class="IGIUltrasoundOverlayEditor">
+      class="niftk::IGIUltrasoundOverlayEditor">
     </editor>
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
     <page id="org.mitk.editors.IGIUltrasoundOverlayEditorPreferencePage" name="Ultrasound Overlay Display"
-      class="IGIUltrasoundOverlayEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
+      class="niftk::IGIUltrasoundOverlayEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
       <keywordreference id="org.mitk.IGIUltrasoundOverlayEditorPreferencePageKeywords"/>
     </page>
   </extension>

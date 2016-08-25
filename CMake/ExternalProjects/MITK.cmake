@@ -21,7 +21,7 @@ if(DEFINED MITK_DIR AND NOT EXISTS ${MITK_DIR})
   message(FATAL_ERROR "MITK_DIR variable is defined but corresponds to non-existing directory \"${MITK_DIR}\".")
 endif()
 
-set(version "7716673d81")
+set(version "f9074849e6")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-MITK-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(MITK ${version} ${location})
@@ -109,7 +109,7 @@ if(NOT DEFINED MITK_DIR)
           org.mitk.gui.qt.properties
         )
       endif()
-    endif() 
+    endif()
 
     # Additionally required for NiftyView:
     if(NIFTK_Apps/NiftyView)

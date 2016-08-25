@@ -64,18 +64,18 @@ DataSourcesView::~DataSourcesView()
 
 
 //-----------------------------------------------------------------------------
-void DataSourcesView::OnRecordingShouldStart(const ctkEvent& event)
+void DataSourcesView::OnUpdateShouldPause(const ctkEvent& event)
 {
   // Comming from CTK event bus.
-  m_DataSourceManagerWidget->StartRecording();
+  m_DataSourceManagerWidget->PauseUpdate();
 }
 
 
 //-----------------------------------------------------------------------------
-void DataSourcesView::OnRecordingShouldStop(const ctkEvent& event)
+void DataSourcesView::OnUpdateShouldRestart(const ctkEvent& event)
 {
   // Comming from CTK event bus.
-  m_DataSourceManagerWidget->StopRecording();
+  m_DataSourceManagerWidget->RestartUpdate();
 }
 
 
@@ -122,10 +122,10 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     eventAdmin->publishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
 
     ctkDictionary properties;
-    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTARTRECORDING";
-    eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStart(ctkEvent)), properties);
-    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGISTOPRECORDING";
-    eventAdmin->subscribeSlot(this, SLOT(OnRecordingShouldStop(ctkEvent)), properties);
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATEPAUSE";
+    eventAdmin->subscribeSlot(this, SLOT(OnUpdateShouldPause(ctkEvent)), properties);
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATERESTART";
+    eventAdmin->subscribeSlot(this, SLOT(OnUpdateShouldRestart(ctkEvent)), properties);
   }
 
   m_SetupWasCalled = true;

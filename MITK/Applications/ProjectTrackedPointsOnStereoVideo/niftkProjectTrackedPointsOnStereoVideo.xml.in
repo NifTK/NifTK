@@ -38,9 +38,17 @@
     <directory>
       <name>input3DDirectory</name>
       <longflag>input3DDirectory</longflag>
-      <description>The 3D world points, stored as a directory of .mps files, names line_XX.mps and points.mps</description>
-      <label>The 3D world points directory</label>
+      <description>The 3D model points, stored as a directory of .mps files, names line_XX.mps and points.mps</description>
+      <label>The 3D model points directory</label>
     </directory>    
+   
+    <file fileExtensions=".4x4">
+      <name>modelToWorld</name>
+      <longflag>modelToWorld</longflag>
+      <description>The model to world transform</description>
+      <label>The Model to world transform</label>
+      <channel>input</channel>
+    </file>
     
     <file fileExtensions=".txt">
       <name>input3DWithScalars</name>
@@ -65,6 +73,14 @@
       <label>The measured points in all screens, as a picked object xml file</label>
       <channel>input</channel>
     </file>
+   
+    <directory>
+      <name>goldStandardDirectory</name>
+      <longflag>goldStandardDirectory</longflag>
+      <description>The measured points in all screens, as a directory of picked object xml files</description>
+      <label>The measured points in all screens, as a directory of picked object xml files</label>
+      <channel>input</channel>
+    </directory>
     
     <file>
       <name>leftGoldStandard</name>
@@ -150,6 +166,14 @@
       <longflag>outputErrors</longflag>
       <description>Write out the projection / reprojection errors</description>
       <label>Write out the projection / reprojection errors</label>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>outputErrorsNewFormat</name>
+      <longflag>outputErrorsNewFormat</longflag>
+      <description>Write out the reprojection errors in post July 2016 format</description>
+      <label>Write out the reprojection errors in post July 2016 format</label>
       <channel>output</channel>
     </file>
 

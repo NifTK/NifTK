@@ -67,7 +67,7 @@ signals:
   /**
   * Beware: you really should connect this as QueuedConnection!
   */
-  void HotkeyPressed(WindowsHotkeyHandler* sender, int hotkey);
+  void HotkeyPressed(niftk::WindowsHotkeyHandler*, int);
 
 protected:
 

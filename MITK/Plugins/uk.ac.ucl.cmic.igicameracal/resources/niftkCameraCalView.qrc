@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/uk.ac.ucl.cmic.igicameracal">
+        <file>icon.png</file>
+        <file>green-tick-300px.png</file>
+        <file>red-cross-300px.png</file>
+        <file>boobaloo-Don-t-Step-No-Gnome--300px.png</file>
+    </qresource>
+</RCC>

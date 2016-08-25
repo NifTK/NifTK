@@ -27,13 +27,15 @@ set(NIFTK_NIFTYMIDAS_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyM
 # So, turn them OFF if you DON'T want them in your app.
 ###########################################################
 set(_exclude_plugins
-  org_mitk_gui_qt_extapplication
-  org_mitk_gui_qt_volumevisualization
-  org_mitk_gui_qt_stdmultiwidgeteditor
+  org_mitk_gui_qt_aicpregistration
   org_mitk_gui_qt_common_legacy
-  org_mitk_gui_qt_segmentation
-  org_mitk_gui_qt_pointsetinteraction
+  org_mitk_gui_qt_extapplication
+  org_mitk_gui_qt_igttracking
   org_mitk_gui_qt_moviemaker
+  org_mitk_gui_qt_pointsetinteraction
+  org_mitk_gui_qt_segmentation
+  org_mitk_gui_qt_stdmultiwidgeteditor
+  org_mitk_gui_qt_volumevisualization
 )
 
 ###########################################################

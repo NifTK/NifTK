@@ -15,7 +15,7 @@
 set(SRC_CPP_FILES
   niftkNiftyViewApplication.cxx
   niftkNiftyViewPreferencePage.cxx
-  niftkNiftyViewAppWorkbenchAdvisor.cxx
+  niftkNiftyViewWorkbenchAdvisor.cxx
   niftkNiftyViewWorkbenchWindowAdvisor.cxx
 )
 

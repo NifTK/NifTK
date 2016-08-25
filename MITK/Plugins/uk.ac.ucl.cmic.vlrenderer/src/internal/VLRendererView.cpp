@@ -12,6 +12,7 @@
 
 =============================================================================*/
 
+#include "VLQtWidget.h"
 
 // Blueberry
 #include <berryISelectionService.h>
@@ -68,27 +69,14 @@ VLRendererView::VLRendererView()
 //-----------------------------------------------------------------------------
 VLRendererView::~VLRendererView()
 {
-
-  if (m_SelectionListener)
-  {
-    m_SelectionListener->NodeAdded   -=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeAdded);
-    m_SelectionListener->NodeRemoved -=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeRemoved);
-    m_SelectionListener->NodeDeleted -=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeDeleted);
-  }
-
-  if (m_NamePropertyListener)
-    m_NamePropertyListener->NodePropertyChanged -=  mitk::MessageDelegate2<VLRendererView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLRendererView::OnNamePropertyChanged);
-
-
-  MITK_INFO <<"Destructing VLRenderer plugin";
+  MITK_INFO << "Destructing VLRenderer plugin";
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::SetFocus()
 {
 }
-
 
 //-----------------------------------------------------------------------------
 void VLRendererView::CreateQtPartControl(QWidget* parent)
@@ -102,7 +90,7 @@ void VLRendererView::CreateQtPartControl(QWidget* parent)
     m_Controls = new Ui::VLRendererViewControls();
     m_Controls->setupUi(parent);
 
-    bool  ok = false;
+    bool ok = false;
     ok = QObject::connect(m_Controls->hSlider_navigate, SIGNAL(valueChanged(int )), this, SLOT(On_SliderMoved(int )));
     assert(ok);
 
@@ -127,158 +115,79 @@ void VLRendererView::CreateQtPartControl(QWidget* parent)
     ok = QObject::connect(m_Controls->m_CameraNodeEnabled, SIGNAL(clicked(bool)), this, SLOT(OnCameraNodeEnabled(bool)));
     assert(ok);
 
-    // Init listener
-    m_SelectionListener = niftk::DataNodePropertyListener::New(GetDataStorage(), "selected", false);
-   // m_SelectionListener->NodePropertyChanged +=  mitk::MessageDelegate2<NewVisualizationView, const mitk::DataNode*, const mitk::BaseRenderer*>(this, &NewVisualizationView::OnSelectionChanged);
-
-    m_SelectionListener->NodeAdded   +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeAdded);
-    m_SelectionListener->NodeRemoved +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeRemoved);
-    m_SelectionListener->NodeDeleted +=  mitk::MessageDelegate1<VLRendererView, mitk::DataNode*>(this, &VLRendererView::OnNodeDeleted);
-
-    m_NamePropertyListener = niftk::DataNodePropertyListener::New(GetDataStorage(), "name");
-    m_NamePropertyListener->NodePropertyChanged +=  mitk::MessageDelegate2<VLRendererView, mitk::DataNode*, const mitk::BaseRenderer*>(this, &VLRendererView::OnNamePropertyChanged);
-
-
     // Init the VL visualization part
     InitVLRendering();
   }
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::InitVLRendering()
 {
   assert(m_VLQtRenderWindow == 0);
-  m_VLQtRenderWindow = new VLQtWidget(0, niftk::SharedOGLContext::GetShareWidget());
-  m_VLQtRenderWindow->SetDataStorage(GetDataStorage());
-
+  m_VLQtRenderWindow = new VLQtWidget( 0, niftk::SharedOGLContext::GetShareWidget() );
+  m_VLQtRenderWindow->vlSceneView()->setDataStorage(GetDataStorage());
 
   // renderer uses ocl kernels to sort triangles.
-  ctkPluginContext*     context     = mitk::VLRendererPluginActivator::GetDefault()->GetPluginContext();
-  ctkServiceReference   serviceRef  = context->getServiceReference<OclResourceService>();
-  OclResourceService*   oclService  = context->getService<OclResourceService>(serviceRef);
+  ctkPluginContext*   context     = mitk::VLRendererPluginActivator::GetDefault()->GetPluginContext();
+  ctkServiceReference serviceRef  = context->getServiceReference<OclResourceService>();
+  OclResourceService* oclService  = context->getService<OclResourceService>(serviceRef);
   if (oclService == NULL)
   {
     mitkThrow() << "Failed to find OpenCL resource service." << std::endl;
   }
-  m_VLQtRenderWindow->SetOclResourceService(oclService);
+  m_VLQtRenderWindow->vlSceneView()->setOclResourceService(oclService);
   // note: m_VLQtRenderWindow will use that service instance in initializeGL(), which will only be called
   // once we have been bounced through the event-loop, i.e. after we return from this method here.
 
 
-  m_Controls->viewLayout->addWidget(m_VLQtRenderWindow.get());
+  m_Controls->viewLayout->addWidget(m_VLQtRenderWindow);
   m_VLQtRenderWindow->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
   m_VLQtRenderWindow->show();
 
-  // default transparency blending function.
-  // vl keeps dumping stuff to the console about blend state mismatch.
+  // This state seems to be left dirty so we reset it to it's default else VL will complain.
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-#ifdef _USE_CUDA
-  //m_VLQtRenderWindow->EnableFBOCopyToDataStorageViaCUDA(true, GetDataStorage(), "vl-framebuffer");
-#endif
 }
-
 
 //-----------------------------------------------------------------------------
+
 void VLRendererView::On_SliderMoved(int val)
 {
-  m_VLQtRenderWindow->UpdateThresholdVal(val);
+  m_VLQtRenderWindow->vlSceneView()->updateThresholdVal(val);
   m_VLQtRenderWindow->update();
 }
-
 
 //-----------------------------------------------------------------------------
 void VLRendererView::OnBackgroundNodeSelected(const mitk::DataNode* node)
 {
-  m_VLQtRenderWindow->SetBackgroundNode(node);
+  m_VLQtRenderWindow->vlSceneView()->setBackgroundNode(node);
   // can fail, but we just ignore that.
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::OnCameraNodeSelected(const mitk::DataNode* node)
 {
   OnCameraNodeEnabled(m_Controls->m_CameraNodeEnabled->isChecked());
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::OnCameraNodeEnabled(bool enabled)
 {
   if (!enabled)
   {
-    m_VLQtRenderWindow->SetCameraTrackingNode(0);
+    m_VLQtRenderWindow->vlSceneView()->setCameraTrackingNode( 0 );
   }
   else
   {
-    mitk::DataNode::Pointer   n = m_Controls->m_CameraNode->GetSelectedNode();
-    m_VLQtRenderWindow->SetCameraTrackingNode(n.GetPointer());
+    mitk::DataNode::Pointer node = m_Controls->m_CameraNode->GetSelectedNode();
+    m_VLQtRenderWindow->vlSceneView()->setCameraTrackingNode( node.GetPointer() );
   }
 }
 
-
 //-----------------------------------------------------------------------------
-void VLRendererView::OnNodeAdded(mitk::DataNode* node)
-{
-  if (node == 0 || node->GetData()== 0)
-    return;
 
-  bool isHelper = false;
-  node->GetPropertyList()->GetBoolProperty("helper object", isHelper);
-
-  //if (isHelper)
-  //  return;
-
-  m_VLQtRenderWindow->AddDataNode(node);
-
-  MITK_INFO <<"Node added";
-}
-
-
-//-----------------------------------------------------------------------------
-void VLRendererView::OnNodeRemoved(mitk::DataNode* node)
-{
-  if (node == 0 || node->GetData()== 0)
-    return;
-
-  bool isHelper = false;
-  node->GetPropertyList()->GetBoolProperty("helper object", isHelper);
-
-  //if (isHelper)
-  //  return;
-
-  m_VLQtRenderWindow->RemoveDataNode(node);
-
-  MITK_INFO <<"Node removed";
-}
-
-
-//-----------------------------------------------------------------------------
-void VLRendererView::OnNodeDeleted(mitk::DataNode* node)
-{
-  if (node == 0 || node->GetData()== 0)
-    return;
-
-  m_VLQtRenderWindow->RemoveDataNode(node);
-
-  MITK_INFO <<"Node deleted";
-}
-
-
-//-----------------------------------------------------------------------------
-void VLRendererView::OnNamePropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
-{
-#if 0//def _USE_CUDA
-  {
-    // random hack to illustrate how to do cuda kernels in combination with vl rendering
-    niftk::EdgeDetectionExampleLauncher(this->GetDataStorage(), node, renderer);
-  }
-#endif
-}
-
-
-//-----------------------------------------------------------------------------
 void VLRendererView::Visible()
 {
   niftk::BaseView::Visible();
@@ -287,10 +196,9 @@ void VLRendererView::Visible()
   ReinitDisplay();
 }
 
-
 //-----------------------------------------------------------------------------
+
 void VLRendererView::ReinitDisplay(bool viewEnabled)
 {
-  m_VLQtRenderWindow->ClearScene();
-  m_VLQtRenderWindow->AddAllNodesFromDataStorage();
+  m_VLQtRenderWindow->vlSceneView()->scheduleSceneRebuild();
 }

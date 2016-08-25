@@ -2553,22 +2553,21 @@ void MultiWindowWidget::ZoomAroundCursorPosition(int windowIndex)
 {
   if (m_Geometry)
   {
-    mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
-
-    mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
-
-    mitk::Point2D focusPoint2DInPx;
-    focusPoint2DInPx[0] = m_CursorPositions[windowIndex][0] * displaySize[0];
-    focusPoint2DInPx[1] = m_CursorPositions[windowIndex][1] * displaySize[1];
+    mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
+    mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
 
     double scaleFactor = m_ScaleFactors[windowIndex];
-    double previousScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+
+    mitk::Point2D focusPoint2DInMm;
+    displayGeometry->Map(m_SelectedPosition, focusPoint2DInMm);
+
+    mitk::Vector2D newOriginInMm;
+    newOriginInMm[0] = focusPoint2DInMm[0] - m_CursorPositions[windowIndex][0] * renderer->GetSizeX() * scaleFactor;
+    newOriginInMm[1] = focusPoint2DInMm[1] - m_CursorPositions[windowIndex][1] * renderer->GetSizeY() * scaleFactor;
+
     bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
-    if (displayGeometry->SetScaleFactor(scaleFactor))
-    {
-      mitk::Vector2D originInMm = displayGeometry->GetOriginInMM();
-      displayGeometry->SetOriginInMM(originInMm - focusPoint2DInPx.GetVectorFromOrigin() * (scaleFactor - previousScaleFactor));
-    }
+    displayGeometry->SetScaleFactor(scaleFactor);
+    displayGeometry->SetOriginInMM(newOriginInMm);
     this->BlockDisplayEvents(displayEventsWereBlocked);
   }
 }

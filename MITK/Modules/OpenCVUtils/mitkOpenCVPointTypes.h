@@ -16,7 +16,7 @@
 #define mitkOpenCVPointTypes_h
 
 #include "niftkOpenCVUtilsExports.h"
-#include <opencv2/opencv.hpp> 
+#include <opencv2/opencv.hpp>
 #include <cv.h>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
@@ -172,7 +172,7 @@ private:
 class NIFTKOPENCVUTILS_EXPORT PickedObject
 {
   public:
-      
+
     int m_Id;
     bool m_IsLine;
     std::vector < cv::Point3d > m_Points;
@@ -185,35 +185,39 @@ class NIFTKOPENCVUTILS_EXPORT PickedObject
     PickedObject(std::string channel, unsigned int framenumber, unsigned long long timestamp, cv::Scalar scalar);
     PickedObject(const GoldStandardPoint& gsp, const unsigned long long& timestamp); //cast a gold standard point to a PickedObject
     ~PickedObject();
-    
+
     /**
      * \brief compare the header information (Id, IsLine, Channel, FrameNumber)
      * and return true if they all match, except if m_Id in otherPickedObject is -1, which acts
      * as a wildcard
      */
-    bool HeadersMatch ( const PickedObject& otherPickedObject, const long long& allowableTimingError = 20e6) const; 
+    bool HeadersMatch ( const PickedObject& otherPickedObject, const long long& allowableTimingError = 20e6) const;
 
     /**
      * \brief Calculates a distance between two picked objects
-     * returns infinity if the headers don't match
-     *
+     * returns infinity if the headers don't match.
+     * Delta's contains the
+     * signed distance with a header matching the calling object
+     * The first value in m_Points is the signed distance,
+     * the second value is the centroid of the calling objects m_Points,
+     * the third value  is the centroid of the otherPickedObject
      */
-    double DistanceTo ( const PickedObject& otherPickedObject, cv::Point3d& deltas, const long long& allowableTimingError = 20e6) const;
+    double DistanceTo ( const PickedObject& otherPickedObject, PickedObject& deltas, const long long& allowableTimingError = 20e6) const;
 
     /**
      * \brief Copy the header information to a new instance
      */
-    PickedObject CopyByHeader () const; 
+    PickedObject CopyByHeader () const;
 
 };
 
 std::istream& operator >> ( std::istream& is, PickedObject& po);
-std::ostream& operator << ( std::ostream& os, const PickedObject& po);
 
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool operator < ( const PickedObject &PO1 , const PickedObject &PO2);
+extern "C++" NIFTKOPENCVUTILS_EXPORT PickedObject operator * ( const PickedObject &PO1 , const cv::Mat* transform);
 
 /**
- * \class maintains a set a point vectors and ID's that 
+ * \class maintains a set a point vectors and ID's that
  * can be used to represent lines or points in an image
  */
 class NIFTKOPENCVUTILS_EXPORT PickedPointList : public itk::Object
@@ -239,7 +243,7 @@ public:
   itkSetMacro (YScale, double);
   std::vector <mitk::PickedObject> GetPickedObjects() const;
   void SetPickedObjects ( const std::vector < mitk::PickedObject > & objects );
-  
+
   unsigned int GetListSize() const;
   unsigned int GetNumberOfPoints() const;
   unsigned int GetNumberOfLines() const;
@@ -257,6 +261,7 @@ public:
   void AddDummyPointIfNotPresent ( const mitk::PickedObject& target );
 
   mitk::PickedPointList::Pointer CopyByHeader();
+  mitk::PickedPointList::Pointer TransformPointList (cv::Mat* transform);
 
 protected:
   PickedPointList();

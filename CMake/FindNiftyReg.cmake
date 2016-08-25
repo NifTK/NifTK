@@ -78,9 +78,11 @@ if (NOT NiftyReg_FOUND)
         NO_DEFAULT_PATH
       )
 
-      set(NiftyReg_LIBRARIES ${NiftyReg_LIBRARIES} ${_library_with_postfix}})
+      set(NiftyReg_LIBRARIES ${NiftyReg_LIBRARIES} ${_library_with_postfix})
 
     endforeach()
+
+    list(REMOVE_DUPLICATES NiftyReg_LIBRARIES)
 
     get_filename_component( NiftyReg_LIBRARY_DIR ${NiftyReg_TOOLS_LIBRARY} PATH )
 

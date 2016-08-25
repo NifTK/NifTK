@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.igicameracal"
+          name="Video Camera Calibration"
+          class="niftk::CameraCalView"
+          icon="resources/icon.xpm" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.CameraCalViewPreferencePage" name="Video Camera Calibration" class="niftk::CameraCalViewPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.CameraCalViewKeywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>

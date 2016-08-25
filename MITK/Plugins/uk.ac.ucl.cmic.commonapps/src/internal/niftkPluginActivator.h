@@ -105,15 +105,12 @@ protected:
   virtual void NodeRemoved(const mitk::DataNode *node);
 
   /// \brief Derived classes should provide a URL for which help page to use as the 'home' page.
-  virtual QString GetHelpHomePageURL() const { return QString(); }
+  virtual QString GetHelpHomePageURL() const override;
+
+  /// \brief Private method that retrieves the DataStorage from the m_DataStorageServiceTracker
+  mitk::DataStorage::Pointer GetDataStorage();
 
 private:
-
-  /// \brief Parses a node property value that was specified on the command line.
-  QVariant ParsePropertyValue(const QString& propertyValue);
-
-  /// \brief Sets node properties from a map of QVariant values per renderer name per property name.
-  void SetNodeProperty(mitk::DataNode* node, const QString& propertyName, const QVariant& propertyValue, const QString& rendererName = QString());
 
   /// \brief Private method that checks whether or not we are already updating and if not, calls NodeAdded()
   void NodeAddedProxy(const mitk::DataNode *node);
@@ -123,9 +120,6 @@ private:
 
   /// \brief Returns the lookup table provider service.
   niftk::LookupTableProviderService* GetLookupTableProvider();
-
-  /// \brief Private method that retrieves the DataStorage from the m_DataStorageServiceTracker
-  const mitk::DataStorage* GetDataStorage();
 
   /// \brief Retrieves the preferences node name, or Null if unsuccessful.
   berry::IPreferences::Pointer GetPreferencesNode(const QString& preferencesNodeName);
@@ -140,15 +134,20 @@ private:
       float &mean,
       float &stdDev);
 
+  /// \brief Processes the command line options defined by niftk::BaseApplication.
+  void ProcessOptions();
 
-  void LoadDataFromDisk(const QStringList& args, bool globalReinit);
-  void startNewInstance(const QStringList& args, const QStringList &files);
+  /// \brief Processes the '--open' command line options.
+  void ProcessOpenOptions();
 
-private Q_SLOTS:
+  /// \brief Processes the '--derives-from' command line options.
+  void ProcessDerivesFromOptions();
 
-  void handleIPCMessage(const QByteArray &msg);
+  /// \brief Processes the '--property' command line options.
+  void ProcessPropertyOptions();
 
-private:
+  /// \brief Parses a node property value that was specified on the command line.
+  mitk::BaseProperty::Pointer ParsePropertyValue(const QString& propertyValue);
 
   ctkServiceTracker<mitk::IDataStorageService*>* m_DataStorageServiceTracker;
 
@@ -159,6 +158,8 @@ private:
   std::map<mitk::BaseProperty*, mitk::DataNode*> m_PropertyToNodeMap;
   std::map<mitk::DataNode*, unsigned long int>   m_NodeToLowestOpacityObserverMap;
   std::map<mitk::DataNode*, unsigned long int>   m_NodeToHighestOpacityObserverMap;
+  std::map<mitk::DataNode*, unsigned long int>   m_NodeToLookupTableNameObserverMap;
+
 };
 
 }

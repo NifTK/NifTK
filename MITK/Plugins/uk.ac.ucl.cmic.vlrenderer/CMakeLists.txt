@@ -24,7 +24,7 @@ mitk_create_plugin(
   EXPORT_DIRECTIVE NEWVISUALIZATION_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS MitkCore MitkQtWidgets MitkQtWidgetsExt niftkCore niftkCoreGui niftkVL
-  PACKAGE_DEPENDS VL|VLGraphics
+  PACKAGE_DEPENDS VL|VLCore VL|VLGraphics VL|VLVolume VL|VLVivid VL|VLQt4
 )
 
 # not nice...

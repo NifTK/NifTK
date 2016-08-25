@@ -55,7 +55,7 @@ private:
   std::auto_ptr<niftk::PNMReaderService>                m_PNMReaderService;
   std::auto_ptr<niftk::PNMWriterService>                m_PNMWriterService;
 
-  std::auto_ptr<LookupTableProviderService>        m_LookupTableProviderService;
+  std::auto_ptr<LookupTableProviderService>             m_LookupTableProviderService;
   std::auto_ptr<niftk::LabelMapReader>                  m_LabelMapReaderService;
   std::auto_ptr<niftk::LabelMapWriter>                  m_LabelMapWriterService;
 

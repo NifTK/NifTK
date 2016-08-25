@@ -16,15 +16,15 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  IGIVideoOverlayEditorActivator.cxx
-  IGIVideoOverlayEditorPreferencePage.cxx
-  IGIVideoOverlayEditor.cxx
+  niftkIGIVideoOverlayEditorActivator.cxx
+  niftkIGIVideoOverlayEditorPreferencePage.cxx
+  niftkIGIVideoOverlayEditor.cxx
 )
 
 set(MOC_H_FILES
-  src/internal/IGIVideoOverlayEditorActivator.h
-  src/internal/IGIVideoOverlayEditorPreferencePage.h
-  src/internal/IGIVideoOverlayEditor.h
+  src/internal/niftkIGIVideoOverlayEditorActivator.h
+  src/internal/niftkIGIVideoOverlayEditorPreferencePage.h
+  src/internal/niftkIGIVideoOverlayEditor.h
 )
 
 set(UI_FILES

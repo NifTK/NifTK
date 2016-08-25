@@ -24,19 +24,44 @@ endif ()
 
 if (BUILD_TESTING)
 
-  set(version "55c3054c89")
+  # Note:
+  #
+  # The whole NifTKData repository is rather big. To make the download faster,
+  # we do not clone the entire repository, but check out only the single commit
+  # that we need. This feature requires Git 2.5 or newer (both on the server and
+  # the client) and the 'uploadpack.allowReachableSHA1InWant' option must be set
+  # in the configuration of the repository on the server.
+  #
+  # So that this can work, you must specify the SHA1 commit hash in its whole
+  # length, 40 digits, below.
+
+  set(version_sha1 "55c3054c8901d1e46ce564d3b0b6a7ce9511dfc9")
+  string(SUBSTRING ${version_sha1} 0 10 version)
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTKData.git")
 
   niftkMacroDefineExternalProjectVariables(NifTKData ${version} ${location})
 
   if (NOT DEFINED NIFTK_DATA_DIR)
 
+    if (GIT_VERSION_STRING VERSION_LESS "2.5.0")
+      set(_download_arguments
+        GIT_REPOSITORY ${proj_LOCATION}
+        GIT_TAG ${proj_VERSION}
+      )
+    else()
+      set(_download_arguments
+        # This is a fake download command, but something must be there so that CMake is happy.
+        DOWNLOAD_COMMAND echo Downloading ${proj}...
+        UPDATE_COMMAND ${GIT_EXECUTABLE} init
+               COMMAND ${GIT_EXECUTABLE} fetch --depth 1 ${proj_LOCATION} ${version_sha1}
+               COMMAND ${GIT_EXECUTABLE} checkout ${version_sha1}
+      )
+    endif()
+
     ExternalProject_Add(${proj}
       PREFIX ${proj_CONFIG}
       SOURCE_DIR ${proj_SOURCE}
-      GIT_REPOSITORY ${proj_LOCATION}
-      GIT_TAG ${proj_VERSION}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
+      ${_download_arguments}
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
       INSTALL_COMMAND ""

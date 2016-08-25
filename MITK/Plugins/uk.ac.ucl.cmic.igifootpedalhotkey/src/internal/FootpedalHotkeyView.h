@@ -52,8 +52,12 @@ public:
   virtual std::string GetViewID() const;
 
 signals:
-  void OnStartRecording(ctkDictionary d);
-  void OnStopRecording(ctkDictionary d);
+  void OnFootSwitch1Start(ctkDictionary d);
+  void OnFootSwitch1Stop(ctkDictionary d);
+  void OnFootSwitch2Start(ctkDictionary d);
+  void OnFootSwitch2Stop(ctkDictionary d);
+  void OnFootSwitch3Start(ctkDictionary d);
+  void OnFootSwitch3Stop(ctkDictionary d);
 
 protected:
 

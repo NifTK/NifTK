@@ -484,13 +484,12 @@ endif()
 # Qt version related variables
 
 if(APPLE)
-  set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+  set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
 else()
 
-  # For now, we stick with Qt 4.
+  # For now, we stick with Qt 5.
 
-  #set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
-  set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+  set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
 
 endif()
 
@@ -589,20 +588,24 @@ mitkFunctionAddExternalProject(NAME MITK      ON  ADVANCED NO_CACHE DEPENDS ITK 
 
 mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK)
 mitkFunctionAddExternalProject(NAME RTK                  OFF ADVANCED DEPENDS ITK GDCM)
+mitkFunctionAddExternalProject(NAME NiftyCal  OFF ADVANCED DEPENDS OpenCV AprilTags Eigen ITK)
+
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
 
-#env_option(MITK_USE_OpenCL "Use OpenCL GPU-Computing library" OFF)
+env_option(MITK_USE_OpenCL "Use OpenCL GPU-Computing library" ON)
 
 if (BUILD_IGI)
   set(MITK_USE_AprilTags ON CACHE BOOL "" FORCE)
   set(MITK_USE_ArUco ON CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyLink ON CACHE BOOL "" FORCE)
+  set(MITK_USE_NiftyCal ON CACHE BOOL "" FORCE)
   set(MITK_USE_OpenCV ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_AprilTags OFF CACHE BOOL "" FORCE)
   set(MITK_USE_ArUco OFF CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyLink OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_NiftyCal OFF CACHE BOOL "" FORCE)
   set(MITK_USE_OpenCV OFF CACHE BOOL "" FORCE)
 endif()
 
@@ -882,7 +885,7 @@ if (BUILD_MESHING)
     ${CMAKE_SOURCE_DIR}/Libraries/Meshing
   )
 endif (BUILD_MESHING)
- 
+
 ######################################################################
 # Find CUDA: Required by the Nifty packages
 ######################################################################
@@ -1378,9 +1381,16 @@ endif(BUILD_RTK)
 ######################################################################
 
 if(BUILD_VL)
-  find_package(VL COMPONENTS VLCore VLGraphics VLVolume REQUIRED)
+  set(_vl_components VLCore VLGraphics VLVolume VLVivid )
+  if(MITK_USE_Qt4)
+    list(APPEND _vl_components VLQt4)
+  endif()
+  if(MITK_USE_Qt5)
+    list(APPEND _vl_components VLQt5)
+  endif()
+  find_package(VL COMPONENTS ${_vl_components} REQUIRED)
   if(VL_FOUND)
-    message("Found VL")
+    message("Found VL: ${_vl_components}")
     #include(${VL_USE_FILE})
   endif(VL_FOUND)
 endif(BUILD_VL)
@@ -1615,7 +1625,7 @@ endif()
 # These represent the libraries that the apps, libraries and unit tests actually link against
 #############################################################################################
 
-set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIOCore vtkIOLegacy vtkCommonCore vtkRenderingCore vtkRenderingOpenGL vtkFiltersSources vtkFiltersGeometry vtkInteractionStyle vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkIOImage vtkIOPLY)
+set(NIFTK_VTK_LIBS_BUT_WITHOUT_QT vtkIOCore vtkIOLegacy vtkCommonCore vtkRenderingCore vtkRenderingOpenGL vtkFiltersSources vtkFiltersGeometry vtkFiltersModeling vtkInteractionStyle vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkIOImage vtkIOPLY)
 set(NIFTK_VTK_LIBS_WITH_QT vtkViewsQt vtkRenderingQt vtkGUISupportQt vtkGUISupportQtSQL vtkGUISupportQtWebkit)
 
 ######################################################################
@@ -1837,13 +1847,13 @@ endif()
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 configure_file(${CMAKE_SOURCE_DIR}/CMake/CPackOptions.cmake.in
-               ${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake)
+               ${CMAKE_BINARY_DIR}/NifTKCPackOptions.cmake)
 
-# 3. Set a variable with the name of this file.		
-set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/NIFTKCPackOptions.cmake")
+# 3. Set a variable with the name of this file.
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/NifTKCPackOptions.cmake")
 
 # 4. Include this optional file.
-include(NIFTKCPackOptions)
+include(NifTKCPackOptions)
 
 # 5. Include CPack module once all variables are set.
 include(CPack)
@@ -1945,7 +1955,7 @@ foreach(target_to_export ${targets_to_export})
   if(autoload_targets)
 
 # Watch out for the newline in this next set statement. Its intentional, and necessary.
-    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES} 
+    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES}
 set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${autoload_targets}\")")
 
   endif()
@@ -1953,7 +1963,7 @@ set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_TARGETS \"${a
   if(autoload_dir)
 
 # Watch out for the newline in this next set statement. Its intentional, and necessary.
-    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES} 
+    set(NIFTK_EXPORTED_TARGET_PROPERTIES "${NIFTK_EXPORTED_TARGET_PROPERTIES}
 set_target_properties(${target_to_export} PROPERTIES MITK_AUTOLOAD_DIRECTORY \"${autoload_dir}\")")
 
   endif()

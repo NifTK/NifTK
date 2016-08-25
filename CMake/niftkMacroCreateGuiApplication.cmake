@@ -117,7 +117,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
 
   mitk_use_modules(
     TARGET ${MY_APP_NAME}
-    MODULES MitkAppUtil
+    MODULES niftkCoreApp
     PACKAGES Qt4|QtGui Qt5|Widgets
   )
 

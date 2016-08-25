@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+  <extension point="org.blueberry.ui.editors">
+    <editor
+      id="org.mitk.editors.igivlvideooverlayeditor"
+      name="VL Video Overlay Display"
+      extensions="mitk"
+      class="niftk::IGIVLVideoOverlayEditor">
+    </editor>
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="org.mitk.editors.igivlvideooverlayeditor" name="VL Video Overlay Display"
+      class="niftk::IGIVLVideoOverlayEditorPreferencePage" category="org.mitk.EditorsPreferencePage">
+      <keywordreference id="org.mitk.IGIVLVideoOverlayEditorPreferencePageKeywords"/>
+    </page>
+  </extension>
+</plugin>
