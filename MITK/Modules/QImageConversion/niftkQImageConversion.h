@@ -23,7 +23,7 @@ namespace niftk
 {
 
 /**
-* Supports RGB, RGBA and grayscale images, currently 8-bit per channel only!.
+* Supports RGB, RGBA (Qt5) and grayscale images, currently 8-bit per channel only!.
 * Known bug: does not take care of different channel layouts: BGR vs RGB!
 */
 mitk::Image::Pointer NIFTKQIMAGECONVERSION_EXPORT CreateMitkImage(const QImage* image,
