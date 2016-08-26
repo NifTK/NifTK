@@ -149,6 +149,9 @@ private:
   /// and move the cursor around, and approach another point while dragging, the chosen point will swap.
   unsigned int m_DraggedPointIndex;
 
+  bool m_SelectPointInProgress;
+  mitk::InteractionEvent::Pointer m_SelectPointEvent;
+
 };
 
 }

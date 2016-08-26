@@ -53,6 +53,7 @@ PolyTool::PolyTool()
 , m_PolyLinePointSetNode(NULL)
 , m_PolyLinePointSetVisible(false)
 , m_DraggedPointIndex(0)
+, m_SelectPointInProgress(false)
 {
   // These are not added to DataStorage as they are never drawn, they are just an internal data structure
   m_ReferencePoints = mitk::ContourModel::New();
@@ -190,6 +191,12 @@ void PolyTool::Activated()
 
 void PolyTool::Deactivated()
 {
+  if (m_SelectPointInProgress)
+  {
+    this->DeselectPoint(nullptr, m_SelectPointEvent);
+    this->ResetToStartState();
+  }
+
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
 
   if (feedbackContour != NULL && feedbackContour->GetNumberOfVertices() > 0)
@@ -464,6 +471,9 @@ bool PolyTool::AddLine(mitk::StateMachineAction* action, mitk::InteractionEvent*
 
 bool PolyTool::SelectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  m_SelectPointInProgress = true;
+  m_SelectPointEvent = event;
+
   InteractionEventObserverMutex::GetInstance()->Lock(this);
 
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
@@ -488,6 +498,9 @@ bool PolyTool::MovePoint(mitk::StateMachineAction* action, mitk::InteractionEven
 
 bool PolyTool::DeselectPoint(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  assert(m_SelectPointInProgress);
+  assert(m_SelectPointEvent.IsNotNull());
+
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   assert(positionEvent);
 
@@ -496,6 +509,8 @@ bool PolyTool::DeselectPoint(mitk::StateMachineAction* action, mitk::Interaction
   this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, ContourTool::EDITING_PROPERTY_NAME, false);
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
+  m_SelectPointInProgress = false;
+  m_SelectPointEvent = nullptr;
 
   return true;
 }
