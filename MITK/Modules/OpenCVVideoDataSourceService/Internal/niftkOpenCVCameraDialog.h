@@ -12,30 +12,29 @@
 
 =============================================================================*/
 
-#ifndef niftkQtCameraDialog_h
-#define niftkQtCameraDialog_h
+#ifndef niftkOpenCVCameraDialog_h
+#define niftkOpenCVCameraDialog_h
 
 #include "niftkIGIInitialisationDialog.h"
-#include <ui_niftkQtCameraDialog.h>
+#include <ui_niftkOpenCVCameraDialog.h>
 
 namespace niftk
 {
 
-class QtCameraDialog : public IGIInitialisationDialog,
-                       public Ui_niftkQtCameraDialog
+class OpenCVCameraDialog : public IGIInitialisationDialog,
+                           public Ui_niftkOpenCVCameraDialog
 
 {
   Q_OBJECT
 
 public:
 
-  QtCameraDialog(QWidget *parent);
-  ~QtCameraDialog();
+  OpenCVCameraDialog(QWidget *parent);
+  ~OpenCVCameraDialog();
 
 private slots:
 
   void OnOKClicked();
-
 };
 
 } // end namespace

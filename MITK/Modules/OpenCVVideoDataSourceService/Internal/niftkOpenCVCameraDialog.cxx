@@ -12,15 +12,14 @@
 
 =============================================================================*/
 
-#include "niftkQtCameraDialog.h"
-#include <QCameraInfo>
+#include "niftkOpenCVCameraDialog.h"
 #include <cassert>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-QtCameraDialog::QtCameraDialog(QWidget *parent)
+OpenCVCameraDialog::OpenCVCameraDialog(QWidget *parent)
 :IGIInitialisationDialog(parent)
 {
   setupUi(this);
@@ -28,34 +27,23 @@ QtCameraDialog::QtCameraDialog(QWidget *parent)
   m_FileExtensionComboBox->addItem("PNG", QVariant::fromValue(QString(".png")));
   m_FileExtensionComboBox->setCurrentIndex(0);
 
-  m_CameraNameComboBox->clear();
-
-  QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-  foreach (const QCameraInfo &cameraInfo, cameras)
-  {
-    m_CameraNameComboBox->addItem(cameraInfo.description(), QVariant::fromValue(cameraInfo.deviceName()));
-  }
-
   bool ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 }
 
 
 //-----------------------------------------------------------------------------
-QtCameraDialog::~QtCameraDialog()
+OpenCVCameraDialog::~OpenCVCameraDialog()
 {
-  bool ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()),
-                                this, SLOT(OnOKClicked()));
+  bool ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 }
 
 
 //-----------------------------------------------------------------------------
-void QtCameraDialog::OnOKClicked()
+void OpenCVCameraDialog::OnOKClicked()
 {
   IGIDataSourceProperties props;
-  props.insert("description", QVariant::fromValue(m_CameraNameComboBox->currentText()));
-  props.insert("name", QVariant::fromValue(m_CameraNameComboBox->itemData(m_CameraNameComboBox->currentIndex())));
   props.insert("extension", QVariant::fromValue(m_FileExtensionComboBox->itemData(m_FileExtensionComboBox->currentIndex())));
   m_Properties = props;
 }

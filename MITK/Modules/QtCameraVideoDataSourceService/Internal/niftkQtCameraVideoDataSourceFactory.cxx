@@ -23,7 +23,7 @@ namespace niftk
 //-----------------------------------------------------------------------------
 QtCameraVideoDataSourceFactory::QtCameraVideoDataSourceFactory()
 : IGIDataSourceFactoryServiceI("Qt Video",
-                               true, // can pick which camera source
+                               true, // can pick which camera source and save format at startup
                                true  // can configure lag while running
                                )
 {

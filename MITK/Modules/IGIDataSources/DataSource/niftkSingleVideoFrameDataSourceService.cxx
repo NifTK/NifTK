@@ -45,6 +45,12 @@ SingleVideoFrameDataSourceService::SingleVideoFrameDataSourceService(
 {
   this->SetStatus("Initialising");
 
+  if(!properties.contains("extension"))
+  {
+    mitkThrow() << "File extension not specified!";
+  }
+  m_FileExtension = (properties.value("extension")).toString();
+
   QString fullDeviceName = this->GetName();
   m_ChannelNumber = (fullDeviceName.remove(0, deviceName.length())).toInt();
 
@@ -132,7 +138,7 @@ bool SingleVideoFrameDataSourceService::ProbeRecordedData(niftk::IGIDataType::IG
   if (directory.exists())
   {
     std::set<niftk::IGIDataType::IGITimeType> timeStamps;
-    niftk::ProbeTimeStampFiles(directory, QString(".jpg"), timeStamps);
+    niftk::ProbeTimeStampFiles(directory, m_FileExtension, timeStamps);
     if (!timeStamps.empty())
     {
       firstTimeStampFound = *timeStamps.begin();
@@ -167,7 +173,7 @@ void SingleVideoFrameDataSourceService::StartPlayback(niftk::IGIDataType::IGITim
   if (directory.exists())
   {
     std::set<niftk::IGIDataType::IGITimeType> timeStamps;
-    niftk::ProbeTimeStampFiles(directory, QString(".jpg"), timeStamps);
+    niftk::ProbeTimeStampFiles(directory, m_FileExtension, timeStamps);
     m_PlaybackIndex = timeStamps;
   }
   else
@@ -206,7 +212,7 @@ void SingleVideoFrameDataSourceService::PlaybackData(niftk::IGIDataType::IGITime
     if (!m_Buffer->Contains(*i))
     {
       std::ostringstream  filename;
-      filename << this->GetPlaybackDirectory().toStdString() << '/' << (*i) << ".jpg";
+      filename << this->GetPlaybackDirectory().toStdString() << '/' << (*i) << m_FileExtension.toStdString();
 
       niftk::IGIDataType::Pointer wrapper = this->LoadImage(filename.str());
       if (wrapper.IsNull())
@@ -270,7 +276,8 @@ void SingleVideoFrameDataSourceService::SaveItem(niftk::IGIDataType::Pointer dat
   QDir directory(directoryPath);
   if (directory.mkpath(directoryPath))
   {
-    QString fileName =  directoryPath + QDir::separator() + tr("%1.jpg").arg(data->GetTimeStampInNanoSeconds());
+    QString fileName =  directoryPath + QDir::separator()
+                        + tr("%1").arg(data->GetTimeStampInNanoSeconds()) + m_FileExtension;
     this->SaveImage(fileName.toStdString(), data);
     data->SetIsSaved(true);
   }

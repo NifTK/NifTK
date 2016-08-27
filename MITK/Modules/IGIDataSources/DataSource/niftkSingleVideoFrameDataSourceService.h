@@ -146,6 +146,7 @@ private:
   niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
   std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
   int                                             m_ApproxIntervalInMilliseconds;
+  QString                                         m_FileExtension;
 
 }; // end class
 
