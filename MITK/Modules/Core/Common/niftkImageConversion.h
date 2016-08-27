@@ -12,6 +12,7 @@
 
 =============================================================================*/
 
+#include "niftkCoreExports.h"
 #include <mitkImageReadAccessor.h>
 #include <mitkImageCast.h>
 #include <itkImportImageFilter.h>
@@ -26,12 +27,12 @@ typedef itk::RGBAPixel<unsigned char> UCRGBAPixelType;
 //-----------------------------------------------------------------------------
 // Note: Does not do pixel conversions (e.g. BGR to RGB).
 template <typename ITKPixelType>
-static mitk::Image::Pointer CreateMitkImageInternal(const char* imageData,
-                                                    unsigned int numberOfChannels,
-                                                    unsigned int width,
-                                                    unsigned int widthStep,
-                                                    unsigned int height
-                                                    )
+NIFTKCORE_EXPORT mitk::Image::Pointer CreateMitkImageInternal(const char* imageData,
+                                                              unsigned int numberOfChannels,
+                                                              unsigned int width,
+                                                              unsigned int widthStep,
+                                                              unsigned int height
+                                                             )
 {
   typedef itk::Image<ITKPixelType, 3>             ItkImageType;
   typedef itk::ImportImageFilter<ITKPixelType, 3> ImportFilterType;
