@@ -155,60 +155,62 @@ mitk::Image::Pointer OpenCVVideoDataSourceService::ConvertImage(niftk::IGIDataTy
   }
 
   const IplImage* img = dataType->GetImage();
-  if (img == nullptr)
+  if (img != nullptr)
+  {
+    // OpenCV's cannonical channel layout is bgr (instead of rgb),
+    // while everything usually else expects rgb...
+    IplImage* rgbaOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, 4);
+    cvCvtColor( img, rgbaOpenCVImage,  CV_BGR2RGBA );
+
+    // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
+    // we should make sure we got the layout right. (opencv itself does not use this in any way.)
+    std::memcpy(&rgbaOpenCVImage->channelSeq[0], "RGBA", 4);
+
+    // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
+    mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(rgbaOpenCVImage);
+
+  #ifdef XXX_USE_CUDA
+    // a compatibility stop-gap to interface with new renderer and cuda bits.
+    {
+      CUDAManager*    cm = CUDAManager::GetInstance();
+      if (cm != 0)
+      {
+        cudaStream_t    mystream = cm->GetStream("OpenCVVideoDataSourceService::ConvertImage");
+        WriteAccessor   wa       = cm->RequestOutputImage(rgbaOpenCVImage->width, rgbaOpenCVImage->height, 4);
+
+        assert(rgbaOpenCVImage->widthStep >= (rgbaOpenCVImage->width * 4));
+        cudaMemcpy2DAsync(wa.m_DevicePointer,
+                          wa.m_BytePitch,
+                          rgbaOpenCVImage->imageData,
+                          rgbaOpenCVImage->widthStep,
+                          rgbaOpenCVImage->width * 4,
+                          rgbaOpenCVImage->height,
+                          cudaMemcpyHostToDevice,
+                          mystream);
+
+        // no error handling...
+
+        LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
+
+        CUDAImageProperty::Pointer    lwciprop = CUDAImageProperty::New();
+        lwciprop->Set(lwci);
+
+        convertedImage->SetProperty("CUDAImageProperty", lwciprop);
+      }
+    }
+  #endif
+
+    outputNumberOfBytes = rgbaOpenCVImage->width * rgbaOpenCVImage->height * 4;
+
+    cvReleaseImage(&rgbaOpenCVImage);
+
+    return convertedImage;
+  }
+  else
   {
     this->SetStatus("Failed");
     mitkThrow() << "Failed to extract OpenCV image!";
   }
-
-  // OpenCV's cannonical channel layout is bgr (instead of rgb),
-  // while everything usually else expects rgb...
-  IplImage* rgbaOpenCVImage = cvCreateImage( cvSize( img->width, img->height ), img->depth, 4);
-  cvCvtColor( img, rgbaOpenCVImage,  CV_BGR2RGBA );
-
-  // ...so when we eventually extend/generalise CreateMitkImage() to handle different formats/etc
-  // we should make sure we got the layout right. (opencv itself does not use this in any way.)
-  std::memcpy(&rgbaOpenCVImage->channelSeq[0], "RGBA", 4);
-
-  // And then we stuff it into the DataNode, where the SmartPointer will delete for us if necessary.
-  mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(rgbaOpenCVImage);
-
-#ifdef XXX_USE_CUDA
-  // a compatibility stop-gap to interface with new renderer and cuda bits.
-  {
-    CUDAManager*    cm = CUDAManager::GetInstance();
-    if (cm != 0)
-    {
-      cudaStream_t    mystream = cm->GetStream("OpenCVVideoDataSourceService::ConvertImage");
-      WriteAccessor   wa       = cm->RequestOutputImage(rgbaOpenCVImage->width, rgbaOpenCVImage->height, 4);
-
-      assert(rgbaOpenCVImage->widthStep >= (rgbaOpenCVImage->width * 4));
-      cudaMemcpy2DAsync(wa.m_DevicePointer,
-                        wa.m_BytePitch,
-                        rgbaOpenCVImage->imageData,
-                        rgbaOpenCVImage->widthStep,
-                        rgbaOpenCVImage->width * 4,
-                        rgbaOpenCVImage->height,
-                        cudaMemcpyHostToDevice,
-                        mystream);
-
-      // no error handling...
-
-      LightweightCUDAImage lwci = cm->Finalise(wa, mystream);
-
-      CUDAImageProperty::Pointer    lwciprop = CUDAImageProperty::New();
-      lwciprop->Set(lwci);
-
-      convertedImage->SetProperty("CUDAImageProperty", lwciprop);
-    }
-  }
-#endif
-
-  outputNumberOfBytes = rgbaOpenCVImage->width * rgbaOpenCVImage->height * 4;
-
-  cvReleaseImage(&rgbaOpenCVImage);
-
-  return convertedImage;
 }
 
 } // end namespace

@@ -870,7 +870,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
 
   if (nz > 1)
   {
-    MITK_WARN << "Received 3D image message, which has never been implemented. Please volunteer";
+    MITK_WARN << "Received 3D/4D image message, which has never been implemented/tested. Please volunteer";
     return infos;
   }
 
@@ -879,6 +879,8 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
   {
     mitkThrow() << this->GetName().toStdString() << ":Can't find mitk::DataNode with name " << deviceName.toStdString();
   }
+
+  unsigned int numberOfBytes = 0;
 
   QImage qImage;
   niftk::GetQImage(imgMsg, qImage);
@@ -893,17 +895,17 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
     haswrongsize |= imageInNode->GetDimension(2) != nz;
 
     // check image type as well.
-    haswrongsize |= (((imageInNode->GetPixelType().GetBitsPerComponent()
+    numberOfBytes = ((  imageInNode->GetPixelType().GetBitsPerComponent()
                       * imageInNode->GetPixelType().GetNumberOfComponents()
-                      * nx * ny * nz) / 8) != qImage.byteCount());
+                      * nx * ny * nz) / 8);
+
+    haswrongsize |= ( numberOfBytes != qImage.byteCount());
 
     if (haswrongsize)
     {
       imageInNode = mitk::Image::Pointer();
     }
   }
-
-  unsigned int numberOfBytes = 0;
 
   if (imageInNode.IsNull())
   {
@@ -918,7 +920,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
   {
     mitk::ImageWriteAccessor writeAccess(imageInNode);
     void* vPointer = writeAccess.GetData();
-    std::memcpy(vPointer, qImage.bits(), qImage.bytesPerLine() * qImage.height());
+    std::memcpy(vPointer, qImage.bits(), numberOfBytes);
   }
 
   node->Modified();
