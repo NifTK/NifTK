@@ -14,6 +14,7 @@
 #ifndef niftkSingleVideoFrameDataSourceService_h
 #define niftkSingleVideoFrameDataSourceService_h
 
+#include <niftkIGIDataSourcesExports.h>
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
 #include <niftkIGIDataSourceBuffer.h>
@@ -39,7 +40,7 @@ namespace niftk
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class SingleVideoFrameDataSourceService
+class NIFTKIGIDATASOURCES_EXPORT SingleVideoFrameDataSourceService
     : public QObject
     , public IGIDataSource
     , public IGILocalDataSourceI
