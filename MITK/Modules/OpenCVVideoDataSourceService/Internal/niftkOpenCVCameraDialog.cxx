@@ -44,7 +44,8 @@ OpenCVCameraDialog::~OpenCVCameraDialog()
 void OpenCVCameraDialog::OnOKClicked()
 {
   IGIDataSourceProperties props;
-  props.insert("extension", QVariant::fromValue(m_FileExtensionComboBox->itemData(m_FileExtensionComboBox->currentIndex())));
+  props.insert("extension", QVariant::fromValue(m_FileExtensionComboBox->itemData(
+                                                  m_FileExtensionComboBox->currentIndex())));
   m_Properties = props;
 }
 

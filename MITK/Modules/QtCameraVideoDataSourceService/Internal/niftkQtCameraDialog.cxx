@@ -56,7 +56,8 @@ void QtCameraDialog::OnOKClicked()
   IGIDataSourceProperties props;
   props.insert("description", QVariant::fromValue(m_CameraNameComboBox->currentText()));
   props.insert("name", QVariant::fromValue(m_CameraNameComboBox->itemData(m_CameraNameComboBox->currentIndex())));
-  props.insert("extension", QVariant::fromValue(m_FileExtensionComboBox->itemData(m_FileExtensionComboBox->currentIndex())));
+  props.insert("extension", QVariant::fromValue(m_FileExtensionComboBox->itemData(
+                                                  m_FileExtensionComboBox->currentIndex())));
   m_Properties = props;
 }
 

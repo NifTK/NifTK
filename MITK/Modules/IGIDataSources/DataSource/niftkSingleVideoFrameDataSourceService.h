@@ -135,7 +135,7 @@ protected:
 private:
 
   SingleVideoFrameDataSourceService(const SingleVideoFrameDataSourceService&); // deliberately not implemented
-  SingleVideoFrameDataSourceService& operator=(const SingleVideoFrameDataSourceService&); // deliberately not implemented
+  SingleVideoFrameDataSourceService& operator=(const SingleVideoFrameDataSourceService&); // deliberately not impl'd.
 
   void SaveItem(niftk::IGIDataType::Pointer item) override;
 
