@@ -14,7 +14,6 @@
 
 #include "niftkPluginActivator.h"
 
-#include <itkCommand.h>
 #include <itkStatisticsImageFilter.h>
 
 #include <vtkLookupTable.h>
@@ -62,6 +61,7 @@
 #include <QtPlugin>
 
 #include <NifTKConfigure.h>
+#include <niftkDataNodePropertyListener.h>
 #include <niftkDataStorageUtils.h>
 #include <niftkNamedLookupTableProperty.h>
 
@@ -80,7 +80,6 @@ PluginActivator* PluginActivator::s_Instance = nullptr;
 //-----------------------------------------------------------------------------
 PluginActivator::PluginActivator()
 : m_DataStorageServiceTracker(nullptr)
-, m_InDataStorageChanged(false)
 {
   s_Instance = this;
 }
@@ -106,7 +105,7 @@ void PluginActivator::start(ctkPluginContext* context)
 
   BERRY_REGISTER_EXTENSION_CLASS(MinimalPerspective, context);
 
-  this->RegisterDataStorageListener();
+  this->RegisterDataStorageListeners();
   this->BlankDepartmentalLogo();
 
   // Get the MitkCore module context.
@@ -124,7 +123,7 @@ void PluginActivator::start(ctkPluginContext* context)
 //-----------------------------------------------------------------------------
 void PluginActivator::stop(ctkPluginContext* context)
 {
-  this->UnregisterDataStorageListener();
+  this->UnregisterDataStorageListeners();
 
   BaseApplicationPluginActivator::stop(context);
 }
@@ -133,12 +132,12 @@ void PluginActivator::stop(ctkPluginContext* context)
 //-----------------------------------------------------------------------------
 mitk::DataStorage::Pointer PluginActivator::GetDataStorage()
 {
-  mitk::DataStorage::Pointer dataStorage = NULL;
+  mitk::DataStorage::Pointer dataStorage;
 
-  if (m_DataStorageServiceTracker != NULL)
+  if (m_DataStorageServiceTracker)
   {
     mitk::IDataStorageService* dsService = m_DataStorageServiceTracker->getService();
-    if (dsService != 0)
+    if (dsService)
     {
       dataStorage = dsService->GetDataStorage()->GetDataStorage();
     }
@@ -149,39 +148,79 @@ mitk::DataStorage::Pointer PluginActivator::GetDataStorage()
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::RegisterDataStorageListener()
+void PluginActivator::RegisterDataStorageListeners()
 {
   m_DataStorageServiceTracker = new ctkServiceTracker<mitk::IDataStorageService*>(this->GetContext());
   m_DataStorageServiceTracker->open();
 
-  this->GetDataStorage()->AddNodeEvent.AddListener
-      ( mitk::MessageDelegate1<PluginActivator, const mitk::DataNode*>
-        ( this, &PluginActivator::NodeAddedProxy ) );
+  m_DataNodePropertyRegisterer = DataStorageListener::New(this->GetDataStorage());
+  m_DataNodePropertyRegisterer->NodeAdded
+      += mitk::MessageDelegate1<PluginActivator, mitk::DataNode*>(this, &PluginActivator::RegisterProperties);
 
-  this->GetDataStorage()->RemoveNodeEvent.AddListener
-      ( mitk::MessageDelegate1<PluginActivator, const mitk::DataNode*>
-        ( this, &PluginActivator::NodeRemovedProxy ) );
+  m_LowestOpacityPropertyListener = DataNodePropertyListener::New(this->GetDataStorage(), "Image Rendering.Lowest Value Opacity");
+  m_LowestOpacityPropertyListener->NodePropertyChanged
+      += mitk::MessageDelegate2<PluginActivator, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PluginActivator::UpdateLookupTable);
 
+  m_HighestOpacityPropertyListener = DataNodePropertyListener::New(this->GetDataStorage(), "Image Rendering.Highest Value Opacity");
+  m_HighestOpacityPropertyListener->NodePropertyChanged
+      += mitk::MessageDelegate2<PluginActivator, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PluginActivator::UpdateLookupTable);
+
+  m_LookupTableNamePropertyListener = DataNodePropertyListener::New(this->GetDataStorage(), "LookupTableName");
+  m_LookupTableNamePropertyListener->NodePropertyChanged
+      += mitk::MessageDelegate2<PluginActivator, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PluginActivator::UpdateLookupTable);
 }
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::UnregisterDataStorageListener()
+void PluginActivator::UnregisterDataStorageListeners()
 {
-  if (m_DataStorageServiceTracker != NULL)
+  if (m_DataStorageServiceTracker)
   {
-
-    this->GetDataStorage()->AddNodeEvent.RemoveListener
-        ( mitk::MessageDelegate1<PluginActivator, const mitk::DataNode*>
-          ( this, &PluginActivator::NodeAddedProxy ) );
-
-    this->GetDataStorage()->RemoveNodeEvent.RemoveListener
-        ( mitk::MessageDelegate1<PluginActivator, const mitk::DataNode*>
-          ( this, &PluginActivator::NodeRemovedProxy ) );
+    m_DataNodePropertyRegisterer = nullptr;
+    m_LowestOpacityPropertyListener = nullptr;
+    m_HighestOpacityPropertyListener = nullptr;
+    m_LookupTableNamePropertyListener = nullptr;
 
     m_DataStorageServiceTracker->close();
     delete m_DataStorageServiceTracker;
-    m_DataStorageServiceTracker = NULL;
+    m_DataStorageServiceTracker = nullptr;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::RegisterProperties(mitk::DataNode* node)
+{
+  this->RegisterInterpolationProperty("uk.ac.ucl.cmic.commonapps", node);
+  this->RegisterBinaryImageProperties("uk.ac.ucl.cmic.commonapps", node);
+  this->RegisterImageRenderingModeProperties("uk.ac.ucl.cmic.commonapps", node);
+  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.commonapps", node);
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::UpdateLookupTable(mitk::DataNode* node, const mitk::BaseRenderer* /*renderer*/)
+{
+  if (niftk::IsNodeAGreyScaleImage(node))
+  {
+    float lowestOpacity = 1;
+    bool gotLowest = node->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+
+    float highestOpacity = 1;
+    bool gotHighest = node->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+
+    std::string defaultName = "grey";
+    bool gotLookupTableName = node->GetStringProperty("LookupTableName", defaultName);
+
+    QString lutName = QString::fromStdString(defaultName);
+
+    if (gotLowest && gotHighest && gotLookupTableName)
+    {
+      // Get LUT from Micro Service.
+      niftk::LookupTableProviderService *lutService = this->GetLookupTableProvider();
+      niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
+      node->SetProperty("LookupTable", mitkLUTProperty);
+    }
   }
 }
 
@@ -201,89 +240,6 @@ void PluginActivator::BlankDepartmentalLogo()
 QString PluginActivator::GetHelpHomePageURL() const
 {
   return QString::null;
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::NodeAddedProxy(const mitk::DataNode *node)
-{
-  // guarantee no recursions when a new node event is thrown in NodeAdded()
-  if (!m_InDataStorageChanged)
-  {
-    m_InDataStorageChanged = true;
-    this->NodeAdded(node);
-    m_InDataStorageChanged = false;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::NodeAdded(const mitk::DataNode *constNode)
-{
-  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
-  this->RegisterInterpolationProperty("uk.ac.ucl.cmic.commonapps", node);
-  this->RegisterBinaryImageProperties("uk.ac.ucl.cmic.commonapps", node);
-  this->RegisterImageRenderingModeProperties("uk.ac.ucl.cmic.commonapps", node);
-  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.commonapps", node);
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::NodeRemovedProxy(const mitk::DataNode *node)
-{
-  // guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if (!m_InDataStorageChanged)
-  {
-    m_InDataStorageChanged = true;
-    this->NodeRemoved(node);
-    m_InDataStorageChanged = false;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::NodeRemoved(const mitk::DataNode *constNode)
-{
-  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
-
-  // Removing observers on a node that is being deleted.
-
-  if (niftk::IsNodeAGreyScaleImage(node))
-  {
-    std::map<mitk::DataNode*, unsigned long int>::iterator it;
-
-    it = m_NodeToLowestOpacityObserverMap.find(node);
-
-    if (it != m_NodeToLowestOpacityObserverMap.end())
-    {
-      mitk::BaseProperty::Pointer property = node->GetProperty("Image Rendering.Lowest Value Opacity");
-      property->RemoveObserver(it->second);
-      m_NodeToLowestOpacityObserverMap.erase(it->first);
-      m_PropertyToNodeMap.erase(property.GetPointer());
-    }
-
-    it = m_NodeToHighestOpacityObserverMap.find(node);
-
-    if (it != m_NodeToHighestOpacityObserverMap.end())
-    {
-      mitk::BaseProperty::Pointer property = node->GetProperty("Image Rendering.Highest Value Opacity");
-      property->RemoveObserver(it->second);
-
-      m_NodeToHighestOpacityObserverMap.erase(it->first);
-      m_PropertyToNodeMap.erase(property.GetPointer());
-    }
-
-    it = m_NodeToLookupTableNameObserverMap.find(node);
-
-    if (it != m_NodeToLookupTableNameObserverMap.end())
-    {
-      mitk::BaseProperty::Pointer property = node->GetProperty("LookupTableName");
-      property->RemoveObserver(it->second);
-
-      m_NodeToLookupTableNameObserverMap.erase(it->first);
-      m_PropertyToNodeMap.erase(property.GetPointer());
-    }
-  }
 }
 
 
@@ -314,7 +270,7 @@ PluginActivator
 //-----------------------------------------------------------------------------
 berry::IPreferences::Pointer PluginActivator::GetPreferencesNode(const QString& preferencesNodeName)
 {
-  berry::IPreferences::Pointer result(NULL);
+  berry::IPreferences::Pointer result;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
@@ -471,50 +427,13 @@ void PluginActivator::RegisterLevelWindowProperty(
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::OnLookupTablePropertyChanged(const itk::Object* object, const itk::EventObject& /*event*/)
-{
-  const mitk::BaseProperty* prop = dynamic_cast<const mitk::BaseProperty*>(object);
-  assert(prop);
-
-  std::map<mitk::BaseProperty*, mitk::DataNode*>::const_iterator it =
-      m_PropertyToNodeMap.find(const_cast<mitk::BaseProperty*>(prop));
-
-  if (it != m_PropertyToNodeMap.end())
-  {
-    mitk::DataNode *node = it->second;
-    if (node != NULL && niftk::IsNodeAGreyScaleImage(node))
-    {
-      float lowestOpacity = 1;
-      bool gotLowest = node->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
-
-      float highestOpacity = 1;
-      bool gotHighest = node->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
-
-      std::string defaultName = "grey";
-      bool gotIndex = node->GetStringProperty("LookupTableName", defaultName);
-
-      QString lutName = QString::fromStdString(defaultName);
-
-      if (gotLowest && gotHighest && gotIndex)
-      {
-        // Get LUT from Micro Service.
-        niftk::LookupTableProviderService *lutService = this->GetLookupTableProvider();
-        niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
-        node->SetProperty("LookupTable", mitkLUTProperty);
-      }
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 niftk::LookupTableProviderService* PluginActivator::GetLookupTableProvider()
 {
   us::ModuleContext* context = us::GetModuleContext();
   us::ServiceReference<niftk::LookupTableProviderService> ref = context->GetServiceReference<niftk::LookupTableProviderService>();
   niftk::LookupTableProviderService* lutService = context->GetService<niftk::LookupTableProviderService>(ref);
 
-  if (lutService == NULL)
+  if (!lutService)
   {
     mitkThrow() << "Failed to find niftk::LookupTableProviderService." << std::endl;
   }
@@ -536,7 +455,7 @@ void PluginActivator::RegisterImageRenderingModeProperties(const QString& prefer
 
       mitk::BaseProperty::Pointer lutProp = node->GetProperty("LookupTable");
       const niftk::NamedLookupTableProperty* prop = dynamic_cast<const niftk::NamedLookupTableProperty*>(lutProp.GetPointer());
-      if(prop == NULL )
+      if(!prop )
       {
         QString defaultName = "grey";
 
@@ -551,29 +470,6 @@ void PluginActivator::RegisterImageRenderingModeProperties(const QString& prefer
 
       node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
       node->SetProperty("Image Rendering.Highest Value Opacity", mitk::FloatProperty::New(highestOpacity));
-
-      if (niftk::IsNodeAGreyScaleImage(node))
-      {
-        unsigned long int observerId;
-
-        itk::MemberCommand<PluginActivator>::Pointer lookupTablePropertyChangedCommand = itk::MemberCommand<PluginActivator>::New();
-        lookupTablePropertyChangedCommand->SetCallbackFunction(this, &PluginActivator::OnLookupTablePropertyChanged);
-
-        mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
-        observerId = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lookupTablePropertyChangedCommand);
-        m_PropertyToNodeMap.insert(std::make_pair(lowestIsOpaqueProperty.GetPointer(), node));
-        m_NodeToLowestOpacityObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
-
-        mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
-        observerId = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lookupTablePropertyChangedCommand);
-        m_PropertyToNodeMap.insert(std::make_pair(highestIsOpaqueProperty.GetPointer(), node));
-        m_NodeToHighestOpacityObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
-
-        mitk::BaseProperty::Pointer lookupTableNameProperty = node->GetProperty("LookupTableName");
-        observerId = lookupTableNameProperty->AddObserver(itk::ModifiedEvent(), lookupTablePropertyChangedCommand);
-        m_PropertyToNodeMap.insert(std::make_pair(lookupTableNameProperty.GetPointer(), node));
-        m_NodeToLookupTableNameObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
-      }
     } // end if have pref node
   } // end if node is grey image
 }
