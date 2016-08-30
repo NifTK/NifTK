@@ -24,6 +24,7 @@
 #include <berryIPreferences.h>
 #include <mitkIDataStorageService.h>
 
+#include <niftkDataNodePropertyListener.h>
 #include <niftkLookupTableProviderService.h>
 
 
@@ -72,16 +73,11 @@ public:
 
 protected:
 
-  /**
-   * \brief Called when the user toggles the opacity control properties.
-   */
-  virtual void OnLookupTablePropertyChanged(const itk::Object *caller, const itk::EventObject &event);
-
   /// \brief Deliberately not virtual method that connects this class to DataStorage so that we can receive NodeAdded events etc.
-  void RegisterDataStorageListener();
+  void RegisterDataStorageListeners();
 
   /// \brief Deliberately not virtual method that ddisconnects this class from DataStorage so that we can receive NodeAdded events etc.
-  void UnregisterDataStorageListener();
+  void UnregisterDataStorageListeners();
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial LevelWindow property to each image.
   void RegisterLevelWindowProperty(const QString& preferencesNodeName, mitk::DataNode *constNode);
@@ -98,12 +94,6 @@ protected:
   /// \brief Deliberately not virtual method thats called by derived classes, to set the departmental logo to blank.
   void BlankDepartmentalLogo();
 
-  /// \brief Called each time a data node is added, and derived classes can override it.
-  virtual void NodeAdded(const mitk::DataNode *node);
-
-  /// \brief Called each time a data node is removed, and derived classes can override it.
-  virtual void NodeRemoved(const mitk::DataNode *node);
-
   /// \brief Derived classes should provide a URL for which help page to use as the 'home' page.
   virtual QString GetHelpHomePageURL() const override;
 
@@ -112,11 +102,9 @@ protected:
 
 private:
 
-  /// \brief Private method that checks whether or not we are already updating and if not, calls NodeAdded()
-  void NodeAddedProxy(const mitk::DataNode *node);
+  void RegisterProperties(mitk::DataNode* node);
 
-  /// \brief Private method that checks whether or not we are already removing and if not, calls NodeRemoved()
-  void NodeRemovedProxy(const mitk::DataNode *node);
+  void UpdateLookupTable(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
 
   /// \brief Returns the lookup table provider service.
   niftk::LookupTableProviderService* GetLookupTableProvider();
@@ -151,14 +139,12 @@ private:
 
   ctkServiceTracker<mitk::IDataStorageService*>* m_DataStorageServiceTracker;
 
-  bool m_InDataStorageChanged;
-
   static PluginActivator* s_Instance;
 
-  std::map<mitk::BaseProperty*, mitk::DataNode*> m_PropertyToNodeMap;
-  std::map<mitk::DataNode*, unsigned long int>   m_NodeToLowestOpacityObserverMap;
-  std::map<mitk::DataNode*, unsigned long int>   m_NodeToHighestOpacityObserverMap;
-  std::map<mitk::DataNode*, unsigned long int>   m_NodeToLookupTableNameObserverMap;
+  DataStorageListener::Pointer m_DataNodePropertyRegisterer;
+  DataNodePropertyListener::Pointer m_LowestOpacityPropertyListener;
+  DataNodePropertyListener::Pointer m_HighestOpacityPropertyListener;
+  DataNodePropertyListener::Pointer m_LookupTableNamePropertyListener;
 
 };
 
