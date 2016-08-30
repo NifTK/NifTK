@@ -32,12 +32,16 @@ class PropertyChangedCommand;
 
 /**
  * \class DataStoragePropertyListener
- * \brief Base class for objects that Listen to data storage for a specific property such as "visible".
+ * \brief Class for listening to changes of data node properties with a specific name.
  *
- * This class is derived from itk::Object so we can use things like the ITK setter/getter macros, listening to
- * Modified events via the Observer pattern etc.
+ * To use this class, you need to create an instance, and assign a handler to the
+ * 'NodePropertyChanged' data member.
  *
- * Derived classes must implement OnPropertyChanged.
+ * An alternative way of using this class is deriving a new class and overriding the
+ * 'OnPropertyChanged' member function. Note that if you do so, you need to call
+ * the superclass implementation at the beginning of your function.
+ *
+ * We recommend to follow the first way.
  *
  * The event listening can be restricted to a set of renderers. It is the resposibility of the user of this
  * class to remove the renderer from the DataStoragePropertyListener objects when the renderer is deleted.
@@ -54,14 +58,6 @@ public:
   mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, float)
   mitkNewMacro3Param(DataNodePropertyListener, const mitk::DataStorage::Pointer, const std::string&, const std::string&)
 
-  /// \brief Sets the list of renderers to check.
-  void SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers);
-
-  /// \brief GUI independent message callback.
-  mitk::Message2<mitk::DataNode*, const mitk::BaseRenderer*> NodePropertyChanged;
-
-protected:
-
   DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName);
   DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, bool defaultValue);
   DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, int defaultValue);
@@ -69,6 +65,14 @@ protected:
   DataNodePropertyListener(const mitk::DataStorage::Pointer dataStorage, const std::string& propertyName, const std::string& defaultValue);
 
   virtual ~DataNodePropertyListener();
+
+  /// \brief Sets the list of renderers to check.
+  void SetRenderers(const std::vector<const mitk::BaseRenderer*>& renderers);
+
+  /// \brief GUI independent message callback.
+  mitk::Message2<mitk::DataNode*, const mitk::BaseRenderer*> NodePropertyChanged;
+
+protected:
 
   DataNodePropertyListener(const DataNodePropertyListener&); // Purposefully not implemented.
   DataNodePropertyListener& operator=(const DataNodePropertyListener&); // Purposefully not implemented.
