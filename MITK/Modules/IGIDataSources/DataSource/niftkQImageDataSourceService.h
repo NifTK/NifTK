@@ -11,43 +11,41 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-#ifndef niftkOpenCVVideoDataSourceService_h
-#define niftkOpenCVVideoDataSourceService_h
+#ifndef niftkQImageDataSourceService_h
+#define niftkQImageDataSourceService_h
 
 #include <niftkSingleFrameDataSourceService.h>
-
-#include <niftkIGIDataSourceGrabbingThread.h>
-#include <mitkOpenCVVideoSource.h>
 
 namespace niftk
 {
 
 /**
-* \class OpenCVVideoDataSourceService
-* \brief Provides an OpenCV video feed, as an IGIDataSourceServiceI.
+* \class QImageDataSourceService
+* \brief Base class for SingleFrameDataSourceService based on QImage.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class OpenCVVideoDataSourceService : public SingleFrameDataSourceService
+class QImageDataSourceService : public SingleFrameDataSourceService
 {
 
 public:
 
-  mitkClassMacroItkParent(OpenCVVideoDataSourceService, SingleFrameDataSourceService)
-  mitkNewMacro3Param(OpenCVVideoDataSourceService, QString, const IGIDataSourceProperties&, mitk::DataStorage::Pointer)
+  mitkClassMacroItkParent(QImageDataSourceService,
+                          SingleFrameDataSourceService)
 
 protected:
 
-  OpenCVVideoDataSourceService(QString factoryName,
-                               const IGIDataSourceProperties& properties,
-                               mitk::DataStorage::Pointer dataStorage
-                               );
-  virtual ~OpenCVVideoDataSourceService();
+  QImageDataSourceService(QString deviceName,
+                          QString factoryName,
+                          const IGIDataSourceProperties& properties,
+                          mitk::DataStorage::Pointer dataStorage
+                         );
+  virtual ~QImageDataSourceService();
 
   /**
-   * \see niftk::SingleVideoFrameDataSourceService::GrabImage().
+   * \brief Derived classes implement this to grab a new image.
    */
-  virtual niftk::IGIDataType::Pointer GrabImage() override;
+  virtual niftk::IGIDataType::Pointer GrabImage() = 0;
 
   /**
    * \see niftk::SingleVideoFrameDataSourceService::SaveImage().
@@ -67,11 +65,8 @@ protected:
 
 private:
 
-  OpenCVVideoDataSourceService(const OpenCVVideoDataSourceService&); // deliberately not implemented
-  OpenCVVideoDataSourceService& operator=(const OpenCVVideoDataSourceService&); // deliberately not implemented
-
-  mitk::OpenCVVideoSource::Pointer    m_VideoSource;
-  niftk::IGIDataSourceGrabbingThread* m_DataGrabbingThread;
+  QImageDataSourceService(const QImageDataSourceService&); // deliberately not implemented
+  QImageDataSourceService& operator=(const QImageDataSourceService&); // deliberately not implemented
 
 }; // end class
 

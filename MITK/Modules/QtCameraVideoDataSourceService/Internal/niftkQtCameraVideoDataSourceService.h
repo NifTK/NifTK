@@ -14,7 +14,7 @@
 #ifndef niftkQtCameraVideoDataSourceService_h
 #define niftkQtCameraVideoDataSourceService_h
 
-#include <niftkSingleVideoFrameDataSourceService.h>
+#include <niftkQImageDataSourceService.h>
 
 class QCamera;
 class CameraFrameGrabber;
@@ -24,11 +24,11 @@ namespace niftk
 
 /**
 * \class QtCameraVideoDataSourceService
-* \brief Provides an QtCamera video feed, as an IGIDataSourceServiceI.
+* \brief Provides a QtCamera video feed, as an IGIDataSourceServiceI.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class QtCameraVideoDataSourceService : public SingleVideoFrameDataSourceService
+class QtCameraVideoDataSourceService : public QImageDataSourceService
 {
 
   Q_OBJECT
@@ -36,7 +36,7 @@ class QtCameraVideoDataSourceService : public SingleVideoFrameDataSourceService
 public:
 
   mitkClassMacroItkParent(QtCameraVideoDataSourceService,
-                          SingleVideoFrameDataSourceService)
+                          QImageDataSourceService)
 
   mitkNewMacro3Param(QtCameraVideoDataSourceService, QString,
                      const IGIDataSourceProperties&,
@@ -45,31 +45,15 @@ public:
 protected:
 
   QtCameraVideoDataSourceService(QString factoryName,
-                               const IGIDataSourceProperties& properties,
-                               mitk::DataStorage::Pointer dataStorage
-                               );
+                                 const IGIDataSourceProperties& properties,
+                                 mitk::DataStorage::Pointer dataStorage
+                                );
   virtual ~QtCameraVideoDataSourceService();
 
   /**
    * \see niftk::SingleVideoFrameDataSourceService::GrabImage().
    */
   virtual niftk::IGIDataType::Pointer GrabImage() override;
-
-  /**
-   * \see niftk::SingleVideoFrameDataSourceService::SaveImage().
-   */
-  virtual void SaveImage(const std::string& filename, niftk::IGIDataType::Pointer item) override;
-
-  /**
-   * \see niftk::SingleVideoFrameDataSourceService::LoadImage().
-   */
-  virtual niftk::IGIDataType::Pointer LoadImage(const std::string& filename) override;
-
-  /**
-   * \see niftk::SingleVideoFrameDataSourceService::ConvertImage().
-   */
-  virtual mitk::Image::Pointer ConvertImage(niftk::IGIDataType::Pointer inputImage,
-                                            unsigned int& outputNumberOfBytes) override;
 
 private slots:
 
@@ -83,6 +67,7 @@ private:
   QCamera*             m_Camera;
   CameraFrameGrabber*  m_CameraFrameGrabber;
   mutable QImage*      m_TemporaryWrapper;
+
 }; // end class
 
 } // end namespace

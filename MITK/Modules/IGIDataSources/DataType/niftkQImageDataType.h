@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkQtCameraVideoDataType_h
-#define niftkQtCameraVideoDataType_h
+#ifndef niftkQImageDataType_h
+#define niftkQImageDataType_h
 
 #include <niftkIGIDataType.h>
 #include <QImage>
@@ -22,15 +22,15 @@ namespace niftk
 {
 
 /**
- * \class QtCameraVideoDataType
- * \brief Class to represent video frame data from QtCamera (QCamera).
+ * \class QImageDataType
+ * \brief Class to represent a frame of video/ultrasound data using QImage.
  */
-class QtCameraVideoDataType : public IGIDataType
+class QImageDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(QtCameraVideoDataType, IGIDataType)
-  itkNewMacro(QtCameraVideoDataType)
+  mitkClassMacro(QImageDataType, IGIDataType)
+  itkNewMacro(QImageDataType)
 
   void CloneImage(const QImage& image);
 
@@ -41,15 +41,15 @@ public:
 
 protected:
 
-  QtCameraVideoDataType(); // Purposefully hidden.
-  virtual ~QtCameraVideoDataType(); // Purposefully hidden.
+  QImageDataType(); // Purposefully hidden.
+  virtual ~QImageDataType(); // Purposefully hidden.
 
-  QtCameraVideoDataType(const QtCameraVideoDataType&); // Purposefully not implemented.
-  QtCameraVideoDataType& operator=(const QtCameraVideoDataType&); // Purposefully not implemented.
+  QImageDataType(const QImageDataType&); // Purposefully not implemented.
+  QImageDataType& operator=(const QImageDataType&); // Purposefully not implemented.
 
 private:
 
-  QImage m_Image;
+  QImage *m_Image;
 
 };
 

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkSingleVideoFrameDataSourceService.h"
+#include "niftkSingleFrameDataSourceService.h"
 #include <niftkIGIDataSourceUtils.h>
 #include <mitkExceptionMacro.h>
 #include <mitkImage.h>
@@ -25,10 +25,10 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataSourceLocker SingleVideoFrameDataSourceService::s_Lock;
+niftk::IGIDataSourceLocker SingleFrameDataSourceService::s_Lock;
 
 //-----------------------------------------------------------------------------
-SingleVideoFrameDataSourceService::SingleVideoFrameDataSourceService(
+SingleFrameDataSourceService::SingleFrameDataSourceService(
   QString deviceName,
   QString factoryName,
   const IGIDataSourceProperties& properties,
@@ -42,6 +42,7 @@ SingleVideoFrameDataSourceService::SingleVideoFrameDataSourceService(
 , m_Buffer(nullptr)
 , m_BackgroundDeleteThread(nullptr)
 , m_ApproxIntervalInMilliseconds(0)
+, m_FileExtension(".jpg")
 {
   this->SetStatus("Initialising");
 
@@ -82,7 +83,7 @@ SingleVideoFrameDataSourceService::SingleVideoFrameDataSourceService(
 
 
 //-----------------------------------------------------------------------------
-SingleVideoFrameDataSourceService::~SingleVideoFrameDataSourceService()
+SingleFrameDataSourceService::~SingleFrameDataSourceService()
 {
   s_Lock.RemoveSource(m_ChannelNumber);
 
@@ -92,26 +93,26 @@ SingleVideoFrameDataSourceService::~SingleVideoFrameDataSourceService()
 
 
 //-----------------------------------------------------------------------------
-void SingleVideoFrameDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
+void SingleFrameDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
 {
   if (properties.contains("lag"))
   {
     int milliseconds = (properties.value("lag")).toInt();
     m_Buffer->SetLagInMilliseconds(milliseconds);
 
-    MITK_INFO << "SingleVideoFrameDataSourceService(" << this->GetName().toStdString()
+    MITK_INFO << "SingleFrameDataSourceService(" << this->GetName().toStdString()
               << "): Set lag to " << milliseconds << " ms.";
   }
 }
 
 
 //-----------------------------------------------------------------------------
-IGIDataSourceProperties SingleVideoFrameDataSourceService::GetProperties() const
+IGIDataSourceProperties SingleFrameDataSourceService::GetProperties() const
 {
   IGIDataSourceProperties props;
   props.insert("lag", m_Buffer->GetLagInMilliseconds());
 
-  MITK_INFO << "SingleVideoFrameDataSourceService(:" << this->GetName().toStdString()
+  MITK_INFO << "SingleFrameDataSourceService(:" << this->GetName().toStdString()
             << "):Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
 
   return props;
@@ -119,7 +120,7 @@ IGIDataSourceProperties SingleVideoFrameDataSourceService::GetProperties() const
 
 
 //-----------------------------------------------------------------------------
-void SingleVideoFrameDataSourceService::CleanBuffer()
+void SingleFrameDataSourceService::CleanBuffer()
 {
   // Buffer itself should be threadsafe.
   m_Buffer->CleanBuffer();
@@ -127,7 +128,7 @@ void SingleVideoFrameDataSourceService::CleanBuffer()
 
 
 //-----------------------------------------------------------------------------
-bool SingleVideoFrameDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
+bool SingleFrameDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                      niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
   // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
@@ -160,7 +161,7 @@ bool SingleVideoFrameDataSourceService::ProbeRecordedData(niftk::IGIDataType::IG
 
 
 //-----------------------------------------------------------------------------
-void SingleVideoFrameDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
+void SingleFrameDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
                                                  niftk::IGIDataType::IGITimeType lastTimeStamp)
 {
   QMutexLocker locker(&m_Lock);
@@ -184,7 +185,7 @@ void SingleVideoFrameDataSourceService::StartPlayback(niftk::IGIDataType::IGITim
 
 
 //-----------------------------------------------------------------------------
-void SingleVideoFrameDataSourceService::StopPlayback()
+void SingleFrameDataSourceService::StopPlayback()
 {
   QMutexLocker locker(&m_Lock);
 
@@ -196,7 +197,7 @@ void SingleVideoFrameDataSourceService::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-void SingleVideoFrameDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
+void SingleFrameDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
 {
   assert(this->GetIsPlayingBack());
   assert(!m_PlaybackIndex.empty()); // Should have failed probing if no data.
@@ -231,7 +232,7 @@ void SingleVideoFrameDataSourceService::PlaybackData(niftk::IGIDataType::IGITime
 
 
 //-----------------------------------------------------------------------------
-void SingleVideoFrameDataSourceService::GrabData()
+void SingleFrameDataSourceService::GrabData()
 {
   {
     QMutexLocker locker(&m_Lock);
@@ -270,7 +271,7 @@ void SingleVideoFrameDataSourceService::GrabData()
 
 
 //-----------------------------------------------------------------------------
-void SingleVideoFrameDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
+void SingleFrameDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 {
   QString directoryPath = this->GetRecordingDirectory();
   QDir directory(directoryPath);
@@ -289,7 +290,7 @@ void SingleVideoFrameDataSourceService::SaveItem(niftk::IGIDataType::Pointer dat
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> SingleVideoFrameDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
+std::vector<IGIDataItemInfo> SingleFrameDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
 {
   std::vector<IGIDataItemInfo> infos;
 
@@ -322,7 +323,7 @@ std::vector<IGIDataItemInfo> SingleVideoFrameDataSourceService::Update(const nif
 
   if(m_Buffer->GetFirstTimeStamp() > time)
   {
-    MITK_DEBUG << "SingleVideoFrameDataSourceService::Update(), requested time is before buffer time! "
+    MITK_DEBUG << "SingleFrameDataSourceService::Update(), requested time is before buffer time! "
                << " Buffer size=" << m_Buffer->GetBufferSize()
                << ", time=" << time
                << ", firstTime=" << m_Buffer->GetFirstTimeStamp();

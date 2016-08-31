@@ -14,7 +14,7 @@
 
 MITK_CREATE_MODULE(
   INCLUDE_DIRS DataSource DataType Threads Interfaces Dialogs Conversion Utils
-  DEPENDS niftkIGIServices MitkPersistence
+  DEPENDS niftkIGIServices MitkPersistence niftkQImageConversion
   PACKAGE_DEPENDS Qt4|QtGui Qt5|Widgets CTK|CTKWidgets
 )
 

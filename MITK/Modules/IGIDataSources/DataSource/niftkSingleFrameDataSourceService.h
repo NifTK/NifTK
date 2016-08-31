@@ -11,8 +11,8 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-#ifndef niftkSingleVideoFrameDataSourceService_h
-#define niftkSingleVideoFrameDataSourceService_h
+#ifndef niftkSingleFrameDataSourceService_h
+#define niftkSingleFrameDataSourceService_h
 
 #include <niftkIGIDataSourcesExports.h>
 #include <niftkIGIDataSource.h>
@@ -32,15 +32,15 @@ namespace niftk
 {
 
 /**
-* \class OpenCVVideoDataSourceService
-* \brief Base class for simple (really meaning "test purposes only") video data sources.
+* \class SingleFrameDataSourceService
+* \brief Base class for simple data sources, that save frame by frame.
 * For example, we save each image frame as .jpg/.png rather than some video format like .h264.
 * \see OpenCVVideoDataSourceService
-* \see QtVideoDataSourceService
+* \see QtCameraVideoDataSourceService
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKIGIDATASOURCES_EXPORT SingleVideoFrameDataSourceService
+class NIFTKIGIDATASOURCES_EXPORT SingleFrameDataSourceService
     : public QObject
     , public IGIDataSource
     , public IGILocalDataSourceI
@@ -50,7 +50,7 @@ class NIFTKIGIDATASOURCES_EXPORT SingleVideoFrameDataSourceService
 
 public:
 
-  mitkClassMacroItkParent(SingleVideoFrameDataSourceService, IGIDataSource)
+  mitkClassMacroItkParent(SingleFrameDataSourceService, IGIDataSource)
 
   /**
   * \see IGIDataSourceI::ProbeRecordedData()
@@ -101,12 +101,12 @@ public:
 
 protected:
 
-  SingleVideoFrameDataSourceService(QString deviceName,
+  SingleFrameDataSourceService(QString deviceName,
                                     QString factoryName,
                                     const IGIDataSourceProperties& properties,
                                     mitk::DataStorage::Pointer dataStorage
                                    );
-  virtual ~SingleVideoFrameDataSourceService();
+  virtual ~SingleFrameDataSourceService();
 
   /**
    * \brief Derived classes implement this to grab a new image.
@@ -129,14 +129,15 @@ protected:
   virtual mitk::Image::Pointer ConvertImage(niftk::IGIDataType::Pointer inputImage,
                                             unsigned int& outputNumberOfBytes) = 0;
 
-  static niftk::IGIDataSourceLocker                s_Lock;
-  int GetChannelNumber() const                     { return m_ChannelNumber;}
-  int GetApproximateIntervalInMilliseconds() const { return m_ApproxIntervalInMilliseconds; }
+  static niftk::IGIDataSourceLocker                        s_Lock;
+  int GetChannelNumber() const                             { return m_ChannelNumber;}
+  int GetApproximateIntervalInMilliseconds() const         { return m_ApproxIntervalInMilliseconds; }
+  void SetApproximateIntervalInMilliseconds(const int& ms) { m_ApproxIntervalInMilliseconds = ms; }
 
 private:
 
-  SingleVideoFrameDataSourceService(const SingleVideoFrameDataSourceService&); // deliberately not implemented
-  SingleVideoFrameDataSourceService& operator=(const SingleVideoFrameDataSourceService&); // deliberately not impl'd.
+  SingleFrameDataSourceService(const SingleFrameDataSourceService&); // deliberately not implemented
+  SingleFrameDataSourceService& operator=(const SingleFrameDataSourceService&); // deliberately not impl'd.
 
   void SaveItem(niftk::IGIDataType::Pointer item) override;
 

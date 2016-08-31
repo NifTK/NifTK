@@ -17,7 +17,6 @@ set(CPP_FILES
   Internal/niftkQtCameraDialog.cxx
   Internal/niftkQtCameraVideoDataSourceActivator.cxx
   Internal/niftkQtCameraVideoDataSourceFactory.cxx
-  Internal/niftkQtCameraVideoDataType.cxx
   Internal/niftkQtCameraVideoDataSourceService.cxx
 )
 

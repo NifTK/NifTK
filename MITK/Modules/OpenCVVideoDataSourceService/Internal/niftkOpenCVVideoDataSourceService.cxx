@@ -25,7 +25,7 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: SingleVideoFrameDataSourceService(QString("OpenCV-"), factoryName, properties, dataStorage)
+: SingleFrameDataSourceService(QString("OpenCV-"), factoryName, properties, dataStorage)
 , m_VideoSource(nullptr)
 , m_DataGrabbingThread(nullptr)
 {

@@ -12,34 +12,36 @@
 
 =============================================================================*/
 
-#include "niftkQtCameraVideoDataType.h"
+#include "niftkQImageDataType.h"
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-QtCameraVideoDataType::QtCameraVideoDataType()
+QImageDataType::QImageDataType()
+: m_Image(nullptr)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-QtCameraVideoDataType::~QtCameraVideoDataType()
+QImageDataType::~QImageDataType()
 {
+  delete m_Image;
 }
 
 
 //-----------------------------------------------------------------------------
-void QtCameraVideoDataType::CloneImage(const QImage& image)
+void QImageDataType::CloneImage(const QImage& image)
 {
-  m_Image = image.copy();
+  m_Image = new QImage(image.copy());
 }
 
 
 //-----------------------------------------------------------------------------
-const QImage* QtCameraVideoDataType::GetImage()
+const QImage* QImageDataType::GetImage()
 {
-  return &m_Image;
+  return m_Image;
 }
 
 } // end namespace

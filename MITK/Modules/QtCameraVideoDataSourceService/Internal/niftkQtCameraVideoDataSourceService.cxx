@@ -13,8 +13,8 @@
 =============================================================================*/
 
 #include "niftkQtCameraVideoDataSourceService.h"
-#include "niftkQtCameraVideoDataType.h"
 #include "cameraframegrabber.h"
+#include <niftkQImageDataType.h>
 #include <niftkQImageConversion.h>
 #include <mitkExceptionMacro.h>
 #include <QCamera>
@@ -28,7 +28,7 @@ QtCameraVideoDataSourceService::QtCameraVideoDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: SingleVideoFrameDataSourceService(QString("QtVideo-"), factoryName, properties, dataStorage)
+: QImageDataSourceService(QString("QtVideo-"), factoryName, properties, dataStorage)
 , m_Camera(nullptr)
 , m_CameraFrameGrabber(nullptr)
 {
@@ -87,75 +87,9 @@ QtCameraVideoDataSourceService::~QtCameraVideoDataSourceService()
 //-----------------------------------------------------------------------------
 niftk::IGIDataType::Pointer QtCameraVideoDataSourceService::GrabImage()
 {
-  niftk::QtCameraVideoDataType::Pointer wrapper = niftk::QtCameraVideoDataType::New();
+  niftk::QImageDataType::Pointer wrapper = niftk::QImageDataType::New();
   wrapper->CloneImage(*m_TemporaryWrapper);
   return wrapper.GetPointer();
-}
-
-
-//-----------------------------------------------------------------------------
-void QtCameraVideoDataSourceService::SaveImage(const std::string& filename,
-                                               niftk::IGIDataType::Pointer data)
-{
-  niftk::QtCameraVideoDataType::Pointer dataType = static_cast<niftk::QtCameraVideoDataType*>(data.GetPointer());
-  if (dataType.IsNull())
-  {
-    mitkThrow() << "Failed to save QtCameraVideoDataType as the data received was the wrong type!";
-  }
-
-  const QImage* imageFrame = dataType->GetImage();
-  if (imageFrame == nullptr)
-  {
-    mitkThrow() << "Failed to save QtCameraVideoDataType as the image frame was NULL!";
-  }
-
-  bool success = imageFrame->save(QString::fromStdString(filename));
-  if (!success)
-  {
-    mitkThrow() << "Failed to save QtCameraVideoDataType to file:" << filename;
-  }
-
-  data->SetIsSaved(true);
-}
-
-
-//-----------------------------------------------------------------------------
-niftk::IGIDataType::Pointer QtCameraVideoDataSourceService::LoadImage(const std::string& filename)
-{
-  QImage image;
-  bool success = image.load(QString::fromStdString(filename));
-  if (!success)
-  {
-    mitkThrow() << "Failed to load image:" << filename;
-  }
-
-  niftk::QtCameraVideoDataType::Pointer wrapper = niftk::QtCameraVideoDataType::New();
-  wrapper->CloneImage(image);
-
-  return wrapper.GetPointer();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::Image::Pointer QtCameraVideoDataSourceService::ConvertImage(niftk::IGIDataType::Pointer inputImage,
-                                                                  unsigned int& outputNumberOfBytes)
-{
-  niftk::QtCameraVideoDataType::Pointer dataType = static_cast<niftk::QtCameraVideoDataType*>(inputImage.GetPointer());
-  if (dataType.IsNull())
-  {
-    this->SetStatus("Failed");
-    mitkThrow() << "Failed to extract image!";
-  }
-
-  const QImage* img = dataType->GetImage();
-  if (img == nullptr)
-  {
-    this->SetStatus("Failed");
-    mitkThrow() << "Failed to extract QImage!";
-  }
-
-  mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(img, outputNumberOfBytes);
-  return convertedImage;
 }
 
 

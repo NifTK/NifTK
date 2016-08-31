@@ -21,11 +21,13 @@ set(CPP_FILES
   Interfaces/niftkIGIDataSourceFactoryServiceI.cxx
   Interfaces/niftkIGIDataSourceFactoryServiceRAII.cxx
   DataType/niftkIGIDataType.cxx
+  DataType/niftkQImageDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceLocker.cxx
   DataSource/niftkIGIDataSourceBuffer.cxx
   DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
-  DataSource/niftkSingleVideoFrameDataSourceService.cxx
+  DataSource/niftkSingleFrameDataSourceService.cxx
+  DataSource/niftkQImageDataSourceService.cxx
   Threads/niftkIGITimerBasedThread.cxx
   Threads/niftkIGIDataSourceGrabbingThread.cxx
   Threads/niftkIGIDataSourceBackgroundSaveThread.cxx
