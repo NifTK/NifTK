@@ -58,13 +58,7 @@ SingleFrameDataSourceService::SingleFrameDataSourceService(
   int defaultFramesPerSecond = 25;
   m_Buffer = niftk::IGIDataSourceBuffer::New(defaultFramesPerSecond * 2);
 
-  // Set the interval based on desired number of frames per second.
-  // So, 25 fps = 40 milliseconds.
-  // However: If system slows down (eg. saving images), then Qt will
-  // drop clock ticks, so in effect, you will get less than this.
-  m_ApproxIntervalInMilliseconds = 1000 / defaultFramesPerSecond;
-
-  this->SetTimeStampTolerance(m_ApproxIntervalInMilliseconds*1000000*1.5); // nanoseconds, 1.5. frames.
+  this->SetApproximateIntervalInMilliseconds(1000 / defaultFramesPerSecond);
   this->SetShouldUpdate(true);
   this->SetProperties(properties);
 
@@ -89,6 +83,17 @@ SingleFrameDataSourceService::~SingleFrameDataSourceService()
 
   m_BackgroundDeleteThread->ForciblyStop();
   delete m_BackgroundDeleteThread;
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleFrameDataSourceService::SetApproximateIntervalInMilliseconds(const int& ms)
+{
+  m_ApproxIntervalInMilliseconds = ms;
+
+  // multiply by 1000000 to get nanoseconds
+  // multiply by 2 so we start warning if timestamps suggest we are more than 2 frame intervals late.
+  this->SetTimeStampTolerance(m_ApproxIntervalInMilliseconds*1000000*2);
 }
 
 

@@ -131,8 +131,8 @@ protected:
 
   static niftk::IGIDataSourceLocker                        s_Lock;
   int GetChannelNumber() const                             { return m_ChannelNumber;}
-  int GetApproximateIntervalInMilliseconds() const         { return m_ApproxIntervalInMilliseconds; }
-  void SetApproximateIntervalInMilliseconds(const int& ms) { m_ApproxIntervalInMilliseconds = ms; }
+  int GetApproximateIntervalInMilliseconds() const         { return m_ApproxIntervalInMilliseconds; } // default 40ms.
+  void SetApproximateIntervalInMilliseconds(const int& ms);
 
 private:
 
