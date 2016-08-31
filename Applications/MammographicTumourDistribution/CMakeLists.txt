@@ -19,6 +19,7 @@ if(SlicerExecutionModel_FOUND AND MITK_USE_Qt4)
     BUILD_SLICER
     INSTALL_SCRIPT
     TARGET_LIBRARIES
+      ${Boost_LIBRARIES}
       ${QT_LIBRARIES}
       niftkcommon
       niftkITK

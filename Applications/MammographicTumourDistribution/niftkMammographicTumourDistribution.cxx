@@ -12,6 +12,8 @@
 
   =============================================================================*/
 
+#include <boost/filesystem/path.hpp>
+
 #include <niftkFileHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>

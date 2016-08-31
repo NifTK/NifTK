@@ -18,13 +18,12 @@ if(VTK_FOUND)
     NAME niftkLinearSubdivisionPolyDataFilter
     BUILD_CLI
     TARGET_LIBRARIES
+      ${ITK_LIBRARIES}
       niftkVTK
       ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
       niftkcommon
       niftkITK
       niftkITKIO
-      ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
   )
 
 endif()

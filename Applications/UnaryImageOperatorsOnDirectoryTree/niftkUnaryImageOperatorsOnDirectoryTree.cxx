@@ -45,7 +45,6 @@
 #include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
 #include <itkGDCMImageIO.h>
 
-#include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <vector>

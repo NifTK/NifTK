@@ -64,7 +64,7 @@ enum
 /*
  * Define a shortcut for the boost filesystem namespace
  */
-namespace bfs = boost::filesystem;
+namespace fs = boost::filesystem;
 
 
 /*
@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
 {
   itk::NifTKImageIOFactory::Initialize();
 
-	const bfs::path cwd = bfs::initial_path();
+	const fs::path cwd = fs::initial_path();
 
 
 	/*
@@ -94,21 +94,21 @@ int main(int argc, char ** argv)
 	/*
 	 * First find out if the given file has the intent code set correctly...
 	 */
-	bfs::path inPath         ( strInputFileName  );
-	bfs::path outPath        ( strOutputFileName );
-	bfs::path outIntermedPath( strOutputFileName );
+	fs::path inPath         ( strInputFileName  );
+	fs::path outPath        ( strOutputFileName );
+	fs::path outIntermedPath( strOutputFileName );
 
 	outIntermedPath.replace_extension( "nii" );
 
 	/* Does input exist? */
-	if ( ! bfs::exists( inPath ) )
+	if ( ! fs::exists( inPath ) )
 	{
 		std::cerr << "Input " << inPath.string() << " file does not exist!\n";
 		return EXIT_FAILURE;
 	}
 
 	/* The output should NOT exist (nifti writing will fail otherwise) */
-	if ( bfs::exists( outIntermedPath ) )
+	if ( fs::exists( outIntermedPath ) )
 	{
 		std::cerr << "The output image " << outIntermedPath.string() << " already exists!";
 		return EXIT_FAILURE;

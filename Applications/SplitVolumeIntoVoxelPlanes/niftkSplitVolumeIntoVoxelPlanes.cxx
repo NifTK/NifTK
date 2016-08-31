@@ -21,7 +21,7 @@
 #include <itkNifTKImageIOFactory.h>
 #include <itkExtractImageFilter.h>
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 
 
 /*!

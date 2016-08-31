@@ -34,15 +34,10 @@
 #include <itkGDCMSeriesFileNames.h>
 #include <itkNifTKImageIOFactory.h>
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-
 #include <vector>
 
 #include <niftkPrintDICOMSeriesCLP.h>
 
-
-namespace fs = boost::filesystem;
 
 typedef itk::MetaDataDictionary DictionaryType;
 typedef itk::MetaDataObject< std::string > MetaDataStringType;
