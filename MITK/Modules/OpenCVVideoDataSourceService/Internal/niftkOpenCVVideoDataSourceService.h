@@ -45,22 +45,22 @@ protected:
   virtual ~OpenCVVideoDataSourceService();
 
   /**
-   * \see niftk::SingleVideoFrameDataSourceService::GrabImage().
+   * \see niftk::SingleFrameDataSourceService::GrabImage().
    */
   virtual niftk::IGIDataType::Pointer GrabImage() override;
 
   /**
-   * \see niftk::SingleVideoFrameDataSourceService::SaveImage().
+   * \see niftk::SingleFrameDataSourceService::SaveImage().
    */
   virtual void SaveImage(const std::string& filename, niftk::IGIDataType::Pointer item) override;
 
   /**
-   * \see niftk::SingleVideoFrameDataSourceService::LoadImage().
+   * \see niftk::SingleFrameDataSourceService::LoadImage().
    */
   virtual niftk::IGIDataType::Pointer LoadImage(const std::string& filename) override;
 
   /**
-   * \see niftk::SingleVideoFrameDataSourceService::ConvertImage().
+   * \see niftk::SingleFrameDataSourceService::ConvertImage().
    */
   virtual mitk::Image::Pointer ConvertImage(niftk::IGIDataType::Pointer inputImage,
                                             unsigned int& outputNumberOfBytes) override;

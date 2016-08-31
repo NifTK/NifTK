@@ -51,7 +51,7 @@ protected:
   virtual ~QtCameraVideoDataSourceService();
 
   /**
-   * \see niftk::SingleVideoFrameDataSourceService::GrabImage().
+   * \see niftk::SingleFrameDataSourceService::GrabImage().
    */
   virtual niftk::IGIDataType::Pointer GrabImage() override;
 
