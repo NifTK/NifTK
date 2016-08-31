@@ -84,6 +84,7 @@ if(BUILD_IGI)
     NiftyLinkDataSourceService
     NVidiaSDIDataSourceService
     QtCameraVideoDataSourceService
+    BKMedicalDataSourceService
   )
 endif()
 
