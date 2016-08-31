@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkQImageDataType.h"
+#include <mitkExceptionMacro.h>
 
 namespace niftk
 {
@@ -32,9 +33,24 @@ QImageDataType::~QImageDataType()
 
 
 //-----------------------------------------------------------------------------
-void QImageDataType::CloneImage(const QImage& image)
+void QImageDataType::DeepCopy(const QImage& image)
 {
+  if (m_Image != nullptr)
+  {
+    mitkThrow() << "Image is already set";
+  }
   m_Image = new QImage(image.copy());
+}
+
+
+//-----------------------------------------------------------------------------
+void QImageDataType::ShallowCopy(const QImage& image)
+{
+  if (m_Image != nullptr)
+  {
+    mitkThrow() << "Image is already set";
+  }
+  m_Image = new QImage(image);
 }
 
 

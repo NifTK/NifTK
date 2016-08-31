@@ -24,6 +24,8 @@ namespace niftk
 /**
  * \class QImageDataType
  * \brief Class to represent a frame of video/ultrasound data using QImage.
+ *
+ * Note: These objects are only designed to be initialised with image data once.
  */
 class QImageDataType : public IGIDataType
 {
@@ -32,7 +34,8 @@ public:
   mitkClassMacro(QImageDataType, IGIDataType)
   itkNewMacro(QImageDataType)
 
-  void CloneImage(const QImage& image);
+  void DeepCopy(const QImage& image);
+  void ShallowCopy(const QImage& image);
 
   /**
   * \brief Returns the internal image, so do not modify it.

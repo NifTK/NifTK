@@ -78,7 +78,7 @@ niftk::IGIDataType::Pointer QImageDataSourceService::LoadImage(const std::string
   }
 
   niftk::QImageDataType::Pointer wrapper = niftk::QImageDataType::New();
-  wrapper->CloneImage(image);
+  wrapper->ShallowCopy(image);
 
   return wrapper.GetPointer();
 }

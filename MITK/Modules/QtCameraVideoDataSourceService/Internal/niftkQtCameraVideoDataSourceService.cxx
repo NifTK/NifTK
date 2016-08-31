@@ -88,7 +88,7 @@ QtCameraVideoDataSourceService::~QtCameraVideoDataSourceService()
 niftk::IGIDataType::Pointer QtCameraVideoDataSourceService::GrabImage()
 {
   niftk::QImageDataType::Pointer wrapper = niftk::QImageDataType::New();
-  wrapper->CloneImage(*m_TemporaryWrapper);
+  wrapper->ShallowCopy(*m_TemporaryWrapper);
   return wrapper.GetPointer();
 }
 
@@ -98,7 +98,7 @@ void QtCameraVideoDataSourceService::OnFrameAvailable(const QImage &image)
 {
   m_TemporaryWrapper = new QImage(image); // should just wrap without copy.
   this->GrabData();
-  delete m_TemporaryWrapper;
+  delete m_TemporaryWrapper;              // then we delete this temporary wrapper.
 }
 
 } // end namespace
