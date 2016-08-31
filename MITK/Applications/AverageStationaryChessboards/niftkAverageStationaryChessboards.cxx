@@ -22,6 +22,7 @@
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkPointSet.h>
 
+#include <mitkCameraCalibrationFacade.h>
 #include <niftkAverageStationaryChessboardsCLP.h>
 #include <niftkFileHelper.h>
 #include <niftkFileIOUtils.h>
