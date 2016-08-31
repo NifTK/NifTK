@@ -158,7 +158,6 @@ option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
-option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 # the console window is normally shown only for debug builds. but can be explicitly enabled.
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -1786,10 +1785,6 @@ add_subdirectory(Libraries)
 if(BUILD_COMMAND_LINE_PROGRAMS)
   add_subdirectory(Applications)
 endif()
-
-if(BUILD_UTILITIES)
-  add_subdirectory(Utilities)
-endif(BUILD_UTILITIES)
 
 if(BUILD_PROTOTYPE)
   add_subdirectory(Prototype)
