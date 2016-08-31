@@ -12,29 +12,22 @@
 
 =============================================================================*/
 
-#include "niftkQtCameraDialog.h"
-#include <QCameraInfo>
+#include "niftkIPHostPortExtensionDialog.h"
+
 #include <cassert>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-QtCameraDialog::QtCameraDialog(QWidget *parent)
+IPHostPortExtensionDialog::IPHostPortExtensionDialog(QWidget *parent)
 :IGIInitialisationDialog(parent)
 {
   setupUi(this);
+  m_HostName->setText("localhost");
   m_FileExtensionComboBox->addItem("JPEG", QVariant::fromValue(QString(".jpg")));
   m_FileExtensionComboBox->addItem("PNG", QVariant::fromValue(QString(".png")));
   m_FileExtensionComboBox->setCurrentIndex(0);
-
-  m_CameraNameComboBox->clear();
-
-  QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-  foreach (const QCameraInfo &cameraInfo, cameras)
-  {
-    m_CameraNameComboBox->addItem(cameraInfo.description(), QVariant::fromValue(cameraInfo.deviceName()));
-  }
 
   bool ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
@@ -42,20 +35,19 @@ QtCameraDialog::QtCameraDialog(QWidget *parent)
 
 
 //-----------------------------------------------------------------------------
-QtCameraDialog::~QtCameraDialog()
+IPHostPortExtensionDialog::~IPHostPortExtensionDialog()
 {
-  bool ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()),
-                                this, SLOT(OnOKClicked()));
+  bool ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 }
 
 
 //-----------------------------------------------------------------------------
-void QtCameraDialog::OnOKClicked()
+void IPHostPortExtensionDialog::OnOKClicked()
 {
   IGIDataSourceProperties props;
-  props.insert("description", QVariant::fromValue(m_CameraNameComboBox->currentText()));
-  props.insert("name", QVariant::fromValue(m_CameraNameComboBox->itemData(m_CameraNameComboBox->currentIndex())));
+  props.insert("port", QVariant::fromValue(m_PortNumber->value()));
+  props.insert("host", QVariant::fromValue(m_HostName->text()));
   props.insert("extension", QVariant::fromValue(m_FileExtensionComboBox->itemData(
                                                 m_FileExtensionComboBox->currentIndex())));
   m_Properties = props;

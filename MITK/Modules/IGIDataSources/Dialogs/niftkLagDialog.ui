@@ -21,7 +21,7 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Lag (milliseconds)</string>
+          <string>lag (milliseconds):</string>
          </property>
         </widget>
        </item>

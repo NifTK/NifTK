@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Set the camera</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>

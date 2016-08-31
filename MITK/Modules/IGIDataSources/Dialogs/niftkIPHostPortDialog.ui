@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Set the host and port number</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
@@ -24,7 +24,7 @@
           <string>The name of the computer, or IP address</string>
          </property>
          <property name="text">
-          <string>Host name</string>
+          <string>host name:</string>
          </property>
         </widget>
        </item>
@@ -41,7 +41,7 @@
           <string>The port number the server is listening on</string>
          </property>
          <property name="text">
-          <string>IP Port number</string>
+          <string>IP port number:</string>
          </property>
         </widget>
        </item>

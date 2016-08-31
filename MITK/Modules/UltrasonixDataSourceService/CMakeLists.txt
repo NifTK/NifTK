@@ -17,8 +17,8 @@ find_package(UltrasonixUlterius)
 if (UltrasonixUlterius_FOUND)
 
   MITK_CREATE_MODULE(
-    DEPENDS niftkIGIDataSources niftkOpenCVImageConversion
-    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets OpenCV
+    DEPENDS niftkIGIDataSources niftkQImageConversion
+    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets
     AUTOLOAD_WITH niftkIGIServices
   )
 
