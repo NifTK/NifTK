@@ -22,8 +22,6 @@
 #include <itkImage.h>
 #include <itkVector.h>
 
-#include <itkLogHelper.h>
-
 namespace itk {
 
 template< class TFixedImage, class TMovingImage, class TScalarType, class TDeformationScalar >

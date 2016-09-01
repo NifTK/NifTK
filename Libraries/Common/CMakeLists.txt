@@ -15,11 +15,12 @@
 add_subdirectory(Exceptions)
 
 set(niftkcommon_SRCS
-  niftkFileHelper.cxx
-  niftkConversionUtils.cxx
-  niftkEnvironmentHelper.cxx
   niftkCommandLineParser.cxx
+  niftkConversionUtils.cxx
   niftkCSVRow.cxx
+  niftkEnvironmentHelper.cxx
+  niftkFileHelper.cxx
+  niftkLogHelper.cxx
   niftkMathsUtils.cxx
 )
 

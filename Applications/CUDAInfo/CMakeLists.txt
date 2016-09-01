@@ -23,10 +23,6 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
       ${CUDA_CUDA_LIBRARY}
       ${CUDA_CUDART_LIBRARY}
       niftkcommon
-      niftkITK
-      niftkITKIO
-      ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
   )
 
   install(TARGETS niftkCUDAInfo RUNTIME DESTINATION ${NIFTK_INSTALL_BIN_DIR} COMPONENT applications)

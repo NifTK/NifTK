@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -26,20 +26,20 @@
  * \section niftkExtractZeroCrossingSummary Runs ITK ZeroCrossingImageFilter.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK ZeroCrossingImageFilter." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i <filename>        Input image " << std::endl;
-    std::cout << "    -o <filename>        Output image" << std::endl << std::endl;
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -f <float> [1]       Foreground value" << std::endl;
-    std::cout << "    -b <float> [0]       Background value" << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Runs ITK ZeroCrossingImageFilter." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i <filename>        Input image " << std::endl;
+  std::cout << "    -o <filename>        Output image" << std::endl << std::endl;
+  std::cout << "*** [options]   ***" << std::endl << std::endl;
+  std::cout << "    -f <float> [1]       Foreground value" << std::endl;
+  std::cout << "    -b <float> [0]       Background value" << std::endl;
+}
 
 struct arguments
 {

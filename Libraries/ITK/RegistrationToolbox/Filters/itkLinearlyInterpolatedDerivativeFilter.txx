@@ -22,8 +22,6 @@
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkPoint.h>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 /**

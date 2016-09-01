@@ -24,7 +24,6 @@
  */
 
 
-#include <itkLogHelper.h>
 #include <itkCropImageFilter.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>

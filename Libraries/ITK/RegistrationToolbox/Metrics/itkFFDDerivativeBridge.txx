@@ -17,8 +17,6 @@
 
 #include "itkFFDDerivativeBridge.h"
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 /*

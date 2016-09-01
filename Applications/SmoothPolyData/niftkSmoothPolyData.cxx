@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
@@ -25,27 +25,27 @@
  * \section niftkSmoothPolyDataSummary Runs the VTK vtkSmoothPolyDataFilter on a vtkPolyData.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Runs the VTK vtkSmoothPolyDataFilter on a vtkPolyData." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputPolyData.vtk -o outputPolyData.vtk [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i            <filename>     Input VTK Poly Data." << std::endl;
-    std::cout << "    -o            <filename>     Output VTK Poly Data." << std::endl << std::endl;     
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -iters        <int>    [20]  Number of iterations" << std::endl;
-    std::cout << "    -threshold    <float>   [0]  Convergence threshold" << std::endl;
-    std::cout << "    -relax        <float> [0.15] Relaxation factor" << std::endl;
-    std::cout << "    -featureAngle <float>  [45]  Angle that determines whether something is truely a feature and shouldn't be smoothed" << std::endl;
-    std::cout << "    -edgeAngle    <float>  [15]  Angle to determine if something is an edge" << std::endl;
-    std::cout << "    -smoothFeatures              Turn on feature smoothing" << std::endl;
-    std::cout << "    -noEdgeSmoothing             Turn off edge smoothing" << std::endl;
-    std::cout << "    -generateErrorScalars        Generates error scalars" << std::endl;
-    std::cout << "    -generateErrorVectors        Generates error vectors" << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Runs the VTK vtkSmoothPolyDataFilter on a vtkPolyData." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputPolyData.vtk -o outputPolyData.vtk [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i            <filename>     Input VTK Poly Data." << std::endl;
+  std::cout << "    -o            <filename>     Output VTK Poly Data." << std::endl << std::endl;     
+  std::cout << "*** [options]   ***" << std::endl << std::endl;
+  std::cout << "    -iters        <int>    [20]  Number of iterations" << std::endl;
+  std::cout << "    -threshold    <float>   [0]  Convergence threshold" << std::endl;
+  std::cout << "    -relax        <float> [0.15] Relaxation factor" << std::endl;
+  std::cout << "    -featureAngle <float>  [45]  Angle that determines whether something is truely a feature and shouldn't be smoothed" << std::endl;
+  std::cout << "    -edgeAngle    <float>  [15]  Angle to determine if something is an edge" << std::endl;
+  std::cout << "    -smoothFeatures              Turn on feature smoothing" << std::endl;
+  std::cout << "    -noEdgeSmoothing             Turn off edge smoothing" << std::endl;
+  std::cout << "    -generateErrorScalars        Generates error scalars" << std::endl;
+  std::cout << "    -generateErrorVectors        Generates error vectors" << std::endl;
+}
 
 struct arguments
 {

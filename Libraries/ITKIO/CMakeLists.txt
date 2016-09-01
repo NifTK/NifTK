@@ -38,8 +38,6 @@ target_link_libraries(niftkITKIO
   PUBLIC
     niftkcommon
     ${ITK_LIBRARIES}
-  PRIVATE
-    ${Boost_LIBRARIES}
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

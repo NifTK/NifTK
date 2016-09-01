@@ -18,8 +18,6 @@
 #include "itkJacobianGradientSimilarityMeasure.h"
 #include <itkImageRegionConstIteratorWithIndex.h>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 /*

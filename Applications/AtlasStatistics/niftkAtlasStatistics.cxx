@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
@@ -53,7 +53,7 @@ class InvalidImageSizeException: public std::exception
 
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Takes an atlas, containing a set of image labels, and for each input image, " << std::endl;
   std::cout << "  and for each region, computes region based statistics (count, min, max, mean, std dev, median, IQM), resulting in a comma separated output. " << std::endl;

@@ -18,7 +18,6 @@
 #include "itkMIDASRethresholdingFilter.h"
 #include <itkImageFileWriter.h>
 #include <itkMIDASHelper.h>
-#include <itkLogHelper.h>
 #include <itkImageRegionConstIteratorWithIndex.h>
 
 namespace itk

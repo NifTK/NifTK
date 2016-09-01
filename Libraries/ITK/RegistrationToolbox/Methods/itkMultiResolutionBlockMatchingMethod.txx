@@ -17,8 +17,6 @@
 
 #include "itkMultiResolutionBlockMatchingMethod.h"
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 /*

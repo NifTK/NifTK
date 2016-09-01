@@ -21,8 +21,6 @@
 #include <itkRecursiveMultiResolutionPyramidImageFilter.h>
 #include <itkBinaryCrossStructuringElement.h>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 /*

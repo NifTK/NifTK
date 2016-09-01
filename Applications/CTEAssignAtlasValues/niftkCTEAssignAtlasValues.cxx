@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkBinaryThresholdImageFilter.h>
@@ -34,7 +34,7 @@
  */
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Takes an atlas, and an input image, and for each voxel in the input image that is not background" << std::endl;
   std::cout << "  will find the nearest atlas voxel, and assign to the output voxel that atlas label." << std::endl;

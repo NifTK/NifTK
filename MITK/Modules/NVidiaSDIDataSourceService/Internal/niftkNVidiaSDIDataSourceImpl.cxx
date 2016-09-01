@@ -20,7 +20,6 @@
 #include <Mmsystem.h>
 #include <opencv2/core/core_c.h>
 #include <igtlTimeStamp.h>
-#include <boost/typeof/typeof.hpp>
 #include <NiftyLinkUtils.h>
 #include <fstream>
 
@@ -442,7 +441,7 @@ video::FrameInfo NVidiaSDIDataSourceImpl::GetNextSequenceNumber(unsigned int iha
   video::FrameInfo  fi = {0};
   fi.sequence_number = ihavealready;
 
-  BOOST_TYPEOF(sn2slot_map)::const_iterator i = sn2slot_map.upper_bound(fi);
+  const auto i = sn2slot_map.upper_bound(fi);
   if (i == sn2slot_map.end())
   {
     video::FrameInfo  empty = {0};
@@ -747,10 +746,10 @@ void NVidiaSDIDataSourceImpl::OnTimeoutImpl()
 
         int newest_slot = sdiin->get_current_ringbuffer_slot();
         // whatever we had in this slot is now obsolete
-        BOOST_TYPEOF(slot2sn_map)::iterator oldsni = slot2sn_map.find(newest_slot);
+        auto oldsni = slot2sn_map.find(newest_slot);
         if (oldsni != slot2sn_map.end())
         {
-          BOOST_TYPEOF(sn2slot_map)::iterator oldsloti = sn2slot_map.find(oldsni->second);
+          auto oldsloti = sn2slot_map.find(oldsni->second);
           if (oldsloti != sn2slot_map.end())
           {
             sn2slot_map.erase(oldsloti);
@@ -899,7 +898,7 @@ void NVidiaSDIDataSourceImpl::DoGetRGBAImage(unsigned int sequencenumber, IplIma
   video::FrameInfo    fi = {0};
   fi.sequence_number = sequencenumber;
 
-  BOOST_AUTO(sni, sn2slot_map.lower_bound(fi));
+  auto sni = sn2slot_map.lower_bound(fi);
   // we need to check whether the requested sequence number is still valid.
   // there may have been a capture reset.
   if (sni == sn2slot_map.end())
@@ -1004,7 +1003,7 @@ void NVidiaSDIDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, unsig
     // find out which ringbuffer slot the request sequence number is in, if any
     video::FrameInfo  fi = {0};
     fi.sequence_number = sequencenumber;
-    BOOST_TYPEOF(sn2slot_map)::const_iterator sloti = sn2slot_map.find(fi);
+    auto sloti = sn2slot_map.find(fi);
     if (sloti != sn2slot_map.end())
     {
       // sanity check

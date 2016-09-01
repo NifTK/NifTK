@@ -20,8 +20,6 @@
 #include <itkImageRegionIterator.h>
 #include <niftkConversionUtils.h>
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 template <typename TImageType, typename TScalarType, unsigned int NDimensions>  

@@ -20,7 +20,6 @@
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkImageFileWriter.h>
 #include <itkUCLMacro.h>
-#include <itkLogHelper.h>
 
 namespace itk
 {

@@ -35,7 +35,7 @@
 #include <itkLinearInterpolateImageFunction.h>
 #include <itkIdentityTransform.h>
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 
 struct niftk::CommandLineArgumentDescription clArgList[] = {
   {OPT_SWITCH, "dbg", 0, "Output debugging information."},

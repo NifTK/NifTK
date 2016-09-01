@@ -34,8 +34,6 @@
 
 #include <vnl/vnl_math.h>
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

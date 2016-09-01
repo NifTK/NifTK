@@ -4,7 +4,6 @@
 #include <video/decompress.h>
 #include <ogltools/texture.h>
 #include <ogltools/glewsupport.h>
-#include <boost/typeof/typeof.hpp>
 #include <boost/gil/extension/io/png_io.hpp>
 
 
@@ -132,8 +131,8 @@ public:
                 for (int y = 0; y < result.height(); ++y)
                     for (int x = 0; x < result.width(); ++x)
                     {
-                        const BOOST_AUTO(& r, boost::gil::const_view(result)(x, y));
-                        const BOOST_AUTO(& e, boost::gil::const_view(expected)(x, y));
+                        const auto & r = boost::gil::const_view(result)(x, y);
+                        const auto & e = boost::gil::const_view(expected)(x, y);
 
                         diff += std::abs(r[0] - e[0]);
                         diff += std::abs(r[1] - e[1]);

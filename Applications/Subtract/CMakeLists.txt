@@ -23,7 +23,6 @@ if(SlicerExecutionModel_FOUND)
       niftkITK
       niftkITKIO
       ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
   )
 
 endif()

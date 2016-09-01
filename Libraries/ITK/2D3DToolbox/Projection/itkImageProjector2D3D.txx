@@ -23,8 +23,6 @@
 
 #include <itkCastImageFilter.h>
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

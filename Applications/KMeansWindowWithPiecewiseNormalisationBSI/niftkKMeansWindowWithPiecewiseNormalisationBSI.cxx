@@ -16,7 +16,7 @@
 #pragma warning ( disable : 4786 )
 #pragma warning ( disable : 4996 )
 #endif
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkIntensityNormalisationCalculator.h>
@@ -279,7 +279,7 @@ int main(int argc, char* argv[])
 {
   if (argc < 10)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cerr);
+    niftk::LogHelper::PrintCommandLineHeader(std::cerr);
     std::cerr << std::endl;
     std::cerr << "Program to calculate the boundary shift integral, based on the paper" << std::endl; 
     std::cerr << "  Freeborough PA and Fox NC, The boundary shift integral: an accurate and" << std::endl; 

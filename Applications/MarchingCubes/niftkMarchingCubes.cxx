@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <vtkDataObject.h>
 #include <vtkStructuredGrid.h>
@@ -24,7 +24,7 @@
 #include <vtkMarchingCubes.h>
 #include <NifTKConfigure.h>
 #include <vtkPolyDataNormals.h>
- #include <vtkSmartPointer.h>
+#include <vtkSmartPointer.h>
 
 
 /*!
@@ -35,7 +35,7 @@
 
 void Usage(char *exec)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "  Takes an image as a VTK structured grid (NOT structured points), and performs a marching cubes iso-surface extraction." << std::endl;
     std::cout << "  " << std::endl;

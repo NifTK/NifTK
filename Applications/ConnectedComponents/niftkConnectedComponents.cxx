@@ -16,7 +16,7 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -37,7 +37,7 @@
  */
 void StartUsage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Runs ITK ConnectedComponentImageFilter to find connected components. " << std::endl;
   std::cout << "  " << std::endl;

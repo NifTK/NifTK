@@ -22,7 +22,7 @@
 #include <itkTransformFileWriter.h>
 #include <itkBackwardImageProjector2Dto3D.h>
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 
 /*!
  * \file niftkBackProject2Dto3D.cxx
@@ -38,7 +38,7 @@
 
 void Usage(char *exec)
   {
-	niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+	niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl
 	      << "  Back projects a 2D image into a 3D volume" << std::endl << std::endl
 

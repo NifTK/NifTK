@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
@@ -33,7 +33,7 @@
  */
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Implements Yezzi and Prince, IEEE TMI Vol. 22, No. 10, Oct 2003," << std::endl;
   std::cout << "  using Diep et. al ISBI 2007 to cope with anisotropic voxel sizes, and optionally, initialize boundaries." << std::endl;

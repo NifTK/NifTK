@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
 #include <niftkConversionUtils.h>
+#include <niftkLogHelper.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkPolyDataReader.h>
@@ -27,7 +27,7 @@
  */
 void Usage(char *exec)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "  Runs the VTK vtkLinearSubdivision filter on a vtkPolyData." << std::endl;
     std::cout << "  " << std::endl;

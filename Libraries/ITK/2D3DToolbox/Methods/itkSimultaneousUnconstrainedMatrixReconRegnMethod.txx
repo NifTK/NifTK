@@ -20,8 +20,6 @@
 
 #include "itkSimultaneousUnconstrainedMatrixReconRegnMethod.h"
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

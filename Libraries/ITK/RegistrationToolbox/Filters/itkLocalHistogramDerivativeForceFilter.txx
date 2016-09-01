@@ -22,8 +22,6 @@
 #include <itkConstNeighborhoodIterator.h>
 #include <itkImageRegionConstIteratorWithIndex.h>
 
-#include <itkLogHelper.h>
-
 namespace itk {
 
 template< class TFixedImage, class TMovingImage, class TScalar >

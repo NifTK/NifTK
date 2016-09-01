@@ -22,8 +22,6 @@
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkImageFileWriter.h>
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

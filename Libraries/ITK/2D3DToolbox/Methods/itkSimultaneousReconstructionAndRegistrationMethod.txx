@@ -22,8 +22,6 @@
 
 #include "itkSimultaneousReconstructionAndRegistrationMethod.h"
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

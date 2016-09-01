@@ -14,8 +14,6 @@
 
 #include <niftkConversionUtils.h>
 
-#include <itkLogHelper.h>
-#include <itkCommandLineHelper.h>
 #include <niftkCommandLineParser.h>
 
 #include <vtkPLYReader.h>

@@ -18,7 +18,6 @@
 #include <niftkConversionUtils.h>
 #include "itkImageRegistrationFilter.h"
 #include <itkImageRegistrationFactory.h>
-#include <itkLogHelper.h>
 
 namespace itk
 {

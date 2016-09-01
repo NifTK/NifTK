@@ -13,7 +13,6 @@
 =============================================================================*/
 
 #include <boost/gil/gil_all.hpp>
-#include <boost/typeof/typeof.hpp>
 
 
 //-----------------------------------------------------------------------------
@@ -30,8 +29,8 @@ bool AreImagesTheSame(const typename boost::gil::image<A, false>::const_view_t& 
   {
     for (int x = 0; x < a.width(); ++x)
     {
-      BOOST_AUTO(ap, a(x, y));
-      BOOST_AUTO(bp, b(x, y));
+      auto ap = a(x, y);
+      auto bp = b(x, y);
 
       if (ap != bp)
       {

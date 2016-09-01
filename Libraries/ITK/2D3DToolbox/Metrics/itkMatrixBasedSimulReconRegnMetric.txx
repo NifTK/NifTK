@@ -18,8 +18,6 @@
 #include "itkMatrixBasedSimulReconRegnMetric.h"
 #include <itkImageRegionIterator.h>
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

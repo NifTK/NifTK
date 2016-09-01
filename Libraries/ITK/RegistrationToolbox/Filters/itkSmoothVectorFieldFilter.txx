@@ -18,7 +18,7 @@
 #include "itkSmoothVectorFieldFilter.h"
 #include <itkImageFileWriter.h>
 
-#include <itkLogHelper.h>
+#include <itkUCLMacro.h>
 
 namespace itk {
 

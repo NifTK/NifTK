@@ -15,7 +15,6 @@
 #ifndef _itkRigidPlusScaleImageRegistrationMethod_txx
 #define _itkRigidPlusScaleImageRegistrationMethod_txx
 
-#include <itkLogHelper.h>
 #include "itkRigidPlusScaleImageRegistrationMethod.h"
 
 namespace itk

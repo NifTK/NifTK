@@ -28,7 +28,6 @@
 
 #include <itkCreatePositiveMammogram.h>
 
-#include <itkLogHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -40,7 +39,6 @@
 #include <itkMammogramFatSubtractionImageFilter.h>
 #include <itkMammogramMaskSegmentationImageFilter.h>
 
-#include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <vector>

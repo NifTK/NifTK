@@ -17,7 +17,7 @@
 #endif
 
 #include <iostream>
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkBilateralImageFilter.h>
 #include <itkImageFileReader.h>
@@ -37,7 +37,7 @@
  */
 void StartUsage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Bilteral filter from ITK. See itk::BilateralImageFilter." << std::endl;
   std::cout << "  " << std::endl; 

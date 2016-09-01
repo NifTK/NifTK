@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -31,28 +31,28 @@
  * \section niftkVolToFreeSurferSummary Takes a FreeSurfer surface (in ASCII format), and a volume containing (eg.) thickness data, and then for each point in the surface, finds the thickness, either the closest in the neighborhood, or by smoothing and dividing the volume data.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Takes a FreeSurfer surface (in ASCII format), and a volume containing (eg.) thickness data, and then for each point in the surface, finds the thickness, either the closest in the neighborhood, or by smoothing and dividing the volume data." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -s surfaceFileName -v volumeFileName -o outputFileName" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -s <filename>         Input surface file in ASCII format " << std::endl;
-    std::cout << "    -v <filename>         Input volume image in any ITK format " << std::endl;
-    std::cout << "    -o <filename>         Output thickness file in ASCII format " << std::endl << std::endl;
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -b <float>       [0]  Background value in volume image" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "    Choose either" << std::endl;
-    std::cout << "      -radius <float>     Search radius to find closest point in volume e.g. 2mm radius" << std::endl;
-    std::cout << "      -steps <int>        How many steps to perform over that radius e.g. 5" << std::endl << std::endl;
-    std::cout << "    OR" << std::endl;
-    std::cout << "      -fwhm  <float>      FWHM for Gaussian smoothing" << std::endl;
-    std::cout << "      -mask  <filename>   Binary [0-1] mask image" << std::endl;
-    return;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Takes a FreeSurfer surface (in ASCII format), and a volume containing (eg.) thickness data, and then for each point in the surface, finds the thickness, either the closest in the neighborhood, or by smoothing and dividing the volume data." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -s surfaceFileName -v volumeFileName -o outputFileName" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -s <filename>         Input surface file in ASCII format " << std::endl;
+  std::cout << "    -v <filename>         Input volume image in any ITK format " << std::endl;
+  std::cout << "    -o <filename>         Output thickness file in ASCII format " << std::endl << std::endl;
+  std::cout << "*** [options]   ***" << std::endl << std::endl;
+  std::cout << "    -b <float>       [0]  Background value in volume image" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "    Choose either" << std::endl;
+  std::cout << "      -radius <float>     Search radius to find closest point in volume e.g. 2mm radius" << std::endl;
+  std::cout << "      -steps <int>        How many steps to perform over that radius e.g. 5" << std::endl << std::endl;
+  std::cout << "    OR" << std::endl;
+  std::cout << "      -fwhm  <float>      FWHM for Gaussian smoothing" << std::endl;
+  std::cout << "      -mask  <filename>   Binary [0-1] mask image" << std::endl;
+  return;
+}
 
 /**
  * \brief Takes mask and target and crops target where mask is non zero.

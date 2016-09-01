@@ -27,6 +27,8 @@
 #include <itkMaskedImageRegistrationMethod.h>
 #include <itkTransformFileWriter.h>
 
+#include <niftkLogHelper.h>
+
 /*!
  * \file niftkInvertTransformation.cxx
  * \page niftkInvertTransformation
@@ -50,7 +52,7 @@ int main(int argc, char** argv)
   
   if (argc < 3)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "  Inverts an affine transform" << std::endl;
     std::cout << "  " << std::endl;

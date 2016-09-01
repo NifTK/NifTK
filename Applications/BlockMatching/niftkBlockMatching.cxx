@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
@@ -56,7 +56,7 @@
 
 void StartUsage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Implements Block Matching, based on Ourselin et. al., Image and Vision Computing, 19 (2000) 25-31 and Includes modifications from Ourselin et. al. MICCAI 2002 pp 140-147." << std::endl;
   std::cout << "  However, you should probably use NiftyReg available on SourceForge: https://niftyreg.svn.sourceforge.net. " << std::endl;

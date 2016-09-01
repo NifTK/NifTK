@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -44,7 +44,7 @@
 
 void StartUsage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Implements FFD registration, initially based on Rueckert et. al., IEEE TMI Vol. 18, No. 8, Aug 1999." << std::endl;
   std::cout << "  Includes force generation via Crum et. al., IPMI 2003, 378-387" << std::endl;

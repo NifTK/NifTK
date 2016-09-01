@@ -19,8 +19,6 @@
 
 #include "itkGE5000_TomosynthesisGeometry.h"
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {
