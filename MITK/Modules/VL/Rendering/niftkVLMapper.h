@@ -124,11 +124,11 @@ public:
    * Updates to the "visible" property are also ignored while updates to the transform are never ignored.
    * At the moment this only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage.
    */
-  void setDataNodeVividUpdateEnabled( bool enable ) { m_DataNodeVividUpdateEnabled = enable; }
-  bool isDataNodeVividUpdateEnabled() const { return m_DataNodeVividUpdateEnabled; }
+  void setDataNodeTrackingEnabled( bool enable ) { m_DataNodeTrackingEnabled = enable; }
+  bool isDataNodeTrackingEnabled() const { return m_DataNodeTrackingEnabled; }
 
   //--------------------------------------------------------------------------------
-  // User managed Vivid API to be used when isDataNodeVividUpdateEnabled() == false
+  // User managed Vivid API to be used when isDataNodeTrackingEnabled() == false
   //   --- Only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage ---
   //--------------------------------------------------------------------------------
 
@@ -489,7 +489,7 @@ protected:
   VLSceneView* m_VLSceneView;
   const mitk::DataNode* m_DataNode;
   vl::ref<vl::Actor> m_Actor;
-  bool m_DataNodeVividUpdateEnabled;
+  bool m_DataNodeTrackingEnabled;
 };
 
 //-----------------------------------------------------------------------------

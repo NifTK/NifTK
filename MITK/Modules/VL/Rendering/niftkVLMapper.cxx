@@ -55,7 +55,7 @@ VLMapper::VLMapper( const mitk::DataNode* node, VLSceneView* sv )
   m_OpenGLContext = sv->openglContext();
   m_VividRendering = sv->vividRendering();
   m_DataStorage = sv->dataStorage();
-  m_DataNodeVividUpdateEnabled = true;
+  m_DataNodeTrackingEnabled = true;
   VIVID_CHECK( m_OpenGLContext );
   VIVID_CHECK( m_VividRendering );
   VIVID_CHECK( m_DataStorage );
@@ -84,7 +84,7 @@ void VLMapper::updateCommon()
     return;
   }
 
-  if ( isDataNodeVividUpdateEnabled() )
+  if ( isDataNodeTrackingEnabled() )
   {
     // Update visibility
     bool visible = VLUtils::getBoolProp( m_DataNode, "visible", true );
@@ -183,7 +183,7 @@ void VLMapperVLGlobalSettings::update()
   int render_mode = VLUtils::getEnumProp( m_DataNode, "VL.Global.RenderMode", 0 );
   // vl::vec4 bg_color = VLUtils::getColorProp( m_DataNode, "VL.Global.BackgroundColor", vl::black );
   // float opacity = VLUtils::getFloatProp( m_DataNode, "VL.Global.Opacity", 1 );
-  int passes = VLUtils::getIntProp( m_DataNode, "VL.Global.DepthPeelingPasses", 4 );
+  // int passes = VLUtils::getIntProp( m_DataNode, "VL.Global.DepthPeelingPasses", 4 );
 
   m_VLSceneView->setStencilEnabled( enable );
   m_VLSceneView->setStencilBackgroundColor( stencil_bg_color );
@@ -191,7 +191,7 @@ void VLMapperVLGlobalSettings::update()
   m_VLSceneView->setRenderingMode( (vl::Vivid::ERenderingMode)render_mode );
   // m_VividRendering->setBackgroundColor( bg_color );
   // m_VividRendering->setOpacity( opacity );
-  m_VLSceneView->setDepthPeelingPasses( passes );
+  // m_VLSceneView->setDepthPeelingPasses( passes );
 }
 
 void VLMapperVLGlobalSettings::updateVLGlobalSettings()
@@ -232,7 +232,7 @@ bool VLMapperSurface::init()
 void VLMapperSurface::update()
 {
   updateCommon();
-  if ( isDataNodeVividUpdateEnabled() )
+  if ( isDataNodeTrackingEnabled() )
   {
     VLUtils::updateMaterialProps( m_Actor->effect(), m_DataNode );
     VLUtils::updateRenderModeProps( m_Actor->effect(), m_DataNode );
@@ -295,7 +295,7 @@ void VLMapper2DImage::update()
   VIVID_CHECK( m_MitkImage );
 
   updateCommon();
-  if ( isDataNodeVividUpdateEnabled() )
+  if ( isDataNodeTrackingEnabled() )
   {
     // VLUtils::updateRenderModeProps(); /* does not apply here */
     VLUtils::updateFogProps( m_Actor->effect(), m_DataNode );
@@ -842,7 +842,7 @@ bool VLMapperCUDAImage::init()
 void VLMapperCUDAImage::update()
 {
   updateCommon();
-  if ( isDataNodeVividUpdateEnabled() )
+  if ( isDataNodeTrackingEnabled() )
   {
     // VLUtils::updateRenderModeProps(); /* does not apply here */
     VLUtils::updateFogProps( m_Actor->effect(), m_DataNode );
