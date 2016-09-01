@@ -54,7 +54,9 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent,
   {
 #ifdef _WIN32
     // On windows, we want to see "COM1", but we need the number at the end to connect via port number.
-    m_PortName->addItem(ports.at(i), QVariant::fromValue(ports.at(i).right(1)));
+    QString comString = ports.at(i);
+    comString.remove("com",Qt::CaseInsensitive);
+    m_PortName->addItem(ports.at(i), QVariant::fromValue(comString);
 #elif __APPLE__
     m_PortName->addItem(ports.at(i), QVariant::fromValue(ports.at(i)));
 #else
