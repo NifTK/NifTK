@@ -1,13 +1,23 @@
 /**
 
-\page VividRenderer
+\page VividRenderer The Vivid Renderer
 
 [TOC]
 
 \section Introduction Introduction
 
-MJC: 2-4 sentences describing purpose of VLVideoOverlayWidget
+Thanks to <a href="https://github.com/MicBosi">Michele Bosi</a> and the Smart Liver Team, NifTK has a new visualisation framework to provide custom-made graphics for augmented reality applications. In MITK-speak this is provided as a new "Editor", called the "VL Video Overlay Editor". This was implemented as a 3-month mini-project within the Smart Liver program, and the main aims were:
 
+\li Fix transparency/ordering issues
+\li Provide a customisable outline
+\li Reduce clutter
+\li Try to improve the illusion of vessels 'inside' the liver
+
+Michele presented various options at the Smart Liver meeting, and these were decided to be the main objectives. In 
+liver surgery, you rarely need to see the triangle mesh of the liver, as that is the main object you are looking at in real life. But the outline is useful to guage registration accuracy. Also, projecting all vessels onto the video is confusing. To reduce clutter, we could simple sub-divide the meshes, and only display portions of them. An alternative is to use fogging. Michele implemented transparancy, saturation and colour fogging. Finally, customisable soft-edge stencils are used to cut away the top surface of the video (e.g. the video of the liver), and into which can be projected the internal anatomy. 
+
+So, these are now described in more detail, with an explanation of the settings required to achieve them.
+  
 \image html VividRenderer/VLVideoOverlayWidget.png "Figure 1. VLVideoOverlayWidget with all 4 VLQtWidgets showing left to right: 1) left video with overlay, 2) right video with overlay, 3) left view but with just rendering and no video, 4) 3D view."
 
 \subsection subs_intro Technical Overview
