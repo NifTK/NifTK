@@ -8,13 +8,13 @@
 
 MJC: 2-4 sentences describing purpose of VLVideoOverlayWidget
 
-\image html VividRenderer/VLVideoOverlayWidget.png "Figure 1. VLVideoOverlayWidget with all 4 VLQtWidgets showing: 1) left video with overlay, 2) right video with overlay, 3) left view but with just rendering and no video, 4) 3D view."
+\image html VividRenderer/VLVideoOverlayWidget.png "Figure 1. VLVideoOverlayWidget with all 4 VLQtWidgets showing left to right: 1) left video with overlay, 2) right video with overlay, 3) left view but with just rendering and no video, 4) 3D view."
 
 \subsection subs_intro Technical Overview
 
 At the core of the new niftk::VLVideoOverlayWidget lays the custom built Vivid rendering engine based on <a href="http://visualizationlibrary.org" target="_blank">Visualization Library</a> whose objective is to provide a multi platform, modern, fast and flexible augmented reality rendering platform for NifTK and the liver project in particular.
 
-Each of the four views in niftk::VLVideoOverlayWidget is implemented by a niftk::VLWidget each of which manages its own niftk::VLSceneView instance which in turn manages its own set of niftk::VLMapper classes. A niftk::VLMapper class manages and renders a particular mitk::DataNode and optionally handles data store change events (see niftk::VLMapper::setDataNodeTrackingEnabled() for more info).
+Each of the four views in niftk::VLVideoOverlayWidget is implemented by a niftk::VLWidget each of which manages its own niftk::VLSceneView instance which in turn manages its own set of niftk::VLMapper classes. A niftk::VLMapper class manages and renders a particular mitk::DataNode and optionally handles DataNode change events (see niftk::VLMapper::setDataNodeTrackingEnabled() for more info).
 
 This is the list of the most relevant classes:
 
@@ -31,15 +31,15 @@ niftk::VLVideoOverlayWidget requires OpenGL 3.2 compatibility profile.
 
 niftk::VLVideoOverlayWidget includes the following visualization improvements:
 
-- GPU accelerated correct order independent transparency rendering via GLSL based Depth Peeling rendering.
+- GPU accelerated correct order independent transparency rendering via GLSL-based Depth Peeling algorithm.
 - Out of the box background and image rendering facility including support for low latency CUDA streams.
 - Camera tracking and calibration support.
 - GPU accelerated 2D outline rendering providing accurate silhouettes of any 3D mesh.
 - GPU accelerated 3D outline rendering (see niftk::VLMapper::setRenderingMode() for more information on 2D vs 3D silhouettes).
-- GPU accelerated 3D smooth stencil supporting own background color and arbitrary 3D mesh to function as stencil for enhanced augmented reality effect.
+- GPU accelerated 3D smooth stencil supporting own background color and arbitrary 3D meshes to function as stencil for enhanced augmented reality effect.
 - Enhanced fogging with support to color-fogging, transparency-fogging, saturation-fogging  (see niftk::VLMapper::setFogTarget() for more info).
 - Enhanced clipping with support to color-clipping, transparency-clipping, saturation-clipping and multiple clipping primitives: planes, sphere and box (see niftk::VLMapper::setClipMode() for more info).
-- Fast ray-cast volume rendering with support for opaque 3D meshes, supporting the following three modes: isosurfaces, MIP, direct volume rendering. Many of the the rendering details like gradient precomputation, image format conversion etc. are automatically handled by vl::VividVolume. Non-cubic and transformed volumes are supported as well (interfacing with NifTK transfer function representation needs completion once requirements and constraints are well defined).
+- Fast ray-cast volume rendering that can be mixed with opaque 3D meshes, supporting the following three modes: isosurfaces, MIP, direct volume rendering. Many of the the rendering details like gradient precomputation, image format conversion etc. are automatically handled by vl::VividVolume. Non-cubic and transformed volumes are supported as well (interfacing with NifTK transfer function representation needs completion once requirements and constraints are well defined).
 
 \section VividRenderingOptions Vivid Rendering Options
 
@@ -47,9 +47,9 @@ niftk::VLVideoOverlayWidget has potential access to all vl::VividRendering funct
 
 niftk::VLSceneView is mainly concerned about global rendering options like background color, stencil settings etc. found in vl::VividRendering.
 
-niftk::VLMapper manages an object that needs to be rendered and typically wraps one or more vl::Actor along with corresponding vl::Effect and vl::Transform so that you don't need to access the underlying GLSL vl::Uniform variables. niftk::VLMapper also optionally tracks changes to the Data Store and reflects them to the rendered object. Data Store tracking can be enabled/disabled using niftk::VLMapper::setDataNodeTrackingEnabled().
+niftk::VLMapper manages an object that needs to be rendered and typically wraps one or more vl::Actor along with corresponding vl::Effect and vl::Transform so that you don't need to access the underlying GLSL vl::Uniform variables. niftk::VLMapper also optionally tracks changes to the mitk::DataNode and reflects them to the rendered object. DataNode tracking can be enabled/disabled using niftk::VLMapper::setDataNodeTrackingEnabled().
 
-If Data Store tracking is enabled then attributes changes happening in the mitk::DataNode will update the corresponding niftk::VLMapper according as defined by the following functions:
+If DataNode tracking is enabled then attributes changes happening in the mitk::DataNode will update the corresponding niftk::VLMapper as defined by the following functions:
 
 - niftk::VLMapperVLGlobalSettings::update() (this is mainly for debugging purposes)
 - niftk::VLMapper::updateCommon()
@@ -65,11 +65,11 @@ If Data Store tracking is enabled then attributes changes happening in the mitk:
 - niftk::VLUtils::updateClipProps()
 - niftk::VLUtils::updateVolumeProps()
 
-If Data Store tracking is disabled then you can programmatically set all your rendering options via niftk::VLMapper and niftk::VLSceneView API.
+If DataNode tracking is disabled then one can programmatically set most Vivid rendering options via niftk::VLMapper and niftk::VLSceneView API.
 
-\subsection subs_prop_glossary Data Store Property Glossary
+\subsection subs_prop_glossary DataNode Vivid Properties
 
-- niftk::VLMapperVLGlobalSettings (tracks niftk::VLGlobalSettingsDataNode used to access/tests global settings)
+- niftk::VLMapperVLGlobalSettings (tracks niftk::VLGlobalSettingsDataNode used to access/test global settings)
   - VL.Global.Stencil.Enable: see niftk::VLSceneView::setStencilEnabled()
   - VL.Global.Stencil.BackgroundColor: see niftk::VLSceneView::setStencilBackgroundColor()
   - VL.Global.Stencil.Smoothness: see niftk::VLSceneView::setStencilSmoothness()
@@ -112,9 +112,9 @@ If Data Store tracking is disabled then you can programmatically set all your re
 
 \section MainRenderingModes Main Rendering Modes
 
-\subsection subs_example1 Example 1 - Background image, 2D liver outline, spherical stencil, color fogging.
+\subsection subs_example1 Example 1 - Background Image, 2D Outlines, Stencil, Color Fogging
 
-\image html VividRenderer/Vivid-01-ColorFog.png "Figure 2. Background, Liver Outline, Color Fogging and Stencil"
+\image html VividRenderer/Vivid-01-ColorFog.png "Figure 2. Background image, 2D outline of liver, color fogging of vessels and stencil using 3D sphere"
 
 The screenshot in figure 2. has been generated using the following settings:
 
@@ -143,9 +143,9 @@ The screenshot in figure 2. has been generated using the following settings:
     - VL.Global.Stencil.BackgroundColor = #000044
     - VL.Global.Stencil.Smoothness = 10
 
-\subsection subs_example2 Example 2 - Polygons + 3D outline vessels, alpha-fogged vessels, smoother spherical stencil.
+\subsection subs_example2 Example 2 - Polygons + 3D Outlines, Alpha-Fogging, Smooth Stencil
 
-\image html VividRenderer/Vivid-02-AlphaFog.png "Figure 3. Background, Liver Outline, Alpha Fogging and Smoother Stencil"
+\image html VividRenderer/Vivid-02-AlphaFog.png "Figure 3. Background image, outline 2D of the liver, alpha-fogging of vessels, 50px-smooth stencil using 3D sphere"
 
 The screenshot in figure 3. has been generated adjusting the following settings:
 
@@ -162,15 +162,15 @@ The screenshot in figure 3. has been generated adjusting the following settings:
 
 \section AdditionalRenderingModes Additional Rendering Examples
 
-\subsection subs_add_ex1 Opacity Plane Clipping
+\subsection subs_add_ex1 Plane Opacity-Clipping
 
 \image html VividRenderer/Vivid-Clip.png
 
-\subsection subs_add_ex2 Opacity Plane Smooth Clipping
+\subsection subs_add_ex2 Plane Smooth Opacity-Clipping
 
 \image html VividRenderer/Vivid-Clip-Smooth.png
 
-\subsection subs_add_ex3 Color Plane Clipping
+\subsection subs_add_ex3 Plane Color-Clipping
 
 \image html VividRenderer/Vivid-Clip-Color.png
 
@@ -182,11 +182,11 @@ The screenshot in figure 3. has been generated adjusting the following settings:
 
 \image html VividRenderer/Vivid-Fog-Saturation.png
 
-\subsection subs_add_ex6 Color-Fog Rendering, Stencil, Translucent Rendering
+\subsection subs_add_ex6 Color-Fog, Stencil, Translucent Rendering
 
 \image html VividRenderer/Vivid-Fog-Color-Stencil-Opacity.png
 
-\subsection subs_add_ex7 Direct Volume Rendering and Intersecting Geometry
+\subsection subs_add_ex7 Direct Volume Rendering and Intersecting Opaque Geometry
 
 \image html VividRenderer/Vivid-Volume-Geometry.png
 
