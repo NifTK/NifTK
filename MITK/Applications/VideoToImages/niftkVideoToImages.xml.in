@@ -21,15 +21,22 @@
       <default>./</default>
     </directory>    
    
-    <file>
+    <string>
       <name>outputPrefix</name>
       <longflag>outputPrefix</longflag>
       <description>The output prefix</description>
       <label>The output prefix</label>
       <default>./</default>
-      <channel>output</channel>
-    </file>
-    
+    </string>
+
+    <string>
+      <name>outputExtension</name>
+      <longflag>outputExtension</longflag>
+      <description>The output file extension</description>
+      <label>The output extension</label>
+      <default>bmp</default>
+    </string>
+
   </parameters>
   
   <parameters>

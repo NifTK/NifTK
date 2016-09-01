@@ -152,7 +152,7 @@ public:
   itkGetMacro   (VideoData, cv::Mat);
   itkGetMacro   (TimeStamp, unsigned long long);
 
-  bool WriteToFile (std::string prefix);
+  bool WriteToFile (const std::string& prefix, const std::string& fileExtension="bmp");
   void OutputVideoInformation (cv::VideoCapture* capture);
 
 private:
