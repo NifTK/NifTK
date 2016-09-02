@@ -63,7 +63,10 @@ BKMedicalDataSourceService::~BKMedicalDataSourceService()
 //-----------------------------------------------------------------------------
 niftk::IGIDataType::Pointer BKMedicalDataSourceService::GrabImage()
 {
+  QImage localImage;
+
   niftk::QImageDataType::Pointer wrapper;
+  wrapper->DeepCopy(localImage);
   return wrapper.GetPointer();
 }
 
