@@ -63,8 +63,8 @@ BKMedicalDataSourceService::~BKMedicalDataSourceService()
 //-----------------------------------------------------------------------------
 niftk::IGIDataType::Pointer BKMedicalDataSourceService::GrabImage()
 {
-  niftk::IGIDataType::Pointer result;
-  return result;
+  niftk::QImageDataType::Pointer wrapper;
+  return wrapper.GetPointer();
 }
 
 } // end namespace
