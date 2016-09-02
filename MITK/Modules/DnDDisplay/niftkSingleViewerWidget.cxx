@@ -301,20 +301,6 @@ void SingleViewerWidget::SetIntensityAnnotationVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool SingleViewerWidget::GetShow3DWindowIn2x2WindowLayout() const
-{
-  return m_MultiWidget->GetShow3DWindowIn2x2WindowLayout();
-}
-
-
-//-----------------------------------------------------------------------------
-void SingleViewerWidget::SetShow3DWindowIn2x2WindowLayout(bool enabled)
-{
-  m_MultiWidget->SetShow3DWindowIn2x2WindowLayout(enabled);
-}
-
-
-//-----------------------------------------------------------------------------
 void SingleViewerWidget::SetBackgroundColour(QColor colour)
 {
   m_MultiWidget->SetBackgroundColour(colour);

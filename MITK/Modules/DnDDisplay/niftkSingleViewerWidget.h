@@ -149,12 +149,6 @@ public:
   /// \brief Sets the visibility of the intensity annotation.
   void SetIntensityAnnotationVisible(bool visible);
 
-  /// \brief Returns the flag indicating if nodes will be visible in the 3D window in 2x2 window layout. In 3D window layout, always visible.
-  bool GetShow3DWindowIn2x2WindowLayout() const;
-
-  /// \brief If true, then nodes will be visible in the 3D window when in 2x2 window layout. In 3D window layout, always visible.
-  void SetShow3DWindowIn2x2WindowLayout(bool enabled);
-
   /// \brief Sets a flag to determine if we remember the image positions (slice, time step, scale factor) when we switch the render window layout
   void SetRememberSettingsPerWindowLayout(bool remember);
 

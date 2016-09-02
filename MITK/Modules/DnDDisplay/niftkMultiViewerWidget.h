@@ -185,12 +185,6 @@ public:
   /// \brief Sets the visibility of the intensity annotation.
   void SetIntensityAnnotationVisible(bool visible);
 
-  /// \brief Gets the flag controlling whether to see the 3D window in orthogonal (2x2) window layout.
-  bool GetShow3DWindowIn2x2WindowLayout() const;
-
-  /// \brief Sets the flag controlling whether to see the 3D window in orthogonal (2x2) window layout.
-  void SetShow3DWindowIn2x2WindowLayout(bool enabled);
-
   /// \brief Sets a flag to determine if we remember viewer positions (slice, timestep, magnification) when we switch the window layout.
   void SetRememberSettingsPerWindowLayout(bool rememberSettingsPerWindowLayout);
 
@@ -224,41 +218,27 @@ public:
   /// \brief Will return the selected viewer or the first viewer if none is selected.
   SingleViewerWidget* GetSelectedViewer() const;
 
-  /**
-   * \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
-   */
+  /// \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
   virtual QmitkRenderWindow* GetSelectedRenderWindow() const;
 
-  /**
-   * \see mitk::IRenderWindowPart::GetRenderWindows(), where we return all render windows for all viewers.
-   */
+  /// \see mitk::IRenderWindowPart::GetRenderWindows(), where we return all render windows for all viewers.
   virtual QHash<QString,QmitkRenderWindow*> GetRenderWindows() const;
 
-  /**
-   * \see mitk::IRenderWindowPart::GetRenderWindow(QString), where we return the first render window that matches the given id.
-   */
+  /// \see mitk::IRenderWindowPart::GetRenderWindow(QString), where we return the first render window that matches the given id.
   virtual QmitkRenderWindow* GetRenderWindow(const QString& id) const;
 
-  /**
-   * \brief Gets the selected position in world coordinates (mm) in the render window with the given id or
-   * in the currently selected render window if no id is given.
-   */
+  /// \brief Gets the selected position in world coordinates (mm) in the render window with the given id or
+  /// in the currently selected render window if no id is given.
   mitk::Point3D GetSelectedPosition(const QString& id = QString()) const;
 
-  /**
-   * \brief Sets the selected position in world coordinates (mm) in the render window with the given id or
-   * in the currently selected render window if no id is given.
-   */
+  /// \brief Sets the selected position in world coordinates (mm) in the render window with the given id or
+  /// in the currently selected render window if no id is given.
   virtual void SetSelectedPosition(const mitk::Point3D& pos, const QString& id = QString());
 
-  /**
-   * \see mitk::IRenderWindowPart::IsLinkedNavigationEnabled()
-   */
+  /// \see mitk::IRenderWindowPart::IsLinkedNavigationEnabled()
   virtual bool IsLinkedNavigationEnabled() const;
 
-  /**
-   * \see mitk::IRenderWindowPart::EnableLinkedNavigation()
-   */
+  /// \see mitk::IRenderWindowPart::EnableLinkedNavigation()
   virtual void EnableLinkedNavigation(bool enabled);
 
   /// \brief Tells if the selected viewer is focused.
@@ -294,8 +274,8 @@ protected slots:
   /// \brief Called when the show intensity annotation option has been changed through the control panel.
   void OnShowIntensityAnnotationControlsChanged(bool visible);
 
-  /// \brief Called when the show 3D window option has been changed through the control panel.
-  void OnShow3DWindowControlChanged(bool visible);
+//  /// \brief Called when the show 3D window option has been changed through the control panel.
+//  void OnShow3DWindowControlChanged(bool visible);
 
   /// \brief Called when the window layout has been changed through the control panel.
   void OnWindowLayoutControlChanged(WindowLayout windowLayout);
@@ -418,7 +398,6 @@ private:
   int m_ViewerColumns;
   int m_ViewerRowsInNonThumbnailMode;
   int m_ViewerColumnsInNonThumbnailMode;
-  bool m_Show3DWindowIn2x2WindowLayout;
   bool m_CursorDefaultVisibility;
   QColor m_BackgroundColour;
   bool m_RememberSettingsPerWindowLayout;

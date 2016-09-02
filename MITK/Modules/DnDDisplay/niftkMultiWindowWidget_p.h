@@ -120,12 +120,6 @@ public:
   /// \brief Sets the visibility of the intensity annotation.
   void SetIntensityAnnotationVisible(bool visible);
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
-  bool GetShow3DWindowIn2x2WindowLayout() const;
-
-  /// \brief If true, then nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
-  void SetShow3DWindowIn2x2WindowLayout(bool visible);
-
   /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
   void SetTimeGeometry(const mitk::TimeGeometry* timeGeometry);
@@ -485,7 +479,6 @@ private:
   int m_SelectedWindowIndex;
   int m_FocusLosingWindowIndex;
   bool m_CursorVisibility;
-  bool m_Show3DWindowIn2x2WindowLayout;
   WindowLayout m_WindowLayout;
 
   mitk::Point3D m_SelectedPosition;
@@ -587,6 +580,9 @@ private:
 
   mitk::TextOverlay2D::Pointer m_IntensityAnnotations[3];
   bool m_IntensityAnnotationIsVisible;
+
+  /// \brief Dummy widget to fill up the gap at the place of the 3D window in WINDOW_LAYOUT_ORTHO_NO_3D.
+  QWidget* m_EmptySpace;
 
   friend class DisplayGeometryModificationCommand;
 

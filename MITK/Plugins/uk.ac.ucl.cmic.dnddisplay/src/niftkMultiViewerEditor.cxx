@@ -904,7 +904,6 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     bool showWindowLayoutControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
     bool showViewerNumberControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true);
     bool showMagnificationSlider = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true);
-    bool show3DWindowInMultiWindowLayout = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false);
     bool show2DCursors = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true);
     bool rememberSettingsPerLayout = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true);
     bool sliceIndexTracking = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true);
@@ -935,7 +934,6 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewer->SetCursorDefaultVisibility(show2DCursors);
     d->m_MultiViewer->SetDirectionAnnotationsVisible(showDirectionAnnotations);
     d->m_MultiViewer->SetIntensityAnnotationVisible(showIntensityAnnotation);
-    d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(show3DWindowInMultiWindowLayout);
     d->m_MultiViewer->SetShowMagnificationSlider(showMagnificationSlider);
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
     d->m_MultiViewer->SetSliceTracking(sliceIndexTracking);
@@ -1014,7 +1012,6 @@ void MultiViewerEditor::OnPreferencesChanged( const berry::IBerryPreferences* pr
     d->m_MultiViewer->SetCursorDefaultVisibility(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
     d->m_MultiViewer->SetDirectionAnnotationsVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
     d->m_MultiViewer->SetIntensityAnnotationVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
-    d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
     d->m_MultiViewer->SetSliceTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
     d->m_MultiViewer->SetTimeStepTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));

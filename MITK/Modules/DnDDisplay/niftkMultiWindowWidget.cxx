@@ -101,7 +101,6 @@ MultiWindowWidget::MultiWindowWidget(
 , m_SelectedWindowIndex(CORONAL)
 , m_FocusLosingWindowIndex(-1)
 , m_CursorVisibility(true)
-, m_Show3DWindowIn2x2WindowLayout(false)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_TimeStep(0)
 , m_CursorPositions(3)
@@ -130,6 +129,7 @@ MultiWindowWidget::MultiWindowWidget(
 , m_CursorCoronalPositionsAreBound(false)
 , m_ScaleFactorBinding(true)
 , m_IntensityAnnotationIsVisible(false)
+, m_EmptySpace(new QWidget(this))
 {
   /// Note:
   /// The rendering manager is surely not null. If NULL is specified then the superclass
@@ -150,6 +150,8 @@ MultiWindowWidget::MultiWindowWidget(
     m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
     m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
   }
+
+  m_EmptySpace->setAutoFillBackground(true);
 
   // See also SetEnabled(bool) to see things that are dynamically on/off
   this->HideAllWidgetToolbars();
@@ -415,6 +417,10 @@ void MultiWindowWidget::SetBackgroundColour(QColor colour)
   mitk::Color backgroundColour;
   backgroundColour.Set(colour.redF(), colour.greenF(), colour.blueF());
   this->SetGradientBackgroundColors(backgroundColour, backgroundColour);
+
+  QPalette palette;
+  palette.setColor(QPalette::Background, colour);
+  m_EmptySpace->setPalette(palette);
 }
 
 
@@ -605,6 +611,7 @@ void MultiWindowWidget::RequestUpdate()
       m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget4->GetRenderWindow());
       break;
+    case WINDOW_LAYOUT_ORTHO_NO_3D:
     case WINDOW_LAYOUT_3H:
     case WINDOW_LAYOUT_3V:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
@@ -631,7 +638,7 @@ void MultiWindowWidget::RequestUpdate()
     break;
     default:
       // die, this should never happen
-      assert((m_WindowLayout >= 0 && m_WindowLayout <= 6) || (m_WindowLayout >= 9 && m_WindowLayout <= 14));
+      assert((m_WindowLayout >= 0 && m_WindowLayout <= 7) || (m_WindowLayout >= 10 && m_WindowLayout <= 15));
       break;
     }
   }
@@ -729,21 +736,6 @@ void MultiWindowWidget::SetIntensityAnnotationVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool MultiWindowWidget::GetShow3DWindowIn2x2WindowLayout() const
-{
-  return m_Show3DWindowIn2x2WindowLayout;
-}
-
-
-//-----------------------------------------------------------------------------
-void MultiWindowWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
-{
-  m_Show3DWindowIn2x2WindowLayout = visible;
-  this->Update3DWindowVisibility();
-}
-
-
-//-----------------------------------------------------------------------------
 void MultiWindowWidget::Update3DWindowVisibility()
 {
   if (m_DataStorage.IsNotNull())
@@ -761,7 +753,7 @@ void MultiWindowWidget::Update3DWindowVisibility()
       }
 
       bool visibleIn3DWindow = false;
-      if ((m_WindowLayout == WINDOW_LAYOUT_ORTHO && m_Show3DWindowIn2x2WindowLayout)
+      if ((m_WindowLayout == WINDOW_LAYOUT_ORTHO)
           || m_WindowLayout == WINDOW_LAYOUT_3D)
       {
         visibleIn3DWindow = true;
@@ -1519,7 +1511,14 @@ void MultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);  // coronal:  off
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else
+  else if (windowLayout == WINDOW_LAYOUT_ORTHO_NO_3D)
+  {
+    m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
+    m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
+    m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
+    m_GridLayout->addWidget(m_EmptySpace, 1, 1);  // 3D:       on
+  }
+  else // ORTHO or ORTHO_NO_3D
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
@@ -1558,6 +1557,15 @@ void MultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     showSagittal = true;
     showCoronal = true;
     show3D = true;
+    defaultWindowIndex = CORONAL;
+    m_CursorAxialPositionsAreBound = true;
+    m_CursorSagittalPositionsAreBound = true;
+    break;
+  case WINDOW_LAYOUT_ORTHO_NO_3D:
+    showAxial = true;
+    showSagittal = true;
+    showCoronal = true;
+    show3D = false;
     defaultWindowIndex = CORONAL;
     m_CursorAxialPositionsAreBound = true;
     m_CursorSagittalPositionsAreBound = true;

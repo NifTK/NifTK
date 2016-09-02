@@ -65,7 +65,6 @@ MultiViewerWidget::MultiViewerWidget(
 , m_SelectedViewerIndex(0)
 , m_ViewerRows(0)
 , m_ViewerColumns(0)
-, m_Show3DWindowIn2x2WindowLayout(false)
 , m_CursorDefaultVisibility(true)
 , m_RememberSettingsPerWindowLayout(false)
 , m_ThumbnailMode(false)
@@ -178,7 +177,6 @@ MultiViewerWidget::MultiViewerWidget(
   this->connect(m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsControlsChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ShowIntensityAnnotationChanged(bool)), SLOT(OnShowIntensityAnnotationControlsChanged(bool)));
-  this->connect(m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowControlChanged(bool)));
 
   this->connect(m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutControlChanged(WindowLayout)));
   this->connect(m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), SLOT(OnWindowCursorBindingControlChanged(bool)));
@@ -240,7 +238,6 @@ SingleViewerWidget* MultiViewerWidget::CreateViewer(const QString& name)
   viewer->setVisible(false);
 
   viewer->SetBackgroundColour(m_BackgroundColour);
-  viewer->SetShow3DWindowIn2x2WindowLayout(m_Show3DWindowIn2x2WindowLayout);
   viewer->SetRememberSettingsPerWindowLayout(m_RememberSettingsPerWindowLayout);
   viewer->SetDisplayInteractionsEnabled(true);
   viewer->SetLinkedNavigationEnabled(m_LinkedNavigationEnabled);
@@ -657,25 +654,6 @@ void MultiViewerWidget::SetIntensityAnnotationVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool MultiViewerWidget::GetShow3DWindowIn2x2WindowLayout() const
-{
-  return m_Show3DWindowIn2x2WindowLayout;
-}
-
-
-//-----------------------------------------------------------------------------
-void MultiViewerWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
-{
-  m_Show3DWindowIn2x2WindowLayout = visible;
-  m_ControlPanel->Set3DWindowVisible(visible);
-  foreach (SingleViewerWidget* viewer, m_Viewers)
-  {
-    viewer->SetShow3DWindowIn2x2WindowLayout(visible);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void MultiViewerWidget::SetRememberSettingsPerWindowLayout(bool rememberSettingsPerWindowLayout)
 {
   m_RememberSettingsPerWindowLayout = rememberSettingsPerWindowLayout;
@@ -896,7 +874,6 @@ void MultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns)
   this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
   this->OnDirectionAnnotationsVisibilityChanged(selectedViewer->AreDirectionAnnotationsVisible());
   this->OnIntensityAnnotationVisibilityChanged(selectedViewer->IsIntensityAnnotationVisible());
-  this->SetShow3DWindowIn2x2WindowLayout(m_Show3DWindowIn2x2WindowLayout);
 
   if (m_ControlPanel->AreViewerGeometriesBound())
   {
@@ -1653,13 +1630,6 @@ void MultiViewerWidget::OnShowDirectionAnnotationsControlsChanged(bool visible)
 void MultiViewerWidget::OnShowIntensityAnnotationControlsChanged(bool visible)
 {
   this->SetIntensityAnnotationVisible(visible);
-}
-
-
-//-----------------------------------------------------------------------------
-void MultiViewerWidget::OnShow3DWindowControlChanged(bool visible)
-{
-  this->SetShow3DWindowIn2x2WindowLayout(visible);
 }
 
 
