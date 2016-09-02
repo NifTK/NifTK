@@ -63,6 +63,8 @@ UltrasonixDataSourceService::~UltrasonixDataSourceService()
 //-----------------------------------------------------------------------------
 niftk::IGIDataType::Pointer UltrasonixDataSourceService::GrabImage()
 {
+  niftk::IGIDataType::Pointer result;
+  return result;
 }
 
 } // end namespace

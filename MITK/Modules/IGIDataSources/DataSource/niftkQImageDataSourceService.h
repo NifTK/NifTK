@@ -15,6 +15,7 @@
 #define niftkQImageDataSourceService_h
 
 #include <niftkSingleFrameDataSourceService.h>
+#include <niftkIGIDataSourcesExports.h>
 
 namespace niftk
 {
@@ -25,7 +26,7 @@ namespace niftk
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class QImageDataSourceService : public SingleFrameDataSourceService
+class NIFTKIGIDATASOURCES_EXPORT QImageDataSourceService : public SingleFrameDataSourceService
 {
 
 public:
