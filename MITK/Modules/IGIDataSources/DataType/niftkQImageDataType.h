@@ -16,6 +16,7 @@
 #define niftkQImageDataType_h
 
 #include <niftkIGIDataType.h>
+#include <niftkIGIDataSourcesExports.h>
 #include <QImage>
 
 namespace niftk
@@ -27,7 +28,7 @@ namespace niftk
  *
  * Note: These objects are only designed to be initialised with image data once.
  */
-class QImageDataType : public IGIDataType
+class NIFTKIGIDATASOURCES_EXPORT QImageDataType : public IGIDataType
 {
 public:
 
