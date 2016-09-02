@@ -261,5 +261,40 @@ The new Vivid volume renderer can render volumes using ray casting while allowin
 
 Proper transparency rendering can be challenging to achieve using non ray tracing graphics libraries like OpenGL. The Vivid renderer is developed around a Depth Peeling core which is a well known and well supported algorithm to achieve order independent transparencies using multi passing. It provides a much faster, correct and elegant solution compared to polygon sorting techniques used by the current NifTK-VTK renderer. Future implementation based on OpenGL 4.x could implement more sophisticated per-pixel sorting techniques which do not require multi passing and are therefore potentially even more performant.
 
+\section development Development
+
+At the moment the vlVivid library is part of CMIC/VisualizationLibrary (https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary) since it allowed for quick development iterations.
+
+The Vivid rendering engine is made of:
+  - The vlVivid library (https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary/tree/master/src/vlVivid)
+  - The Vivid GLSL shaders and other data:  (https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary/tree/master/data/vivid)
+  - The App_Vivid test application (https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary/blob/master/src/examples/Applets/App_Vivid.cpp)
+
+Ideally the above would be factored out in a separate CMIC/Vivid package. This would also allow keeping the public VL repo synced with CMIC's more easily.
+
+During development the App_Vivid applet provides a handy sandbox to test and experiment. You can run it by compiling VL's examples and then run the "vivid" applet like so:
+
+\code
+> vlQt5_tests vivid (assuming we have Qt5 support enabled)
+\endcode
+
+Under Visual Studio you can follow these steps for both Release and Debugging configurations:
+
+- Set the vlQt5_tests project to be the "StartUp Project" and
+- vlQt5_tests right click -> Properties -> Debugging -> Command Arguments: set to "vivid"
+- Also set the Environment option like so:
+
+\code
+PATH=$(SolutionDir)\src\vlCore\bin\$(Configuration);$(SolutionDir)\src\vlGraphics\bin\$(Configuration);$(SolutionDir)\src\vlVolume\bin\$(Configuration);$(SolutionDir)\src\vlVivid\bin\$(Configuration);$(SolutionDir)\src\vlVG\bin\$(Configuration);$(SolutionDir)\src\vlMolecule\bin\$(Configuration);$(SolutionDir)\src\vlQt5\bin\$(Configuration);$(SolutionDir)\src\vlQt4\bin\$(Configuration);$(SolutionDir)\src\vlWin32\bin\$(Configuration);%PATH%
+VL_DATA_PATH=C:\git-ucl\VisualizationLibrary\data
+VL_VERBOSITY_LEVEL=DEBUG
+\endcode
+
+Substitute <code>"C:\git-ucl\VisualizationLibrary\data"</code> with the full path to your VL data directory.
+
+\subsection subs_updating_glsl Updating GLSL Shaders
+
+If you change, add or remove anything in the <code>VL/data/vivid</code> directory (either GLSL shaders or other data) you'll need to reflect those changes in the <code>NifTK/MITK/Modules/VL/Resources/vivid</code> by deleting the latter one and copy pasting back the former one. If you added or removed anything you'll need to update <code>niftkVL.qrc</code> as well.
+
 */
 
