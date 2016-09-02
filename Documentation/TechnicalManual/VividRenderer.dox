@@ -13,11 +13,11 @@ Thanks to <a href="https://github.com/MicBosi">Michele Bosi</a> and the Smart Li
 \li Reduce clutter
 \li Try to improve the illusion of vessels 'inside' the liver
 
-Michele presented various options at the Smart Liver meeting, and these were decided to be the main objectives. In 
-liver surgery, you rarely need to see the triangle mesh of the liver, as that is the main object you are looking at in real life. But the outline is useful to guage registration accuracy. Also, projecting all vessels onto the video is confusing. To reduce clutter, we could simple sub-divide the meshes, and only display portions of them. An alternative is to use fogging. Michele implemented transparancy, saturation and colour fogging. Finally, customisable soft-edge stencils are used to cut away the top surface of the video (e.g. the video of the liver), and into which can be projected the internal anatomy. 
+Michele presented various options at the Smart Liver meeting, and these were decided to be the main objectives. In
+liver surgery, you rarely need to see the triangle mesh of the liver, as that is the main object you are looking at in real life. But the outline is useful to guage registration accuracy. Also, projecting all vessels onto the video is confusing. To reduce clutter, we could simple sub-divide the meshes, and only display portions of them. An alternative is to use fogging. Michele implemented transparancy, saturation and colour fogging. Finally, customisable soft-edge stencils are used to cut away the top surface of the video (e.g. the video of the liver), and into which can be projected the internal anatomy.
 
 So, these are now described in more detail, with an explanation of the settings required to achieve them.
-  
+
 \image html VividRenderer/VLVideoOverlayWidget.png "Figure 1. VLVideoOverlayWidget with all 4 VLQtWidgets showing left to right: 1) left video with overlay, 2) right video with overlay, 3) left view but with just rendering and no video, 4) 3D view."
 
 \subsection subs_intro Technical Overview
@@ -103,15 +103,15 @@ If DataNode tracking is disabled then one can programmatically set most Vivid re
   - VL.Fog.Start: see niftk::VLMapper::setFogStart()
   - VL.Fog.End: see niftk::VLMapper::setFogEnd()
   - VL.Fog.Density: see niftk::VLMapper::setFogDensity()
-  - VL.Clip.Mode: see niftk::VLMapper::setClipMode()
-  - VL.Clip.Target: see niftk::VLMapper::setClipTarget()
-  - VL.Clip.Color: see niftk::VLMapper::setClipColor()
-  - VL.Clip.FadeRange: see niftk::VLMapper::setClipFadeRange()
-  - VL.Clip.Plane: see niftk::VLMapper::setClipPlane()
-  - VL.Clip.Sphere: see niftk::VLMapper::setClipSphere()
-  - VL.Clip.BoxMin: see niftk::VLMapper::setClipBoxMin()
-  - VL.Clip.BoxMax: see niftk::VLMapper::setClipBoxMax()
-  - VL.Clip.Reverse: see niftk::VLMapper::setClipReverse()
+  - VL.Clip.0&ndash;4.Mode: see niftk::VLMapper::setClipMode()
+  - VL.Clip.0&ndash;4.Target: see niftk::VLMapper::setClipTarget()
+  - VL.Clip.0&ndash;4.Color: see niftk::VLMapper::setClipColor()
+  - VL.Clip.0&ndash;4.FadeRange: see niftk::VLMapper::setClipFadeRange()
+  - VL.Clip.0&ndash;4.Plane: see niftk::VLMapper::setClipPlane()
+  - VL.Clip.0&ndash;4.Sphere: see niftk::VLMapper::setClipSphere()
+  - VL.Clip.0&ndash;4.BoxMin: see niftk::VLMapper::setClipBoxMin()
+  - VL.Clip.0&ndash;4.BoxMax: see niftk::VLMapper::setClipBoxMax()
+  - VL.Clip.0&ndash;4.Reverse: see niftk::VLMapper::setClipReverse()
   - VL.IsStencil: see niftk::VLMapper::setIsStencil()
 - niftk::VLMapperPoints
   - VL.Point.Mode: 2D or 3D
@@ -128,30 +128,31 @@ If DataNode tracking is disabled then one can programmatically set most Vivid re
 
 The screenshot in figure 2. has been generated using the following settings:
 
-- MITK properties
-  - Liver:
-    - color = #FFAAFF
-    - opacity = 0.5
-    - VL.Outline.Color = #FFFF00
-    - VL.Outline.Opacity = 1
-    - VL.Outline.Width = 2
-    - VL.SurfaceMode = Outline2D   <----- enable 2D outline rendering
-  - Vessels
-    - color = #FF0000
-    - opacity = 1
-    - VL.SurfaceMode = Polys
-    - VL.Fog.Target = Color
-    - VL.Fog.Color = #000044
-    - VL.Fog.Mode = Linear   <----- enable linear fogging
-    - VL.Fog.Start = 0
-    - VL.Fog.End = 250
-  - Sphere
-    - visible = off
-    - VL.IsStencil = on   <----- use sphere for stencil
-  - VL Debug
-    - VL.Global.Stencil.Enable = on   <----- enable stencil effect
-    - VL.Global.Stencil.BackgroundColor = #000044
-    - VL.Global.Stencil.Smoothness = 10
+DataNode properties:
+
+- Liver:
+  - color = #FFAAFF
+  - opacity = 0.5
+  - VL.Outline.Color = #FFFF00
+  - VL.Outline.Opacity = 1
+  - VL.Outline.Width = 2
+  - VL.SurfaceMode = Outline2D   <----- enable 2D outline rendering
+- Vessels
+  - color = #FF0000
+  - opacity = 1
+  - VL.SurfaceMode = Polys
+  - VL.Fog.Target = Color
+  - VL.Fog.Color = #000044
+  - VL.Fog.Mode = Linear   <----- enable linear fogging
+  - VL.Fog.Start = 0
+  - VL.Fog.End = 250
+- Sphere
+  - visible = off
+  - VL.IsStencil = on   <----- use sphere for stencil
+- VL Debug
+  - VL.Global.Stencil.Enable = on   <----- enable stencil effect
+  - VL.Global.Stencil.BackgroundColor = #000044
+  - VL.Global.Stencil.Smoothness = 10
 
 \subsection subs_example2 Example 2 - Polygons + 3D Outlines, Alpha-Fogging, Smooth Stencil
 
@@ -160,8 +161,9 @@ The screenshot in figure 2. has been generated using the following settings:
 The screenshot in figure 3. has been generated adjusting the following settings:
 
 - Vessels
-  - VL.SurfaceMode = Polys+Outline3D
+  - VL.SurfaceMode = Polys+Outline3D   <----- renders both the surface and a 3D outline
   - VL.Outline.Width = 2
+  - VL.Outline.Color = #00FF00
   - VL.Fog.Target = Alpha
   - VL.Fog.Mode = Linear
   - VL.Fog.Start = 100
@@ -176,33 +178,88 @@ The screenshot in figure 3. has been generated adjusting the following settings:
 
 \image html VividRenderer/Vivid-Clip.png
 
+The picture above shows how to achieve alpha-clipping along a plane.
+
+- Liver
+  - VL.Clip.0.Mode = Plane
+  - VL.Clip.0.Plane = [1,0,0,0]    <----- Plane's normal XYZ and distance from origin (world coords)
+  - VL.Clip.0.Target = Alpha
+  - VL.Clip.0.FadeRange = 0
+  - VL.Clip.0.Reverse = true    <----- Reverses direction of clipping
+
+Similar effects can be achieved using the Box and Sphere clipping primitives instead of the plane.
+
+For Box clipping you'd select something similar to:
+
+- Liver
+  - VL.Clip.0.Mode = Box
+  - VL.Clip.0.MinBox = [-100,-100,-100]   <----- Box min corner (world coords)
+  - VL.Clip.0.MaxBox = [+100,+100,+100]   <----- Box max corner (world coords)
+
+For Sphere clipping you'd select something similar to:
+
+- Liver
+  - VL.Clip.0.Mode = Sphere
+  - VL.Clip.0.Sphere = [0,0,0,100]   <----- Sphere's center XYZ and radius (world coords)
+
+Note that you can also reverse the direction of clipping with VL.Clip.0.Reverse which works not just for Plane clipping but also for Sphere and Box clipping.
+
 \subsection subs_add_ex2 Plane Smooth Opacity-Clipping
 
 \image html VividRenderer/Vivid-Clip-Smooth.png
+
+Clipping can also be smooth. In the picture above we set:
+
+- Liver
+  - VL.Clip.0.FadeRange = 99   <----- fade distance in millimeters
+
+Smooth clipping works for Plane, Sphere and Box clipping primitives as well as Alpha, Color and Saturation targets.
 
 \subsection subs_add_ex3 Plane Color-Clipping
 
 \image html VividRenderer/Vivid-Clip-Color.png
 
+In the picture above we apply smooth plane color-clipping to the "hepatic veins" object:
+
+- Hepatic Veins
+  - VL.Clip.0.Mode = Plane
+  - VL.Clip.0.Plane = [1,0,0,0]
+  - VL.Clip.0.Target = Color
+  - VL.Clip.0.Color = #FF00FF
+  - VL.Clip.0.FadeRange = 10
+  - VL.Clip.0.Reverse = false
+
+Smooth clipping works for Plane, Sphere and Box clipping primitives as well as Alpha, Color and Saturation targets.
+
 \subsection subs_add_ex4 Plain No-Fog Rendering
 
 \image html VividRenderer/Vivid-Fog-No.png
 
-\subsection subs_add_ex5 Saturation-Fog Rendering
-
-\image html VividRenderer/Vivid-Fog-Saturation.png
+The picture above shows that a plain 3D rendering over the camera background looks very cluttered and does not convey a sense that the vessels are inside the liver, instead they look on top of it.
 
 \subsection subs_add_ex6 Color-Fog, Stencil, Translucent Rendering
 
 \image html VividRenderer/Vivid-Fog-Color-Stencil-Opacity.png
 
+The picture above shows that fogging together with the stencil effect can enhance depth perception and dampen visual noise.
+
+\subsection subs_add_ex5 Saturation-Fog Rendering
+
+\image html VividRenderer/Vivid-Fog-Saturation.png
+
+The picture above shows that saturation-fogging can help declutter the scene by drawing attention to what's closer to the observer.
+
 \subsection subs_add_ex7 Direct Volume Rendering and Intersecting Opaque Geometry
 
 \image html VividRenderer/Vivid-Volume-Geometry.png
 
+The new Vivid volume renderer can render volumes using ray casting while allowing proper intersection and occlusion with opaque geometry as shown above. Normally this is only achievable using volume slicing which is usually slower and less flexible. Ray casting with intersecting geometry is supported by all three volume rendering modes: Direct, Isosurface, MIP.
+
 \subsection subs_add_ex8 Order Independent Transparency Rendering
 
 \image html VividRenderer/Vivid-Transparency.png
+
+Proper transparency rendering can be challenging to achieve using non ray tracing graphics libraries like OpenGL. The Vivid renderer is developed around a Depth Peeling core which is a well known and well supported algorithm to achieve order independent transparencies using multi passing. It provides a much faster, correct and elegant solution compared to polygon sorting techniques used by the current NifTK-VTK renderer. Future implementation based on OpenGL 4.x could implement more sophisticated per-pixel sorting techniques which do not require multi passing and are therefore potentially even more performant.
 
 */
 
