@@ -26,22 +26,25 @@
 #include <niftkVLMapper.h>
 #include <niftkVLSceneView.h>
 
-namespace niftk 
+namespace niftk
 {
 
 class VLSceneView;
 
 /**
  * \brief A QGLWidget containing a niftk::VLSceneView.
- * 
- * Usually you only have to create a VLWidget and use vlSceneView() to set the data store and various Vivid options etc.
+ *
+ * Usually you only have to create a VLWidget and use vlSceneView() to set the data store and various Vivid options.
  *
  * Under niftk::VLWidget there are a few layers that implement the OpenGL rendering in decreasing order of abstraction:
  * 1) niftk::VLWidget
- * 2) niftk::VLSceneView / niftk::VLMapper
- * 3) vl::VividRendering
- * 4) Visualization Library
- * 5) OpenGL
+ * 2) niftk::VLSceneView
+ * 3) niftk::VLMapper
+ * 4) vl::VividRendering
+ * 5) Visualization Library
+ * 6) OpenGL
+ *
+ * \sa vlQt5::Qt5Widget
  *
  */
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)

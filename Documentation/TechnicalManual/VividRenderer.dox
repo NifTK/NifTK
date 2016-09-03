@@ -1,0 +1,300 @@
+/**
+
+\page VividRenderer The Vivid Renderer
+
+[TOC]
+
+\section Introduction Introduction
+
+Thanks to <a href="https://github.com/MicBosi">Michele Bosi</a> and the Smart Liver Team, NifTK has a new visualisation framework to provide custom-made graphics for augmented reality applications. In MITK-speak this is provided as a new "Editor", called the "VL Video Overlay Editor". This was implemented as a 3-month mini-project within the Smart Liver program, and the main aims were:
+
+\li Fix transparency/ordering issues
+\li Provide a customisable outline
+\li Reduce clutter
+\li Try to improve the illusion of vessels 'inside' the liver
+
+Michele presented various options at the Smart Liver meeting, and these were decided to be the main objectives. In
+liver surgery, you rarely need to see the triangle mesh of the liver, as that is the main object you are looking at in real life. But the outline is useful to guage registration accuracy. Also, projecting all vessels onto the video is confusing. To reduce clutter, we could simple sub-divide the meshes, and only display portions of them. An alternative is to use fogging. Michele implemented transparancy, saturation and colour fogging. Finally, customisable soft-edge stencils are used to cut away the top surface of the video (e.g. the video of the liver), and into which can be projected the internal anatomy.
+
+So, these are now described in more detail, with an explanation of the settings required to achieve them.
+
+\image html VividRenderer/VLVideoOverlayWidget.png "Figure 1. VLVideoOverlayWidget with all 4 VLQtWidgets showing left to right: 1) left video with overlay, 2) right video with overlay, 3) left view but with just rendering and no video, 4) 3D view."
+
+\subsection subs_intro Technical Overview
+
+At the core of the new niftk::VLVideoOverlayWidget lays the custom built Vivid rendering engine based on <a href="http://visualizationlibrary.org" target="_blank">Visualization Library</a> whose objective is to provide a multi platform, modern, fast and flexible augmented reality rendering platform for NifTK and the liver project in particular.
+
+Each of the four views in niftk::VLVideoOverlayWidget is implemented by a niftk::VLWidget each of which manages its own niftk::VLSceneView instance which in turn manages its own set of niftk::VLMapper classes. A niftk::VLMapper class manages and renders a particular mitk::DataNode and optionally handles DataNode change events (see niftk::VLMapper::setDataNodeTrackingEnabled() for more info).
+
+This is the list of the most relevant classes:
+
+- niftk::VLWidget
+- niftk::VLSceneView
+- niftk::VLMapper
+- niftk::VLUtils
+- vl::VividRendering
+- vl::VividRenderer
+
+niftk::VLVideoOverlayWidget requires OpenGL 3.2 compatibility profile.
+
+\subsection subs_improvements VLVideoOverlayWidget Visualization Improvements
+
+niftk::VLVideoOverlayWidget includes the following visualization improvements:
+
+- GPU accelerated correct order independent transparency rendering via GLSL-based Depth Peeling algorithm.
+- Out of the box background and image rendering facility including support for low latency CUDA streams.
+- Camera tracking and calibration support.
+- GPU accelerated 2D outline rendering providing accurate silhouettes of any 3D mesh.
+- GPU accelerated 3D outline rendering (see niftk::VLMapper::setRenderingMode() for more information on 2D vs 3D silhouettes).
+- GPU accelerated 3D smooth stencil supporting own background color and arbitrary 3D meshes to function as stencil for enhanced augmented reality effect.
+- Enhanced fogging with support to color-fogging, transparency-fogging, saturation-fogging  (see niftk::VLMapper::setFogTarget() for more info).
+- Enhanced clipping with support to color-clipping, transparency-clipping, saturation-clipping and multiple clipping primitives: planes, sphere and box (see niftk::VLMapper::setClipMode() for more info).
+- Fast ray-cast volume rendering that can be mixed with opaque 3D meshes, supporting the following three modes: isosurfaces, MIP, direct volume rendering. Many of the the rendering details like gradient precomputation, image format conversion etc. are automatically handled by vl::VividVolume. Non-cubic and transformed volumes are supported as well (interfacing with NifTK transfer function representation needs completion once requirements and constraints are well defined).
+
+\section VividRenderingOptions Vivid Rendering Options
+
+niftk::VLVideoOverlayWidget has potential access to all vl::VividRendering functions and options, however for sake of simplicity they are wrapped mainly at the niftk::VLMapper level and niftk::VLSceneView level.
+
+niftk::VLSceneView is mainly concerned about global rendering options like background color, stencil settings etc. found in vl::VividRendering.
+
+niftk::VLMapper manages an object that needs to be rendered and typically wraps one or more vl::Actor along with corresponding vl::Effect and vl::Transform so that you don't need to access the underlying GLSL vl::Uniform variables. niftk::VLMapper also optionally tracks changes to the mitk::DataNode and reflects them to the rendered object. DataNode tracking can be enabled/disabled using niftk::VLMapper::setDataNodeTrackingEnabled().
+
+If DataNode tracking is enabled then attributes changes happening in the mitk::DataNode will update the corresponding niftk::VLMapper as defined by the following functions:
+
+- niftk::VLMapperVLGlobalSettings::update() (this is mainly for debugging purposes)
+- niftk::VLMapper::updateCommon()
+- niftk::VLMapperPoints::update()
+- niftk::VLMapperSurface::update()
+- niftk::VLMapper2DImage::update()
+- niftk::VLMapper3DImage::update()
+- niftk::VLMapperCoordinateAxes::update()
+- niftk::VLMapperCUDAImage::update()
+- niftk::VLUtils::updateRenderModeProps()
+- niftk::VLUtils::updateMaterialProps()
+- niftk::VLUtils::updateFogProps()
+- niftk::VLUtils::updateClipProps()
+- niftk::VLUtils::updateVolumeProps()
+
+If DataNode tracking is disabled then one can programmatically set most Vivid rendering options via niftk::VLMapper and niftk::VLSceneView API.
+
+\subsection subs_prop_glossary DataNode Vivid Properties
+
+- niftk::VLMapperVLGlobalSettings (tracks niftk::VLGlobalSettingsDataNode used to access/test global settings)
+  - VL.Global.Stencil.Enable: see niftk::VLSceneView::setStencilEnabled()
+  - VL.Global.Stencil.BackgroundColor: see niftk::VLSceneView::setStencilBackgroundColor()
+  - VL.Global.Stencil.Smoothness: see niftk::VLSceneView::setStencilSmoothness()
+  - VL.Global.RenderMode: see niftk::VLSceneView::setRenderingMode()
+  - VL.Global.BackgroundColor (ignored) see niftk::VLSceneView::setBackgroundColor()
+  - VL.Global.Opacity (ignored) see niftk::VLSceneView::setOpacity()
+  - VL.Global.DepthPeelingPasses (ignored) see niftk::VLSceneView::setDepthPeelingPasses()
+- niftk::VLMapperSurface
+  - VL.SurfaceMode: see niftk::VLMapper::setRenderingMode()
+  - VL.Material.Color: (ignored in favor of "color" atm) see niftk::VLMapper::setMaterialDiffuseRGBA()
+  - VL.Material.Opacity: (ignored in favor of "opacity" atm) see niftk::VLMapper::setMaterialDiffuseRGBA()
+  - VL.Material.Specular.Color: see niftk::VLMapper::setMaterialSpecularColor()
+  - VL.Material.Specular.Shininess: see niftk::VLMapper::setMaterialSpecularColor()
+  - VL.Outline.Color: see niftk::VLMapper::setOutlineColor()
+  - VL.Outline.Opacity: see niftk::VLMapper::setOutlineColor()
+  - VL.Outline.Width: see niftk::VLMapper::setOutlineWidth()
+  - VL.Outline.SlicePlane: see niftk::VLMapper::setOutlineSlicePlane()
+  - VL.Fog.Mode: see niftk::VLMapper::setFogMode()
+  - VL.Fog.Target: see niftk::VLMapper::setFogTarget()
+  - VL.Fog.Color: see niftk::VLMapper::setFogColor()
+  - VL.Fog.Start: see niftk::VLMapper::setFogStart()
+  - VL.Fog.End: see niftk::VLMapper::setFogEnd()
+  - VL.Fog.Density: see niftk::VLMapper::setFogDensity()
+  - VL.Clip.0&ndash;4.Mode: see niftk::VLMapper::setClipMode()
+  - VL.Clip.0&ndash;4.Target: see niftk::VLMapper::setClipTarget()
+  - VL.Clip.0&ndash;4.Color: see niftk::VLMapper::setClipColor()
+  - VL.Clip.0&ndash;4.FadeRange: see niftk::VLMapper::setClipFadeRange()
+  - VL.Clip.0&ndash;4.Plane: see niftk::VLMapper::setClipPlane()
+  - VL.Clip.0&ndash;4.Sphere: see niftk::VLMapper::setClipSphere()
+  - VL.Clip.0&ndash;4.BoxMin: see niftk::VLMapper::setClipBoxMin()
+  - VL.Clip.0&ndash;4.BoxMax: see niftk::VLMapper::setClipBoxMax()
+  - VL.Clip.0&ndash;4.Reverse: see niftk::VLMapper::setClipReverse()
+  - VL.IsStencil: see niftk::VLMapper::setIsStencil()
+- niftk::VLMapperPoints
+  - VL.Point.Mode: 2D or 3D
+  - VL.Point.Size2D: radius in pixels
+  - VL.Point.Size3D: radius in millimeters
+  - VL.Point.Color: point color
+  - VL.Point.Opacity: point opacity
+
+\section MainRenderingModes Main Rendering Modes
+
+\subsection subs_example1 Example 1 - Background Image, 2D Outlines, Stencil, Color Fogging
+
+\image html VividRenderer/Vivid-01-ColorFog.png "Figure 2. Background image, 2D outline of liver, color fogging of vessels and stencil using 3D sphere"
+
+The screenshot in figure 2. has been generated using the following settings:
+
+DataNode properties:
+
+- Liver:
+  - color = #FFAAFF
+  - opacity = 0.5
+  - VL.Outline.Color = #FFFF00
+  - VL.Outline.Opacity = 1
+  - VL.Outline.Width = 2
+  - VL.SurfaceMode = Outline2D   <----- enable 2D outline rendering
+- Vessels
+  - color = #FF0000
+  - opacity = 1
+  - VL.SurfaceMode = Polys
+  - VL.Fog.Target = Color
+  - VL.Fog.Color = #000044
+  - VL.Fog.Mode = Linear   <----- enable linear fogging
+  - VL.Fog.Start = 0
+  - VL.Fog.End = 250
+- Sphere
+  - visible = off
+  - VL.IsStencil = on   <----- use sphere for stencil
+- VL Debug
+  - VL.Global.Stencil.Enable = on   <----- enable stencil effect
+  - VL.Global.Stencil.BackgroundColor = #000044
+  - VL.Global.Stencil.Smoothness = 10
+
+\subsection subs_example2 Example 2 - Polygons + 3D Outlines, Alpha-Fogging, Smooth Stencil
+
+\image html VividRenderer/Vivid-02-AlphaFog.png "Figure 3. Background image, outline 2D of the liver, alpha-fogging of vessels, 50px-smooth stencil using 3D sphere"
+
+The screenshot in figure 3. has been generated adjusting the following settings:
+
+- Vessels
+  - VL.SurfaceMode = Polys+Outline3D   <----- renders both the surface and a 3D outline
+  - VL.Outline.Width = 2
+  - VL.Outline.Color = #00FF00
+  - VL.Fog.Target = Alpha
+  - VL.Fog.Mode = Linear
+  - VL.Fog.Start = 100
+  - VL.Fog.End = 180
+- VL Debug
+  - VL.Global.Stencil.Smoothness = 50
+- Opacity slider = 45%
+
+\section AdditionalRenderingModes Additional Rendering Examples
+
+\subsection subs_add_ex1 Plane Opacity-Clipping
+
+\image html VividRenderer/Vivid-Clip.png
+
+The picture above shows how to achieve alpha-clipping along a plane.
+
+- Liver
+  - VL.Clip.0.Mode = Plane
+  - VL.Clip.0.Plane = [1,0,0,0]    <----- Plane's normal XYZ and distance from origin (world coords)
+  - VL.Clip.0.Target = Alpha
+  - VL.Clip.0.FadeRange = 0
+  - VL.Clip.0.Reverse = true    <----- Reverses direction of clipping
+
+Similar effects can be achieved using the Box and Sphere clipping primitives instead of the plane.
+
+For Box clipping you'd select something similar to:
+
+- Liver
+  - VL.Clip.0.Mode = Box
+  - VL.Clip.0.MinBox = [-100,-100,-100]   <----- Box min corner (world coords)
+  - VL.Clip.0.MaxBox = [+100,+100,+100]   <----- Box max corner (world coords)
+
+For Sphere clipping you'd select something similar to:
+
+- Liver
+  - VL.Clip.0.Mode = Sphere
+  - VL.Clip.0.Sphere = [0,0,0,100]   <----- Sphere's center XYZ and radius (world coords)
+
+Note that you can also reverse the direction of clipping with VL.Clip.0.Reverse which works not just for Plane clipping but also for Sphere and Box clipping.
+
+\subsection subs_add_ex2 Plane Smooth Opacity-Clipping
+
+\image html VividRenderer/Vivid-Clip-Smooth.png
+
+Clipping can also be smooth. In the picture above we set:
+
+- Liver
+  - VL.Clip.0.FadeRange = 99   <----- fade distance in millimeters
+
+Smooth clipping works for Plane, Sphere and Box clipping primitives as well as Alpha, Color and Saturation targets.
+
+\subsection subs_add_ex3 Plane Color-Clipping
+
+\image html VividRenderer/Vivid-Clip-Color.png
+
+In the picture above we apply smooth plane color-clipping to the "hepatic veins" object:
+
+- Hepatic Veins
+  - VL.Clip.0.Mode = Plane
+  - VL.Clip.0.Plane = [1,0,0,0]
+  - VL.Clip.0.Target = Color
+  - VL.Clip.0.Color = #FF00FF
+  - VL.Clip.0.FadeRange = 10
+  - VL.Clip.0.Reverse = false
+
+Smooth clipping works for Plane, Sphere and Box clipping primitives as well as Alpha, Color and Saturation targets.
+
+\subsection subs_add_ex4 Plain No-Fog Rendering
+
+\image html VividRenderer/Vivid-Fog-No.png
+
+The picture above shows that a plain 3D rendering over the camera background looks very cluttered and does not convey a sense that the vessels are inside the liver, instead they look on top of it.
+
+\subsection subs_add_ex6 Color-Fog, Stencil, Translucent Rendering
+
+\image html VividRenderer/Vivid-Fog-Color-Stencil-Opacity.png
+
+The picture above shows that fogging together with the stencil effect can enhance depth perception and dampen visual noise.
+
+\subsection subs_add_ex5 Saturation-Fog Rendering
+
+\image html VividRenderer/Vivid-Fog-Saturation.png
+
+The picture above shows that saturation-fogging can help declutter the scene by drawing attention to what's closer to the observer.
+
+\subsection subs_add_ex7 Direct Volume Rendering and Intersecting Opaque Geometry
+
+\image html VividRenderer/Vivid-Volume-Geometry.png
+
+The new Vivid volume renderer can render volumes using ray casting while allowing proper intersection and occlusion with opaque geometry as shown above. Normally this is only achievable using volume slicing which is usually slower and less flexible. Ray casting with intersecting geometry is supported by all three volume rendering modes: Direct, Isosurface, MIP.
+
+\subsection subs_add_ex8 Order Independent Transparency Rendering
+
+\image html VividRenderer/Vivid-Transparency.png
+
+Proper transparency rendering can be challenging to achieve using non ray tracing graphics libraries like OpenGL. The Vivid renderer is developed around a Depth Peeling core which is a well known and well supported algorithm to achieve order independent transparencies using multi passing. It provides a much faster, correct and elegant solution compared to polygon sorting techniques used by the current NifTK-VTK renderer. Future implementation based on OpenGL 4.x could implement more sophisticated per-pixel sorting techniques which do not require multi passing and are therefore potentially even more performant.
+
+\section development Development
+
+At the moment the vlVivid library is part of CMIC/VisualizationLibrary (https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary) since it allowed for quick development iterations.
+
+The Vivid rendering engine is made of:
+  - The vlVivid library (https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary/tree/master/src/vlVivid)
+  - The Vivid GLSL shaders and other data:  (https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary/tree/master/data/vivid)
+  - The App_Vivid test application (https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary/blob/master/src/examples/Applets/App_Vivid.cpp)
+
+Ideally the above would be factored out in a separate CMIC/Vivid package. This would also allow keeping the public VL repo synced with CMIC's more easily.
+
+During development the App_Vivid applet provides a handy sandbox to test and experiment. You can run it by compiling VL's examples and then run the "vivid" applet like so:
+
+\code
+> vlQt5_tests vivid (assuming we have Qt5 support enabled)
+\endcode
+
+Under Visual Studio you can follow these steps for both Release and Debugging configurations:
+
+- Set the vlQt5_tests project to be the "StartUp Project" and
+- vlQt5_tests right click -> Properties -> Debugging -> Command Arguments: set to "vivid"
+- Also set the Environment option like so:
+
+\code
+PATH=$(SolutionDir)\src\vlCore\bin\$(Configuration);$(SolutionDir)\src\vlGraphics\bin\$(Configuration);$(SolutionDir)\src\vlVolume\bin\$(Configuration);$(SolutionDir)\src\vlVivid\bin\$(Configuration);$(SolutionDir)\src\vlVG\bin\$(Configuration);$(SolutionDir)\src\vlMolecule\bin\$(Configuration);$(SolutionDir)\src\vlQt5\bin\$(Configuration);$(SolutionDir)\src\vlQt4\bin\$(Configuration);$(SolutionDir)\src\vlWin32\bin\$(Configuration);%PATH%
+VL_DATA_PATH=C:\git-ucl\VisualizationLibrary\data
+VL_VERBOSITY_LEVEL=DEBUG
+\endcode
+
+Substitute <code>"C:\git-ucl\VisualizationLibrary\data"</code> with the full path to your VL data directory.
+
+\subsection subs_updating_glsl Updating GLSL Shaders
+
+If you change, add or remove anything in the <code>VL/data/vivid</code> directory (either GLSL shaders or other data) you'll need to reflect those changes in the <code>NifTK/MITK/Modules/VL/Resources/vivid</code> by deleting the latter one and copy pasting back the former one. If you added or removed anything you'll need to update <code>niftkVL.qrc</code> as well.
+
+*/
+

@@ -33,7 +33,7 @@ class QHBoxLayout;
 
 namespace niftk
 {
-  
+
 class VLWidget;
 
 /**

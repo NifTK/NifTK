@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_VL)
 
-  set(version "master")
+  set(version "bcc082625d")
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary.git")
 
   niftkMacroDefineExternalProjectVariables(VL ${version} ${location})
