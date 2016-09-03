@@ -161,7 +161,9 @@ MultiViewerWidget::MultiViewerWidget(
    ************************************/
 
   m_ControlPanel->SetDirectionAnnotationsVisible(true);
+  m_ControlPanel->SetPositionAnnotationVisible(true);
   m_ControlPanel->SetIntensityAnnotationVisible(true);
+  m_ControlPanel->SetPropertyAnnotationVisible(true);
 
   // Default to dropping into single window.
   m_ControlPanel->SetDropType(DNDDISPLAY_DROP_SINGLE);
@@ -176,7 +178,10 @@ MultiViewerWidget::MultiViewerWidget(
 
   this->connect(m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsControlsChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ShowPositionAnnotationChanged(bool)), SLOT(OnShowPositionAnnotationControlsChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ShowIntensityAnnotationChanged(bool)), SLOT(OnShowIntensityAnnotationControlsChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ShowPropertyAnnotationChanged(bool)), SLOT(OnShowPropertyAnnotationControlsChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(PropertiesForAnnotationChanged(bool)), SLOT(OnPropertiesForAnnotationControlsChanged(bool)));
 
   this->connect(m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutControlChanged(WindowLayout)));
   this->connect(m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), SLOT(OnWindowCursorBindingControlChanged(bool)));
@@ -256,7 +261,9 @@ SingleViewerWidget* MultiViewerWidget::CreateViewer(const QString& name)
   this->connect(viewer, SIGNAL(ScaleFactorBindingChanged(bool)), SLOT(OnScaleFactorBindingChanged(bool)));
   this->connect(viewer, SIGNAL(CursorVisibilityChanged(bool)), SLOT(OnCursorVisibilityChanged(bool)));
   this->connect(viewer, SIGNAL(DirectionAnnotationsVisibilityChanged(bool)), SLOT(OnDirectionAnnotationsVisibilityChanged(bool)));
+  this->connect(viewer, SIGNAL(PositionAnnotationVisibilityChanged(bool)), SLOT(OnPositionAnnotationVisibilityChanged(bool)));
   this->connect(viewer, SIGNAL(IntensityAnnotationVisibilityChanged(bool)), SLOT(OnIntensityAnnotationVisibilityChanged(bool)));
+  this->connect(viewer, SIGNAL(PropertyAnnotationVisibilityChanged(bool)), SLOT(OnPropertyAnnotationVisibilityChanged(bool)));
 
   return viewer;
 }
@@ -636,6 +643,24 @@ void MultiViewerWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+bool MultiViewerWidget::IsPositionAnnotationVisible() const
+{
+  return m_ControlPanel->IsPositionAnnotationVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::SetPositionAnnotationVisible(bool visible)
+{
+  m_ControlPanel->SetPositionAnnotationVisible(visible);
+  foreach (SingleViewerWidget* viewer, m_Viewers)
+  {
+    viewer->SetPositionAnnotationVisible(visible);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool MultiViewerWidget::IsIntensityAnnotationVisible() const
 {
   return m_ControlPanel->IsIntensityAnnotationVisible();
@@ -649,6 +674,24 @@ void MultiViewerWidget::SetIntensityAnnotationVisible(bool visible)
   foreach (SingleViewerWidget* viewer, m_Viewers)
   {
     viewer->SetIntensityAnnotationVisible(visible);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool MultiViewerWidget::IsPropertyAnnotationVisible() const
+{
+  return m_ControlPanel->IsPropertyAnnotationVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::SetPropertyAnnotationVisible(bool visible)
+{
+  m_ControlPanel->SetPropertyAnnotationVisible(visible);
+  foreach (SingleViewerWidget* viewer, m_Viewers)
+  {
+    viewer->SetPropertyAnnotationVisible(visible);
   }
 }
 
@@ -873,7 +916,9 @@ void MultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns)
   // Now the number of viewers has changed, we need to make sure they are all in synch with all the right properties.
   this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
   this->OnDirectionAnnotationsVisibilityChanged(selectedViewer->AreDirectionAnnotationsVisible());
+  this->OnPositionAnnotationVisibilityChanged(selectedViewer->IsPositionAnnotationVisible());
   this->OnIntensityAnnotationVisibilityChanged(selectedViewer->IsIntensityAnnotationVisible());
+  this->OnPropertyAnnotationVisibilityChanged(selectedViewer->IsPropertyAnnotationVisible());
 
   if (m_ControlPanel->AreViewerGeometriesBound())
   {
@@ -1437,6 +1482,30 @@ void MultiViewerWidget::OnDirectionAnnotationsVisibilityChanged(bool visible)
 
 
 //-----------------------------------------------------------------------------
+void MultiViewerWidget::OnPositionAnnotationVisibilityChanged(bool visible)
+{
+  SingleViewerWidget* viewer = qobject_cast<SingleViewerWidget*>(this->sender());
+  if (!viewer)
+  {
+    /// Note: this slot is also directly invoked from this class. In this case sender() returns 0.
+    viewer = this->GetSelectedViewer();
+  }
+
+  m_ControlPanel->SetPositionAnnotationVisible(visible);
+
+  foreach (SingleViewerWidget* otherViewer, m_Viewers)
+  {
+    if (otherViewer != viewer)
+    {
+      bool signalsWereBlocked = otherViewer->blockSignals(true);
+      otherViewer->SetPositionAnnotationVisible(visible);
+      otherViewer->blockSignals(signalsWereBlocked);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void MultiViewerWidget::OnIntensityAnnotationVisibilityChanged(bool visible)
 {
   SingleViewerWidget* viewer = qobject_cast<SingleViewerWidget*>(this->sender());
@@ -1454,6 +1523,30 @@ void MultiViewerWidget::OnIntensityAnnotationVisibilityChanged(bool visible)
     {
       bool signalsWereBlocked = otherViewer->blockSignals(true);
       otherViewer->SetIntensityAnnotationVisible(visible);
+      otherViewer->blockSignals(signalsWereBlocked);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::OnPropertyAnnotationVisibilityChanged(bool visible)
+{
+  SingleViewerWidget* viewer = qobject_cast<SingleViewerWidget*>(this->sender());
+  if (!viewer)
+  {
+    /// Note: this slot is also directly invoked from this class. In this case sender() returns 0.
+    viewer = this->GetSelectedViewer();
+  }
+
+  m_ControlPanel->SetPropertyAnnotationVisible(visible);
+
+  foreach (SingleViewerWidget* otherViewer, m_Viewers)
+  {
+    if (otherViewer != viewer)
+    {
+      bool signalsWereBlocked = otherViewer->blockSignals(true);
+      otherViewer->SetPropertyAnnotationVisible(visible);
       otherViewer->blockSignals(signalsWereBlocked);
     }
   }
@@ -1627,9 +1720,30 @@ void MultiViewerWidget::OnShowDirectionAnnotationsControlsChanged(bool visible)
 
 
 //-----------------------------------------------------------------------------
+void MultiViewerWidget::OnShowPositionAnnotationControlsChanged(bool visible)
+{
+  this->SetPositionAnnotationVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
 void MultiViewerWidget::OnShowIntensityAnnotationControlsChanged(bool visible)
 {
   this->SetIntensityAnnotationVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::OnShowPropertyAnnotationControlsChanged(bool visible)
+{
+  m_Viewers[m_SelectedViewerIndex]->SetPropertyAnnotationVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::OnPropertiesForAnnotationControlsChanged()
+{
+  m_Viewers[m_SelectedViewerIndex]->SetPropertiesForAnnotation(m_ControlPanel->GetPropertiesForAnnotation());
 }
 
 

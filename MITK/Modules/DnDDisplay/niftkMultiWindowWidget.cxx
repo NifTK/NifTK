@@ -128,7 +128,9 @@ MultiWindowWidget::MultiWindowWidget(
 , m_CursorSagittalPositionsAreBound(true)
 , m_CursorCoronalPositionsAreBound(false)
 , m_ScaleFactorBinding(true)
-, m_IntensityAnnotationIsVisible(false)
+, m_PositionAnnotationVisible(false)
+, m_IntensityAnnotationVisible(false)
+, m_PropertyAnnotationVisible(false)
 , m_EmptySpace(new QWidget(this))
 {
   /// Note:
@@ -287,7 +289,9 @@ MultiWindowWidget::MultiWindowWidget(
   // so that it is destructed and it unregisters and destructs its display interactor as well.
   m_MouseModeSwitcher = 0;
 
+  this->InitialisePositionAnnotations();
   this->InitialiseIntensityAnnotations();
+  this->InitialisePropertyAnnotations();
 }
 
 
@@ -496,14 +500,18 @@ void MultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
 
     if (m_SelectedWindowIndex < 3)
     {
+      m_PositionAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
       m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
+      m_PropertyAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
     }
 
     m_SelectedWindowIndex = selectedWindowIndex;
 
     if (m_SelectedWindowIndex < 3)
     {
-      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(m_IntensityAnnotationIsVisible);
+      m_PositionAnnotations[m_SelectedWindowIndex]->SetVisibility(m_PositionAnnotationVisible);
+      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(m_IntensityAnnotationVisible);
+      m_PropertyAnnotations[m_SelectedWindowIndex]->SetVisibility(m_PropertyAnnotationVisible);
     }
 
     this->BlockUpdate(updateWasBlocked);
@@ -717,20 +725,76 @@ void MultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+bool MultiWindowWidget::IsPositionAnnotationVisible() const
+{
+  return m_PositionAnnotationVisible;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::SetPositionAnnotationVisible(bool visible)
+{
+  if (visible != m_PositionAnnotationVisible)
+  {
+    m_PositionAnnotationVisible = visible;
+    m_PositionAnnotations[m_SelectedWindowIndex]->SetVisibility(visible);
+    this->RequestUpdate();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool MultiWindowWidget::IsIntensityAnnotationVisible() const
 {
-  return m_IntensityAnnotationIsVisible;
+  return m_IntensityAnnotationVisible;
 }
 
 
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::SetIntensityAnnotationVisible(bool visible)
 {
-  if (visible != m_IntensityAnnotationIsVisible)
+  if (visible != m_IntensityAnnotationVisible)
   {
-    m_IntensityAnnotationIsVisible = visible;
+    m_IntensityAnnotationVisible = visible;
     m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(visible);
     this->RequestUpdate();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool MultiWindowWidget::IsPropertyAnnotationVisible() const
+{
+  return m_PropertyAnnotationVisible;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::SetPropertyAnnotationVisible(bool visible)
+{
+  if (visible != m_PropertyAnnotationVisible)
+  {
+    m_PropertyAnnotationVisible = visible;
+    m_PropertyAnnotations[m_SelectedWindowIndex]->SetVisibility(visible);
+    this->RequestUpdate();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+QStringList MultiWindowWidget::GetPropertiesForAnnotation() const
+{
+  return m_PropertiesForAnnotation;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation)
+{
+  if (propertiesForAnnotation != m_PropertiesForAnnotation)
+  {
+    m_PropertiesForAnnotation = propertiesForAnnotation;
+    this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
   }
 }
 
@@ -811,7 +875,9 @@ void MultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool v
     this->SetVisibility(mitkWidget2, nodes[i], visibility);
     this->SetVisibility(mitkWidget3, nodes[i], visibility);
   }
+  this->UpdatePositionAnnotation(m_SelectedWindowIndex);
   this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
+  this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
   this->Update3DWindowVisibility();
 }
 
@@ -1408,8 +1474,12 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 
     if (m_SelectedWindowIndex < 3)
     {
+      this->UpdatePositionAnnotation(m_SelectedWindowIndex);
+      m_PositionAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
       this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
       m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
+      this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
+      m_PropertyAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
     }
 
     this->BlockUpdate(updateWasBlocked);
@@ -2165,10 +2235,36 @@ void MultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPositio
         windowIndex = CORONAL;
       }
       this->SynchroniseCursorPositions(windowIndex);
+      this->UpdatePositionAnnotation(windowIndex);
       this->UpdateIntensityAnnotation(windowIndex);
+      this->UpdatePropertyAnnotation(windowIndex);
     }
 
     this->BlockUpdate(updateWasBlocked);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::InitialisePositionAnnotations()
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
+    mitk::OverlayManager::Pointer overlayManager = renderer->GetOverlayManager();
+    mitk::Overlay2DLayouter::Pointer layouter = mitk::Overlay2DLayouter::CreateLayouter(
+          mitk::Overlay2DLayouter::STANDARD_2D_TOPRIGHT(), renderer);
+    overlayManager->AddLayouter(layouter.GetPointer());
+
+    mitk::TextOverlay2D::Pointer annotation = mitk::TextOverlay2D::New();
+    m_PositionAnnotations[i] = annotation;
+    annotation->SetFontSize(12);
+    annotation->SetColor(0.0f, 1.0f, 0.0f);
+    annotation->SetOpacity(1.0f);
+    annotation->SetVisibility(i == m_SelectedWindowIndex && m_PositionAnnotationVisible);
+
+    overlayManager->AddOverlay(annotation.GetPointer(), renderer);
+    overlayManager->SetLayouter(annotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_TOPRIGHT(), renderer);
   }
 }
 
@@ -2180,19 +2276,62 @@ void MultiWindowWidget::InitialiseIntensityAnnotations()
   {
     mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
     mitk::OverlayManager::Pointer overlayManager = renderer->GetOverlayManager();
-    mitk::Overlay2DLayouter::Pointer topLeftLayouter = mitk::Overlay2DLayouter::CreateLayouter(
+    mitk::Overlay2DLayouter::Pointer layouter = mitk::Overlay2DLayouter::CreateLayouter(
           mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
-    overlayManager->AddLayouter(topLeftLayouter.GetPointer());
+    overlayManager->AddLayouter(layouter.GetPointer());
 
-    mitk::TextOverlay2D::Pointer intensityAnnotation = mitk::TextOverlay2D::New();
-    m_IntensityAnnotations[i] = intensityAnnotation;
-    intensityAnnotation->SetFontSize(12);
-    intensityAnnotation->SetColor(0.0f, 1.0f, 0.0f);
-    intensityAnnotation->SetOpacity(1.0f);
-    intensityAnnotation->SetVisibility(i == m_SelectedWindowIndex && m_IntensityAnnotationIsVisible);
+    mitk::TextOverlay2D::Pointer annotation = mitk::TextOverlay2D::New();
+    m_IntensityAnnotations[i] = annotation;
+    annotation->SetFontSize(12);
+    annotation->SetColor(0.0f, 1.0f, 0.0f);
+    annotation->SetOpacity(1.0f);
+    annotation->SetVisibility(i == m_SelectedWindowIndex && m_IntensityAnnotationVisible);
 
-    overlayManager->AddOverlay(intensityAnnotation.GetPointer(), renderer);
-    overlayManager->SetLayouter(intensityAnnotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
+    overlayManager->AddOverlay(annotation.GetPointer(), renderer);
+    overlayManager->SetLayouter(annotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::InitialisePropertyAnnotations()
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
+    mitk::OverlayManager::Pointer overlayManager = renderer->GetOverlayManager();
+    mitk::Overlay2DLayouter::Pointer layouter = mitk::Overlay2DLayouter::CreateLayouter(
+          mitk::Overlay2DLayouter::STANDARD_2D_TOPLEFT(), renderer);
+    overlayManager->AddLayouter(layouter.GetPointer());
+
+    mitk::TextOverlay2D::Pointer annotation = mitk::TextOverlay2D::New();
+    m_PropertyAnnotations[i] = annotation;
+    annotation->SetFontSize(12);
+    annotation->SetColor(0.0f, 1.0f, 0.0f);
+    annotation->SetOpacity(1.0f);
+    annotation->SetVisibility(i == m_SelectedWindowIndex && m_PropertyAnnotationVisible);
+
+    overlayManager->AddOverlay(annotation.GetPointer(), renderer);
+    overlayManager->SetLayouter(annotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_TOPLEFT(), renderer);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
+{
+  if (windowIndex >= 0 && windowIndex < 3)
+  {
+    mitk::TextOverlay2D::Pointer annotation = m_PositionAnnotations[windowIndex];
+
+    std::stringstream stream;
+    stream.precision(3);
+    stream.imbue(std::locale::classic());
+
+    stream << "<world position place holder>";
+
+    annotation->SetText(stream.str());
+    annotation->Modified();
   }
 }
 
@@ -2203,7 +2342,7 @@ void MultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
   if (windowIndex >= 0 && windowIndex < 3)
   {
     mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
-    mitk::TextOverlay2D::Pointer intensityAnnotation = m_IntensityAnnotations[windowIndex];
+    mitk::TextOverlay2D::Pointer annotation = m_IntensityAnnotations[windowIndex];
 
     mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
     mitk::NodePredicateProperty::Pointer isBinary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true));
@@ -2233,17 +2372,17 @@ void MultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
 
     if (visibleNonBinaryImageNodes.size() == 0)
     {
-      intensityAnnotation->SetVisibility(false);
+      annotation->SetVisibility(false);
     }
     else if (visibleNonBinaryImageNodes.size() == 1)
     {
       stream << "Intensity: ";
-      intensityAnnotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_IntensityAnnotationIsVisible);
+      annotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_IntensityAnnotationVisible);
     }
     else if (visibleNonBinaryImageNodes.size() > 1)
     {
       stream << "Intensities: ";
-      intensityAnnotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_IntensityAnnotationIsVisible);
+      annotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_IntensityAnnotationVisible);
     }
 
     for (std::multimap<int, mitk::DataNode*>::const_iterator it = visibleNonBinaryImageNodes.begin(); it != visibleNonBinaryImageNodes.end(); ++it)
@@ -2277,8 +2416,71 @@ void MultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
       }
     }
 
-    intensityAnnotation->SetText(stream.str());
-    intensityAnnotation->Modified();
+    annotation->SetText(stream.str());
+    annotation->Modified();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::UpdatePropertyAnnotation(int windowIndex) const
+{
+  if (windowIndex >= 0 && windowIndex < 3)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
+    mitk::TextOverlay2D::Pointer annotation = m_PropertyAnnotations[windowIndex];
+
+    mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+    mitk::NodePredicateProperty::Pointer isVisible = mitk::NodePredicateProperty::New("visible", mitk::BoolProperty::New(true), renderer);
+    mitk::NodePredicateAnd::Pointer isVisibleAndImage = mitk::NodePredicateAnd::New(isVisible, isImage);
+
+    /// Note:
+    /// The nodes are printed in the order of their layer.
+    std::multimap<int, mitk::DataNode*> visibleImageNodes;
+
+    mitk::DataStorage::SetOfObjects::ConstPointer nodes = renderer->GetDataStorage()->GetSubset(isVisibleAndImage).GetPointer();
+    for (mitk::DataStorage::SetOfObjects::ConstIterator it = nodes->Begin(); it != nodes->End(); ++it)
+    {
+      mitk::DataNode* node = it->Value();
+      int layer = 0;
+      if (node->GetIntProperty("layer", layer, renderer))
+      {
+        visibleImageNodes.insert(std::make_pair(layer, node));
+      }
+    }
+
+    std::stringstream stream;
+    stream.precision(3);
+    stream.imbue(std::locale::classic());
+
+    if (visibleImageNodes.size() == 0)
+    {
+      annotation->SetVisibility(false);
+    }
+    else
+    {
+      annotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_PropertyAnnotationVisible);
+    }
+
+    for (std::multimap<int, mitk::DataNode*>::const_iterator it = visibleImageNodes.begin(); it != visibleImageNodes.end(); ++it)
+    {
+      mitk::DataNode* node = it->second;
+
+      if (it != visibleImageNodes.begin())
+      {
+        stream << "; ";
+      }
+
+      if (visibleImageNodes.size() != 1)
+      {
+        stream << node->GetName() << ": ";
+      }
+
+      stream << "<property place holder>";
+    }
+
+    annotation->SetText(stream.str());
+    annotation->Modified();
   }
 }
 

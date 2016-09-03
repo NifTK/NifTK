@@ -621,7 +621,6 @@ void SingleViewerWidgetTestClass::init()
   d->Viewer->SetDirectionAnnotationsVisible(true);
   d->Viewer->SetIntensityAnnotationVisible(true);
   d->Viewer->SetBackgroundColour(backgroundColour);
-  d->Viewer->SetShow3DWindowIn2x2WindowLayout(true);
   d->Viewer->SetRememberSettingsPerWindowLayout(false);
   d->Viewer->SetDisplayInteractionsEnabled(true);
   d->Viewer->SetCursorPositionBinding(false);

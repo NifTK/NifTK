@@ -22,7 +22,6 @@
 
 #include <ctkDoubleSpinBox.h>
 
-
 namespace niftk
 {
 
@@ -82,8 +81,8 @@ SingleViewerControls::SingleViewerControls(QWidget *parent)
   this->connect(ui->m_ShowDirectionAnnotationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowDirectionAnnotationsChanged(bool)));
   this->connect(ui->m_ShowPositionAnnotationCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowPositionAnnotationChanged(bool)));
   this->connect(ui->m_ShowIntensityAnnotationCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowIntensityAnnotationChanged(bool)));
-  this->connect(ui->m_ShowPropertyAnnotationsPushButton, SIGNAL(clicked()), SLOT(OnShowPropertyAnnotationsButtonClicked()));
-  this->connect(ui->m_ShowPropertyAnnotationsPushButton, SIGNAL(toggled(bool)), SIGNAL(ShowPropertyAnnotationsChanged(bool)));
+  this->connect(ui->m_PropertiesForAnnotationPushButton, SIGNAL(checkBoxToggled(bool)), SIGNAL(ShowPropertyAnnotationChanged(bool)));
+  this->connect(ui->m_PropertiesForAnnotationPushButton, SIGNAL(clicked()), SLOT(OnPropertiesForAnnotationButtonClicked()));
 
   this->connect(ui->m_BindWindowCursorsCheckBox, SIGNAL(toggled(bool)), SIGNAL(WindowCursorBindingChanged(bool)));
   this->connect(ui->m_BindWindowMagnificationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(WindowMagnificationBindingChanged(bool)));
@@ -489,29 +488,42 @@ void SingleViewerControls::SetIntensityAnnotationVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool SingleViewerControls::ArePropertyAnnotationsVisible() const
+bool SingleViewerControls::IsPropertyAnnotationVisible() const
 {
-  return ui->m_ShowPropertyAnnotationsPushButton->isChecked();
+  return ui->m_PropertiesForAnnotationPushButton->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void SingleViewerControls::SetPropertyAnnotationsVisible(bool visible)
+void SingleViewerControls::SetPropertyAnnotationVisible(bool visible)
 {
-  bool wasBlocked = ui->m_ShowPropertyAnnotationsPushButton->blockSignals(true);
-  ui->m_ShowPropertyAnnotationsPushButton->setChecked(visible);
-  ui->m_ShowPropertyAnnotationsPushButton->blockSignals(wasBlocked);
+  bool wasBlocked = ui->m_PropertiesForAnnotationPushButton->blockSignals(true);
+  ui->m_PropertiesForAnnotationPushButton->setChecked(visible);
+  ui->m_PropertiesForAnnotationPushButton->blockSignals(wasBlocked);
 }
 
 
 //-----------------------------------------------------------------------------
-void SingleViewerControls::OnShowPropertyAnnotationsButtonClicked()
+QStringList SingleViewerControls::GetPropertiesForAnnotation() const
+{
+  return m_PropertiesForAnnotation;
+}
+
+//-----------------------------------------------------------------------------
+void SingleViewerControls::SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation)
+{
+  m_PropertiesForAnnotation = propertiesForAnnotation;
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerControls::OnPropertiesForAnnotationButtonClicked()
 {
   bool ok;
   QString propertyNames = QInputDialog::getText(
         this, tr("Property annotations"),
         tr("Please give the comma separated list of property names:"),
-        QLineEdit::Normal, m_PropertyAnnotations.join(", "), &ok);
+        QLineEdit::Normal, m_PropertiesForAnnotation.join(", "), &ok);
   if (ok)
   {
     QStringList properties;
@@ -524,9 +536,13 @@ void SingleViewerControls::OnShowPropertyAnnotationsButtonClicked()
       }
     }
 
-    m_PropertyAnnotations = properties;
+    m_PropertiesForAnnotation = properties;
 
-    emit ShowPropertyAnnotationsChanged(ui->m_ShowPropertyAnnotationsPushButton->isChecked());
+    bool wasBlocked = ui->m_PropertiesForAnnotationPushButton->blockSignals(true);
+    ui->m_PropertiesForAnnotationPushButton->setCheckable(!properties.isEmpty());
+    ui->m_PropertiesForAnnotationPushButton->blockSignals(wasBlocked);
+
+    emit PropertiesForAnnotationChanged();
   }
 }
 

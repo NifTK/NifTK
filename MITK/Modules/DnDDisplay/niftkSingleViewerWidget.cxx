@@ -287,6 +287,20 @@ void SingleViewerWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+bool SingleViewerWidget::IsPositionAnnotationVisible() const
+{
+  return m_MultiWidget->IsPositionAnnotationVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerWidget::SetPositionAnnotationVisible(bool visible)
+{
+  m_MultiWidget->SetPositionAnnotationVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
 bool SingleViewerWidget::IsIntensityAnnotationVisible() const
 {
   return m_MultiWidget->IsIntensityAnnotationVisible();
@@ -297,6 +311,34 @@ bool SingleViewerWidget::IsIntensityAnnotationVisible() const
 void SingleViewerWidget::SetIntensityAnnotationVisible(bool visible)
 {
   m_MultiWidget->SetIntensityAnnotationVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+bool SingleViewerWidget::IsPropertyAnnotationVisible() const
+{
+  return m_MultiWidget->IsPropertyAnnotationVisible();
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerWidget::SetPropertyAnnotationVisible(bool visible)
+{
+  m_MultiWidget->SetPropertyAnnotationVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+QStringList SingleViewerWidget::GetPropertiesForAnnotation() const
+{
+  return m_MultiWidget->GetPropertiesForAnnotation();
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerWidget::SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation)
+{
+  m_MultiWidget->SetPropertiesForAnnotation(propertiesForAnnotation);
 }
 
 
@@ -1065,6 +1107,19 @@ void SingleViewerWidget::ToggleDirectionAnnotations()
 
 
 //-----------------------------------------------------------------------------
+void SingleViewerWidget::TogglePositionAnnotation()
+{
+  bool visible = !this->IsPositionAnnotationVisible();
+
+  this->SetPositionAnnotationVisible(visible);
+
+  this->RequestUpdate();
+
+  emit PositionAnnotationVisibilityChanged(visible);
+}
+
+
+//-----------------------------------------------------------------------------
 void SingleViewerWidget::ToggleIntensityAnnotation()
 {
   bool visible = !this->IsIntensityAnnotationVisible();
@@ -1074,6 +1129,19 @@ void SingleViewerWidget::ToggleIntensityAnnotation()
   this->RequestUpdate();
 
   emit IntensityAnnotationVisibilityChanged(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerWidget::TogglePropertyAnnotation()
+{
+  bool visible = !this->IsPropertyAnnotationVisible();
+
+  this->SetPropertyAnnotationVisible(visible);
+
+  this->RequestUpdate();
+
+  emit PropertyAnnotationVisibilityChanged(visible);
 }
 
 

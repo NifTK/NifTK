@@ -266,7 +266,7 @@
        </widget>
       </item>
       <item>
-       <widget class="ctkCheckablePushButton" name="m_ShowPropertyAnnotationsPushButton">
+       <widget class="ctkCheckablePushButton" name="m_PropertiesForAnnotationPushButton">
         <property name="toolTip">
          <string>Shows the selected properties of the visible images</string>
         </property>

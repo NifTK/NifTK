@@ -146,11 +146,17 @@ public:
   /// \brief Sets the show intensity check box to the given value.
   void SetIntensityAnnotationVisible(bool visible);
 
-  /// \brief Returns true if the show property annotations check box is set, otherwise false.
-  bool ArePropertyAnnotationsVisible() const;
+  /// \brief Returns true if the show property annotation check box is set, otherwise false.
+  bool IsPropertyAnnotationVisible() const;
 
-  /// \brief Sets the show property annotations check box to the given value.
-  void SetPropertyAnnotationsVisible(bool visible);
+  /// \brief Sets the show property annotation check box to the given value.
+  void SetPropertyAnnotationVisible(bool visible);
+
+  /// \brief Returns the list of properties to show as annotation.
+  QStringList GetPropertiesForAnnotation() const;
+
+  /// \brief Sets the list of properties to show as annotation.
+  void SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation);
 
   /// \brief Gets the selected render window layout.
   WindowLayout GetWindowLayout() const;
@@ -194,7 +200,10 @@ signals:
   void ShowIntensityAnnotationChanged(bool visible);
 
   /// \brief Emitted when the show property annotations option has changed.
-  void ShowPropertyAnnotationsChanged(bool visible);
+  void ShowPropertyAnnotationChanged(bool visible);
+
+  /// \brief Emitted when the list of properties to be displayed as annotations option has changed.
+  void PropertiesForAnnotationChanged();
 
   /// \brief Emitted when the select layout has changed.
   void WindowLayoutChanged(WindowLayout windowLayout);
@@ -229,9 +238,9 @@ protected slots:
   /// \brief Called when a window layout is selected in the the combo box.
   void OnMultiWindowComboBoxIndexChanged(int index);
 
-  /// \brief Pops up an input dialog to set the property annotations.
+  /// \brief Pops up an input dialog to set the list of properties to display as annotation.
   /// Called when the checkable push button is clicked on.
-  void OnShowPropertyAnnotationsButtonClicked();
+  void OnPropertiesForAnnotationButtonClicked();
 
 private:
 
@@ -240,7 +249,7 @@ private:
   bool m_ShowShowOptions;
   bool m_ShowWindowLayoutControls;
 
-  QStringList m_PropertyAnnotations;
+  QStringList m_PropertiesForAnnotation;
 
   /// \brief Stores the currently selected window layout.
   WindowLayout m_WindowLayout;

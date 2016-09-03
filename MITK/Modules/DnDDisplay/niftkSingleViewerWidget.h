@@ -143,11 +143,29 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
+  /// \brief Tells if the position annotation is visible.
+  bool IsPositionAnnotationVisible() const;
+
+  /// \brief Sets the visibility of the positon annotation.
+  void SetPositionAnnotationVisible(bool visible);
+
   /// \brief Tells if the intensity annotation is visible.
   bool IsIntensityAnnotationVisible() const;
 
   /// \brief Sets the visibility of the intensity annotation.
   void SetIntensityAnnotationVisible(bool visible);
+
+  /// \brief Tells if the property annotation is visible.
+  bool IsPropertyAnnotationVisible() const;
+
+  /// \brief Sets the visibility of the property annotation.
+  void SetPropertyAnnotationVisible(bool visible);
+
+  /// \brief Gets the list of properties to display as annotation.
+  QStringList GetPropertiesForAnnotation() const;
+
+  /// \brief Sets the list of properties to display as annotation.
+  void SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation);
 
   /// \brief Sets a flag to determine if we remember the image positions (slice, time step, scale factor) when we switch the render window layout
   void SetRememberSettingsPerWindowLayout(bool remember);
@@ -311,8 +329,14 @@ public:
   /// \brief Shows or hides the direction annotations.
   void ToggleDirectionAnnotations();
 
+  /// \brief Shows or hides the position annotation.
+  void TogglePositionAnnotation();
+
   /// \brief Shows or hides the intensity annotation.
   void ToggleIntensityAnnotation();
+
+  /// \brief Shows or hides the property annotation.
+  void TogglePropertyAnnotation();
 
   /// \brief Blocks the update of the viewer.
   ///
@@ -368,8 +392,14 @@ signals:
   /// \brief Emitted when the visibility of the direction annotations has changed.
   void DirectionAnnotationsVisibilityChanged(bool visible);
 
+  /// \brief Emitted when the visibility of the position annotation has changed.
+  void PositionAnnotationVisibilityChanged(bool visible);
+
   /// \brief Emitted when the visibility of the intensity annotation has changed.
   void IntensityAnnotationVisibilityChanged(bool visible);
+
+  /// \brief Emitted when the visibility of the property annotation has changed.
+  void PropertyAnnotationVisibilityChanged(bool visible);
 
 public slots:
 

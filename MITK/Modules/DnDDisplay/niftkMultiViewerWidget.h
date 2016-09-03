@@ -179,11 +179,23 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
+  /// \brief Tells if the position annotation is visible.
+  bool IsPositionAnnotationVisible() const;
+
+  /// \brief Sets the visibility of the position annotation.
+  void SetPositionAnnotationVisible(bool visible);
+
   /// \brief Tells if the intensity annotation is visible.
   bool IsIntensityAnnotationVisible() const;
 
   /// \brief Sets the visibility of the intensity annotation.
   void SetIntensityAnnotationVisible(bool visible);
+
+  /// \brief Tells if the property annotation is visible.
+  bool IsPropertyAnnotationVisible() const;
+
+  /// \brief Sets the visibility of the property annotation.
+  void SetPropertyAnnotationVisible(bool visible);
 
   /// \brief Sets a flag to determine if we remember viewer positions (slice, timestep, magnification) when we switch the window layout.
   void SetRememberSettingsPerWindowLayout(bool rememberSettingsPerWindowLayout);
@@ -271,11 +283,17 @@ protected slots:
   /// \brief Called when the show direction annotations option has been changed through the control panel.
   void OnShowDirectionAnnotationsControlsChanged(bool visible);
 
+  /// \brief Called when the show position annotation option has been changed through the control panel.
+  void OnShowPositionAnnotationControlsChanged(bool visible);
+
   /// \brief Called when the show intensity annotation option has been changed through the control panel.
   void OnShowIntensityAnnotationControlsChanged(bool visible);
 
-//  /// \brief Called when the show 3D window option has been changed through the control panel.
-//  void OnShow3DWindowControlChanged(bool visible);
+  /// \brief Called when the show property annotation option has been changed through the control panel.
+  void OnShowPropertyAnnotationControlsChanged(bool visible);
+
+  /// \brief Called when the list of properties to be displayed as annotation has been changed through the control panel.
+  void OnPropertiesForAnnotationControlsChanged();
 
   /// \brief Called when the window layout has been changed through the control panel.
   void OnWindowLayoutControlChanged(WindowLayout windowLayout);
@@ -345,8 +363,14 @@ protected slots:
   /// \brief Called when the show direction annotations option has been changed in a viewer.
   void OnDirectionAnnotationsVisibilityChanged(bool visible);
 
+  /// \brief Called when the show position annotation option has been changed in a viewer.
+  void OnPositionAnnotationVisibilityChanged(bool visible);
+
   /// \brief Called when the show intensity annotation option has been changed in a viewer.
   void OnIntensityAnnotationVisibilityChanged(bool visible);
+
+  /// \brief Called when the show property annotation option has been changed in a viewer.
+  void OnPropertyAnnotationVisibilityChanged(bool visible);
 
   /// \brief Called when the popup widget opens/closes, and used to re-render the viewers.
   void OnPopupOpened(bool opened);

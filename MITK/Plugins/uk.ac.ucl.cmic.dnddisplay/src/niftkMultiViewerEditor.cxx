@@ -816,7 +816,7 @@ void MultiViewerEditorPrivate::ProcessAnnotationOption()
       SingleViewerWidget* viewer = m_MultiViewer->GetViewer(row, column);
       assert(viewer);
 
-      //viewer->SetAnnotations(properties);
+      viewer->SetPropertiesForAnnotation(properties);
     }
   }
 }
