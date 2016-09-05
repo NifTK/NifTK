@@ -130,7 +130,7 @@ MultiWindowWidget::MultiWindowWidget(
 , m_ScaleFactorBinding(true)
 , m_PositionAnnotationVisible(true)
 , m_IntensityAnnotationVisible(true)
-, m_PropertyAnnotationVisible(true)
+, m_PropertyAnnotationVisible(false)
 , m_EmptySpace(new QWidget(this))
 {
   /// Note:
@@ -1469,11 +1469,8 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     if (m_SelectedWindowIndex < 3)
     {
       this->UpdatePositionAnnotation(m_SelectedWindowIndex);
-      m_PositionAnnotations[m_SelectedWindowIndex]->SetVisibility(m_PositionAnnotationVisible);
       this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
-      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(m_IntensityAnnotationVisible);
       this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
-      m_PropertyAnnotations[m_SelectedWindowIndex]->SetVisibility(m_PropertyAnnotationVisible);
     }
 
     this->BlockUpdate(updateWasBlocked);
@@ -2266,7 +2263,7 @@ void MultiWindowWidget::InitialisePositionAnnotations()
     annotation->SetFontSize(12);
     annotation->SetColor(0.0f, 1.0f, 0.0f);
     annotation->SetOpacity(1.0f);
-    annotation->SetVisibility(i == m_SelectedWindowIndex && m_PositionAnnotationVisible);
+    annotation->SetVisibility(false);
 
     overlayManager->AddOverlay(annotation.GetPointer(), renderer);
     overlayManager->SetLayouter(annotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_TOPRIGHT(), renderer);
@@ -2290,7 +2287,7 @@ void MultiWindowWidget::InitialiseIntensityAnnotations()
     annotation->SetFontSize(12);
     annotation->SetColor(0.0f, 1.0f, 0.0f);
     annotation->SetOpacity(1.0f);
-    annotation->SetVisibility(i == m_SelectedWindowIndex && m_IntensityAnnotationVisible);
+    annotation->SetVisibility(false);
 
     overlayManager->AddOverlay(annotation.GetPointer(), renderer);
     overlayManager->SetLayouter(annotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
@@ -2314,7 +2311,7 @@ void MultiWindowWidget::InitialisePropertyAnnotations()
     annotation->SetFontSize(12);
     annotation->SetColor(0.0f, 1.0f, 0.0f);
     annotation->SetOpacity(1.0f);
-    annotation->SetVisibility(i == m_SelectedWindowIndex && m_PropertyAnnotationVisible);
+    annotation->SetVisibility(false);
 
     overlayManager->AddOverlay(annotation.GetPointer(), renderer);
     overlayManager->SetLayouter(annotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_TOPLEFT(), renderer);
@@ -2499,18 +2496,20 @@ void MultiWindowWidget::UpdatePropertyAnnotation(int windowIndex) const
       {
         mitk::DataNode* node = it->second;
 
-        if (visibleImageNodes.size() != 1)
+        if (it != visibleImageNodes.rbegin())
         {
-          if (it != visibleImageNodes.rbegin())
-          {
-            stream << std::endl;
-          }
-
-          stream << node->GetName() << ": " << std::endl;
+          stream << std::endl;
         }
+
+        stream << node->GetName() << std::endl;
 
         for (const QString& propertyName: m_PropertiesForAnnotation)
         {
+          if (propertyName == QString("name"))
+          {
+            /// The name is always shown if the annotation is visible.
+            continue;
+          }
           mitk::BaseProperty* property = node->GetProperty(propertyName.toStdString().c_str());
           if (property)
           {
@@ -2518,6 +2517,9 @@ void MultiWindowWidget::UpdatePropertyAnnotation(int windowIndex) const
           }
         }
       }
+
+      /// Remove last '\n'.
+      stream.unget();
 
       annotation->SetText(stream.str());
       annotation->Modified();
