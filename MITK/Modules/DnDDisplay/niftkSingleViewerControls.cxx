@@ -532,7 +532,7 @@ void SingleViewerControls::OnPropertiesForAnnotationButtonClicked()
       QString property = propertyName.trimmed();
       if (!property.isEmpty())
       {
-        properties.push_back(propertyName);
+        properties.push_back(property);
       }
     }
 
