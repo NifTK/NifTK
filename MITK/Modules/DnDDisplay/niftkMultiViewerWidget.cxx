@@ -181,7 +181,7 @@ MultiViewerWidget::MultiViewerWidget(
   this->connect(m_ControlPanel, SIGNAL(ShowPositionAnnotationChanged(bool)), SLOT(OnShowPositionAnnotationControlsChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ShowIntensityAnnotationChanged(bool)), SLOT(OnShowIntensityAnnotationControlsChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ShowPropertyAnnotationChanged(bool)), SLOT(OnShowPropertyAnnotationControlsChanged(bool)));
-  this->connect(m_ControlPanel, SIGNAL(PropertiesForAnnotationChanged(bool)), SLOT(OnPropertiesForAnnotationControlsChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(PropertiesForAnnotationChanged()), SLOT(OnPropertiesForAnnotationControlsChanged()));
 
   this->connect(m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutControlChanged(WindowLayout)));
   this->connect(m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), SLOT(OnWindowCursorBindingControlChanged(bool)));

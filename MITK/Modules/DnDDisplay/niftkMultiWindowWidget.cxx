@@ -49,7 +49,7 @@ namespace niftk
 class DisplayGeometryModificationCommand : public itk::Command
 {
 public:
-  mitkNewMacro2Param(DisplayGeometryModificationCommand, MultiWindowWidget*, int);
+  mitkNewMacro2Param(DisplayGeometryModificationCommand, MultiWindowWidget*, int)
 
 
   //-----------------------------------------------------------------------------
@@ -128,9 +128,9 @@ MultiWindowWidget::MultiWindowWidget(
 , m_CursorSagittalPositionsAreBound(true)
 , m_CursorCoronalPositionsAreBound(false)
 , m_ScaleFactorBinding(true)
-, m_PositionAnnotationVisible(false)
-, m_IntensityAnnotationVisible(false)
-, m_PropertyAnnotationVisible(false)
+, m_PositionAnnotationVisible(true)
+, m_IntensityAnnotationVisible(true)
+, m_PropertyAnnotationVisible(true)
 , m_EmptySpace(new QWidget(this))
 {
   /// Note:
@@ -2330,7 +2330,7 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
     mitk::TextOverlay2D::Pointer annotation = m_PositionAnnotations[windowIndex];
 
     bool wasVisible = annotation->IsVisible(nullptr);
-    bool shouldBeVisible = m_PositionAnnotationVisible && windowIndex == m_SelectedWindowIndex;
+    bool shouldBeVisible = m_PositionAnnotationVisible && windowIndex == m_SelectedWindowIndex && m_TimeGeometry;
 
     if (wasVisible != shouldBeVisible)
     {
@@ -2343,7 +2343,12 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
       stream.precision(3);
       stream.imbue(std::locale::classic());
 
-      stream << "<world position place holder>";
+      stream << m_SelectedPosition[0] << ", " << m_SelectedPosition[1] << ", " << m_SelectedPosition[2] << "mm";
+
+      if (m_TimeGeometry->CountTimeSteps() > 1)
+      {
+        stream << std::endl << "Time step: " << m_TimeStep;
+      }
 
       annotation->SetText(stream.str());
       annotation->Modified();
@@ -2392,26 +2397,17 @@ void MultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
         }
       }
 
+      if (visibleNonBinaryImageNodes.empty())
+      {
+        annotation->SetVisibility(false);
+        return;
+      }
+
       std::stringstream stream;
       stream.precision(3);
       stream.imbue(std::locale::classic());
 
-      if (visibleNonBinaryImageNodes.size() == 0)
-      {
-        annotation->SetVisibility(false);
-      }
-      else if (visibleNonBinaryImageNodes.size() == 1)
-      {
-        stream << "Intensity: ";
-        annotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_IntensityAnnotationVisible);
-      }
-      else if (visibleNonBinaryImageNodes.size() > 1)
-      {
-        stream << "Intensities: ";
-        annotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_IntensityAnnotationVisible);
-      }
-
-      for (std::multimap<int, mitk::DataNode*>::const_iterator it = visibleNonBinaryImageNodes.begin(); it != visibleNonBinaryImageNodes.end(); ++it)
+      for (auto it = visibleNonBinaryImageNodes.rbegin(); it != visibleNonBinaryImageNodes.rend(); ++it)
       {
         mitk::DataNode* node = it->second;
 
@@ -2422,9 +2418,9 @@ void MultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
 
         mitk::ScalarType intensity = image->GetPixelValueByWorldCoordinate(m_SelectedPosition, m_TimeStep, component);
 
-        if (it != visibleNonBinaryImageNodes.begin())
+        if (it != visibleNonBinaryImageNodes.rbegin())
         {
-          stream << "; ";
+          stream << std::endl;
         }
 
         if (visibleNonBinaryImageNodes.size() != 1)
@@ -2472,11 +2468,11 @@ void MultiWindowWidget::UpdatePropertyAnnotation(int windowIndex) const
       mitk::NodePredicateAnd::Pointer isVisibleAndImage = mitk::NodePredicateAnd::New(isVisible, isImage);
 
       /// Note:
-      /// The nodes are printed in the order of their layer.
+      /// The nodes are printed in the reversed order of their layer.
       std::multimap<int, mitk::DataNode*> visibleImageNodes;
 
       mitk::DataStorage::SetOfObjects::ConstPointer nodes = renderer->GetDataStorage()->GetSubset(isVisibleAndImage).GetPointer();
-      for (mitk::DataStorage::SetOfObjects::ConstIterator it = nodes->Begin(); it != nodes->End(); ++it)
+      for (auto it = nodes->Begin(); it != nodes->End(); ++it)
       {
         mitk::DataNode* node = it->Value();
         int layer = 0;
@@ -2499,21 +2495,28 @@ void MultiWindowWidget::UpdatePropertyAnnotation(int windowIndex) const
         annotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_PropertyAnnotationVisible);
       }
 
-      for (std::multimap<int, mitk::DataNode*>::const_iterator it = visibleImageNodes.begin(); it != visibleImageNodes.end(); ++it)
+      for (auto it = visibleImageNodes.rbegin(); it != visibleImageNodes.rend(); ++it)
       {
         mitk::DataNode* node = it->second;
 
-        if (it != visibleImageNodes.begin())
-        {
-          stream << "; ";
-        }
-
         if (visibleImageNodes.size() != 1)
         {
-          stream << node->GetName() << ": ";
+          if (it != visibleImageNodes.rbegin())
+          {
+            stream << std::endl;
+          }
+
+          stream << node->GetName() << ": " << std::endl;
         }
 
-        stream << "<property place holder>";
+        for (const QString& propertyName: m_PropertiesForAnnotation)
+        {
+          mitk::BaseProperty* property = node->GetProperty(propertyName.toStdString().c_str());
+          if (property)
+          {
+            stream << propertyName.toStdString() << ": " << property->GetValueAsString() << std::endl;
+          }
+        }
       }
 
       annotation->SetText(stream.str());
