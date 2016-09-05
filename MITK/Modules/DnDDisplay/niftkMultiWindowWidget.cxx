@@ -123,6 +123,7 @@ MultiWindowWidget::MultiWindowWidget(
 , m_ScaleFactorHasChanged(3)
 , m_CursorPositionBindingHasChanged(false)
 , m_ScaleFactorBindingHasChanged(false)
+, m_OrientationString{0}
 , m_CursorPositionBinding(true)
 , m_CursorAxialPositionsAreBound(true)
 , m_CursorSagittalPositionsAreBound(true)
@@ -1197,6 +1198,10 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     m_OrientationAxes[AXIAL] = dominantAxisSI;
     m_OrientationAxes[SAGITTAL] = dominantAxisRL;
     m_OrientationAxes[CORONAL] = dominantAxisAP;
+
+    m_OrientationString[dominantAxisSI] = signSI > 0 ? 'S' : 'I';
+    m_OrientationString[dominantAxisRL] = signRL > 0 ? 'R' : 'L';
+    m_OrientationString[dominantAxisAP] = signAP > 0 ? 'A' : 'P';
 
 //    MITK_INFO << "Matt, image geometry=" << m_Geometry->GetImageGeometry();
 //    MITK_INFO << "Matt, origin=" << m_Geometry->GetOrigin();
@@ -2340,7 +2345,10 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
       stream.precision(3);
       stream.imbue(std::locale::classic());
 
-      stream << m_SelectedPosition[0] << ", " << m_SelectedPosition[1] << ", " << m_SelectedPosition[2] << "mm";
+      mitk::Point3D selectedPositionInVx;
+      m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
+      stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << m_OrientationString << ")" << std::endl;
+      stream << m_SelectedPosition[0] << ", " << m_SelectedPosition[1] << ", " << m_SelectedPosition[2] << " mm";
 
       if (m_TimeGeometry->CountTimeSteps() > 1)
       {
