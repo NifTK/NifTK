@@ -369,10 +369,35 @@ void SingleViewerControls::SetWindowLayout(WindowLayout windowLayout)
     break;
   default:
     int windowLayoutIndex = 0;
-    while (s_MultiWindowLayouts[windowLayoutIndex] != windowLayout)
+    while (windowLayoutIndex < s_MultiWindowLayoutNumber
+           && s_MultiWindowLayouts[windowLayoutIndex] != windowLayout)
     {
       ++windowLayoutIndex;
-      assert(windowLayoutIndex < s_MultiWindowLayoutNumber);
+    }
+
+    if (windowLayoutIndex == s_MultiWindowLayoutNumber)
+    {
+      /// This can be WINDOW_LAYOUT_UNKNOWN or WINDOW_LAYOUT_AS_ACQUIRED.
+      /// We switch off everything.
+      wasBlocked = ui->m_AxialWindowRadioButton->blockSignals(true);
+      ui->m_AxialWindowRadioButton->setChecked(false);
+      ui->m_AxialWindowRadioButton->blockSignals(wasBlocked);
+      wasBlocked = ui->m_SagittalWindowRadioButton->blockSignals(true);
+      ui->m_SagittalWindowRadioButton->setChecked(false);
+      ui->m_SagittalWindowRadioButton->blockSignals(wasBlocked);
+      wasBlocked = ui->m_CoronalWindowRadioButton->blockSignals(true);
+      ui->m_CoronalWindowRadioButton->setChecked(false);
+      ui->m_CoronalWindowRadioButton->blockSignals(wasBlocked);
+      wasBlocked = ui->m_3DWindowRadioButton->blockSignals(true);
+      ui->m_3DWindowRadioButton->setChecked(false);
+      ui->m_3DWindowRadioButton->blockSignals(wasBlocked);
+      wasBlocked = ui->m_MultiWindowRadioButton->blockSignals(true);
+      ui->m_MultiWindowRadioButton->setChecked(false);
+      ui->m_MultiWindowRadioButton->blockSignals(wasBlocked);
+      wasBlocked = ui->m_MultiWindowComboBox->blockSignals(true);
+      ui->m_MultiWindowComboBox->setCurrentIndex(-1);
+      ui->m_MultiWindowComboBox->blockSignals(wasBlocked);
+      return;
     }
 
     wasBlocked = ui->m_MultiWindowRadioButton->blockSignals(true);
