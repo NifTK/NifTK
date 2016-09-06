@@ -21,6 +21,7 @@
 #include <vlCore/vlnamespace.hpp>
 #include <vlCore/Image.hpp>
 #include <vlGraphics/Geometry.hpp>
+#include <vlVivid/VividVolume.hpp>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <itkMatrix.h>

@@ -820,7 +820,7 @@ bool VLMapperCUDAImage::init()
   // NOTE: for the moment we don't render it
   // FIXME: the DataNode itself should be disabled at init time?
   // m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
-  Effect* fx = m_Actor->effect();
+  vl::Effect* fx = m_Actor->effect();
 
   fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
   fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
@@ -862,7 +862,7 @@ void VLMapperCUDAImage::update()
     VIVID_CHECK(m_CudaResource);
     cudaGraphicsUnregisterResource(m_CudaResource);
     m_CudaResource = NULL;
-    m_Texture->createTexture2D( lwci.GetWidth(), lwci.GetHeight(), TF_RGBA, false );
+    m_Texture->createTexture2D( lwci.GetWidth(), lwci.GetHeight(), vl::TF_RGBA, false );
     err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_Texture->handle(), m_Texture->dimension(), cudaGraphicsRegisterFlagsNone );
     if ( err != cudaSuccess )
     {
