@@ -25,6 +25,8 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
+#include "ui_niftkDnDDisplayPreferencePage.h"
+
 
 namespace niftk
 {
@@ -39,7 +41,9 @@ const QString DnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING
 
 const QString DnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS("DnD display show 2D cursors");
 const QString DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS("DnD display show direction annotations");
+const QString DnDDisplayPreferencePage::DNDDISPLAY_SHOW_POSITION_ANNOTATION("DnD display show position annotation");
 const QString DnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION("DnD display show intensity annotation");
+const QString DnDDisplayPreferencePage::DNDDISPLAY_SHOW_PROPERTY_ANNOTATION("DnD display show property annotation");
 
 const QString DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT("DnD display default window layout");
 const QString DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT("DnD display remember view settings of each window layout");
@@ -57,25 +61,8 @@ const QString DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS("DnD 
 
 //-----------------------------------------------------------------------------
 DnDDisplayPreferencePage::DnDDisplayPreferencePage()
-: m_MainControl(0)
-, m_ImageInterpolationComboBox(NULL)
-, m_SliceSelectTracking(NULL)
-, m_TimeSelectTracking(NULL)
-, m_MagnificationSelectTracking(NULL)
-, m_Show2DCursorsCheckBox(NULL)
-, m_ShowDirectionAnnotationsCheckBox(NULL)
-, m_ShowIntensityAnnotationCheckBox(NULL)
-, m_DefaultWindowLayoutComboBox(NULL)
-, m_RememberEachWindowLayoutsViewerSettings(NULL)
-, m_DefaultNumberOfViewerRowsSpinBox(NULL)
-, m_DefaultNumberOfViewerColumnsSpinBox(NULL)
-, m_DefaultDropType(NULL)
-, m_ShowMagnificationSliderCheckBox(NULL)
-, m_ShowShowingOptionsCheckBox(NULL)
-, m_ShowWindowLayoutControlsCheckBox(NULL)
-, m_ShowViewerNumberControlsCheckBox(NULL)
-, m_ShowDropTypeControlsCheckBox(NULL)
-, m_BackgroundColourButton(NULL)
+: m_MainWidget(nullptr),
+  ui(nullptr)
 {
 }
 
@@ -101,101 +88,14 @@ void DnDDisplayPreferencePage::CreateQtControl(QWidget* parent)
 
   m_DnDDisplayPreferencesNode = prefService->GetSystemPreferences()->Node(MultiViewerEditor::EDITOR_ID);
 
-  m_MainControl = new QWidget(parent);
+  m_MainWidget = new QWidget(parent);
 
-  QFormLayout* formLayout = new QFormLayout;
+  ui = new Ui::niftkDnDDisplayPreferencePage();
+  ui->setupUi(m_MainWidget);
 
-  m_ImageInterpolationComboBox = new QComboBox(parent);
-  m_ImageInterpolationComboBox->insertItem(0, "none");
-  m_ImageInterpolationComboBox->insertItem(1, "linear");
-  m_ImageInterpolationComboBox->insertItem(2, "cubic");
-  formLayout->addRow("image interpolation", m_ImageInterpolationComboBox);
-
-  m_SliceSelectTracking = new QCheckBox(parent);
-  formLayout->addRow("slice select tracking", m_SliceSelectTracking);
-
-  m_TimeSelectTracking = new QCheckBox(parent);
-  formLayout->addRow("time select tracking", m_TimeSelectTracking);
-
-  m_MagnificationSelectTracking = new QCheckBox(parent);
-  formLayout->addRow("magnification select tracking", m_MagnificationSelectTracking);
-
-  m_Show2DCursorsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show 2D cursors", m_Show2DCursorsCheckBox);
-
-  m_ShowDirectionAnnotationsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show direction annotations", m_ShowDirectionAnnotationsCheckBox);
-
-  m_ShowIntensityAnnotationCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show intensity annotation", m_ShowIntensityAnnotationCheckBox);
-
-  m_DefaultWindowLayoutComboBox = new QComboBox(parent);
-  m_DefaultWindowLayoutComboBox->insertItem(0, "axial");
-  m_DefaultWindowLayoutComboBox->insertItem(1, "sagittal");
-  m_DefaultWindowLayoutComboBox->insertItem(2, "coronal");
-  m_DefaultWindowLayoutComboBox->insertItem(3, "2x2 orthogonal");
-  m_DefaultWindowLayoutComboBox->insertItem(4, "3D");
-  m_DefaultWindowLayoutComboBox->insertItem(5, "3 horizontal");
-  m_DefaultWindowLayoutComboBox->insertItem(6, "3 vertical");
-  m_DefaultWindowLayoutComboBox->insertItem(7, "as acquired (XY plane)");
-  formLayout->addRow("default window layout", m_DefaultWindowLayoutComboBox);
-
-  m_RememberEachWindowLayoutsViewerSettings = new QCheckBox(parent);
-  formLayout->addRow("remember settings of each window layout", m_RememberEachWindowLayoutsViewerSettings);
-
-  m_DefaultNumberOfViewerRowsSpinBox = new QSpinBox(parent);
-  m_DefaultNumberOfViewerRowsSpinBox->setMinimum(1);
-  m_DefaultNumberOfViewerRowsSpinBox->setMaximum(5);
-  formLayout->addRow("initial number of view rows", m_DefaultNumberOfViewerRowsSpinBox);
-
-  m_DefaultNumberOfViewerColumnsSpinBox = new QSpinBox(parent);
-  m_DefaultNumberOfViewerColumnsSpinBox->setMinimum(1);
-  m_DefaultNumberOfViewerColumnsSpinBox->setMaximum(5);
-  formLayout->addRow("initial number of view columns", m_DefaultNumberOfViewerColumnsSpinBox);
-
-  m_DefaultDropType = new QComboBox(parent);
-  m_DefaultDropType->insertItem(0, "single");
-  m_DefaultDropType->insertItem(1, "multiple");
-  m_DefaultDropType->insertItem(2, "all");
-  formLayout->addRow("default drop type", m_DefaultDropType);
-
-  m_ShowMagnificationSliderCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show magnification slider", m_ShowMagnificationSliderCheckBox);
-
-  m_ShowShowingOptionsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show 'show' options", m_ShowShowingOptionsCheckBox);
-
-  m_ShowWindowLayoutControlsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show window layout controls", m_ShowWindowLayoutControlsCheckBox);
-
-  m_ShowViewerNumberControlsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show viewer number controls", m_ShowViewerNumberControlsCheckBox);
-
-  m_ShowDropTypeControlsCheckBox = new QCheckBox(parent);
-  formLayout->addRow("show drop type controls", m_ShowDropTypeControlsCheckBox);
-
-  QPushButton* backgroundColourResetButton = new QPushButton(parent);
-  backgroundColourResetButton->setText("reset");
-
-  QPushButton* backgroundColorSpecificallyMIDAS = new QPushButton(parent);
-  backgroundColorSpecificallyMIDAS->setText("MIDAS default");
-
-  m_BackgroundColourButton = new QPushButton;
-  m_BackgroundColourButton->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
-
-  QGridLayout* backgroundColourWidgetLayout = new QGridLayout;
-  backgroundColourWidgetLayout->setContentsMargins(4, 4, 4, 4);
-  backgroundColourWidgetLayout->addWidget(m_BackgroundColourButton, 0, 0);
-  backgroundColourWidgetLayout->addWidget(backgroundColorSpecificallyMIDAS, 0, 1);
-  backgroundColourWidgetLayout->addWidget(backgroundColourResetButton, 0, 2);
-
-  formLayout->addRow("background colour", backgroundColourWidgetLayout);
-
-  m_MainControl->setLayout(formLayout);
-
-  this->connect( m_BackgroundColourButton, SIGNAL( clicked() ), SLOT( OnBackgroundColourChanged() ) );
-  this->connect( backgroundColourResetButton, SIGNAL( clicked() ), SLOT( OnResetBackgroundColour() ) );
-  this->connect( backgroundColorSpecificallyMIDAS, SIGNAL( clicked() ), SLOT( OnResetMIDASBackgroundColour() ) );
+  this->connect(ui->m_BackgroundColourColourButton, SIGNAL( clicked() ), SLOT( OnBackgroundColourChanged() ));
+  this->connect(ui->m_BackgroundColourMIDASDefaultButton, SIGNAL( clicked() ), SLOT( OnResetMIDASBackgroundColour() ));
+  this->connect(ui->m_BackgroundColourResetButton, SIGNAL( clicked() ), SLOT( OnResetBackgroundColour() ));
 
   this->Update();
 }
@@ -204,7 +104,7 @@ void DnDDisplayPreferencePage::CreateQtControl(QWidget* parent)
 //-----------------------------------------------------------------------------
 QWidget* DnDDisplayPreferencePage::GetQtControl() const
 {
-  return m_MainControl;
+  return m_MainWidget;
 }
 
 
@@ -213,23 +113,25 @@ bool DnDDisplayPreferencePage::PerformOk()
 {
   m_DnDDisplayPreferencesNode->Put(DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET, m_BackgroundColorStyleSheet);
   m_DnDDisplayPreferencesNode->Put(DNDDISPLAY_BACKGROUND_COLOUR, m_BackgroundColor);
-  m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER, m_DefaultNumberOfViewerRowsSpinBox->value());
-  m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, m_DefaultNumberOfViewerColumnsSpinBox->value());
-  m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, m_DefaultWindowLayoutComboBox->currentIndex());
-  m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, m_ImageInterpolationComboBox->currentIndex());
-  m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_DROP_TYPE, m_DefaultDropType->currentIndex());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, m_ShowDropTypeControlsCheckBox->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_SHOWING_OPTIONS, m_ShowShowingOptionsCheckBox->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, m_ShowWindowLayoutControlsCheckBox->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, m_ShowViewerNumberControlsCheckBox->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_2D_CURSORS, m_Show2DCursorsCheckBox->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, m_ShowDirectionAnnotationsCheckBox->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, m_ShowIntensityAnnotationCheckBox->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, m_ShowMagnificationSliderCheckBox->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, m_RememberEachWindowLayoutsViewerSettings->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SLICE_SELECT_TRACKING, m_SliceSelectTracking->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, m_MagnificationSelectTracking->isChecked());
-  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_TIME_SELECT_TRACKING, m_TimeSelectTracking->isChecked());
+  m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER, ui->m_ViewerRowsSpinBox->value());
+  m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, ui->m_ViewerColumnsSpinBox->value());
+  m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, ui->m_WindowLayoutComboBox->currentIndex());
+  m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, ui->m_ImageInterpolationComboBox->currentIndex());
+  m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_DROP_TYPE, ui->m_DefaultDropTypeComboBox->currentIndex());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, ui->m_ShowDropTypeControlsCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_SHOWING_OPTIONS, ui->m_ShowShowOptionsCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, ui->m_ShowWindowLayoutControlsCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, ui->m_ShowViewerNumberControlsCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_2D_CURSORS, ui->m_Show2DCursorsCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, ui->m_ShowDirectionAnnotationsCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_POSITION_ANNOTATION, ui->m_ShowPositionAnnotationCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, ui->m_ShowIntensityAnnotationCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_PROPERTY_ANNOTATION, ui->m_ShowPropertyAnnotationCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, ui->m_ShowMagnificationSliderCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, ui->m_RememberViewerSettingsPerWindowLayoutCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SLICE_SELECT_TRACKING, ui->m_SliceTrackingCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_TIME_SELECT_TRACKING, ui->m_TimeTrackingCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, ui->m_MagnificationTrackingCheckBox->isChecked());
   return true;
 }
 
@@ -253,25 +155,27 @@ void DnDDisplayPreferencePage::Update()
   {
     m_BackgroundColor = "#000000";
   }
-  m_BackgroundColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
+  ui->m_BackgroundColourColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
 
-  m_DefaultNumberOfViewerRowsSpinBox->setValue(m_DnDDisplayPreferencesNode->GetInt(DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER, 1));
-  m_DefaultNumberOfViewerColumnsSpinBox->setValue(m_DnDDisplayPreferencesNode->GetInt(DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, 1));
-  m_DefaultWindowLayoutComboBox->setCurrentIndex(m_DnDDisplayPreferencesNode->GetInt(DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2)); // default coronal
-  m_ImageInterpolationComboBox->setCurrentIndex(m_DnDDisplayPreferencesNode->GetInt(DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2));
-  m_DefaultDropType->setCurrentIndex(m_DnDDisplayPreferencesNode->GetInt(DNDDISPLAY_DEFAULT_DROP_TYPE, 0));
-  m_ShowDropTypeControlsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false));
-  m_ShowShowingOptionsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_SHOWING_OPTIONS, true));
-  m_ShowWindowLayoutControlsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true));
-  m_ShowViewerNumberControlsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true));
-  m_Show2DCursorsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_2D_CURSORS, true));
-  m_ShowDirectionAnnotationsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
-  m_ShowIntensityAnnotationCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
-  m_ShowMagnificationSliderCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
-  m_RememberEachWindowLayoutsViewerSettings->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
-  m_SliceSelectTracking->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SLICE_SELECT_TRACKING, true));
-  m_MagnificationSelectTracking->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true));
-  m_TimeSelectTracking->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_TIME_SELECT_TRACKING, true));
+  ui->m_ViewerRowsSpinBox->setValue(m_DnDDisplayPreferencesNode->GetInt(DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER, 1));
+  ui->m_ViewerColumnsSpinBox->setValue(m_DnDDisplayPreferencesNode->GetInt(DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, 1));
+  ui->m_WindowLayoutComboBox->setCurrentIndex(m_DnDDisplayPreferencesNode->GetInt(DNDDISPLAY_DEFAULT_WINDOW_LAYOUT, 2)); // default coronal
+  ui->m_ImageInterpolationComboBox->setCurrentIndex(m_DnDDisplayPreferencesNode->GetInt(DNDDISPLAY_DEFAULT_INTERPOLATION_TYPE, 2));
+  ui->m_DefaultDropTypeComboBox->setCurrentIndex(m_DnDDisplayPreferencesNode->GetInt(DNDDISPLAY_DEFAULT_DROP_TYPE, 0));
+  ui->m_ShowDropTypeControlsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false));
+  ui->m_ShowShowOptionsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_SHOWING_OPTIONS, true));
+  ui->m_ShowWindowLayoutControlsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true));
+  ui->m_ShowViewerNumberControlsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true));
+  ui->m_Show2DCursorsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_2D_CURSORS, true));
+  ui->m_ShowDirectionAnnotationsCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
+  ui->m_ShowPositionAnnotationCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_POSITION_ANNOTATION, true));
+  ui->m_ShowIntensityAnnotationCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
+  ui->m_ShowPropertyAnnotationCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_PROPERTY_ANNOTATION, false));
+  ui->m_ShowMagnificationSliderCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
+  ui->m_RememberViewerSettingsPerWindowLayoutCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
+  ui->m_SliceTrackingCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SLICE_SELECT_TRACKING, true));
+  ui->m_MagnificationTrackingCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true));
+  ui->m_TimeTrackingCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_TIME_SELECT_TRACKING, true));
 }
 
 
@@ -281,7 +185,7 @@ void DnDDisplayPreferencePage::OnBackgroundColourChanged()
   QColor colour = QColorDialog::getColor();
   if (colour.isValid())
   {
-    m_BackgroundColourButton->setAutoFillBackground(true);
+    ui->m_BackgroundColourColourButton->setAutoFillBackground(true);
 
     QString styleSheet = "background-color: rgb(";
     styleSheet.append(QString::number(colour.red()));
@@ -291,7 +195,7 @@ void DnDDisplayPreferencePage::OnBackgroundColourChanged()
     styleSheet.append(QString::number(colour.blue()));
     styleSheet.append(")");
 
-    m_BackgroundColourButton->setStyleSheet(styleSheet);
+    ui->m_BackgroundColourColourButton->setStyleSheet(styleSheet);
     m_BackgroundColorStyleSheet = styleSheet;
 
     QStringList backgroundColour;
@@ -307,7 +211,7 @@ void DnDDisplayPreferencePage::OnResetBackgroundColour()
 {
   m_BackgroundColorStyleSheet = "background-color: rgb(0, 0, 0)";
   m_BackgroundColor = "#000000";
-  m_BackgroundColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
+  ui->m_BackgroundColourColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
 }
 
 
@@ -316,7 +220,7 @@ void DnDDisplayPreferencePage::OnResetMIDASBackgroundColour()
 {
   m_BackgroundColorStyleSheet = "background-color: rgb(255,250,240)"; // That strange MIDAS off-white colour.
   m_BackgroundColor = "#fffaf0";                                      // That strange MIDAS off-white colour.
-  m_BackgroundColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
+  ui->m_BackgroundColourColourButton->setStyleSheet(m_BackgroundColorStyleSheet);
 }
 
 }
