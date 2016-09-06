@@ -77,6 +77,29 @@ bool UltrasonixDataSourceInterface::IsConnected() const
 
 
 //-----------------------------------------------------------------------------
+void UltrasonixDataSourceInterface::Connect(const QString& host)
+{
+  if (!m_Ulterius->connect(host.toAscii()))
+  {
+    mitkThrow() << "Failed to connect to:" << host.toStdString();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void UltrasonixDataSourceInterface::Disconnect()
+{
+  if (this->IsConnected())
+  {
+    if (!m_Ulterius->disconnect())
+    {
+      mitkThrow() << "Failed to disconnect!";
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 UltrasonixDataSourceService::UltrasonixDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
@@ -113,6 +136,12 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
 
   mitkThrow() << "Not implemented yet. Volunteers .... please step forward!";
 
+  // Basically, the data source should connect, stay connected and continuously stream.
+  // If the Sonix MDP is 'frozen' then assumedly the callback is not called, but the 
+  // connection remains live.
+
+  m_Ultrasonix->Connect(host);
+
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -121,6 +150,11 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
 //-----------------------------------------------------------------------------
 UltrasonixDataSourceService::~UltrasonixDataSourceService()
 {
+  if (m_Ultrasonix->IsConnected())
+  {
+    m_Ultrasonix->Disconnect();
+  }
+  delete m_Ultrasonix;
 }
 
 

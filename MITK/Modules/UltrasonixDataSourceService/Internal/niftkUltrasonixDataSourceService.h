@@ -28,14 +28,14 @@ namespace niftk
 class UltrasonixDataSourceInterface {
 
 public:
-
+  virtual ~UltrasonixDataSourceInterface();
   static UltrasonixDataSourceInterface* GetInstance();
   bool IsConnected() const;
+  void Connect(const QString& host);
+  void Disconnect();
 
 private:
   UltrasonixDataSourceInterface();
-  virtual ~UltrasonixDataSourceInterface();
-
   static UltrasonixDataSourceInterface* s_Instance;
   ulterius*                             m_Ulterius;
 
