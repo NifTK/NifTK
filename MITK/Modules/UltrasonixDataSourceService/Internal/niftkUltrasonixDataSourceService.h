@@ -15,7 +15,6 @@
 #define niftkUltrasonixDataSourceService_h
 
 #include <niftkQImageDataSourceService.h>
-#include <mitkExceptionMacro.h>
 #include <ulterius.h>
 #include <memory.h>
 
@@ -30,38 +29,19 @@ class UltrasonixDataSourceInterface {
 
 public:
 
-  static UltrasonixDataSourceInterface* GetInstance()
-  {
-    if (s_Instance == nullptr)
-    {
-      s_Instance = new UltrasonixDataSourceInterface();
-    }
-    else
-    {
-      mitkThrow() << "You cannot create >1 Ultrasonix Interface.";
-    }
-
-    return s_Instance;
-  }
-
-  bool IsConnected()
-  {
-    return (m_Ulterius != nullptr && m_Ulterius->isConnected());
-  }
+  static UltrasonixDataSourceInterface* GetInstance();
+  bool IsConnected() const;
 
 private:
-  UltrasonixDataSourceInterface()
-  : m_Ulterius(nullptr)
-  {
-  }
-
-  virtual ~UltrasonixDataSourceInterface()
-  {
-  }
+  UltrasonixDataSourceInterface();
+  virtual ~UltrasonixDataSourceInterface();
 
   static UltrasonixDataSourceInterface* s_Instance;
+  ulterius*                             m_Ulterius;
 
-  ulterius *m_Ulterius;
+  static bool NewDataCallBack(void *data, int type, int sz, bool cine, int frmnum);
+  static bool ParamCallBack(void* paramID, int x, int y);
+
 };
 
 /**

@@ -15,10 +15,66 @@
 #include "niftkUltrasonixDataSourceService.h"
 #include <niftkQImageDataType.h>
 #include <niftkQImageConversion.h>
+#include <mitkExceptionMacro.h>
 
 namespace niftk
 {
 UltrasonixDataSourceInterface* UltrasonixDataSourceInterface::s_Instance = nullptr;
+
+//-----------------------------------------------------------------------------
+UltrasonixDataSourceInterface* UltrasonixDataSourceInterface::GetInstance()
+{
+  if (s_Instance == nullptr)
+  {
+    s_Instance = new UltrasonixDataSourceInterface();
+  }
+  else
+  {
+    mitkThrow() << "You cannot create >1 Ultrasonix Interface.";
+  }
+
+  return s_Instance;
+}
+
+
+//-----------------------------------------------------------------------------
+UltrasonixDataSourceInterface::UltrasonixDataSourceInterface()
+: m_Ulterius(nullptr)
+{
+  m_Ulterius = new ulterius;
+  m_Ulterius->setCallback(NewDataCallBack);
+  m_Ulterius->setParamCallback(ParamCallBack);
+}
+
+
+//-----------------------------------------------------------------------------
+UltrasonixDataSourceInterface::~UltrasonixDataSourceInterface()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+bool UltrasonixDataSourceInterface::NewDataCallBack(void *data, int type, int sz, bool cine, int frmnum)
+{
+  MITK_INFO << "New Data";
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool UltrasonixDataSourceInterface::ParamCallBack(void* paramID, int x, int y)
+{
+  MITK_INFO << "Param updated";
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool UltrasonixDataSourceInterface::IsConnected() const
+{
+  return (m_Ulterius != nullptr && m_Ulterius->isConnected());
+}
+
 
 //-----------------------------------------------------------------------------
 UltrasonixDataSourceService::UltrasonixDataSourceService(
