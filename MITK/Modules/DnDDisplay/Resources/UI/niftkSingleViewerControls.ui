@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>429</width>
+    <width>574</width>
     <height>136</height>
    </rect>
   </property>
@@ -199,7 +199,7 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0,0">
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0,0,0">
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -266,10 +266,17 @@
        </widget>
       </item>
       <item>
-       <widget class="ctkCheckablePushButton" name="m_PropertiesForAnnotationPushButton">
+       <widget class="QCheckBox" name="m_ShowPropertyAnnotationCheckBox">
         <property name="toolTip">
          <string>Shows the selected properties of the visible images</string>
         </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="niftk::ClickableLabel" name="m_PropertiesForAnnotationLabel">
         <property name="text">
          <string>properties</string>
         </property>
@@ -385,9 +392,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ctkCheckablePushButton</class>
-   <extends>QPushButton</extends>
-   <header location="global">ctkCheckablePushButton.h</header>
+   <class>niftk::ClickableLabel</class>
+   <extends>QLabel</extends>
+   <header>niftkClickableLabel_p.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -240,7 +240,7 @@ protected slots:
 
   /// \brief Pops up an input dialog to set the list of properties to display as annotation.
   /// Called when the checkable push button is clicked on.
-  void OnPropertiesForAnnotationButtonClicked();
+  void OnPropertiesForAnnotationLabelClicked();
 
 private:
 

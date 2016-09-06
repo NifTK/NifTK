@@ -81,8 +81,8 @@ SingleViewerControls::SingleViewerControls(QWidget *parent)
   this->connect(ui->m_ShowDirectionAnnotationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowDirectionAnnotationsChanged(bool)));
   this->connect(ui->m_ShowPositionAnnotationCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowPositionAnnotationChanged(bool)));
   this->connect(ui->m_ShowIntensityAnnotationCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowIntensityAnnotationChanged(bool)));
-  this->connect(ui->m_PropertiesForAnnotationPushButton, SIGNAL(checkBoxToggled(bool)), SIGNAL(ShowPropertyAnnotationChanged(bool)));
-  this->connect(ui->m_PropertiesForAnnotationPushButton, SIGNAL(clicked()), SLOT(OnPropertiesForAnnotationButtonClicked()));
+  this->connect(ui->m_ShowPropertyAnnotationCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowPropertyAnnotationChanged(bool)));
+  this->connect(ui->m_PropertiesForAnnotationLabel, SIGNAL(clicked()), SLOT(OnPropertiesForAnnotationLabelClicked()));
 
   this->connect(ui->m_BindWindowCursorsCheckBox, SIGNAL(toggled(bool)), SIGNAL(WindowCursorBindingChanged(bool)));
   this->connect(ui->m_BindWindowMagnificationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(WindowMagnificationBindingChanged(bool)));
@@ -515,16 +515,16 @@ void SingleViewerControls::SetIntensityAnnotationVisible(bool visible)
 //-----------------------------------------------------------------------------
 bool SingleViewerControls::IsPropertyAnnotationVisible() const
 {
-  return ui->m_PropertiesForAnnotationPushButton->isChecked();
+  return ui->m_ShowPropertyAnnotationCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
 void SingleViewerControls::SetPropertyAnnotationVisible(bool visible)
 {
-  bool wasBlocked = ui->m_PropertiesForAnnotationPushButton->blockSignals(true);
-  ui->m_PropertiesForAnnotationPushButton->setChecked(visible);
-  ui->m_PropertiesForAnnotationPushButton->blockSignals(wasBlocked);
+  bool wasBlocked = ui->m_ShowPropertyAnnotationCheckBox->blockSignals(true);
+  ui->m_ShowPropertyAnnotationCheckBox->setChecked(visible);
+  ui->m_ShowPropertyAnnotationCheckBox->blockSignals(wasBlocked);
 }
 
 
@@ -542,7 +542,7 @@ void SingleViewerControls::SetPropertiesForAnnotation(const QStringList& propert
 
 
 //-----------------------------------------------------------------------------
-void SingleViewerControls::OnPropertiesForAnnotationButtonClicked()
+void SingleViewerControls::OnPropertiesForAnnotationLabelClicked()
 {
   bool ok;
   QString propertyNames = QInputDialog::getText(
@@ -563,9 +563,9 @@ void SingleViewerControls::OnPropertiesForAnnotationButtonClicked()
 
     m_PropertiesForAnnotation = properties;
 
-    bool wasBlocked = ui->m_PropertiesForAnnotationPushButton->blockSignals(true);
-    ui->m_PropertiesForAnnotationPushButton->setCheckable(!properties.isEmpty());
-    ui->m_PropertiesForAnnotationPushButton->blockSignals(wasBlocked);
+    bool wasBlocked = ui->m_ShowPropertyAnnotationCheckBox->blockSignals(true);
+    ui->m_ShowPropertyAnnotationCheckBox->setChecked(!properties.isEmpty());
+    ui->m_ShowPropertyAnnotationCheckBox->blockSignals(wasBlocked);
 
     emit PropertiesForAnnotationChanged();
   }
