@@ -15,10 +15,10 @@
 #include "niftkUltrasonixDataSourceService.h"
 #include <niftkQImageDataType.h>
 #include <niftkQImageConversion.h>
-#include <mitkExceptionMacro.h>
 
 namespace niftk
 {
+UltrasonixDataSourceInterface* UltrasonixDataSourceInterface::s_Instance = nullptr;
 
 //-----------------------------------------------------------------------------
 UltrasonixDataSourceService::UltrasonixDataSourceService(
@@ -26,7 +26,17 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
 : QImageDataSourceService(QString("Ultrasonix-"), factoryName, properties, dataStorage)
+, m_Ultrasonix(nullptr)
 {
+  this->SetStatus("Initialising");
+
+  UltrasonixDataSourceInterface* ultrasonix = UltrasonixDataSourceInterface::GetInstance();
+  if (ultrasonix == nullptr)
+  {
+    mitkThrow() << "Failed to instantiate Ultrasonix Interface.";
+  }
+  m_Ultrasonix = ultrasonix;
+
   if(!properties.contains("host"))
   {
     mitkThrow() << "Host name not specified!";
@@ -46,8 +56,6 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
   int portNumber = properties.value("port").toInt();
 
   mitkThrow() << "Not implemented yet. Volunteers .... please step forward!";
-
-  this->SetStatus("Initialising");
 
   this->SetStatus("Initialised");
   this->Modified();

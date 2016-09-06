@@ -15,9 +15,54 @@
 #define niftkUltrasonixDataSourceService_h
 
 #include <niftkQImageDataSourceService.h>
+#include <mitkExceptionMacro.h>
+#include <ulterius.h>
+#include <memory.h>
 
 namespace niftk
 {
+
+/**
+ * \class UltrasonixDataSourceInterface
+ * \brief Singleton to provide access to ulterius.
+ */
+class UltrasonixDataSourceInterface {
+
+public:
+
+  static UltrasonixDataSourceInterface* GetInstance()
+  {
+    if (s_Instance == nullptr)
+    {
+      s_Instance = new UltrasonixDataSourceInterface();
+    }
+    else
+    {
+      mitkThrow() << "You cannot create >1 Ultrasonix Interface.";
+    }
+
+    return s_Instance;
+  }
+
+  bool IsConnected()
+  {
+    return (m_Ulterius != nullptr && m_Ulterius->isConnected());
+  }
+
+private:
+  UltrasonixDataSourceInterface()
+  : m_Ulterius(nullptr)
+  {
+  }
+
+  virtual ~UltrasonixDataSourceInterface()
+  {
+  }
+
+  static UltrasonixDataSourceInterface* s_Instance;
+
+  ulterius *m_Ulterius;
+};
 
 /**
 * \class UltrasonixDataSourceService
@@ -56,6 +101,8 @@ private:
 
   UltrasonixDataSourceService(const UltrasonixDataSourceService&); // deliberately not implemented
   UltrasonixDataSourceService& operator=(const UltrasonixDataSourceService&); // deliberately not implemented
+
+  UltrasonixDataSourceInterface* m_Ultrasonix;
 
 }; // end class
 
