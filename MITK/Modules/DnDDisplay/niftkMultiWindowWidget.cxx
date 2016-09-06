@@ -2358,6 +2358,8 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
       annotation->SetText(stream.str());
       annotation->Modified();
     }
+
+    m_RenderingManager->RequestUpdate(m_RenderWindows[m_SelectedWindowIndex]->GetRenderWindow());
   }
 }
 
@@ -2446,6 +2448,8 @@ void MultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
       annotation->SetText(stream.str());
       annotation->Modified();
     }
+
+    m_RenderingManager->RequestUpdate(m_RenderWindows[m_SelectedWindowIndex]->GetRenderWindow());
   }
 }
 
@@ -2532,6 +2536,8 @@ void MultiWindowWidget::UpdatePropertyAnnotation(int windowIndex) const
       annotation->SetText(stream.str());
       annotation->Modified();
     }
+
+    m_RenderingManager->RequestUpdate(m_RenderWindows[m_SelectedWindowIndex]->GetRenderWindow());
   }
 }
 
