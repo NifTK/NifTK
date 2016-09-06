@@ -197,6 +197,9 @@ public:
   /// \brief Sets the visibility of the property annotation.
   void SetPropertyAnnotationVisible(bool visible);
 
+  /// \brief Sets the list of properties to display as annotation.
+  void SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation);
+
   /// \brief Sets a flag to determine if we remember viewer positions (slice, timestep, magnification) when we switch the window layout.
   void SetRememberSettingsPerWindowLayout(bool rememberSettingsPerWindowLayout);
 

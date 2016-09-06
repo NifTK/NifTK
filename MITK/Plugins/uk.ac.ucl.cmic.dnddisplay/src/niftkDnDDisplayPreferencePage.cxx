@@ -44,6 +44,7 @@ const QString DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS("D
 const QString DnDDisplayPreferencePage::DNDDISPLAY_SHOW_POSITION_ANNOTATION("DnD display show position annotation");
 const QString DnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION("DnD display show intensity annotation");
 const QString DnDDisplayPreferencePage::DNDDISPLAY_SHOW_PROPERTY_ANNOTATION("DnD display show property annotation");
+const QString DnDDisplayPreferencePage::DNDDISPLAY_PROPERTIES_FOR_ANNOTATION("DnD display properties to show as annotation");
 
 const QString DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_WINDOW_LAYOUT("DnD display default window layout");
 const QString DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT("DnD display remember view settings of each window layout");
@@ -111,6 +112,18 @@ QWidget* DnDDisplayPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool DnDDisplayPreferencePage::PerformOk()
 {
+  QString propertiesForAnnotation = ui->m_PropertiesForAnnotationLineEdit->text();
+  QStringList properties;
+  for (const QString& propertyForAnnotation: propertiesForAnnotation.split(","))
+  {
+    QString property = propertyForAnnotation.trimmed();
+    if (!property.isEmpty())
+    {
+      properties.push_back(property);
+    }
+  }
+  propertiesForAnnotation = properties.join(", ");
+
   m_DnDDisplayPreferencesNode->Put(DNDDISPLAY_BACKGROUND_COLOUR_STYLESHEET, m_BackgroundColorStyleSheet);
   m_DnDDisplayPreferencesNode->Put(DNDDISPLAY_BACKGROUND_COLOUR, m_BackgroundColor);
   m_DnDDisplayPreferencesNode->PutInt(DNDDISPLAY_DEFAULT_VIEWER_ROW_NUMBER, ui->m_ViewerRowsSpinBox->value());
@@ -127,6 +140,7 @@ bool DnDDisplayPreferencePage::PerformOk()
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_POSITION_ANNOTATION, ui->m_ShowPositionAnnotationCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, ui->m_ShowIntensityAnnotationCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_PROPERTY_ANNOTATION, ui->m_ShowPropertyAnnotationCheckBox->isChecked());
+  m_DnDDisplayPreferencesNode->Put(DNDDISPLAY_PROPERTIES_FOR_ANNOTATION, propertiesForAnnotation);
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, ui->m_ShowMagnificationSliderCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, ui->m_RememberViewerSettingsPerWindowLayoutCheckBox->isChecked());
   m_DnDDisplayPreferencesNode->PutBool(DNDDISPLAY_SLICE_SELECT_TRACKING, ui->m_SliceTrackingCheckBox->isChecked());
@@ -171,6 +185,7 @@ void DnDDisplayPreferencePage::Update()
   ui->m_ShowPositionAnnotationCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_POSITION_ANNOTATION, true));
   ui->m_ShowIntensityAnnotationCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
   ui->m_ShowPropertyAnnotationCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_PROPERTY_ANNOTATION, false));
+  ui->m_PropertiesForAnnotationLineEdit->setText(m_DnDDisplayPreferencesNode->Get(DNDDISPLAY_PROPERTIES_FOR_ANNOTATION, "name"));
   ui->m_ShowMagnificationSliderCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
   ui->m_RememberViewerSettingsPerWindowLayoutCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
   ui->m_SliceTrackingCheckBox->setChecked(m_DnDDisplayPreferencesNode->GetBool(DNDDISPLAY_SLICE_SELECT_TRACKING, true));

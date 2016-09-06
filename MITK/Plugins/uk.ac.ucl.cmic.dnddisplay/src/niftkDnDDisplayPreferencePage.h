@@ -93,6 +93,9 @@ public:
   /// \brief Stores the preference name for whether we show the property annotation.
   static const QString DNDDISPLAY_SHOW_PROPERTY_ANNOTATION;
 
+  /// \brief Stores the preference name for the properties to show as annotation.
+  static const QString DNDDISPLAY_PROPERTIES_FOR_ANNOTATION;
+
   /// \brief Stores the preference name for the default window layout in the NifTK DnD Display.
   static const QString DNDDISPLAY_DEFAULT_WINDOW_LAYOUT;
 

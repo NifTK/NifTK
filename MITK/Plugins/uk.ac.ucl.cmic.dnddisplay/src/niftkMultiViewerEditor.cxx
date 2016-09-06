@@ -899,7 +899,10 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     int defaultNumberOfColumns = prefs->GetInt(DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, 1);
     bool showDropTypeControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false);
     bool showDirectionAnnotations = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
+    bool showPositionAnnotation = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_POSITION_ANNOTATION, true);
     bool showIntensityAnnotation = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true);
+    bool showPropertyAnnotation = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_PROPERTY_ANNOTATION, false);
+    QStringList propertiesForAnnotation = prefs->Get(DnDDisplayPreferencePage::DNDDISPLAY_PROPERTIES_FOR_ANNOTATION, "name").split(", ");
     bool showShowingOptions = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
     bool showWindowLayoutControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
     bool showViewerNumberControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true);
@@ -933,7 +936,10 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewer->SetShowDropTypeControls(showDropTypeControls);
     d->m_MultiViewer->SetCursorDefaultVisibility(show2DCursors);
     d->m_MultiViewer->SetDirectionAnnotationsVisible(showDirectionAnnotations);
+    d->m_MultiViewer->SetPositionAnnotationVisible(showPositionAnnotation);
     d->m_MultiViewer->SetIntensityAnnotationVisible(showIntensityAnnotation);
+    d->m_MultiViewer->SetPropertyAnnotationVisible(showPropertyAnnotation);
+    d->m_MultiViewer->SetPropertiesForAnnotation(propertiesForAnnotation);
     d->m_MultiViewer->SetShowMagnificationSlider(showMagnificationSlider);
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
     d->m_MultiViewer->SetSliceTracking(sliceIndexTracking);
@@ -1011,7 +1017,10 @@ void MultiViewerEditor::OnPreferencesChanged( const berry::IBerryPreferences* pr
     d->m_MultiViewer->SetShowMagnificationSlider(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
     d->m_MultiViewer->SetCursorDefaultVisibility(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
     d->m_MultiViewer->SetDirectionAnnotationsVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
+    d->m_MultiViewer->SetPositionAnnotationVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_POSITION_ANNOTATION, true));
     d->m_MultiViewer->SetIntensityAnnotationVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
+    d->m_MultiViewer->SetPropertyAnnotationVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_PROPERTY_ANNOTATION, false));
+    d->m_MultiViewer->SetPropertiesForAnnotation(prefs->Get(DnDDisplayPreferencePage::DNDDISPLAY_PROPERTIES_FOR_ANNOTATION, "name").split(", "));
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
     d->m_MultiViewer->SetSliceTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
     d->m_MultiViewer->SetTimeStepTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));

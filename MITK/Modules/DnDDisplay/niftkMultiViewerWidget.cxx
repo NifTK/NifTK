@@ -697,6 +697,17 @@ void MultiViewerWidget::SetPropertyAnnotationVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+void MultiViewerWidget::SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation)
+{
+  m_ControlPanel->SetPropertiesForAnnotation(propertiesForAnnotation);
+  foreach (SingleViewerWidget* viewer, m_Viewers)
+  {
+    viewer->SetPropertiesForAnnotation(propertiesForAnnotation);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void MultiViewerWidget::SetRememberSettingsPerWindowLayout(bool rememberSettingsPerWindowLayout)
 {
   m_RememberSettingsPerWindowLayout = rememberSettingsPerWindowLayout;
