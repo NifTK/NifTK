@@ -128,12 +128,6 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
   }
   QString extension = (properties.value("extension")).toString();
 
-  if(!properties.contains("port"))
-  {
-    mitkThrow() << "Port number not specified!";
-  }
-  int portNumber = properties.value("port").toInt();
-
   mitkThrow() << "Not implemented yet. Volunteers .... please step forward!";
 
   // Basically, the data source should connect, stay connected and continuously stream.
