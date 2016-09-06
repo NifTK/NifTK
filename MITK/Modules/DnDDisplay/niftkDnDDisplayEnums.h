@@ -52,17 +52,18 @@ enum WindowLayout
   WINDOW_LAYOUT_SAGITTAL = 1,
   WINDOW_LAYOUT_CORONAL = 2,
   WINDOW_LAYOUT_ORTHO = 3,
-  WINDOW_LAYOUT_3D = 4,
-  WINDOW_LAYOUT_3H = 5,
-  WINDOW_LAYOUT_3V = 6,
-  WINDOW_LAYOUT_AS_ACQUIRED = 7,
-  WINDOW_LAYOUT_UNKNOWN = 8,
-  WINDOW_LAYOUT_COR_SAG_H = 9,
-  WINDOW_LAYOUT_COR_SAG_V = 10,
-  WINDOW_LAYOUT_COR_AX_H = 11,
-  WINDOW_LAYOUT_COR_AX_V = 12,
-  WINDOW_LAYOUT_SAG_AX_H = 13,
-  WINDOW_LAYOUT_SAG_AX_V = 14
+  WINDOW_LAYOUT_ORTHO_NO_3D = 4,
+  WINDOW_LAYOUT_3D = 5,
+  WINDOW_LAYOUT_3H = 6,
+  WINDOW_LAYOUT_3V = 7,
+  WINDOW_LAYOUT_AS_ACQUIRED = 8,
+  WINDOW_LAYOUT_UNKNOWN = 9,
+  WINDOW_LAYOUT_COR_SAG_H = 10,
+  WINDOW_LAYOUT_COR_SAG_V = 11,
+  WINDOW_LAYOUT_COR_AX_H = 12,
+  WINDOW_LAYOUT_COR_AX_V = 13,
+  WINDOW_LAYOUT_SAG_AX_H = 14,
+  WINDOW_LAYOUT_SAG_AX_V = 15
 };
 
 
@@ -89,7 +90,7 @@ inline bool IsMultiWindowLayout(WindowLayout layout)
 /*!
  * \brief The number of the possible window layouts.
  */
-const int WINDOW_LAYOUT_NUMBER = 15;
+const int WINDOW_LAYOUT_NUMBER = 16;
 
 inline WindowLayout GetWindowLayout(const std::string& windowLayoutName)
 {
@@ -110,6 +111,10 @@ inline WindowLayout GetWindowLayout(const std::string& windowLayoutName)
   else if (windowLayoutName == "2x2")
   {
     windowLayout = WINDOW_LAYOUT_ORTHO;
+  }
+  else if (windowLayoutName == "2x2 no 3D")
+  {
+    windowLayout = WINDOW_LAYOUT_ORTHO_NO_3D;
   }
   else if (windowLayoutName == "3D")
   {

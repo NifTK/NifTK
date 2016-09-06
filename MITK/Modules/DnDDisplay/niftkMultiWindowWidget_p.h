@@ -114,17 +114,29 @@ public:
   /// \brief Sets the visibility of the direction annotations.
   void SetDirectionAnnotationsVisible(bool visible);
 
+  /// \brief Tells if the position annotation is visible.
+  bool IsPositionAnnotationVisible() const;
+
+  /// \brief Sets the visibility of the position annotation.
+  void SetPositionAnnotationVisible(bool visible);
+
   /// \brief Tells if the intensity annotation is visible.
   bool IsIntensityAnnotationVisible() const;
 
   /// \brief Sets the visibility of the intensity annotation.
   void SetIntensityAnnotationVisible(bool visible);
 
-  /// \brief Returns the flag indicating if nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
-  bool GetShow3DWindowIn2x2WindowLayout() const;
+  /// \brief Tells if the property annotation is visible.
+  bool IsPropertyAnnotationVisible() const;
 
-  /// \brief If true, then nodes will be visible in 3D window when in 2x2 window layout. In 3D window layout, always visible.
-  void SetShow3DWindowIn2x2WindowLayout(bool visible);
+  /// \brief Sets the visibility of the property annotation.
+  void SetPropertyAnnotationVisible(bool visible);
+
+  /// \brief Gets the list of properties to display as annotation.
+  QStringList GetPropertiesForAnnotation() const;
+
+  /// \brief Sets the list of properties to display as annotation.
+  void SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation);
 
   /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
@@ -461,11 +473,23 @@ private:
   /// \brief Callback function that gets called by the mitk::FocusManager to indicate the currently focused window.
   void OnFocusChanged();
 
+  /// \brief Initialises the annotations that show the selected world position in the 2D windows.
+  void InitialisePositionAnnotations();
+
+  /// \brief Updates the annotation that shows the selected world position in the given window.
+  void UpdatePositionAnnotation(int windowIndex) const;
+
   /// \brief Initialises the annotations that show the intensity values in the visible images in the 2D windows.
   void InitialiseIntensityAnnotations();
 
   /// \brief Updates the annotation that shows the intensity values in the visible images in the given window.
   void UpdateIntensityAnnotation(int windowIndex) const;
+
+  /// \brief Initialises the annotations that show a selection of properties of the visible images in the 2D windows.
+  void InitialisePropertyAnnotations();
+
+  /// \brief Updates the annotation that shows a selection of properties of the visible images in the given window.
+  void UpdatePropertyAnnotation(int windowIndex) const;
 
   std::vector<QmitkRenderWindow*> m_RenderWindows;
 
@@ -485,7 +509,6 @@ private:
   int m_SelectedWindowIndex;
   int m_FocusLosingWindowIndex;
   bool m_CursorVisibility;
-  bool m_Show3DWindowIn2x2WindowLayout;
   WindowLayout m_WindowLayout;
 
   mitk::Point3D m_SelectedPosition;
@@ -505,6 +528,7 @@ private:
   GeometryType m_GeometryType;
 
   int m_OrientationAxes[3];
+  char m_OrientationString[4];
 
   /// \brief The up direction of the world axes.
   /// The values are in world coordinate order, i.e. sagittal, coronal and axial.
@@ -585,8 +609,19 @@ private:
   bool m_CursorPositionBindingHasChanged;
   bool m_ScaleFactorBindingHasChanged;
 
+  mitk::TextOverlay2D::Pointer m_PositionAnnotations[3];
+  bool m_PositionAnnotationVisible;
+
   mitk::TextOverlay2D::Pointer m_IntensityAnnotations[3];
-  bool m_IntensityAnnotationIsVisible;
+  bool m_IntensityAnnotationVisible;
+
+  mitk::TextOverlay2D::Pointer m_PropertyAnnotations[3];
+  bool m_PropertyAnnotationVisible;
+
+  QStringList m_PropertiesForAnnotation;
+
+  /// \brief Dummy widget to fill up the gap at the place of the 3D window in WINDOW_LAYOUT_ORTHO_NO_3D.
+  QWidget* m_EmptySpace;
 
   friend class DisplayGeometryModificationCommand;
 

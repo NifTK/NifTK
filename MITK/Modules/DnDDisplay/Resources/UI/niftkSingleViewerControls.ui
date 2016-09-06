@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>429</width>
-    <height>124</height>
+    <width>574</width>
+    <height>136</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -199,7 +199,7 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0">
+     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0,0,0,0,0,0">
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -236,16 +236,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="m_Show3DWindowCheckBox">
-        <property name="toolTip">
-         <string>Shows the 3D window in multiple window layouts</string>
-        </property>
-        <property name="text">
-         <string>3D window</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QCheckBox" name="m_ShowDirectionAnnotationsCheckBox">
         <property name="toolTip">
          <string>Shows the orientation directions (S, I, A, P, L, R)</string>
@@ -256,12 +246,39 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="m_ShowPositionAnnotationCheckBox">
+        <property name="toolTip">
+         <string>Shows the position at the cursor</string>
+        </property>
+        <property name="text">
+         <string>position</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="m_ShowIntensityAnnotationCheckBox">
         <property name="toolTip">
          <string>Shows the intensity of the selected voxel in the visible images</string>
         </property>
         <property name="text">
          <string>intensity</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="m_ShowPropertyAnnotationCheckBox">
+        <property name="toolTip">
+         <string>Shows the selected properties of the visible images</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="niftk::ClickableLabel" name="m_PropertiesForAnnotationLabel">
+        <property name="text">
+         <string>properties</string>
         </property>
        </widget>
       </item>
@@ -371,8 +388,13 @@
   <customwidget>
    <class>ctkSliderWidget</class>
    <extends>QWidget</extends>
-   <header>ctkSliderWidget.h</header>
+   <header location="global">ctkSliderWidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>niftk::ClickableLabel</class>
+   <extends>QLabel</extends>
+   <header>niftkClickableLabel_p.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
