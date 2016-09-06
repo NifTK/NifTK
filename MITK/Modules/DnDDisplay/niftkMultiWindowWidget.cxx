@@ -2513,13 +2513,18 @@ void MultiWindowWidget::UpdatePropertyAnnotation(int windowIndex) const
           stream << std::endl;
         }
 
-        stream << node->GetName() << std::endl;
+        /// Show the name in the first line if there are several visible images, or if the 'name'
+        /// property was explicitely requested.
+        if (visibleImageNodes.size() > 1 || m_PropertiesForAnnotation.contains(QString("name")))
+        {
+          stream << node->GetName() << std::endl;
+        }
 
         for (const QString& propertyName: m_PropertiesForAnnotation)
         {
           if (propertyName == QString("name"))
           {
-            /// The name is always shown if the annotation is visible.
+            /// The name is always shown in the first line.
             continue;
           }
           mitk::BaseProperty* property = node->GetProperty(propertyName.toStdString().c_str());
