@@ -15,11 +15,14 @@
 #define niftkUltrasonixDataSourceService_h
 
 #include <niftkQImageDataSourceService.h>
+#include <QImage.h>
 #include <ulterius.h>
 #include <memory.h>
 
 namespace niftk
 {
+
+class UltrasonixDataSourceService;
 
 /**
  * \class UltrasonixDataSourceInterface
@@ -29,15 +32,19 @@ class UltrasonixDataSourceInterface {
 
 public:
   virtual ~UltrasonixDataSourceInterface();
+  static UltrasonixDataSourceInterface* CreateInstance(UltrasonixDataSourceService* serviceObj);
   static UltrasonixDataSourceInterface* GetInstance();
-  bool IsConnected() const;
   void Connect(const QString& host);
   void Disconnect();
+  bool IsConnected() const;
+  void ProcessBuffer(void *data, int type, int sz, bool cine, int frmnum);
 
 private:
-  UltrasonixDataSourceInterface();
+  UltrasonixDataSourceInterface(UltrasonixDataSourceService* serviceObj);
   static UltrasonixDataSourceInterface* s_Instance;
   ulterius*                             m_Ulterius;
+  UltrasonixDataSourceService*          m_Service;
+  unsigned char*                        m_Buffer;
 
   static bool NewDataCallBack(void *data, int type, int sz, bool cine, int frmnum);
   static bool ParamCallBack(void* paramID, int x, int y);
@@ -61,7 +68,7 @@ public:
   mitkNewMacro3Param(UltrasonixDataSourceService, QString,
                      const IGIDataSourceProperties&, mitk::DataStorage::Pointer)
 
-
+  void ProcessImage(const QImage& image);
 
 protected:
 
@@ -83,6 +90,7 @@ private:
   UltrasonixDataSourceService& operator=(const UltrasonixDataSourceService&); // deliberately not implemented
 
   UltrasonixDataSourceInterface* m_Ultrasonix;
+  mutable QImage*                m_TemporaryImage;
 
 }; // end class
 

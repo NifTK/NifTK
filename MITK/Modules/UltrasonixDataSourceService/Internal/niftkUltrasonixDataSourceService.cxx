@@ -17,20 +17,22 @@
 #include <niftkQImageConversion.h>
 #include <mitkExceptionMacro.h>
 
+#define BUFFERSIZE (4*1024*1024)
+
 namespace niftk
 {
 UltrasonixDataSourceInterface* UltrasonixDataSourceInterface::s_Instance = nullptr;
 
 //-----------------------------------------------------------------------------
-UltrasonixDataSourceInterface* UltrasonixDataSourceInterface::GetInstance()
+UltrasonixDataSourceInterface* UltrasonixDataSourceInterface::CreateInstance(UltrasonixDataSourceService* serviceObj)
 {
   if (s_Instance == nullptr)
   {
-    s_Instance = new UltrasonixDataSourceInterface();
+    s_Instance = new UltrasonixDataSourceInterface(serviceObj);
   }
   else
   {
-    mitkThrow() << "You cannot create >1 Ultrasonix Interface.";
+    mitkThrow() << "You cannot create more than 1 Ultrasonix Interface.";
   }
 
   return s_Instance;
@@ -38,9 +40,30 @@ UltrasonixDataSourceInterface* UltrasonixDataSourceInterface::GetInstance()
 
 
 //-----------------------------------------------------------------------------
-UltrasonixDataSourceInterface::UltrasonixDataSourceInterface()
-: m_Ulterius(nullptr)
+UltrasonixDataSourceInterface* UltrasonixDataSourceInterface::GetInstance()
 {
+  if (s_Instance == nullptr)
+  {
+    mitkThrow() << "Instance should already be created.";
+  }
+  return s_Instance;
+}
+
+
+//-----------------------------------------------------------------------------
+UltrasonixDataSourceInterface::UltrasonixDataSourceInterface(UltrasonixDataSourceService* serviceObj)
+: m_Ulterius(nullptr)
+, m_Service(nullptr)
+, m_Buffer(nullptr)
+{
+  if (serviceObj == nullptr)
+  {
+    mitkThrow() << "The service is null.";
+  }
+
+  m_Buffer = new unsigned char[BUFFERSIZE];
+
+  m_Service = serviceObj;
   m_Ulterius = new ulterius;
   m_Ulterius->setCallback(NewDataCallBack);
   m_Ulterius->setParamCallback(ParamCallBack);
@@ -50,13 +73,48 @@ UltrasonixDataSourceInterface::UltrasonixDataSourceInterface()
 //-----------------------------------------------------------------------------
 UltrasonixDataSourceInterface::~UltrasonixDataSourceInterface()
 {
+  this->Disconnect();
+
+  m_Service = nullptr;
+  delete m_Ulterius;
+  delete [] m_Buffer;
+}
+
+
+//-----------------------------------------------------------------------------
+void UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, bool cine, int frmnum)
+{
+  uDataDesc desc;
+  m_Ulterius->getDataDescriptor(static_cast<uData>(type), desc);
+
+  // all other image types are either fine or untested.
+  if (desc.type == 0x00000008) // udtBPost32
+  {
+    // ulterius reports bogus alpha channel, in case of 32-bit images.
+    unsigned int numberOfPixelsInImage = desc.w * desc.h;
+    for (unsigned int i = 0; i < numberOfPixelsInImage; ++i)
+    {
+      // the channel layout coming from ulterius is in the correct order for QImage::Format_ARGB32,
+      // this is known as BGRA elsewhere, i.e. red = ((unsigned char*) &((unsigned int*) buffer)[x, y])[2];
+      m_Buffer[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000;
+    }
+    QImage image(m_Buffer, desc.w, desc.h, QImage::Format_ARGB32);
+    m_Service->ProcessImage(image);
+  }
+  else
+  {
+    QImage image(static_cast<unsigned char*>(data), desc.w, desc.h, QImage::Format_Indexed8);
+    m_Service->ProcessImage(image);
+  }
+
 }
 
 
 //-----------------------------------------------------------------------------
 bool UltrasonixDataSourceInterface::NewDataCallBack(void *data, int type, int sz, bool cine, int frmnum)
 {
-  MITK_INFO << "New Data";
+  UltrasonixDataSourceInterface* us = UltrasonixDataSourceInterface::GetInstance();
+  us->ProcessBuffer(data, type, sz, cine, frmnum);
   return true;
 }
 
@@ -109,7 +167,7 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
 {
   this->SetStatus("Initialising");
 
-  UltrasonixDataSourceInterface* ultrasonix = UltrasonixDataSourceInterface::GetInstance();
+  UltrasonixDataSourceInterface* ultrasonix = UltrasonixDataSourceInterface::CreateInstance(this);
   if (ultrasonix == nullptr)
   {
     mitkThrow() << "Failed to instantiate Ultrasonix Interface.";
@@ -153,10 +211,20 @@ UltrasonixDataSourceService::~UltrasonixDataSourceService()
 
 
 //-----------------------------------------------------------------------------
+void UltrasonixDataSourceService::ProcessImage(const QImage& image)
+{
+  m_TemporaryImage = new QImage(image); // should just wrap without copy.
+  this->GrabData();
+  delete m_TemporaryImage;              // then we delete this temporary wrapper.
+}
+
+
+//-----------------------------------------------------------------------------
 niftk::IGIDataType::Pointer UltrasonixDataSourceService::GrabImage()
 {
-  niftk::IGIDataType::Pointer result;
-  return result;
+  niftk::QImageDataType::Pointer image = niftk::QImageDataType::New();
+  image->DeepCopy(*m_TemporaryImage);  // this should be the only copy in the pipeline.
+  return image.GetPointer();
 }
 
 } // end namespace
