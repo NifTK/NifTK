@@ -37,6 +37,7 @@ set(CPP_FILES
   Dialogs/niftkIPPortDialog.cxx
   Dialogs/niftkIPHostPortDialog.cxx
   Dialogs/niftkIPHostPortExtensionDialog.cxx
+  Dialogs/niftkIPHostExtensionDialog.cxx
   Dialogs/niftkLagDialog.cxx
   Conversion/niftkQImageToMitkImageFilter.cxx
   Utils/niftkIGIDataSourceUtils.cxx
@@ -49,6 +50,7 @@ set(MOC_H_FILES
   Dialogs/niftkIPPortDialog.h
   Dialogs/niftkIPHostPortDialog.h
   Dialogs/niftkIPHostPortExtensionDialog.h
+  Dialogs/niftkIPHostExtensionDialog.h
   Dialogs/niftkLagDialog.h
 )
 
@@ -56,6 +58,7 @@ set(UI_FILES
   Dialogs/niftkIPPortDialog.ui
   Dialogs/niftkIPHostPortDialog.ui
   Dialogs/niftkIPHostPortExtensionDialog.ui
+  Dialogs/niftkIPHostExtensionDialog.ui
   Dialogs/niftkLagDialog.ui
 )
 
