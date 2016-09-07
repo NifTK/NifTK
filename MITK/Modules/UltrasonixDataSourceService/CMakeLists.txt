@@ -12,8 +12,6 @@
 #
 #============================================================================*/
 
-find_package(UltrasonixUlterius)
-
 if (UltrasonixUlterius_FOUND)
 
   MITK_CREATE_MODULE(
