@@ -25,10 +25,11 @@ mitk::Image::Pointer CreateMitkImage(const QImage* image,
   QImage *imageToConvert = const_cast<QImage*>(image);
 
   QImage tmp;
-  if (image->format() != QImage::Format_Indexed8
+  if (   image->format() != QImage::Format_Indexed8
       && image->format() != QImage::Format_RGB888
 #if QT_VERSION > QT_VERSION_CHECK(5, 0, 0)
       && image->format() != QImage::Format_RGBA8888
+      && image->format() != QImage::Format_Grayscale8
 #endif
       )
   {
@@ -42,6 +43,9 @@ mitk::Image::Pointer CreateMitkImage(const QImage* image,
   switch (imageToConvert->format())
   {
     case QImage::Format_Indexed8:
+#if QT_VERSION > QT_VERSION_CHECK(5, 0, 0)
+    case QImage::Format_Grayscale8:
+#endif
       return CreateMitkImageInternal<unsigned char>(reinterpret_cast<const char*>(imageToConvert->bits()),
                                                     1,
                                                     imageToConvert->width(),
