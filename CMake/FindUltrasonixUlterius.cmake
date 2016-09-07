@@ -41,6 +41,8 @@ if(WIN32)
     )
 
     if(Ultrasonix_ULTERIUS_INCLUDE_DIR AND Ultrasonix_ULTERIUS_LIBRARY)
+      get_filename_component(Ultrasonix_ULTERIUS_LIBRARY_DIR ${Ultrasonix_ULTERIUS_LIBRARY} DIRECTORY)
+	  set(Ultrasonix_ULTERIUS_BIN_DIR "${Ultrasonix_ULTERIUS_LIBRARY_DIR}/../../bin")
       set(UltrasonixUlterius_FOUND 1)
     endif()
   endif()
