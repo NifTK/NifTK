@@ -50,17 +50,19 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent,
 
   // Enumerate the available ports, so they have a natural name rather than "COM1", "COM2".
   QStringList ports = getAvailableSerialPorts();
+#if !defined(_WIN32) && !defined(__APPLE__)
+  QStringList portPaths = getAvailableSerialPortPaths();
+#endif
   for (int i = 0; i < ports.count(); i++)
   {
+    QString comString = ports.at(i);
 #ifdef _WIN32
     // On windows, we want to see "COM1", but we need the number at the end to connect via port number.
-    m_PortName->addItem(ports.at(i), QVariant::fromValue(ports.at(i).right(1)));
-#elif __APPLE__
-    m_PortName->addItem(ports.at(i), QVariant::fromValue(ports.at(i)));
-#else
-    QStringList portPaths = getAvailableSerialPortPaths();
-    m_PortName->addItem(ports.at(i), QVariant::fromValue(portPaths.at(i)));
+    comString.remove("com",Qt::CaseInsensitive);
+#elif !defined(__APPLE__)
+    comString = portPaths.at(i);
 #endif
+    m_PortName->addItem(ports.at(i), QVariant::fromValue(comString));
   }
 
   bool ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
