@@ -87,26 +87,31 @@ void UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, 
   uDataDesc desc;
   m_Ulterius->getDataDescriptor(static_cast<uData>(type), desc);
 
-  // all other image types are either fine or untested.
-  if (desc.type == 0x00000008) // udtBPost32
+  if (desc.ss == 32)
   {
     // ulterius reports bogus alpha channel, in case of 32-bit images.
     unsigned int numberOfPixelsInImage = desc.w * desc.h;
     for (unsigned int i = 0; i < numberOfPixelsInImage; ++i)
     {
-      // the channel layout coming from ulterius is in the correct order for QImage::Format_ARGB32,
-      // this is known as BGRA elsewhere, i.e. red = ((unsigned char*) &((unsigned int*) buffer)[x, y])[2];
+      // This should set the alpha channel to 1, leaving other pixels (RGB) unchanged.
       m_Buffer[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000;
     }
     QImage image(m_Buffer, desc.w, desc.h, QImage::Format_ARGB32);
     m_Service->ProcessImage(image);
   }
-  else
+  else if (desc.ss == 8)
   {
+#if QT_VERSION > QT_VERSION_CHECK(5, 0, 0)
+    QImage image(static_cast<unsigned char*>(data), desc.w, desc.h, QImage::Format_Grayscale8);
+#else
     QImage image(static_cast<unsigned char*>(data), desc.w, desc.h, QImage::Format_Indexed8);
+#endif
     m_Service->ProcessImage(image);
   }
-
+  else
+  {
+    MITK_WARN << "UltrasonixDataSourceInterface: Cannot process images with " << desc.ss << " bits.";
+  }
 }
 
 
