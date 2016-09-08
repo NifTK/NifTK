@@ -93,7 +93,7 @@ UltrasonixDataSourceInterface::~UltrasonixDataSourceInterface()
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, bool cine, int frmnum)
+bool UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, bool cine, int frmnum)
 {
   uDataDesc desc;
   m_Ulterius->getDataDescriptor(static_cast<uData>(type), desc);
@@ -105,7 +105,7 @@ void UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, 
     for (unsigned int i = 0; i < numberOfPixelsInImage; ++i)
     {
       // This should set the alpha channel to 1, leaving other pixels (RGB) unchanged.
-      m_Buffer[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000;
+      ((unsigned int*)m_Buffer)[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000;
     }
     QImage image(m_Buffer, desc.w, desc.h, QImage::Format_ARGB32);
     m_Service->ProcessImage(image);
@@ -123,6 +123,16 @@ void UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, 
   {
     MITK_WARN << "UltrasonixDataSourceInterface: Cannot process images with " << desc.ss << " bits.";
   }
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool UltrasonixDataSourceInterface::ProcessParameterChange(void* paramID, int x, int y)
+{
+  char* paramName = static_cast<char*>(paramID);
+  MITK_INFO << "Param updated:" << paramName << ", " << x << ", " << y;
+  return true;
 }
 
 
@@ -130,16 +140,15 @@ void UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, 
 bool UltrasonixDataSourceInterface::NewDataCallBack(void *data, int type, int sz, bool cine, int frmnum)
 {
   UltrasonixDataSourceInterface* us = UltrasonixDataSourceInterface::GetInstance();
-  us->ProcessBuffer(data, type, sz, cine, frmnum);
-  return true;
+  return us->ProcessBuffer(data, type, sz, cine, frmnum);
 }
 
 
 //-----------------------------------------------------------------------------
 bool UltrasonixDataSourceInterface::ParamCallBack(void* paramID, int x, int y)
 {
-  MITK_INFO << "Param updated";
-  return true;
+  UltrasonixDataSourceInterface* us = UltrasonixDataSourceInterface::GetInstance();
+  return us->ProcessParameterChange(paramID, x, y);
 }
 
 
@@ -162,7 +171,7 @@ void UltrasonixDataSourceInterface::Connect(const QString& host)
   {
     m_Ulterius->toggleFreeze();
   }
-  m_Ulterius->setDataToAcquire(0x00000004); // 8 bit bmode
+  m_Ulterius->setDataToAcquire(udtBPost32); 
 }
 
 

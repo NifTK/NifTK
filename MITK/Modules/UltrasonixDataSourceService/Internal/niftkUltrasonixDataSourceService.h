@@ -37,7 +37,8 @@ public:
   void Connect(const QString& host);
   void Disconnect();
   bool IsConnected() const;
-  void ProcessBuffer(void *data, int type, int sz, bool cine, int frmnum);
+  bool ProcessBuffer(void *data, int type, int sz, bool cine, int frmnum);
+  bool ProcessParameterChange(void* paramID, int x, int y);
 
 private:
   UltrasonixDataSourceInterface(UltrasonixDataSourceService* serviceObj);
