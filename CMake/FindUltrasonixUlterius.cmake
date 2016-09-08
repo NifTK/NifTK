@@ -30,14 +30,16 @@ if(WIN32)
       NAMES ulterius.h
 
       # It's a 32 bit library
-      PATHS "C:/Program Files (x86)/sdk_6.0.4_(00.036.203)/ulterius/inc"
+      PATHS "C:/Program Files (x86)/sdk_612/ulterius/inc"
+            "C:/Program Files (x86)/sdk_6.0.4_(00.036.203)/ulterius/inc"
       )
 
     find_library(Ultrasonix_ULTERIUS_LIBRARY
       NAMES ulterius_old
 
       # It's a 32 bit library
-      PATHS "C:/Program Files (x86)/sdk_6.0.4_(00.036.203)/ulterius/lib"
+      PATHS "C:/Program Files (x86)/sdk_612/ulterius/lib"
+            "C:/Program Files (x86)/sdk_6.0.4_(00.036.203)/ulterius/lib"
     )
 
     if(Ultrasonix_ULTERIUS_INCLUDE_DIR AND Ultrasonix_ULTERIUS_LIBRARY)
