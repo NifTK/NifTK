@@ -555,6 +555,20 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
       spacing[1] = sy;
       spacing[2] = sz;
 
+      // Just in case
+      if (spacing[0] == 0)
+      {
+        spacing[0] = 1;
+      }
+      if (spacing[1] == 0)
+      {
+        spacing[1] = 1;
+      }
+      if (spacing[2] == 0)
+      {
+        spacing[2] = 1;
+      }
+
       // Transformation matrices can be saved with the image.
       // So, we need an image format the preserves this.
       // I don't want to save a matrix as a separate file.
@@ -885,6 +899,15 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
   QImage qImage;
   niftk::GetQImage(imgMsg, qImage);
 
+  QImage *imageToCheck = &qImage;
+  QImage convertedQImage;
+
+  if (qImage.format() == QImage::Format_ARGB32)
+  {
+    convertedQImage = qImage.convertToFormat(QImage::Format_RGB888);
+    imageToCheck = &convertedQImage;
+  }
+
   mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
   if (!imageInNode.IsNull())
   {
@@ -899,8 +922,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
                       * imageInNode->GetPixelType().GetNumberOfComponents()
                       * nx * ny * nz) / 8);
 
-    haswrongsize |= ( numberOfBytes != qImage.byteCount());
-
+    haswrongsize |= ( numberOfBytes != imageToCheck->byteCount());
     if (haswrongsize)
     {
       imageInNode = mitk::Image::Pointer();
@@ -915,12 +937,20 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
     this->GetDataStorage()->Remove(node);
     node->SetData(convertedImage);
     this->GetDataStorage()->Add(node);
+
+    convertedImage->Modified();
+    convertedImage->GetVtkImageData()->Modified();
+
   }
   else
   {
     mitk::ImageWriteAccessor writeAccess(imageInNode);
     void* vPointer = writeAccess.GetData();
-    std::memcpy(vPointer, qImage.bits(), numberOfBytes);
+    std::memcpy(vPointer, imageToCheck->bits(), numberOfBytes);
+
+    imageInNode->Modified();
+    imageInNode->GetVtkImageData()->Modified();
+
   }
 
   node->Modified();
