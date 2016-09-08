@@ -16,12 +16,22 @@
 #include <niftkQImageDataType.h>
 #include <niftkQImageConversion.h>
 #include <mitkExceptionMacro.h>
+#include <QtGui/QtGui>
 
 #define BUFFERSIZE (4*1024*1024)
 
 namespace niftk
 {
 UltrasonixDataSourceInterface* UltrasonixDataSourceInterface::s_Instance = nullptr;
+
+// nice way to implement sleep since Qt typically requires setup of threads to use usleep(), etc.
+void QSleep(int time)
+{
+  QMutex mtx;
+  mtx.lock();
+  QWaitCondition wc;
+  wc.wait(&mtx, time);
+}
 
 //-----------------------------------------------------------------------------
 UltrasonixDataSourceInterface* UltrasonixDataSourceInterface::CreateInstance(UltrasonixDataSourceService* serviceObj)
@@ -78,6 +88,7 @@ UltrasonixDataSourceInterface::~UltrasonixDataSourceInterface()
   m_Service = nullptr;
   delete m_Ulterius;
   delete [] m_Buffer;
+  s_Instance = nullptr;
 }
 
 
@@ -146,6 +157,12 @@ void UltrasonixDataSourceInterface::Connect(const QString& host)
   {
     mitkThrow() << "Failed to connect to:" << host.toStdString();
   }
+
+  if ( m_Ulterius->getFreezeState() )  // 1: The system is frozen and not imaging. 0: The system is imaging.
+  {
+    m_Ulterius->toggleFreeze();
+  }
+  m_Ulterius->setDataToAcquire(0x00000004); // 8 bit bmode
 }
 
 
@@ -154,10 +171,13 @@ void UltrasonixDataSourceInterface::Disconnect()
 {
   if (this->IsConnected())
   {
+    m_Ulterius->setDataToAcquire(0);
+    QSleep(500);
     if (!m_Ulterius->disconnect())
     {
       mitkThrow() << "Failed to disconnect!";
     }
+    QSleep(500);
   }
 }
 
@@ -197,6 +217,7 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
 
   m_Ultrasonix->Connect(host);
 
+  this->SetDescription("Ultrasonix Ulterius source.");
   this->SetStatus("Initialised");
   this->Modified();
 }

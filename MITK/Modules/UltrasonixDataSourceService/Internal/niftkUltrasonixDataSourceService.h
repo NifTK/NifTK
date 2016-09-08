@@ -48,7 +48,6 @@ private:
 
   static bool NewDataCallBack(void *data, int type, int sz, bool cine, int frmnum);
   static bool ParamCallBack(void* paramID, int x, int y);
-
 };
 
 /**
