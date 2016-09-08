@@ -191,8 +191,6 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
   }
   QString extension = (properties.value("extension")).toString();
 
-  mitkThrow() << "Not implemented yet. Volunteers .... please step forward!";
-
   // Basically, the data source should connect, stay connected and continuously stream.
   // If the Sonix MDP is 'frozen' then assumedly the callback is not called, but the 
   // connection remains live.
