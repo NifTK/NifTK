@@ -41,9 +41,16 @@ if(WIN32)
     )
 
     if(Ultrasonix_ULTERIUS_INCLUDE_DIR AND Ultrasonix_ULTERIUS_LIBRARY)
+
       get_filename_component(Ultrasonix_ULTERIUS_LIBRARY_DIR ${Ultrasonix_ULTERIUS_LIBRARY} DIRECTORY)
-	  set(Ultrasonix_ULTERIUS_BIN_DIR "${Ultrasonix_ULTERIUS_LIBRARY_DIR}/../../bin")
+      set(Ultrasonix_ULTERIUS_BIN_DIR "${Ultrasonix_ULTERIUS_LIBRARY_DIR}/../../bin")
+
+      get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+      list(APPEND _additional_search_paths ${Ultrasonix_ULTERIUS_BIN_DIR})
+      set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
+
       set(UltrasonixUlterius_FOUND 1)
+
     endif()
   endif()
 endif(WIN32)
