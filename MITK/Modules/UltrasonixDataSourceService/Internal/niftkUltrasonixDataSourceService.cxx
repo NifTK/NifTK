@@ -102,17 +102,32 @@ bool UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, 
   {
     // ulterius reports bogus alpha channel, in case of 32-bit images.
     unsigned int numberOfPixelsInImage = desc.w * desc.h;
+    unsigned char* readFrom = static_cast<unsigned char*>(data);
+    unsigned char* writeTo = m_Buffer;
+
     for (unsigned int i = 0; i < numberOfPixelsInImage; ++i)
     {
       // This should set the alpha channel to 1, leaving other pixels (RGB) unchanged.
-      ((unsigned int*)m_Buffer)[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000;
+      // ((unsigned int*)m_Buffer)[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000; // use with QImage::Format_ARGB32
+
+      // Or do it this way, and we are outputing QImage::Format_RGB888
+      readFrom++;
+      *writeTo = *readFrom;
+      writeTo++;
+      readFrom++;
+      *writeTo = *readFrom;
+      writeTo++;
+      readFrom++;
+      *writeTo = *readFrom;
+      writeTo++;
+      readFrom++;
     }
-    QImage image(m_Buffer, desc.w, desc.h, QImage::Format_ARGB32);
+    QImage image(m_Buffer, desc.w, desc.h, QImage::Format_RGB888);
     m_Service->ProcessImage(image);
   }
   else if (desc.ss == 8)
   {
-#if QT_VERSION > QT_VERSION_CHECK(5, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
     QImage image(static_cast<unsigned char*>(data), desc.w, desc.h, QImage::Format_Grayscale8);
 #else
     QImage image(static_cast<unsigned char*>(data), desc.w, desc.h, QImage::Format_Indexed8);
