@@ -319,25 +319,27 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType
         size_t sizeOfBuffer = numberOfVoxels[0] * numberOfVoxels[1] * numberOfVoxels[2];
 
         mitk::PixelType pixelType = image->GetPixelType();
-        if (pixelType.GetPixelType() != itk::ImageIOBase::SCALAR)
+
+        if (pixelType.GetPixelType() == itk::ImageIOBase::SCALAR && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
         {
-          mitkThrow() << "Can only handle Scalar data!";
-        }
-        switch(pixelType.GetComponentType())
-        {
-          case itk::ImageIOBase::UCHAR:
+            msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
             msg->SetNumComponents(1);
-            msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
             sizeOfBuffer *= 1;
-          break;
-
-          case itk::ImageIOBase::RGBA:
-            msg->SetNumComponents(4);
+        }
+        else if (pixelType.GetPixelType() == itk::ImageIOBase::RGB && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+        {
             msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
+            msg->SetNumComponents(3);
+            sizeOfBuffer *= 3;
+        }
+        else if (pixelType.GetPixelType() == itk::ImageIOBase::RGBA && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+        {
+            msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
+            msg->SetNumComponents(4);
             sizeOfBuffer *= 4;
-          break;
-
-        default:
+        }
+        else
+        {
           mitkThrow() << "Unsupported component type";
         }
 
