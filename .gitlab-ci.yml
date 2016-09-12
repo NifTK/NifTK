@@ -292,6 +292,10 @@ Cluster release build:
   stage: build
 
   script:
+  - export X264_DIR=/share/apps/cmic/niftk/x264
+  - export FFMPEG_DIR=/share/apps/cmic/niftk/ffmpeg-2.1.8
+  - export PATH="${FFMPEG_DIR}/bin:${PATH}"
+  - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
   - mkdir -p ${sb_dir}
   - cd ${sb_dir}
   - cmake -DBUILD_TESTING:BOOL=OFF
@@ -498,6 +502,10 @@ CentOS 7 release installer:
   stage: deploy
 
   script:
+  - export X264_DIR=/share/apps/cmic/niftk/x264
+  - export FFMPEG_DIR=/share/apps/cmic/niftk/ffmpeg-2.1.8
+  - export PATH="${FFMPEG_DIR}/bin:${PATH}"
+  - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
   - version=${CI_BUILD_TAG}
   - cd ${pb_dir}
   - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
@@ -532,13 +540,15 @@ Cluster release installer:
   - install_tmp_dir="${install_prefix}-tmp"
   - mkdir ${install_tmp_dir}
   - cd ${install_tmp_dir}
-  - tar xvfz ${installer_file}
+  - tar xfj ${installer_file}
   - cd `ls`
   - install_path=`pwd`
   - cd ../..
   - if [ -e ${install_prefix} ] ; then mv ${install_prefix} "${install_tmp_dir}/" ; fi
   - mv ${install_path} ${install_prefix}
   - rm -rf "${install_tmp_dir}"
+  - "# Upload the tarball"
+  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
 
   only:
   - tags
@@ -564,7 +574,7 @@ Managed CentOS 7 release installer:
   - install_tmp_dir="${install_prefix}-tmp"
   - mkdir ${install_tmp_dir}
   - cd ${install_tmp_dir}
-  - tar xvfz ${installer_file}
+  - tar xfj ${installer_file}
   - cd `ls`
   - install_path=`pwd`
   - cd ../..
