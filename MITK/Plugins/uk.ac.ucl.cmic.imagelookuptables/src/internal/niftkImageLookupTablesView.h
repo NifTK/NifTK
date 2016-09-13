@@ -29,8 +29,6 @@ class vtkLookupTable;
 namespace niftk
 {
 
-class LookupTableManager;
-
 /**
  * \class ImageLookupTablesView
  * \brief Provides a simple GUI enabling the selection of window, level, min, max and a choice of lookup tables.
@@ -238,11 +236,6 @@ private:
    * \brief Attempts to load all lookuptables cached in the berry service.
    */
   void LoadCachedLookupTables();
-
-  /**
-   * \brief Attempts to load LookupTable from given file, returning display name of LookupTable if successful. 
-   */
-  QString LoadLookupTable(QString& fileName);
 
   /**
    * \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).

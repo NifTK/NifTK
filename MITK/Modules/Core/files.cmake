@@ -14,6 +14,7 @@
 
 set(H_FILES
   Common/niftkImageOrientation.h
+  LookupTables/niftkLookupTableProviderService.h
 )
 
 set(CPP_FILES
@@ -54,6 +55,7 @@ set(CPP_FILES
   DataNodeProperties/niftkLabeledLookupTableProperty.cxx
   DataNodeProperties/niftkNamedLookupTableProperty.cxx
   IO/niftkFileIOUtils.cxx
+  IO/niftkIOUtil.cxx
   #IO/niftkCoreIOMimeTypes.cxx
   Interactions/niftkPointSetUpdate.cxx
   Interactions/niftkAffineTransformDataInteractor3D.cxx

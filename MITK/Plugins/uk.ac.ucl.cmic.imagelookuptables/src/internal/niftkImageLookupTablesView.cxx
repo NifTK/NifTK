@@ -21,7 +21,6 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QSignalMapper>
-#include <QXmlSimpleReader>
 
 #include <itkCommand.h>
 #include <itkEventObject.h>
@@ -55,12 +54,11 @@
 #include <usModuleRegistry.h>
 
 #include <niftkDataStorageUtils.h>
+#include <niftkIOUtil.h>
 #include <niftkLabeledLookupTableProperty.h>
 #include <niftkLookupTableContainer.h>
-#include <niftkLookupTableSaxHandler.h>
 #include <niftkNamedLookupTableProperty.h>
 
-#include <niftkLookupTableManager.h>
 #include <niftkLookupTableProviderService.h>
 #include <niftkVtkLookupTableUtils.h>
 
@@ -208,13 +206,6 @@ void ImageLookupTablesView::LoadCachedLookupTables()
     return;
   }
 
-  LookupTableProviderService* lutService
-    = PluginActivator::GetInstance()->GetLookupTableProviderService();
-  if (lutService == NULL)
-  {
-    mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
-  }
-
   prefs->PutBool("InBlockUpdate", true);
 
   QStringList labelList = cachedFileNames.split(",");
@@ -232,7 +223,7 @@ void ImageLookupTablesView::LoadCachedLookupTables()
     }
 
     QString filenameWithPath = prefs->Get(currLabelName, "");
-    QString lutName = this->LoadLookupTable(filenameWithPath);
+    QString lutName = IOUtil::LoadLookupTable(filenameWithPath);
     if (lutName.isEmpty())
     {
       removedItems.append(currLabelName);
@@ -762,7 +753,7 @@ void ImageLookupTablesView::OnLoadButtonPressed()
     return;
   }
 
-  QString lutName = this->LoadLookupTable(filenameWithPath);
+  QString lutName = IOUtil::LoadLookupTable(filenameWithPath);
 
   if (lutName.isEmpty())
   {
@@ -1403,71 +1394,6 @@ void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
 
   labelProperty->SetLabels(labels);
   UpdateLabelMapTable();
-}
-
-
-//-----------------------------------------------------------------------------
-QString ImageLookupTablesView::LoadLookupTable(QString& fileName)
-{
-  QString lutName;
-
-  QFileInfo finfo(fileName);
-  if (!finfo.exists())
-  {
-    return lutName;
-  }
-
-  // create a lookup table
-  LookupTableProviderService* lutService = PluginActivator::GetInstance()->GetLookupTableProviderService();
-  LookupTableContainer * loadedContainer;
-
-  if (fileName.contains(".lut"))
-  {
-    QFile file(fileName);
-    QXmlInputSource inputSource(&file);
-
-    QXmlSimpleReader reader;
-    LookupTableSaxHandler handler;
-    reader.setContentHandler(&handler);
-    reader.setErrorHandler(&handler);
-
-    if (reader.parse(inputSource))
-    {
-      loadedContainer = handler.GetLookupTableContainer();
-    }
-    else
-    {
-      MITK_ERROR << "niftk::LookupTableManager(): failed to parse XML file (" << fileName.toLocal8Bit().constData()
-        << ") so returning null";
-    }
-  }
-  else
-  {
-    std::vector<mitk::BaseData::Pointer> containerData = mitk::IOUtil::Load(fileName.toStdString());
-    if (containerData.empty())
-    {
-      MITK_ERROR << "Unable to load LookupTableContainer from " << fileName;
-    }
-    else
-    {
-      loadedContainer =
-        dynamic_cast<LookupTableContainer* >(containerData.at(0).GetPointer());
-
-      if (loadedContainer != NULL)
-      {
-        loadedContainer->SetDisplayName(loadedContainer->GetDisplayName());
-        loadedContainer->SetOrder(lutService->GetNumberOfLookupTables());
-      }
-    }
-  }
-
-  if (loadedContainer != NULL)
-  {
-    lutService->AddNewLookupTableContainer(loadedContainer);
-    lutName = loadedContainer->GetDisplayName();
-  }
-
-  return lutName;
 }
 
 }
