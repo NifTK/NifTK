@@ -21,6 +21,7 @@
 
 #include <berryPlatform.h>
 #include <berryPlatformUI.h>
+#include <berryIBerryPreferences.h>
 #include <berryIPreferencesService.h>
 
 #include <mitkCoreServices.h>
@@ -66,6 +67,7 @@
 #include <niftkNamedLookupTableProperty.h>
 
 #include "niftkBaseApplicationPreferencePage.h"
+#include "niftkIOUtil.h"
 #include "niftkMinimalPerspective.h"
 
 
@@ -74,6 +76,8 @@ US_INITIALIZE_MODULE
 
 namespace niftk
 {
+
+const QString PluginActivator::PLUGIN_ID = "uk.ac.ucl.cmic.commonapps";
 
 PluginActivator* PluginActivator::s_Instance = nullptr;
 
@@ -115,6 +119,8 @@ void PluginActivator::start(ctkPluginContext* context)
   mitk::FloatPropertyExtension::Pointer opacityPropertyExtension = mitk::FloatPropertyExtension::New(0.0, 1.0);
   propertyExtensions->AddExtension("Image Rendering.Lowest Value Opacity", opacityPropertyExtension.GetPointer());
   propertyExtensions->AddExtension("Image Rendering.Highest Value Opacity", opacityPropertyExtension.GetPointer());
+
+  this->LoadCachedLookupTables();
 
   this->ProcessOptions();
 }
@@ -889,6 +895,57 @@ mitk::BaseProperty::Pointer PluginActivator::ParsePropertyValue(const QString& p
   }
 
   return property;
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::LoadCachedLookupTables()
+{
+  QString pluginName = this->GetContext()->getPlugin()->getSymbolicName();
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
+  berry::IBerryPreferences::Pointer prefs =
+      prefService->GetSystemPreferences()->Node(pluginName).Cast<berry::IBerryPreferences>();
+  assert(prefs);
+
+  QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
+  if (cachedFileNames.isNull() || cachedFileNames.isEmpty())
+  {
+    return;
+  }
+
+  QStringList labelList = cachedFileNames.split(",");
+  QStringList removedItems;
+  int skippedItems = 0;
+
+  for (int i = 0; i < labelList.count(); i++)
+  {
+    QString currLabelName = labelList.at(i);
+
+    if (currLabelName.isNull() || currLabelName.isEmpty() || currLabelName == QString(" "))
+    {
+      skippedItems++;
+      continue;
+    }
+
+    QString filenameWithPath = prefs->Get(currLabelName, "");
+    QString lutName = IOUtil::LoadLookupTable(filenameWithPath);
+    if (lutName.isEmpty())
+    {
+      removedItems.append(currLabelName);
+    }
+  }
+
+  if (removedItems.size() > 0 || skippedItems > 0)
+  {
+    // Tidy up preferences: remove entries that don't exist
+    for (int i = 0; i < removedItems.size(); i++)
+    {
+      prefs->Remove(removedItems.at(i));
+    }
+
+    // Update the list of profile names
+    prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
+  }
 }
 
 }

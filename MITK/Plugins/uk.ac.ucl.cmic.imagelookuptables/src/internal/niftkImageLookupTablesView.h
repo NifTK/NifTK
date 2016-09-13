@@ -233,11 +233,6 @@ private:
   void RetrievePreferenceValues();
 
   /**
-   * \brief Attempts to load all lookuptables cached in the berry service.
-   */
-  void LoadCachedLookupTables();
-
-  /**
    * \brief BlueBerry's notification about preference changes (e.g. from a preferences dialog).
    */
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;

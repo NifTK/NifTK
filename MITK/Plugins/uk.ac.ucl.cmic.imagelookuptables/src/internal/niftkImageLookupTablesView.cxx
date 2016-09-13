@@ -124,7 +124,6 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
     /// This is probably superfluous because the AbstractView::AfterCreateQtPartControl() calls
     /// OnPreferencesChanged that calls RetrievePreferenceValues. It would need testing.
     this->RetrievePreferenceValues();
-    this->LoadCachedLookupTables();
 
     this->UpdateLookupTableComboBox();
     this->CreateConnections();
@@ -188,56 +187,6 @@ void ImageLookupTablesView::RetrievePreferenceValues()
   if (m_CurrentNode.IsNull())
   {
     this->BlockSignals(false);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void ImageLookupTablesView::LoadCachedLookupTables()
-{
-  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer prefs
-    = (prefService->GetSystemPreferences()->Node(VIEW_ID)).Cast<berry::IBerryPreferences>();
-  assert(prefs);
-
-  QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
-  if (cachedFileNames.isNull() || cachedFileNames.isEmpty())
-  {
-    return;
-  }
-
-  QStringList labelList = cachedFileNames.split(",");
-  QStringList removedItems;
-  int skippedItems = 0;
-
-  for (int i = 0; i < labelList.count(); i++)
-  {
-    QString currLabelName = labelList.at(i);
-
-    if (currLabelName.isNull() || currLabelName.isEmpty() || currLabelName == QString(" "))
-    {
-      skippedItems++;
-      continue;
-    }
-
-    QString filenameWithPath = prefs->Get(currLabelName, "");
-    QString lutName = IOUtil::LoadLookupTable(filenameWithPath);
-    if (lutName.isEmpty())
-    {
-      removedItems.append(currLabelName);
-    }
-  }
-
-  if (removedItems.size() > 0 || skippedItems > 0)
-  {
-    // Tidy up preferences: remove entries that don't exist
-    for (int i = 0; i < removedItems.size(); i++)
-    {
-      prefs->Remove(removedItems.at(i));
-    }
-
-    // Update the list of profile names
-    prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
   }
 }
 

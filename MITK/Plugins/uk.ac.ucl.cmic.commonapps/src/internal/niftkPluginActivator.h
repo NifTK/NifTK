@@ -62,6 +62,8 @@ class PluginActivator : public BaseApplicationPluginActivator
 
 public:
 
+  static const QString PLUGIN_ID;
+
   PluginActivator();
   virtual ~PluginActivator();
 
@@ -108,6 +110,9 @@ private:
 
   /// \brief Returns the lookup table provider service.
   niftk::LookupTableProviderService* GetLookupTableProvider();
+
+  /// \brief Attempts to load all lookuptables cached in the berry service.
+  void LoadCachedLookupTables();
 
   /// \brief Retrieves the preferences node name, or Null if unsuccessful.
   berry::IPreferences::Pointer GetPreferencesNode(const QString& preferencesNodeName);
