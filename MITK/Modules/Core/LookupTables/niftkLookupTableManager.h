@@ -15,6 +15,8 @@
 #ifndef niftkLookupTableManager_h
 #define niftkLookupTableManager_h
 
+#include <niftkCoreExports.h>
+
 #include <unordered_map>
 #include <vector>
 
@@ -38,7 +40,7 @@ class LookupTableContainer;
  * lookup tables. So, when the client calls CloneLookupTable(),
  * the client owns the provided vtkLookupTable, and should delete it when done.
  */
-class LookupTableManager
+class NIFTKCORE_EXPORT LookupTableManager
 {
 
 public:
