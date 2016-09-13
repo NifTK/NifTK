@@ -61,6 +61,9 @@ PaintbrushTool::PaintbrushTool()
 , m_WorkingImageGeometry(NULL)
 , m_WorkingImage(NULL)
 , m_ErosionMode(true)
+, m_AddingAdditionInProgress(false)
+, m_AddingSubtractionInProgress(false)
+, m_RemovingSubtractionInProgress(false)
 {
   m_Interface = PaintbrushToolEventInterface::New();
   m_Interface->SetPaintbrushTool( this );
@@ -135,6 +138,22 @@ void PaintbrushTool::Activated()
 
 void PaintbrushTool::Deactivated()
 {
+  if (m_AddingAdditionInProgress)
+  {
+    this->StopAddingAddition(nullptr, nullptr);
+    this->ResetToStartState();
+  }
+  if (m_AddingSubtractionInProgress)
+  {
+    this->StopAddingSubtraction(nullptr, nullptr);
+    this->ResetToStartState();
+  }
+  if (m_RemovingSubtractionInProgress)
+  {
+    this->StopRemovingSubtraction(nullptr, nullptr);
+    this->ResetToStartState();
+  }
+
   // Re-enabling InteractionEventObservers that have been previously disabled for legacy handling of Tools
   // in new interaction framework
   for (std::map<us::ServiceReferenceU, mitk::EventConfig>::iterator it = m_DisplayInteractorConfigs.begin();
@@ -450,6 +469,7 @@ int PaintbrushTool::GetDataIndex(bool isLeftMouseButton)
 
 bool PaintbrushTool::StartAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  m_AddingAdditionInProgress = true;
   InteractionEventObserverMutex::GetInstance()->Lock(this);
 
   int dataIndex = this->GetDataIndex(true);
@@ -459,13 +479,15 @@ bool PaintbrushTool::StartAddingAddition(mitk::StateMachineAction* action, mitk:
 
 bool PaintbrushTool::KeepAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  assert(m_AddingAdditionInProgress);
   int dataIndex = this->GetDataIndex(true);
   this->DoMouseMoved(action, event, dataIndex, 1, 0);
   return true;
 }
 
-bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*event*/)
 {
+  assert(m_AddingAdditionInProgress);
   int dataIndex = this->GetDataIndex(true);
   this->SetInvalidRegion(dataIndex);
   // The data is not actually modified here. We fire this event so that the pipeline is
@@ -478,12 +500,14 @@ bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* action, mitk::
   this->SegmentationEdited.Send(dataIndex);
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
+  m_AddingAdditionInProgress = false;
 
   return true;
 }
 
 bool PaintbrushTool::StartAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  m_AddingSubtractionInProgress = true;
   InteractionEventObserverMutex::GetInstance()->Lock(this);
 
   int dataIndex = this->GetDataIndex(false);
@@ -492,24 +516,28 @@ bool PaintbrushTool::StartAddingSubtraction(mitk::StateMachineAction* action, mi
 
 bool PaintbrushTool::KeepAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  assert(m_AddingSubtractionInProgress);
   int dataIndex = this->GetDataIndex(false);
   this->DoMouseMoved(action, event, dataIndex, 1, 0);
   return true;
 }
 
-bool PaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*event*/)
 {
+  assert(m_AddingSubtractionInProgress);
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
   this->SegmentationEdited.Send(dataIndex);
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
+  m_AddingSubtractionInProgress = false;
 
   return true;
 }
 
 bool PaintbrushTool::StartRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  m_RemovingSubtractionInProgress = true;
   InteractionEventObserverMutex::GetInstance()->Lock(this);
 
   int dataIndex = this->GetDataIndex(false);
@@ -518,18 +546,21 @@ bool PaintbrushTool::StartRemovingSubtraction(mitk::StateMachineAction* action, 
 
 bool PaintbrushTool::KeepRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  assert(m_RemovingSubtractionInProgress);
   int dataIndex = this->GetDataIndex(false);
   this->DoMouseMoved(action, event, dataIndex, 0, 1);
   return true;
 }
 
-bool PaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*event*/)
 {
+  assert(m_RemovingSubtractionInProgress);
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
   this->SegmentationEdited.Send(dataIndex);
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
+  m_RemovingSubtractionInProgress = false;
 
   return true;
 }

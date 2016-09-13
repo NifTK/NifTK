@@ -54,7 +54,7 @@ class SingleViewerWidgetTestClassPrivate;
 /// therefore it is not applied for NifTK. The following variable tells if the patch has
 /// been applied to MITK or not, because we should run different set of unit tests with
 /// and without the patch.
-const bool HALF_VOXEL_SHIFT_PATCH_APPLIED = false;
+const bool HALF_VOXEL_SHIFT_PATCH_APPLIED = true;
 
 class SingleViewerWidgetTestClass: public QObject
 {

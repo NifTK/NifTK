@@ -173,7 +173,7 @@ protected:
 
 private slots:
 
-  void ProcessCommandLineArguments();
+  void ProcessOptions();
 
 private:
 

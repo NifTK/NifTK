@@ -208,9 +208,6 @@ protected slots:
   /// \brief Called when the show intensity annotation option has been changed through the control panel.
   void OnShowIntensityAnnotationControlChanged(bool visible);
 
-  /// \brief Called when the show 3D window option has been changed through the control panel.
-  void OnShow3DWindowControlChanged(bool visible);
-
   /// \brief Called when the window layout has been changed through the control panel.
   void OnWindowLayoutControlChanged(niftk::WindowLayout windowLayout);
 
