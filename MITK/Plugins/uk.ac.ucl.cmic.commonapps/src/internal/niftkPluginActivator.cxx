@@ -67,7 +67,6 @@
 #include <niftkNamedLookupTableProperty.h>
 
 #include "niftkBaseApplicationPreferencePage.h"
-#include "niftkIOUtil.h"
 #include "niftkMinimalPerspective.h"
 
 
@@ -913,6 +912,8 @@ void PluginActivator::LoadCachedLookupTables()
     return;
   }
 
+  niftk::LookupTableProviderService* lutService = this->GetLookupTableProvider();
+
   QStringList labelList = cachedFileNames.split(",");
   QStringList removedItems;
   int skippedItems = 0;
@@ -928,7 +929,7 @@ void PluginActivator::LoadCachedLookupTables()
     }
 
     QString filenameWithPath = prefs->Get(currLabelName, "");
-    QString lutName = IOUtil::LoadLookupTable(filenameWithPath);
+    QString lutName = lutService->LoadLookupTable(filenameWithPath);
     if (lutName.isEmpty())
     {
       removedItems.append(currLabelName);

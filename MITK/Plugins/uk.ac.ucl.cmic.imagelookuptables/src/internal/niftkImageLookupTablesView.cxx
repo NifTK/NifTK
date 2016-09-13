@@ -54,7 +54,6 @@
 #include <usModuleRegistry.h>
 
 #include <niftkDataStorageUtils.h>
-#include <niftkIOUtil.h>
 #include <niftkLabeledLookupTableProperty.h>
 #include <niftkLookupTableContainer.h>
 #include <niftkNamedLookupTableProperty.h>
@@ -697,7 +696,15 @@ void ImageLookupTablesView::OnLoadButtonPressed()
     return;
   }
 
-  QString lutName = IOUtil::LoadLookupTable(filenameWithPath);
+  LookupTableProviderService* lutService =
+      PluginActivator::GetInstance()->GetLookupTableProviderService();
+
+  if (lutService == nullptr)
+  {
+    mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
+  }
+
+  QString lutName = lutService->LoadLookupTable(filenameWithPath);
 
   if (lutName.isEmpty())
   {
@@ -780,15 +787,11 @@ void ImageLookupTablesView::OnSaveButtonPressed()
     return;
   }
 
-  LookupTableContainer* newLUT
-    = new LookupTableContainer(labelProperty->GetLookupTable()->GetVtkLookupTable(), labelProperty->GetLabels());
+  LookupTableContainer* newLUT =
+      new LookupTableContainer(labelProperty->GetLookupTable()->GetVtkLookupTable(), labelProperty->GetLabels());
   newLUT->SetDisplayName(labelProperty->GetName());
 
-  MITK_INFO << "fileName " << fileNameAndPath.toStdString().c_str();
-
-
   mitk::IOUtil::Save(newLUT, fileNameAndPath.toStdString());
-
 
   int index = fileNameAndPath.lastIndexOf("/")+1;
   QString labelName = fileNameAndPath.mid(index);
@@ -799,10 +802,10 @@ void ImageLookupTablesView::OnSaveButtonPressed()
   newLUT->SetOrder(comboBoxIndex);
   m_CurrentNode->GetIntProperty("LookupTableIndex", comboBoxIndex);
 
-  LookupTableProviderService* lutService
-    = PluginActivator::GetInstance()->GetLookupTableProviderService();
+  LookupTableProviderService* lutService =
+      PluginActivator::GetInstance()->GetLookupTableProviderService();
 
-  if (lutService == NULL)
+  if (lutService == nullptr)
   {
     mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
   }
