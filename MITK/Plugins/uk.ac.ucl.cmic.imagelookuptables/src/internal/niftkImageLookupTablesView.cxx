@@ -206,8 +206,6 @@ void ImageLookupTablesView::LoadCachedLookupTables()
     return;
   }
 
-  prefs->PutBool("InBlockUpdate", true);
-
   QStringList labelList = cachedFileNames.split(",");
   QStringList removedItems;
   int skippedItems = 0;
@@ -241,9 +239,6 @@ void ImageLookupTablesView::LoadCachedLookupTables()
     // Update the list of profile names
     prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
   }
-
-  // End of block update
-  prefs->PutBool("InBlockUpdate", false);
 }
 
 
@@ -775,8 +770,6 @@ void ImageLookupTablesView::OnLoadButtonPressed()
       = (prefService->GetSystemPreferences()->Node(VIEW_ID))
         .Cast<berry::IBerryPreferences>();
 
-  prefs->PutBool("InBlockUpdate", true);
-
   // save the file to the list of names if not present
   QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
   QString labelName = QFileInfo(filenameWithPath).baseName();
@@ -791,8 +784,6 @@ void ImageLookupTablesView::OnLoadButtonPressed()
 
   // update the cached location of the file
   prefs->Put(labelName, filenameWithPath);
-
-  prefs->PutBool("InBlockUpdate", false);
 }
 
 
@@ -874,8 +865,6 @@ void ImageLookupTablesView::OnSaveButtonPressed()
   berry::IBerryPreferences::Pointer prefs
       = (prefService->GetSystemPreferences()->Node(VIEW_ID)).Cast<berry::IBerryPreferences>();
 
-  prefs->PutBool("InBlockUpdate", true);
-
   QString cachedFileNames;
   prefs->Get("LABEL_MAP_NAMES", cachedFileNames);
 
@@ -890,7 +879,6 @@ void ImageLookupTablesView::OnSaveButtonPressed()
 
   // update the cached location of the file
   prefs->Put(labelName, fileNameAndPath);
-  prefs->PutBool("InBlockUpdate", false);
 }
 
 
