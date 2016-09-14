@@ -14,16 +14,19 @@
 
 set(CPP_FILES
   niftkIGIDataSourceManagerWidget.cxx
+  niftkIGIDataSourcePlaybackWidget.cxx
   niftkIGIDataSourceManager.cxx
 )
 
 set(MOC_H_FILES
   niftkIGIDataSourceManagerWidget.h
+  niftkIGIDataSourcePlaybackWidget.h
   niftkIGIDataSourceManager.h
 )
 
 set(UI_FILES
   niftkIGIDataSourceManagerWidget.ui
+  niftkIGIDataSourcePlaybackWidget.ui
 )
 
 set(QRC_FILES
