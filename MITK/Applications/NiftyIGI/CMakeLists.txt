@@ -75,6 +75,10 @@ if(WIN32)
 endif()
 
 if(BUILD_VL AND NOT APPLE)
+
+  # Issue #4757: If available, we should use VL, as the MITK/VTK viewer
+  # goes wonky when you add points to point-sets.
+
   set(_include_plugins
     ${_include_plugins}
     uk.ac.ucl.cmic.igivlvideooverlayeditor
