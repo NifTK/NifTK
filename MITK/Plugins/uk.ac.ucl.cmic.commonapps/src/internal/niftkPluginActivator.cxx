@@ -222,9 +222,17 @@ void PluginActivator::UpdateLookupTable(mitk::DataNode* node, const mitk::BaseRe
     if (gotLowest && gotHighest && gotLookupTableName)
     {
       // Get LUT from Micro Service.
-      niftk::LookupTableProviderService *lutService = this->GetLookupTableProvider();
-      niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
-      node->SetProperty("LookupTable", mitkLUTProperty);
+      niftk::LookupTableProviderService* lutService = this->GetLookupTableProvider();
+      try
+      {
+        niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
+        node->SetProperty("LookupTable", mitkLUTProperty);
+      }
+      catch (const mitk::Exception& e)
+      {
+        MITK_ERROR << "Failed to set lookup table: " << lutName.toStdString() << std::endl
+                   << e.what();
+      }
     }
   }
 }
