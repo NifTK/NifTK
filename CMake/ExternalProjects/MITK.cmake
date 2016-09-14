@@ -184,7 +184,6 @@ if(NOT DEFINED MITK_DIR)
         IGT                     # needed by CameraCalibration
         OpenCVVideoSupport      # needed by niftkOpenCV
         CameraCalibration       # needed by niftkOpenCV
-        OpenCL                  # needed by niftkVL
       )
 
     endif()
@@ -282,7 +281,6 @@ if(NOT DEFINED MITK_DIR)
         -DMITK_USE_Boost:BOOL=OFF
         -DMITK_USE_OpenCV:BOOL=${BUILD_IGI}
         -DMITK_USE_OpenIGTLink:BOOL=${BUILD_IGI}
-        -DMITK_USE_OpenCL:BOOL=${BUILD_VL}
         -DMITK_ADDITIONAL_C_FLAGS:STRING=${MITK_ADDITIONAL_C_FLAGS}
         -DMITK_ADDITIONAL_CXX_FLAGS:STRING=${MITK_ADDITIONAL_CXX_FLAGS}
         -DGDCM_DIR:PATH=${GDCM_DIR}                            # FindGDCM expects GDCM_DIR
