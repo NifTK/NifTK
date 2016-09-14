@@ -21,7 +21,6 @@
 
 #include <berryPlatform.h>
 #include <berryPlatformUI.h>
-#include <berryIBerryPreferences.h>
 #include <berryIPreferencesService.h>
 
 #include <mitkCoreServices.h>
@@ -75,8 +74,6 @@ US_INITIALIZE_MODULE
 
 namespace niftk
 {
-
-const QString PluginActivator::PLUGIN_ID = "uk.ac.ucl.cmic.commonapps";
 
 PluginActivator* PluginActivator::s_Instance = nullptr;
 
@@ -196,10 +193,10 @@ void PluginActivator::UnregisterDataStorageListeners()
 //-----------------------------------------------------------------------------
 void PluginActivator::RegisterProperties(mitk::DataNode* node)
 {
-  this->RegisterInterpolationProperty("uk.ac.ucl.cmic.commonapps", node);
-  this->RegisterBinaryImageProperties("uk.ac.ucl.cmic.commonapps", node);
-  this->RegisterImageRenderingModeProperties("uk.ac.ucl.cmic.commonapps", node);
-  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.commonapps", node);
+  this->RegisterInterpolationProperty(node);
+  this->RegisterBinaryImageProperties(node);
+  this->RegisterImageRenderingModeProperties(node);
+  this->RegisterLevelWindowProperty(node);
 }
 
 
@@ -242,9 +239,7 @@ void PluginActivator::UpdateLookupTable(mitk::DataNode* node, const mitk::BaseRe
 void PluginActivator::BlankDepartmentalLogo()
 {
   // Blank the departmental logo for now.
-  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
-  berry::IPreferences::Pointer logoPref = prefService->GetSystemPreferences()->Node("org.mitk.editors.stdmultiwidget");
+  berry::IPreferences::Pointer logoPref = this->GetPreferences("org.mitk.editors.stdmultiwidget");
   logoPref->Put("DepartmentLogo", "");
 }
 
@@ -281,35 +276,50 @@ PluginActivator
 
 
 //-----------------------------------------------------------------------------
-berry::IPreferences::Pointer PluginActivator::GetPreferencesNode(const QString& preferencesNodeName)
+berry::IPreferences::Pointer PluginActivator::GetSystemPreferences()
 {
-  berry::IPreferences::Pointer result;
+  berry::IPreferences::Pointer systemPreferences;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   if (prefService)
   {
-    result = prefService->GetSystemPreferences()->Node(preferencesNodeName);
+    systemPreferences = prefService->GetSystemPreferences();
   }
 
-  return result;
+  return systemPreferences;
 }
 
+
 //-----------------------------------------------------------------------------
-void PluginActivator::RegisterLevelWindowProperty(
-    const QString& preferencesNodeName, mitk::DataNode *node)
+berry::IPreferences::Pointer PluginActivator::GetPreferences(const QString& preferencesNodeName)
+{
+  berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
+  berry::IPreferences::Pointer preferences;
+
+  if (systemPreferences.IsNotNull())
+  {
+    preferences = systemPreferences->Node(preferencesNodeName);
+  }
+
+  return preferences;
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::RegisterLevelWindowProperty(mitk::DataNode* node)
 {
   if (niftk::IsNodeAGreyScaleImage(node))
   {
     mitk::Image::ConstPointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
+    berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
 
-    if (prefNode.IsNotNull() && image.IsNotNull())
+    if (systemPreferences.IsNotNull() && image.IsNotNull())
     {
-      int minRange = prefNode->GetDouble(IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, 0);
-      int maxRange = prefNode->GetDouble(IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, 0);
-      double percentageOfRange = prefNode->GetDouble(IMAGE_INITIALISATION_PERCENTAGE_NAME, 50);
-      QString initialisationMethod = prefNode->Get(IMAGE_INITIALISATION_METHOD_NAME, IMAGE_INITIALISATION_PERCENTAGE);
+      int minRange = systemPreferences->GetDouble(IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, 0);
+      int maxRange = systemPreferences->GetDouble(IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, 0);
+      double percentageOfRange = systemPreferences->GetDouble(IMAGE_INITIALISATION_PERCENTAGE_NAME, 50);
+      QString initialisationMethod = systemPreferences->Get(IMAGE_INITIALISATION_METHOD_NAME, IMAGE_INITIALISATION_PERCENTAGE);
 
       float minDataLimit(0);
       float maxDataLimit(0);
@@ -456,15 +466,15 @@ niftk::LookupTableProviderService* PluginActivator::GetLookupTableProvider()
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::RegisterImageRenderingModeProperties(const QString& preferencesNodeName, mitk::DataNode *node)
+void PluginActivator::RegisterImageRenderingModeProperties(mitk::DataNode* node)
 {
   if (niftk::IsNodeAGreyScaleImage(node))
   {
-    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
-    if (prefNode.IsNotNull())
+    berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
+    if (systemPreferences.IsNotNull())
     {
-      float lowestOpacity = prefNode->GetFloat(BaseApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
-      float highestOpacity = prefNode->GetFloat(BaseApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
+      float lowestOpacity = systemPreferences->GetFloat(BaseApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
+      float highestOpacity = systemPreferences->GetFloat(BaseApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
 
       mitk::BaseProperty::Pointer lutProp = node->GetProperty("LookupTable");
       const niftk::NamedLookupTableProperty* prop = dynamic_cast<const niftk::NamedLookupTableProperty*>(lutProp.GetPointer());
@@ -489,19 +499,18 @@ void PluginActivator::RegisterImageRenderingModeProperties(const QString& prefer
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::RegisterInterpolationProperty(
-    const QString& preferencesNodeName, mitk::DataNode *node)
+void PluginActivator::RegisterInterpolationProperty(mitk::DataNode* node)
 {
   if (niftk::IsNodeAGreyScaleImage(node))
   {
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
+    berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
 
-    if (prefNode.IsNotNull() && image.IsNotNull())
+    if (systemPreferences.IsNotNull() && image.IsNotNull())
     {
 
-      int imageResliceInterpolation =  prefNode->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 2);
-      int imageTextureInterpolation =  prefNode->GetInt(BaseApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION, 2);
+      int imageResliceInterpolation =  systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 2);
+      int imageTextureInterpolation =  systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION, 2);
 
       mitk::BaseProperty::Pointer mitkLUT = node->GetProperty("LookupTable");
       if (mitkLUT.IsNotNull())
@@ -511,8 +520,8 @@ void PluginActivator::RegisterInterpolationProperty(
 
         if (labelProperty.IsNotNull() && labelProperty->GetIsScaled())
         {
-          imageResliceInterpolation = prefNode->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
-          imageTextureInterpolation = prefNode->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
+          imageResliceInterpolation = systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
+          imageTextureInterpolation = systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
         }
       }
 
@@ -547,16 +556,16 @@ void PluginActivator::RegisterInterpolationProperty(
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::RegisterBinaryImageProperties(const QString& preferencesNodeName, mitk::DataNode *node)
+void PluginActivator::RegisterBinaryImageProperties(mitk::DataNode* node)
 {
   if (niftk::IsNodeABinaryImage(node))
   {
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
+    berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
 
-    if (prefNode.IsNotNull() && image.IsNotNull())
+    if (systemPreferences.IsNotNull() && image.IsNotNull())
     {
-      double defaultBinaryOpacity = prefNode->GetDouble(BaseApplicationPreferencePage::BINARY_OPACITY_NAME, BaseApplicationPreferencePage::BINARY_OPACITY_VALUE);
+      double defaultBinaryOpacity = systemPreferences->GetDouble(BaseApplicationPreferencePage::BINARY_OPACITY_NAME, BaseApplicationPreferencePage::BINARY_OPACITY_VALUE);
       node->SetOpacity(defaultBinaryOpacity);
       node->SetBoolProperty("outline binary", true);
     } // end if have pref node
@@ -908,13 +917,10 @@ mitk::BaseProperty::Pointer PluginActivator::ParsePropertyValue(const QString& p
 //-----------------------------------------------------------------------------
 void PluginActivator::LoadCachedLookupTables()
 {
-  QString pluginName = this->GetContext()->getPlugin()->getSymbolicName();
-  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer prefs =
-      prefService->GetSystemPreferences()->Node(pluginName).Cast<berry::IBerryPreferences>();
-  assert(prefs);
+  berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
+  assert(systemPreferences);
 
-  QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
+  QString cachedFileNames = systemPreferences->Get("LABEL_MAP_NAMES", "");
   if (cachedFileNames.isNull() || cachedFileNames.isEmpty())
   {
     return;
@@ -936,7 +942,7 @@ void PluginActivator::LoadCachedLookupTables()
       continue;
     }
 
-    QString filenameWithPath = prefs->Get(currLabelName, "");
+    QString filenameWithPath = systemPreferences->Get(currLabelName, "");
     QString lutName = lutService->LoadLookupTable(filenameWithPath);
     if (lutName.isEmpty())
     {
@@ -949,11 +955,11 @@ void PluginActivator::LoadCachedLookupTables()
     // Tidy up preferences: remove entries that don't exist
     for (int i = 0; i < removedItems.size(); i++)
     {
-      prefs->Remove(removedItems.at(i));
+      systemPreferences->Remove(removedItems.at(i));
     }
 
     // Update the list of profile names
-    prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
+    systemPreferences->Put("LABEL_MAP_NAMES", cachedFileNames);
   }
 }
 

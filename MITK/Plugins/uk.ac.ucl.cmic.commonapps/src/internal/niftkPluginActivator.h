@@ -62,8 +62,6 @@ class PluginActivator : public BaseApplicationPluginActivator
 
 public:
 
-  static const QString PLUGIN_ID;
-
   PluginActivator();
   virtual ~PluginActivator();
 
@@ -82,16 +80,16 @@ protected:
   void UnregisterDataStorageListeners();
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial LevelWindow property to each image.
-  void RegisterLevelWindowProperty(const QString& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterLevelWindowProperty(mitk::DataNode* node);
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial "Image Rendering.Mode" property to each image.
-  void RegisterImageRenderingModeProperties(const QString& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterImageRenderingModeProperties(mitk::DataNode* node);
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for Texture Interpolation, and Reslice Interpolation.
-  void RegisterInterpolationProperty(const QString& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterInterpolationProperty(mitk::DataNode* node);
 
   /// \brief Deliberately not virtual method that registers initial property values of "outline binary"=true and "opacity"=1 for binary images.
-  void RegisterBinaryImageProperties(const QString& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterBinaryImageProperties(mitk::DataNode* node);
 
   /// \brief Deliberately not virtual method thats called by derived classes, to set the departmental logo to blank.
   void BlankDepartmentalLogo();
@@ -114,8 +112,11 @@ private:
   /// \brief Attempts to load all lookuptables cached in the berry service.
   void LoadCachedLookupTables();
 
-  /// \brief Retrieves the preferences node name, or Null if unsuccessful.
-  berry::IPreferences::Pointer GetPreferencesNode(const QString& preferencesNodeName);
+  /// \brief Retrieves the system preferences node.
+  berry::IPreferences::Pointer GetSystemPreferences();
+
+  /// \brief Retrieves the preferences node of the given name, or Null if unsuccessful.
+  berry::IPreferences::Pointer GetPreferences(const QString& preferencesNodeName);
 
   /// \brief Private utility method to calculate min, max, mean and stdDev of an ITK image.
   template<typename TPixel, unsigned int VImageDimension>

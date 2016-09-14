@@ -47,11 +47,6 @@ public:
   virtual ~ImageLookupTablesView();
 
   /**
-   * \brief Each view for a plugin has its own globally unique ID.
-   */
-  static const QString VIEW_ID;
-
-  /**
    * \brief Called by framework, this method creates all the controls for this view.
    */
   virtual void CreateQtPartControl(QWidget *parent) override;

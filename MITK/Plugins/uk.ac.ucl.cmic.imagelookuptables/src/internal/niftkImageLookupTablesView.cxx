@@ -44,7 +44,6 @@
 #include <mitkRenderingModeProperty.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 
-#include <berryIBerryPreferences.h>
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
@@ -67,8 +66,6 @@
 
 namespace niftk
 {
-
-const QString ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
 
 //-----------------------------------------------------------------------------
 ImageLookupTablesView::ImageLookupTablesView()
@@ -164,9 +161,8 @@ void ImageLookupTablesView::OnPreferencesChanged(const berry::IBerryPreferences*
 void ImageLookupTablesView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
-        .Cast<berry::IBerryPreferences>();
+  QString pluginName = PluginActivator::GetInstance()->GetContext()->getPlugin()->getSymbolicName();
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(pluginName);
   assert(prefs);
 
   m_Precision = prefs->GetInt(ImageLookupTablesPreferencePage::PRECISION_NAME, 2);
@@ -722,9 +718,7 @@ void ImageLookupTablesView::OnLoadButtonPressed()
   }
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
-        .Cast<berry::IBerryPreferences>();
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences();
 
   // save the file to the list of names if not present
   QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
@@ -814,8 +808,7 @@ void ImageLookupTablesView::OnSaveButtonPressed()
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID)).Cast<berry::IBerryPreferences>();
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences();
 
   QString cachedFileNames;
   prefs->Get("LABEL_MAP_NAMES", cachedFileNames);
