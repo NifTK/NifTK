@@ -897,7 +897,7 @@ float VLSceneView::opacity() const
 
 void VLSceneView::setDepthPeelingPasses( int n )
 {
-  m_VividRenderer->setDetphPeelingPasses( n );
+  m_VividRendering->setDepthPeelingPasses( n );
   openglContext()->update();
 }
 
@@ -905,7 +905,7 @@ void VLSceneView::setDepthPeelingPasses( int n )
 
 int VLSceneView::depthPeelingPasses() const
 {
-  return m_VividRenderer->depthPeelingPasses();
+  return m_VividRendering->depthPeelingPasses();
 }
 
 //-----------------------------------------------------------------------------
