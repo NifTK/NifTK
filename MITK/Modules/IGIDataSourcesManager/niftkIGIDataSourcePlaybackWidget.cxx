@@ -28,7 +28,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Pointer dataStorage, 
+IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Pointer dataStorage,
     QMutex& lock, IGIDataSourceManager* manager,
     QWidget *parent)
 : m_Manager(new IGIDataSourceManager(dataStorage, parent))

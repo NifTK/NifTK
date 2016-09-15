@@ -43,7 +43,7 @@ class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourcePlaybackWidget :
 
 public:
 
-  IGIDataSourcePlaybackWidget(mitk::DataStorage::Pointer dataStorage, 
+  IGIDataSourcePlaybackWidget(mitk::DataStorage::Pointer dataStorage,
       QMutex& lock, IGIDataSourceManager* manager,
       QWidget *parent = 0);
 
