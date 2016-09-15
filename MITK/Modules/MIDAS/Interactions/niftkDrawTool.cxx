@@ -54,6 +54,8 @@ DrawTool::DrawTool()
 , m_CursorSize(0.5)
 , m_Interface(nullptr)
 , m_EraserScopeVisible(false)
+, m_DrawingInProgress(false)
+, m_ErasingInProgress(false)
 {
   m_Interface = DrawToolEventInterface::New();
   m_Interface->SetDrawTool(this);
@@ -145,6 +147,7 @@ void DrawTool::ClearWorkingData()
 /// method OnMouseMoved that starts to draw the line.
 bool DrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  m_DrawingInProgress = true;
   InteractionEventObserverMutex::GetInstance()->Lock(this);
 
   // Don't forget to call baseclass method.
@@ -189,6 +192,8 @@ bool DrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::InteractionE
 /// two points that may span more than one voxel, or fractions of a voxel.
 bool DrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  assert(m_DrawingInProgress);
+
   if (!m_SegmentationImage || !m_SegmentationImageGeometry)
   {
     return false;
@@ -237,11 +242,9 @@ bool DrawTool::KeepDrawing(mitk::StateMachineAction* action, mitk::InteractionEv
 
 /// When we finish a contour, we take the Current contour, and add it to the Cumulative contour.
 /// This action should be undo-able, as we are creating data.
-bool DrawTool::StopDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool DrawTool::StopDrawing(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*event*/)
 {
-  /// Make sure we have a valid position event, otherwise no point continuing.
-  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
-  assert(positionEvent);
+  assert(m_DrawingInProgress);
 
   /// When the mouse is released, we need to add the contour to the cumulative one.
   mitk::ContourModel* feedbackContour = FeedbackContourTool::GetFeedbackContour();
@@ -260,6 +263,7 @@ bool DrawTool::StopDrawing(mitk::StateMachineAction* action, mitk::InteractionEv
   }
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
+  m_DrawingInProgress = false;
 
   return true;
 }
@@ -286,6 +290,9 @@ void DrawTool::SetCursorSize(double cursorSize)
 //-----------------------------------------------------------------------------
 bool DrawTool::StartErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  m_ErasingInProgress = true;
+  m_ErasingEvent = event;
+
   InteractionEventObserverMutex::GetInstance()->Lock(this);
 
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
@@ -311,6 +318,9 @@ bool DrawTool::StartErasing(mitk::StateMachineAction* action, mitk::InteractionE
 //-----------------------------------------------------------------------------
 bool DrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
+  assert(m_ErasingInProgress);
+  m_ErasingEvent = event;
+
   mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
   assert(positionEvent);
 
@@ -332,11 +342,16 @@ bool DrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::InteractionEv
 //-----------------------------------------------------------------------------
 bool DrawTool::StopErasing(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
+  assert(m_ErasingInProgress);
+
   this->SetEraserScopeVisible(false, event->GetSender());
 
   this->RenderAllWindows();
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
+
+  m_ErasingInProgress = false;
+  m_ErasingEvent = nullptr;
 
   return true;
 }
@@ -771,6 +786,25 @@ void DrawTool::Activated()
 {
   Superclass::Activated();
   CursorSizeChanged.Send(m_CursorSize);
+}
+
+
+//-----------------------------------------------------------------------------
+void DrawTool::Deactivated()
+{
+  if (m_DrawingInProgress)
+  {
+    this->StopDrawing(nullptr, nullptr);
+    this->ResetToStartState();
+  }
+
+  if (m_ErasingInProgress)
+  {
+    this->StopErasing(nullptr, m_ErasingEvent);
+    this->ResetToStartState();
+  }
+
+  Superclass::Deactivated();
 }
 
 

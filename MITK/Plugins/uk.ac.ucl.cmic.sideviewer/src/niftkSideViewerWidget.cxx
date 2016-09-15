@@ -129,8 +129,10 @@ SideViewerWidget::SideViewerWidget(BaseView* view, QWidget* parent, mitk::Render
 {
   this->SetupUi(parent);
 
-  m_Viewer->SetShow3DWindowIn2x2WindowLayout(false);
   m_Viewer->SetCursorVisible(true);
+  m_Viewer->SetPositionAnnotationVisible(false);
+  m_Viewer->SetIntensityAnnotationVisible(false);
+  m_Viewer->SetPropertyAnnotationVisible(false);
   m_Viewer->SetRememberSettingsPerWindowLayout(false);
   m_Viewer->SetDisplayInteractionsEnabled(true);
   m_Viewer->SetCursorPositionBinding(false);

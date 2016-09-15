@@ -14,6 +14,7 @@
 
 set(H_FILES
   Common/niftkImageOrientation.h
+  LookupTables/niftkLookupTableProviderService.h
 )
 
 set(CPP_FILES

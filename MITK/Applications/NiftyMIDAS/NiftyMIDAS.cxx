@@ -31,6 +31,7 @@ public:
   static const QString PROP_WINDOW_LAYOUT;
   static const QString PROP_BIND_WINDOWS;
   static const QString PROP_BIND_VIEWERS;
+  static const QString PROP_ANNOTATION;
 
   NiftyMIDAS(int argc, char **argv)
     : BaseApplication(argc, argv)
@@ -69,7 +70,7 @@ public:
         "<viewers> is a comma separated list of viewer indices. Viewer indices are\n"
         "integer numbers starting from 1 and increasing row-wise. For instance, with\n"
         "2x3 viewers the index of the first viewer of the second row is 4. If no viewer\n"
-        "index is given, the data nodes will be loaded into the first viewer.\n");
+        "index is given, the data nodes will be loaded into each viewer.\n");
     dragAndDropOption.argument("<data nodes>[:<viewers>]").repeatable(true);
     dragAndDropOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &NiftyMIDAS::HandleRepeatableOption));
     options.addOption(dragAndDropOption);
@@ -84,7 +85,7 @@ public:
         "<viewers> is a comma separated list of viewer indices. Viewer indices are\n"
         "integer numbers starting from 1 and increasing row-wise. For instance, with\n"
         "2x3 viewers the index of the first viewer of the second row is 4. If no viewer\n"
-        "index is given, the layout will be applied to the first viewer.\n"
+        "index is given, the layout will be applied to each viewer.\n"
         "\n"
         "Valid layout names are the followings: 'axial', 'sagittal', 'coronal', 'as acquired'\n"
         "(the original orientation as the displayed image was acquired), '3D', '2x2'\n"
@@ -112,7 +113,7 @@ public:
         "<viewers> is a comma separated list of viewer indices. Viewer indices are\n"
         "integer numbers starting from 1 and increasing row-wise. For instance, with\n"
         "2x3 viewers the index of the first viewer of the second row is 4. If no viewer\n"
-        "index is given, the window binding mode will be applied to the first viewer.\n"
+        "index is given, the window binding mode will be applied to each viewer.\n"
         "\n"
         "<binding mode options> is a comma separated list of window binding mode options,\n"
         "given in the following form:\n"
@@ -147,7 +148,7 @@ public:
         "<viewers> is a comma separated list of viewer indices. Viewer indices are\n"
         "integer numbers starting from 1 and increasing row-wise. For instance, with\n"
         "2x3 viewers the index of the first viewer of the second row is 4. If no viewer\n"
-        "index is given, the window binding mode will be applied to the first viewer.\n"
+        "index is given, the window binding mode will be applied to each viewer.\n"
         "\n"
         "<binding mode options> is a comma separated list of window binding mode options,\n"
         "given in the following form:\n"
@@ -161,6 +162,23 @@ public:
         "individual binding modes.\n");
     bindViewersOption.argument("[<viewers>:]<binding mode options>").binding(PROP_BIND_VIEWERS.toStdString());
     options.addOption(bindViewersOption);
+
+    Poco::Util::Option annotationOption("annotation", "a",
+        "\n"
+        "Sets a list of properties to be displayed as annotations in the viewers.\n"
+        "\n"
+        "<viewers> is a comma separated list of viewer indices. Viewer indices are "
+        "integer numbers starting from 1 and increasing row-wise. For instance, with "
+        "2x3 viewers the index of the first viewer of the second row is 4. If no viewer "
+        "index is given, the annotations will displayed in each viewer.\n"
+        "\n"
+        "<properties> is a comma separated list of data node property names. The property "
+        "values will be displayed in the bottom left corner of the selected render window "
+        "of the given viewers. The values will be shown for images that are visible in "
+        "those viewers.\n");
+    annotationOption.argument("[<viewers>:]<properties>").repeatable(true);
+    annotationOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &NiftyMIDAS::HandleRepeatableOption));
+    options.addOption(annotationOption);
   }
 
   virtual Poco::Util::HelpFormatter* CreateHelpFormatter() override
@@ -171,36 +189,45 @@ public:
 
     QString examples =
         "\n"
-        "The following command opens two reference images and one segmentation, and opens\n"
+        "The following command opens two reference images and one segmentation, and opens "
         "them in two viewers, side-by-side:\n"
         "\n"
         "    ${commandName} -o mask:segmentation.nii -o timeline1:image1.nii -o timeline2:image2.nii \\\n"
         "        --viewer-number 2 --drag-and-drop timeline1,mask:1 --drag-and-drop timeline2,mask:2\n"
         "\n"
-        "Note that 'mask' has to be specified before the reference images so that it is\n"
+        "Note that 'mask' has to be specified before the reference images so that it is "
         "placed in an upper layer than the reference images.\n"
         "\n"
-        "The following command opens an image, loads it to the viewer, and switches the\n"
+        "The following command opens an image, loads it to the viewer, and switches the "
         "window layout to the sagittal window:\n"
         "\n"
         "    ${commandName} -o T1:image1.nii -D T1 --window-layout sagittal\n"
         "\n"
-        "The following command opens two images in separate viewers, and binds the cursor\n"
+        "The following command opens two images in separate viewers, and binds the cursor "
         "positions and the magnification of the viewers:\n"
         "\n"
         "    ${commandName} -o timeline1:image1.nii -o timeline2:image2.nii -v 2 \\\n"
         "        -D timeline1:1 -D timeline2:2 --bind-viewers position,cursor,magnification=on\n"
         "\n"
-        "The following command opens two images in separate viewers, and enables all\n"
+        "The following command opens two images in separate viewers, and enables all "
         "kinds of bindings across the viewers:\n"
         "\n"
         "    ${commandName} -o timeline1:image1.nii -o timeline2:image2.nii -v 2 \\\n"
         "        -D timeline1:1 -D timeline2:2 -b all=on\n"
         "\n"
-        "The following command opens an image, loads it into the viewer, sets the 2x2 window\n"
+        "The following command opens an image, loads it into the viewer, sets the 2x2 window "
         "layout and switches off the cursor and magnification binding across the 2D windows:\n"
         "\n"
         "    ${commandName} -o T1:image1.nii -D T1 -l 2x2 --bind-windows all:off\n"
+        "\n"
+        "The following command opens two images, loads each to a different viewer, sets the "
+        "patient name and the aquisition time properties and displays them as annotations "
+        "in both viewers:\n"
+        "\n"
+        "    ${commandName} -o A:image1.nii -o B:image2.nii -v 2 -D A:1 -D B:2 \\\n"
+        "        -p A:Patient=\"John Doe\" -p B:Patient=\"Jane Doe\" \\\n"
+        "        -p A:Acquired=\"2016.06.06 15:05\" -p B:Acquired=\"2016.07.07 10:35\" \\\n"
+        "        --annotation Patient,Aquired\n"
         "";
 
     examples.replace("${commandName}", QString::fromStdString(this->commandName()));
@@ -219,6 +246,7 @@ const QString NiftyMIDAS::PROP_DRAG_AND_DROP = "applicationArgs.drag-and-drop";
 const QString NiftyMIDAS::PROP_WINDOW_LAYOUT = "applicationArgs.window-layout";
 const QString NiftyMIDAS::PROP_BIND_WINDOWS = "applicationArgs.bind-windows";
 const QString NiftyMIDAS::PROP_BIND_VIEWERS = "applicationArgs.bind-viewers";
+const QString NiftyMIDAS::PROP_ANNOTATION = "applicationArgs.annotation";
 
 }
 

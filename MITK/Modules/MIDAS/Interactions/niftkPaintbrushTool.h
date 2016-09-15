@@ -243,6 +243,10 @@ private:
   // The configurations are restored when the tool is deactivated.
   std::map<us::ServiceReferenceU, mitk::EventConfig> m_DisplayInteractorConfigs;
 
+  bool m_AddingAdditionInProgress;
+  bool m_AddingSubtractionInProgress;
+  bool m_RemovingSubtractionInProgress;
+
 };
 
 }

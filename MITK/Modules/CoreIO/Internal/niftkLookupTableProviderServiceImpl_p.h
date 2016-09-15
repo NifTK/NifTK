@@ -34,6 +34,7 @@ class LookupTableManager;
  */
 class LookupTableProviderServiceImpl : public LookupTableProviderService
 {
+  typedef LookupTableProviderServiceImpl Self;
 
 public:
 
@@ -95,6 +96,9 @@ public:
    * \see Returns labels for the given table, if they exist.
    */
   LabeledLookupTableProperty::LabelListType GetLabels(const QString& lookupTableName);
+
+  /// \brief Attempts to load LookupTable from given file, returning display name of LookupTable if successful.
+  virtual QString LoadLookupTable(const QString& fileName) override;
 
 private:
 

@@ -17,6 +17,7 @@ set(H_FILES
 )
 
 set(CPP_FILES
+  niftkClickableLabel.cxx
   niftkMultiWindowWidget.cxx
   niftkMultiViewerVisibilityManager.cxx
   niftkMultiViewerWidget.cxx
@@ -28,6 +29,7 @@ set(CPP_FILES
 )
 
 set(MOC_H_FILES 
+  niftkClickableLabel_p.h
   niftkMultiViewerWidget.h
   niftkMultiViewerControls.h
   niftkSingleViewerControls.h

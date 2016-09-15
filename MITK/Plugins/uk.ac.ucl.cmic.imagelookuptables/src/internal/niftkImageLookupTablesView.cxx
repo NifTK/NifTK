@@ -21,7 +21,6 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QSignalMapper>
-#include <QXmlSimpleReader>
 
 #include <itkCommand.h>
 #include <itkEventObject.h>
@@ -45,7 +44,6 @@
 #include <mitkRenderingModeProperty.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 
-#include <berryIBerryPreferences.h>
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
@@ -57,10 +55,8 @@
 #include <niftkDataStorageUtils.h>
 #include <niftkLabeledLookupTableProperty.h>
 #include <niftkLookupTableContainer.h>
-#include <niftkLookupTableSaxHandler.h>
 #include <niftkNamedLookupTableProperty.h>
 
-#include <niftkLookupTableManager.h>
 #include <niftkLookupTableProviderService.h>
 #include <niftkVtkLookupTableUtils.h>
 
@@ -70,8 +66,6 @@
 
 namespace niftk
 {
-
-const QString ImageLookupTablesView::VIEW_ID = "uk.ac.ucl.cmic.imagelookuptables";
 
 //-----------------------------------------------------------------------------
 ImageLookupTablesView::ImageLookupTablesView()
@@ -126,7 +120,6 @@ void ImageLookupTablesView::CreateQtPartControl(QWidget *parent)
     /// This is probably superfluous because the AbstractView::AfterCreateQtPartControl() calls
     /// OnPreferencesChanged that calls RetrievePreferenceValues. It would need testing.
     this->RetrievePreferenceValues();
-    this->LoadCachedLookupTables();
 
     this->UpdateLookupTableComboBox();
     this->CreateConnections();
@@ -168,9 +161,8 @@ void ImageLookupTablesView::OnPreferencesChanged(const berry::IBerryPreferences*
 void ImageLookupTablesView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
-        .Cast<berry::IBerryPreferences>();
+  QString pluginName = PluginActivator::GetInstance()->GetContext()->getPlugin()->getSymbolicName();
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(pluginName);
   assert(prefs);
 
   m_Precision = prefs->GetInt(ImageLookupTablesPreferencePage::PRECISION_NAME, 2);
@@ -191,68 +183,6 @@ void ImageLookupTablesView::RetrievePreferenceValues()
   {
     this->BlockSignals(false);
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void ImageLookupTablesView::LoadCachedLookupTables()
-{
-  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer prefs
-    = (prefService->GetSystemPreferences()->Node(VIEW_ID)).Cast<berry::IBerryPreferences>();
-  assert(prefs);
-
-  QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
-  if (cachedFileNames.isNull() || cachedFileNames.isEmpty())
-  {
-    return;
-  }
-
-  LookupTableProviderService* lutService
-    = PluginActivator::GetInstance()->GetLookupTableProviderService();
-  if (lutService == NULL)
-  {
-    mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
-  }
-
-  prefs->PutBool("InBlockUpdate", true);
-
-  QStringList labelList = cachedFileNames.split(",");
-  QStringList removedItems;
-  int skippedItems = 0;
-
-  for (int i = 0; i < labelList.count(); i++)
-  {
-    QString currLabelName = labelList.at(i);
-
-    if (currLabelName.isNull() || currLabelName.isEmpty() || currLabelName == QString(" "))
-    {
-      skippedItems++;
-      continue;
-    }
-
-    QString filenameWithPath = prefs->Get(currLabelName, "");
-    QString lutName = this->LoadLookupTable(filenameWithPath);
-    if (lutName.isEmpty())
-    {
-      removedItems.append(currLabelName);
-    }
-  }
-
-  if (removedItems.size() > 0 || skippedItems > 0)
-  {
-    // Tidy up preferences: remove entries that don't exist
-    for (int i = 0; i < removedItems.size(); i++)
-    {
-      prefs->Remove(removedItems.at(i));
-    }
-
-    // Update the list of profile names
-    prefs->Put("LABEL_MAP_NAMES", cachedFileNames);
-  }
-
-  // End of block update
-  prefs->PutBool("InBlockUpdate", false);
 }
 
 
@@ -762,7 +692,15 @@ void ImageLookupTablesView::OnLoadButtonPressed()
     return;
   }
 
-  QString lutName = this->LoadLookupTable(filenameWithPath);
+  LookupTableProviderService* lutService =
+      PluginActivator::GetInstance()->GetLookupTableProviderService();
+
+  if (lutService == nullptr)
+  {
+    mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
+  }
+
+  QString lutName = lutService->LoadLookupTable(filenameWithPath);
 
   if (lutName.isEmpty())
   {
@@ -780,11 +718,7 @@ void ImageLookupTablesView::OnLoadButtonPressed()
   }
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
-        .Cast<berry::IBerryPreferences>();
-
-  prefs->PutBool("InBlockUpdate", true);
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences();
 
   // save the file to the list of names if not present
   QString cachedFileNames = prefs->Get("LABEL_MAP_NAMES", "");
@@ -800,8 +734,6 @@ void ImageLookupTablesView::OnLoadButtonPressed()
 
   // update the cached location of the file
   prefs->Put(labelName, filenameWithPath);
-
-  prefs->PutBool("InBlockUpdate", false);
 }
 
 
@@ -849,15 +781,11 @@ void ImageLookupTablesView::OnSaveButtonPressed()
     return;
   }
 
-  LookupTableContainer* newLUT
-    = new LookupTableContainer(labelProperty->GetLookupTable()->GetVtkLookupTable(), labelProperty->GetLabels());
+  LookupTableContainer* newLUT =
+      new LookupTableContainer(labelProperty->GetLookupTable()->GetVtkLookupTable(), labelProperty->GetLabels());
   newLUT->SetDisplayName(labelProperty->GetName());
 
-  MITK_INFO << "fileName " << fileNameAndPath.toStdString().c_str();
-
-
   mitk::IOUtil::Save(newLUT, fileNameAndPath.toStdString());
-
 
   int index = fileNameAndPath.lastIndexOf("/")+1;
   QString labelName = fileNameAndPath.mid(index);
@@ -868,10 +796,10 @@ void ImageLookupTablesView::OnSaveButtonPressed()
   newLUT->SetOrder(comboBoxIndex);
   m_CurrentNode->GetIntProperty("LookupTableIndex", comboBoxIndex);
 
-  LookupTableProviderService* lutService
-    = PluginActivator::GetInstance()->GetLookupTableProviderService();
+  LookupTableProviderService* lutService =
+      PluginActivator::GetInstance()->GetLookupTableProviderService();
 
-  if (lutService == NULL)
+  if (lutService == nullptr)
   {
     mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
   }
@@ -880,10 +808,7 @@ void ImageLookupTablesView::OnSaveButtonPressed()
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID)).Cast<berry::IBerryPreferences>();
-
-  prefs->PutBool("InBlockUpdate", true);
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences();
 
   QString cachedFileNames;
   prefs->Get("LABEL_MAP_NAMES", cachedFileNames);
@@ -899,7 +824,6 @@ void ImageLookupTablesView::OnSaveButtonPressed()
 
   // update the cached location of the file
   prefs->Put(labelName, fileNameAndPath);
-  prefs->PutBool("InBlockUpdate", false);
 }
 
 
@@ -1403,71 +1327,6 @@ void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
 
   labelProperty->SetLabels(labels);
   UpdateLabelMapTable();
-}
-
-
-//-----------------------------------------------------------------------------
-QString ImageLookupTablesView::LoadLookupTable(QString& fileName)
-{
-  QString lutName;
-
-  QFileInfo finfo(fileName);
-  if (!finfo.exists())
-  {
-    return lutName;
-  }
-
-  // create a lookup table
-  LookupTableProviderService* lutService = PluginActivator::GetInstance()->GetLookupTableProviderService();
-  LookupTableContainer * loadedContainer;
-
-  if (fileName.contains(".lut"))
-  {
-    QFile file(fileName);
-    QXmlInputSource inputSource(&file);
-
-    QXmlSimpleReader reader;
-    LookupTableSaxHandler handler;
-    reader.setContentHandler(&handler);
-    reader.setErrorHandler(&handler);
-
-    if (reader.parse(inputSource))
-    {
-      loadedContainer = handler.GetLookupTableContainer();
-    }
-    else
-    {
-      MITK_ERROR << "niftk::LookupTableManager(): failed to parse XML file (" << fileName.toLocal8Bit().constData()
-        << ") so returning null";
-    }
-  }
-  else
-  {
-    std::vector<mitk::BaseData::Pointer> containerData = mitk::IOUtil::Load(fileName.toStdString());
-    if (containerData.empty())
-    {
-      MITK_ERROR << "Unable to load LookupTableContainer from " << fileName;
-    }
-    else
-    {
-      loadedContainer =
-        dynamic_cast<LookupTableContainer* >(containerData.at(0).GetPointer());
-
-      if (loadedContainer != NULL)
-      {
-        loadedContainer->SetDisplayName(loadedContainer->GetDisplayName());
-        loadedContainer->SetOrder(lutService->GetNumberOfLookupTables());
-      }
-    }
-  }
-
-  if (loadedContainer != NULL)
-  {
-    lutService->AddNewLookupTableContainer(loadedContainer);
-    lutName = loadedContainer->GetDisplayName();
-  }
-
-  return lutName;
 }
 
 }

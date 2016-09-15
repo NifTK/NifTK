@@ -22,6 +22,7 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
+#include "niftkPluginActivator.h"
 
 namespace niftk
 {
@@ -67,7 +68,8 @@ void ImageLookupTablesPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = true;
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
-  m_ImageLookupTablesPreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.imagelookuptables");
+  QString pluginName = PluginActivator::GetInstance()->GetContext()->getPlugin()->getSymbolicName();
+  m_ImageLookupTablesPreferencesNode = prefService->GetSystemPreferences()->Node(pluginName);
 
   m_MainControl = new QWidget(parent);
 

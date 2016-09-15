@@ -90,6 +90,9 @@ struct LookupTableProviderService
    */
   virtual bool GetIsScaled(const QString& lookupTableName) = 0;
 
+  /// \brief Attempts to load LookupTable from given file, returning display name of LookupTable if successful.
+  virtual QString LoadLookupTable(const QString& fileName) = 0;
+
 };
 
 }
