@@ -51,7 +51,7 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
     if (sromFileName.empty() || sromFileName == "none") // its an aurora tool
     {
       int wpn = std::stoi(tool->GetIdentifier()); // Should throw on failure.
-      descriptor.WiredPortNumber = wpn;           // This means, you have to have ports plugged in, in order.
+      descriptor.WiredPortNumber = wpn;
     }
     else // its a spectra wireless tool. Wired not supported.
     {
