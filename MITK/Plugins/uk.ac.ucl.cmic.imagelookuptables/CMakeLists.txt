@@ -14,8 +14,6 @@
 
 project(uk_ac_ucl_cmic_imagelookuptables)
 
-set(QT_USE_QTXML TRUE)
-
 mitk_create_plugin(
   EXPORT_DIRECTIVE IMAGELOOKUPTABLES_EXPORTS
   EXPORTED_INCLUDE_SUFFIXES src
