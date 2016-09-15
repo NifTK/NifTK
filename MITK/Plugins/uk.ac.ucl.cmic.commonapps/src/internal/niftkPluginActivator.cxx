@@ -593,36 +593,27 @@ void PluginActivator::ProcessOpenOptions()
   for (QString openArg: openArgs)
   {
     int colonIndex = openArg.indexOf(':');
-    QString nodeNamesPart = openArg.mid(0, colonIndex);
-    QString filePath = openArg.mid(colonIndex + 1);
+    QString nodeNamesPart;
+    QString filePath;
 
-    if (nodeNamesPart.isEmpty())
+    if (colonIndex == -1)
     {
-      MITK_ERROR << "Data node not specified for the '--open' option. Skipping option.";
-      continue;
+      filePath = openArg;
+      int lastSlashOrBackslash = filePath.lastIndexOf(QRegExp("[\\/]"));
+      int firstDotAfterLastSlashOrBackslash = filePath.indexOf('.', lastSlashOrBackslash + 1);
+      int length = firstDotAfterLastSlashOrBackslash - lastSlashOrBackslash - 1;
+      nodeNamesPart = filePath.mid(lastSlashOrBackslash + 1, length);
     }
-
-    if (filePath.isEmpty())
+    else
     {
-      MITK_ERROR << "Data file not specified for the '--open' option. Skipping option.";
-      continue;
+      nodeNamesPart = openArg.mid(0, colonIndex);
+      filePath = openArg.mid(colonIndex + 1);
     }
 
     if (filePath.right(5) == ".mitk")
     {
       MITK_WARN << "Invalid syntax for opening an MITK project. The '--open' option is for opening single data files with a given name." << std::endl
-                << "Omit the '--open' option and provide the file path only." << std::endl;
-      continue;
-    }
-
-    if (nodeNamesPart.isEmpty())
-    {
-      MITK_WARN << "Invalid syntax for opening a file. Provide a name for the file. For example:\n"
-                   "\n"
-                   "    --open T1:/path/to/reference-image.nii.gz\n"
-                   "\n"
-                   "If you want to use the original name, omit the '--open' option and provide the file path only.\n"
-                   "\n";
+                << "Omit the '--open' option and provide the file path only. Skipping option." << std::endl;
       continue;
     }
 
@@ -631,7 +622,8 @@ void PluginActivator::ProcessOpenOptions()
       MITK_WARN << "Invalid syntax for opening a file. Provide a path to the file. For example:\n"
                    "\n"
                    "    --open T1:/path/to/reference-image.nii.gz\n"
-                   "\n";
+                   "\n"
+                   "Skipping option.\n";
       continue;
     }
 
