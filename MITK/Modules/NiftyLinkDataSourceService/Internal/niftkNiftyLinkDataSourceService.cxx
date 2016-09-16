@@ -320,19 +320,22 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType
 
         mitk::PixelType pixelType = image->GetPixelType();
 
-        if (pixelType.GetPixelType() == itk::ImageIOBase::SCALAR && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+        if (pixelType.GetPixelType() == itk::ImageIOBase::SCALAR
+            && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
         {
             msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
             msg->SetNumComponents(1);
             sizeOfBuffer *= 1;
         }
-        else if (pixelType.GetPixelType() == itk::ImageIOBase::RGB && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+        else if (pixelType.GetPixelType() == itk::ImageIOBase::RGB
+                 && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
         {
             msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
             msg->SetNumComponents(3);
             sizeOfBuffer *= 3;
         }
-        else if (pixelType.GetPixelType() == itk::ImageIOBase::RGBA && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+        else if (pixelType.GetPixelType() == itk::ImageIOBase::RGBA
+                 && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
         {
             msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
             msg->SetNumComponents(4);

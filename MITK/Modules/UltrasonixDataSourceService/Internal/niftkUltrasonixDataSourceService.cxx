@@ -108,7 +108,8 @@ bool UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, 
     for (unsigned int i = 0; i < numberOfPixelsInImage; ++i)
     {
       // This should set the alpha channel to 1, leaving other pixels (RGB) unchanged.
-      // ((unsigned int*)m_Buffer)[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000; // use with QImage::Format_ARGB32
+      // use with QImage::Format_ARGB32
+      // ((unsigned int*)m_Buffer)[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000;
 
       // Or do it this way, and we are outputing QImage::Format_RGB888
       readFrom++;
@@ -186,7 +187,7 @@ void UltrasonixDataSourceInterface::Connect(const QString& host)
   {
     m_Ulterius->toggleFreeze();
   }
-  m_Ulterius->setDataToAcquire(udtBPost32); 
+  m_Ulterius->setDataToAcquire(udtBPost32);
 }
 
 
@@ -229,14 +230,8 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
   }
   QString host = (properties.value("host")).toString();
 
-  if(!properties.contains("extension"))
-  {
-    mitkThrow() << "File extension not specified!";
-  }
-  QString extension = (properties.value("extension")).toString();
-
   // Basically, the data source should connect, stay connected and continuously stream.
-  // If the Sonix MDP is 'frozen' then assumedly the callback is not called, but the 
+  // If the Sonix MDP is 'frozen' then assumedly the callback is not called, but the
   // connection remains live.
 
   m_Ultrasonix->Connect(host);
