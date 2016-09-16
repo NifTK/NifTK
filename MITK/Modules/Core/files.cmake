@@ -13,21 +13,25 @@
 #============================================================================*/
 
 set(H_FILES
+  Algorithms/niftkCMC33LookUpTable.h
   Common/niftkImageOrientation.h
   Common/niftkImageConversion.h
-  LookupTables/niftkLookupTableProviderService.h
+  DataManagement/niftkLookupTableProviderService.h
 )
 
 set(CPP_FILES
-  Algorithms/niftkCoreObjectFactory.cxx
   Algorithms/niftkAffineTransformer.cxx
   Algorithms/niftkCMC33.cxx
   Algorithms/niftkImageToSurfaceFilter.cxx
   Algorithms/niftkMeshSmoother.cxx
+  Common/niftkCoreObjectFactory.cxx
+  Common/niftkFileIOUtils.cxx
   Common/niftkImageUtils.cxx
   Common/niftkImageOrientationUtils.cxx
   Common/niftkPointUtils.cxx
   Common/niftkMergePointClouds.cxx
+  DataManagement/niftkAffineTransformParametersDataNodeProperty.cxx
+  DataManagement/niftkAffineTransformDataNodeProperty.cxx
   DataManagement/niftkBasicMesh.cxx
   DataManagement/niftkBasicTriangle.cxx
   DataManagement/niftkBasicVec3D.cxx
@@ -42,21 +46,17 @@ set(CPP_FILES
   DataManagement/niftkDataNodeVisibilityTracker.cxx
   DataManagement/niftkDataStorageListener.cxx
   DataManagement/niftkDataStorageUtils.cxx
-  LookupTables/niftkLookupTableContainer.cxx
-  LookupTables/niftkLookupTableSaxHandler.cxx
-  LookupTables/niftkLookupTableManager.cxx
-  LookupTables/niftkVtkLookupTableUtils.cxx
+  DataManagement/niftkITKRegionParametersDataNodeProperty.cxx
+  DataManagement/niftkLabeledLookupTableProperty.cxx
+  DataManagement/niftkLookupTableContainer.cxx
+  DataManagement/niftkLookupTableSaxHandler.cxx
+  DataManagement/niftkLookupTableManager.cxx
+  DataManagement/niftkNamedLookupTableProperty.cxx
+  DataManagement/niftkVtkLookupTableUtils.cxx
   Rendering/niftkCoordinateAxesVtkMapper3D.cxx
   Rendering/niftkCustomVTKAxesActor.cxx
   Rendering/niftkFastPointSetVtkMapper3D.cxx
   Rendering/vtkOpenGLMatrixDrivenCamera.cxx
-  DataNodeProperties/niftkAffineTransformParametersDataNodeProperty.cxx
-  DataNodeProperties/niftkAffineTransformDataNodeProperty.cxx
-  DataNodeProperties/niftkITKRegionParametersDataNodeProperty.cxx
-  DataNodeProperties/niftkLabeledLookupTableProperty.cxx
-  DataNodeProperties/niftkNamedLookupTableProperty.cxx
-  IO/niftkFileIOUtils.cxx
-  #IO/niftkCoreIOMimeTypes.cxx
   Interactions/niftkPointSetUpdate.cxx
   Interactions/niftkAffineTransformDataInteractor3D.cxx
   Interactions/niftkInteractionEventObserverMutex.cxx
