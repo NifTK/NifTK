@@ -42,10 +42,27 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
     descriptor.WiredPortNumber = -1;
 
     mitk::NavigationTool::Pointer tool = m_NavigationToolStorage->GetTool(i);
+    if (tool.IsNull())
+    {
+      mitkThrow() << "Tool " << i << ", is NULL, suggesting a corrupt tool storage file.";
+    }
+
     std::string sromFileName = tool->GetCalibrationFile();
     if (sromFileName.empty() || sromFileName == "none") // its an aurora tool
     {
-      descriptor.WiredPortNumber = i; // This means, you have to have ports plugged in, in order.
+      int wpn = -1;
+      try
+      {
+        wpn = std::stoi(tool->GetIdentifier()); // Should throw on failure.
+      }
+      catch (std::invalid_argument& e)
+      {
+        mitkThrow() << "Caught '" << e.what() 
+          << "', which probably means the Identifier field is not an integer"
+          << " in the MITK IGTToolStorage file.";
+      }
+
+      descriptor.WiredPortNumber = wpn;
     }
     else // its a spectra wireless tool. Wired not supported.
     {
