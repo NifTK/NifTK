@@ -262,8 +262,6 @@ void IGIDataSourceManagerWidget::OnRemoveSource()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnCellDoubleClicked(int row, int column)
 {
-  QMutexLocker locker(&m_Lock);
-
   niftk::IGIDataSourceFactoryServiceI* factory = m_Manager->GetFactory(row);
   if (factory->HasConfigurationGui())
   {

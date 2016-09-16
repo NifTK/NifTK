@@ -24,7 +24,9 @@
 #include <QAudioInput>
 #include <QThread>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_DECLARE_METATYPE(QAudioFormat);
+#endif
 
 namespace niftk
 {
@@ -244,11 +246,11 @@ void QtAudioDataSourceService::StartWAVFile()
         wavheader[15] = ' ';
         *((unsigned int*  ) &wavheader[16]) = 16;   // fixed size fmt chunk
         *((unsigned short*) &wavheader[20]) = 1;   // pcm
-        *((unsigned short*) &wavheader[22]) = m_InputDevice->format().channels();
+        *((unsigned short*) &wavheader[22]) = m_InputDevice->format().channelCount();
         *((unsigned int*  ) &wavheader[24]) = m_InputDevice->format().sampleRate();
         *((unsigned int*  ) &wavheader[28]) = m_InputDevice->format().sampleRate()
-            * m_InputDevice->format().channels() * m_InputDevice->format().sampleSize() / 8;
-        *((unsigned short*) &wavheader[32]) = m_InputDevice->format().channels()
+            * m_InputDevice->format().channelCount() * m_InputDevice->format().sampleSize() / 8;
+        *((unsigned short*) &wavheader[32]) = m_InputDevice->format().channelCount()
             * m_InputDevice->format().sampleSize() / 8;
         *((unsigned short*) &wavheader[34]) = m_InputDevice->format().sampleSize();
         wavheader[36] = 'd';

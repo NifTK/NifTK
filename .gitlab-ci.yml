@@ -142,7 +142,7 @@ Mac continuous build:
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
         -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
         ${src_dir}
-  - make -j 8
+  - make -j 4
 
   only:
   - branches
@@ -331,7 +331,7 @@ Mac release build:
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
         ${src_dir}
-  - make -j 8
+  - make -j 4
 
   only:
   - tags

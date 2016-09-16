@@ -17,7 +17,7 @@
 #include <mitkImageReadAccessor.h>
 #include <mitkImageWriteAccessor.h>
 #include <mitkProperties.h>
-#include <Conversion/ImageConversion.h>
+#include <niftkOpenCVImageConversion.h>
 #include <stdexcept>
 
 #ifdef _USE_CUDA
@@ -395,9 +395,11 @@ void Undistortion::ValidateInput()
 
   // mitk does not behave well if the image is not properly initialised.
   // we simply use a size check for that.
-  if ((m_Image->GetDimension()  != 2) ||
+  if ((m_Image->GetDimension()  != 3) ||
       (m_Image->GetDimension(0) == 0) ||
-      (m_Image->GetDimension(1) == 0))
+      (m_Image->GetDimension(1) == 0) ||
+      (m_Image->GetDimension(2) == 0)
+      )
   {
     throw std::runtime_error("Input image has invalid/zero dimensions");
   }
@@ -471,7 +473,9 @@ void Undistortion::ValidateInput()
     assert(m_MapY != 0);
 
     if ((m_Image->GetDimension(0) != (unsigned int) m_MapX->width) ||
-        (m_Image->GetDimension(1) != (unsigned int) m_MapX->height))
+        (m_Image->GetDimension(1) != (unsigned int) m_MapX->height) ||
+        (m_Image->GetDimension(2) != 1)
+        )
     {
       m_RecomputeCache = true;
     }
@@ -495,6 +499,7 @@ void Undistortion::PrepareOutput(mitk::Image::Pointer& outputImage)
     // size of the image
     haswrongsize |= outputImage->GetDimension(0) != m_Image->GetDimension(0);
     haswrongsize |= outputImage->GetDimension(1) != m_Image->GetDimension(1);
+    haswrongsize |= outputImage->GetDimension(2) != m_Image->GetDimension(2);
 
     if (haswrongsize)
     {

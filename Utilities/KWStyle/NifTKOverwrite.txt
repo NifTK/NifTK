@@ -7,8 +7,10 @@ niftkNiftyLinkClientDataSourceService\.h InternalVariables Disable
 niftkNiftyLinkServerDataSourceService\.h InternalVariables Disable
 niftkOpenCVVideoDataSourceService\.h InternalVariables Disable
 niftkQtAudioDataSourceService\.h InternalVariables Disable
+niftkSingleVideoFrameDataSourceService\.h InternalVariables Disable
 niftkUltrasonixDataSourceService\.h InternalVariables Disable
 niftkSerializerMacros\.h Namespace Disable
 niftkWindowsHotkeyHandler\.h MemberFunctions Disable
 niftkSharedOGLContext\.h InternalVariables Disable
 niftkNiftyCalVideoCalibrationManager\.h InternalVariables Disable
+niftkSingleFrameDataSourceService\.h InternalVariables Disable

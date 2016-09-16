@@ -16,8 +16,8 @@ find_package(NiftyLink)
 if (NiftyLink_FOUND)
 
   MITK_CREATE_MODULE(
-    DEPENDS MitkCore niftkCore niftkIGIDataSources niftkOpenCVImageConversion
-    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets+Network NiftyLink OpenCV
+    DEPENDS niftkCore niftkIGIDataSources niftkQImageConversion
+    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets+Network NiftyLink
     AUTOLOAD_WITH niftkIGIServices
   )
 

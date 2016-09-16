@@ -12,43 +12,42 @@
 
 =============================================================================*/
 
-#include "niftkUltrasonixDataType.h"
+#include "niftkBKMedicalDataSourceActivator.h"
+#include "niftkBKMedicalDataSourceFactory.h"
+#include <niftkIGIDataSourceFactoryServiceI.h>
+#include <usServiceProperties.h>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-UltrasonixDataType::UltrasonixDataType()
-: m_Image(NULL)
+BKMedicalDataSourceActivator::BKMedicalDataSourceActivator()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-UltrasonixDataType::~UltrasonixDataType()
+BKMedicalDataSourceActivator::~BKMedicalDataSourceActivator()
 {
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
 }
 
 
 //-----------------------------------------------------------------------------
-void UltrasonixDataType::CloneImage(const IplImage *image)
+void BKMedicalDataSourceActivator::Load(us::ModuleContext* context)
 {
-  if (m_Image != NULL)
-  {
-    cvReleaseImage(&m_Image);
-  }
-  m_Image = cvCloneImage(image);
+  m_Factory.reset(new BKMedicalDataSourceFactory);
+  us::ServiceProperties props;
+  props["Name"] = std::string("BKMedicalDataSourceFactory");
+  context->RegisterService<IGIDataSourceFactoryServiceI>(m_Factory.get(), props);
 }
 
 
 //-----------------------------------------------------------------------------
-const IplImage* UltrasonixDataType::GetImage()
+void BKMedicalDataSourceActivator::Unload(us::ModuleContext*)
 {
-  return m_Image;
+  // NOTE: The services are automatically unregistered
 }
 
 } // end namespace
+
+US_EXPORT_MODULE_ACTIVATOR(niftk::BKMedicalDataSourceActivator)

@@ -12,7 +12,14 @@
 #
 #============================================================================*/
 
-if (QT_QTMULTIMEDIA_INCLUDE_DIR)
+set(_got_multimedia OFF)
+if (MITK_USE_Qt5 AND Qt5Multimedia_DIR)
+  set(_got_multimedia ON)
+elseif(MITK_USE_Qt4 AND QT_QTMULTIMEDIA_INCLUDE_DIR)
+  set(_got_multimedia ON)
+endif()
+
+if (${_got_multimedia})
 
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources

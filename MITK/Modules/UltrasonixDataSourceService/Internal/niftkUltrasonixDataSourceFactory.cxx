@@ -15,15 +15,15 @@
 #include "niftkUltrasonixDataSourceFactory.h"
 #include "niftkUltrasonixDataSourceService.h"
 #include <niftkLagDialog.h>
-#include <niftkIPHostPortDialog.h>
+#include <niftkIPHostExtensionDialog.h>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
 UltrasonixDataSourceFactory::UltrasonixDataSourceFactory()
-: IGIDataSourceFactoryServiceI("Ultrasonix (Networked)",
-                               true,  // configure host and port at startup
+: IGIDataSourceFactoryServiceI("Ultrasonix (Local)",
+                               true,  // configure host, port, extension at startup
                                true   // can configure lag while running
                                )
 {
@@ -43,9 +43,9 @@ IGIDataSourceI::Pointer UltrasonixDataSourceFactory::CreateService(
 {
   niftk::UltrasonixDataSourceService::Pointer serviceInstance
       = UltrasonixDataSourceService::New(this->GetName(), // factory name
-                                          properties,      // configure at startup
-                                          dataStorage
-                                          );
+                                         properties,      // configure at startup
+                                         dataStorage
+                                        );
 
   return serviceInstance.GetPointer();
 }
@@ -54,7 +54,7 @@ IGIDataSourceI::Pointer UltrasonixDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* UltrasonixDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  return new niftk::IPHostPortDialog(parent);
+  return new niftk::IPHostExtensionDialog(parent);
 }
 
 

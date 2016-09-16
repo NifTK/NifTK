@@ -34,7 +34,7 @@ namespace niftk
 
 /**
 * \class QtAudioDataSourceService
-* \brief Provides a feed of images from QtAudio MDP, as an IGIDataSourceServiceI.
+* \brief Provides a feed of images from QtAudio, as an IGIDataSourceServiceI.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
