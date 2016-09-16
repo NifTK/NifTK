@@ -50,7 +50,18 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
     std::string sromFileName = tool->GetCalibrationFile();
     if (sromFileName.empty() || sromFileName == "none") // its an aurora tool
     {
-      int wpn = std::stoi(tool->GetIdentifier()); // Should throw on failure.
+      int wpn = -1;
+      try
+      {
+        wpn = std::stoi(tool->GetIdentifier()); // Should throw on failure.
+      }
+      catch (std::invalid_argument& e)
+      {
+        mitkThrow() << "Caught '" << e.what() 
+          << "', which probably means the Identifier field is not an integer"
+          << " in the MITK IGTToolStorage file.";
+      }
+
       descriptor.WiredPortNumber = wpn;
     }
     else // its a spectra wireless tool. Wired not supported.
