@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
+  INCLUDE_DIRS Algorithms DataManagement Interactions
   PACKAGE_DEPENDS ITK|ITKCommon
   DEPENDS niftkCore MitkSegmentation
 )
