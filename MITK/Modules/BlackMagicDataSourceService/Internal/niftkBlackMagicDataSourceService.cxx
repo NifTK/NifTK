@@ -67,6 +67,8 @@ void BlackMagicDataSourceService::SetProperties(const IGIDataSourceProperties& p
 //-----------------------------------------------------------------------------
 IGIDataSourceProperties BlackMagicDataSourceService::GetProperties() const
 {
+  IGIDataSourceProperties props;
+  return props;
 }
 
 
@@ -99,7 +101,6 @@ void BlackMagicDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType r
 bool BlackMagicDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
                                                     niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
 {
-  // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
   niftk::IGIDataType::IGITimeType  firstTimeStampFound = 0;
   niftk::IGIDataType::IGITimeType  lastTimeStampFound  = 0;
 
