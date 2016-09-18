@@ -215,7 +215,7 @@ QString LookupTableProviderServiceImpl::LoadLookupTable(const QString& fileName)
   }
 
   // create a lookup table
-  LookupTableContainer* loadedContainer;
+  LookupTableContainer* loadedContainer = nullptr;
 
   if (fileName.contains(".lut"))
   {
