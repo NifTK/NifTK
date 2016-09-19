@@ -48,6 +48,9 @@ set(proj_DEPENDENCIES Boost GFlags GLog ProtoBuf-CMake ProtoBuf HDF5)
 if(NOT APPLE)
   list(APPEND proj_DEPENDENCIES OpenBLAS)
 endif()
+if(MITK_USE_OpenCV)
+  list(APPEND proj_DEPENDENCIES OpenCV)
+endif()
 
 if(${NIFTK_USE_CUDA})
   set(CPU_ONLY OFF)
@@ -136,6 +139,7 @@ if(NOT DEFINED Caffe_DIR)
       #
       -DUSE_LEVELDB:BOOL=OFF
       -DUSE_LMDB:BOOL=OFF
+      -DUSE_OPENCV:BOOL=ON
       -DBUILD_python:BOOL=OFF
       -DCPU_ONLY:BOOL=${CPU_ONLY}
     CMAKE_CACHE_ARGS
