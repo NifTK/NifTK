@@ -78,9 +78,13 @@ if(NOT APPLE)
   )
 endif()
 if(WIN32)
-  list(APPEND _openblas_args -DOpenBLAS_LIB:FILEPATH=${OpenBLAS_LIBRARY_DIR}/libopenblas.dll)
+  list(APPEND _openblas_args -DOpenBLAS_LIB:FILEPATH=${OpenBLAS_LIBRARY_DIR}/libopenblas.lib)
 else()
   list(APPEND _openblas_args -DOpenBLAS_LIB:FILEPATH=${OpenBLAS_LIBRARY_DIR}/libopenblas.so)
+endif()
+
+if (WIN32)
+  set(CAFFE_CXX_FLAGS "-DNOMINMAX")
 endif()
 
 if(NOT DEFINED Caffe_DIR)
@@ -100,6 +104,7 @@ if(NOT DEFINED Caffe_DIR)
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
+	  "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${CAFFE_CXX_FLAGS}"
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       -DNIFTK_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
       #-DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
