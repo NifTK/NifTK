@@ -120,9 +120,7 @@ void ImageStatisticsView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
-        .Cast<berry::IBerryPreferences>();
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(VIEW_ID);
   assert( prefs );
 
   m_AutoUpdate = prefs->GetBool(ImageStatisticsViewPreferencesPage::AUTO_UPDATE_NAME, false);

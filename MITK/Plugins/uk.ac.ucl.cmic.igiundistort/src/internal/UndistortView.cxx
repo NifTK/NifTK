@@ -686,7 +686,7 @@ void UndistortView::OnPreferencesChanged(const berry::IBerryPreferences*)
 void UndistortView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(UndistortViewPreferencesPage::s_PrefsNodeName)).Cast<berry::IBerryPreferences>();
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(UndistortViewPreferencesPage::s_PrefsNodeName);
   assert(prefs);
 
   m_LastFile = prefs->Get(UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName, "");
