@@ -50,7 +50,7 @@ if(NOT APPLE)
 endif()
 
 if(${NIFTK_USE_CUDA})
-  set(CPU_ONLY ON)
+  set(CPU_ONLY OFF)
 else()
   set(CPU_ONLY ON)
 endif()
