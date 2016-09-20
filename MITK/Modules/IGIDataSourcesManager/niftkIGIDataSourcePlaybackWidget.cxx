@@ -257,8 +257,6 @@ void IGIDataSourcePlaybackWidget::OnPlayStart()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnRecordStart()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (!m_RecordPushButton->isEnabled())
   {
     // shortcut in case we are already recording.

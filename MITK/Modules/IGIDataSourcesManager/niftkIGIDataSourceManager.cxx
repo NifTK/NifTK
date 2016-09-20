@@ -200,6 +200,8 @@ QString IGIDataSourceManager::GetDefaultPath()
 //-----------------------------------------------------------------------------
 QString IGIDataSourceManager::GetDirectoryName()
 {
+  QMutexLocker locker(&m_Lock);
+
   QString baseDirectory = m_DirectoryPrefix;
 
   m_TimeStampGenerator->GetTime();
@@ -294,6 +296,8 @@ int IGIDataSourceManager::GetFramesPerSecond() const
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::WriteDescriptorFile(QString absolutePath)
 {
+  QMutexLocker locker(&m_Lock);
+
   // dump our descriptor file
   QDir directory(absolutePath);
   QFile descfile(absolutePath + QDir::separator() + "descriptor.cfg");
@@ -543,6 +547,8 @@ void IGIDataSourceManager::RemoveAllSources()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartRecording(QString absolutePath)
 {
+  QMutexLocker locker(&m_Lock);
+
   QString directoryName = absolutePath;
   QDir directory(directoryName);
   QDir().mkpath(directoryName);
@@ -609,7 +615,6 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
                                          int& sliderValue
                                          )
 {
-  QMutexLocker locker(&m_Lock);
 
   if (m_Sources.size() == 0)
   {
@@ -724,6 +729,9 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StopPlayback()
 {
+
+  QMutexLocker locker(&m_Lock);
+
   for (int i = 0; i < m_Sources.size(); i++)
   {
     m_Sources[i]->StopPlayback();
