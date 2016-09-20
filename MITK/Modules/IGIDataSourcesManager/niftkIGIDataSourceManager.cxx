@@ -795,6 +795,8 @@ int IGIDataSourceManager::ComputePlaybackTimeSliderValue(QString textEditField) 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetPlaybackTime(const IGIDataType::IGITimeType& time)
 {
+  QMutexLocker locker(&m_Lock);
+
   m_CurrentTime = time;
   m_PlaybackSliderValue = (time - m_PlaybackSliderBase) / m_PlaybackSliderFactor;
 }
@@ -844,6 +846,8 @@ void IGIDataSourceManager::AdvancePlaybackTimer()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetIsGrabbingScreen(QString directoryName, bool isGrabbing)
 {
+  QMutexLocker locker(&m_Lock);
+
   m_IsGrabbingScreen = isGrabbing;
   m_ScreenGrabDir = directoryName;
 }
