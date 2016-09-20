@@ -16,29 +16,30 @@
 
  ============================================================================*/
 
-#ifndef it_unito_cim_intensityprofile_Activator_h
-#define it_unito_cim_intensityprofile_Activator_h
+#include "niftkPluginActivator.h"
 
-#include <ctkPluginActivator.h>
+#include <QtPlugin>
 
-namespace mitk {
+#include "IntensityProfileView.h"
+#include "PropagateSegmentationAlongTimeAction.h"
 
-class it_unito_cim_intensityprofile_Activator :
-  public QObject, public ctkPluginActivator
+namespace niftk
 {
-  Q_OBJECT
-  Q_INTERFACES(ctkPluginActivator)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  Q_PLUGIN_METADATA(IID "it_unito_cim_intensityprofile")
-#endif
 
-public:
+void PluginActivator::start(ctkPluginContext* context)
+{
+  BERRY_REGISTER_EXTENSION_CLASS(IntensityProfileView, context);
+  BERRY_REGISTER_EXTENSION_CLASS(PropagateSegmentationAlongTimeAction, context);
+}
 
-  void start(ctkPluginContext* context);
-  void stop(ctkPluginContext* context);
-
-}; // it_unito_cim_intensityprofile_Activator
+void PluginActivator::stop(ctkPluginContext* context)
+{
+  Q_UNUSED(context)
+}
 
 }
 
-#endif // it_unito_cim_intensityprofile_Activator_h
+//-----------------------------------------------------------------------------
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+  Q_EXPORT_PLUGIN2(it_unito_cim_intensityprofile, niftk::PluginActivator)
+#endif

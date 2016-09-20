@@ -27,7 +27,6 @@ set(INTERNAL_CPP_FILES
 set(MOC_H_FILES
   src/internal/niftkPluginActivator.h
   src/niftkNiftyMIDASApplication.h
-  src/niftkNiftyMIDASWorkbenchAdvisor.h
   src/niftkNiftyMIDASWorkbenchWindowAdvisor.h
   src/niftkQCPerspective.h
   src/niftkSegmentationPerspective.h
