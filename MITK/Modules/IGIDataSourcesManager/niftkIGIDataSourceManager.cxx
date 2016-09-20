@@ -552,6 +552,7 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
     m_Sources[i]->SetRecordingLocation(directory.absolutePath());
     m_Sources[i]->StartRecording();
   }
+  this->WriteDescriptorFile(absolutePath);
 }
 
 

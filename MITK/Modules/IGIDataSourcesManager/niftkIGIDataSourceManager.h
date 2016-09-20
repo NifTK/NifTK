@@ -127,14 +127,6 @@ public:
   int GetFramesPerSecond() const;
 
   /**
-  * \brief Writes the descriptor file for a recording session.
-  *
-  * This descriptor is then used to reconstruct the right number
-  * of data sources when you playback.
-  */
-  void WriteDescriptorFile(QString absolutePath);
-
-  /**
   * \brief Retrieves the name of all the available data source factory names.
   *
   * The returned list is the display name, as shown in the GUI,
@@ -344,6 +336,14 @@ private:
   * which should be called from StartPlayback() and StopPlayback().
   */
   void SetIsPlayingBack(bool isPlayingBack);
+
+  /**
+  * \brief Writes the descriptor file for a recording session.
+  *
+  * This descriptor is then used to reconstruct the right number
+  * of data sources when you playback.
+  */
+  void WriteDescriptorFile(QString absolutePath);
 
   /**
   * \brief A bit of a hack to grab the currently focussed screen, and save as .png.

@@ -280,18 +280,17 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
   QDir directory(directoryName);
   m_DirectoryChooser->setCurrentPath(directory.absolutePath());
   m_DirectoryChooser->setEnabled(false);
-  m_Manager->StartRecording(directory.absolutePath());
 
   // Tell interested parties (e.g. other plugins) that recording has started.
-  // We do this before dumping the descriptor because that might pop up a message box,
+  // We do this before starting recording because that might pop up a message box,
   // which would stall delivering this signal.
   emit RecordingStarted(directory.absolutePath());
 
   try
   {
-    m_Manager->WriteDescriptorFile(directory.absolutePath());
-
-  } catch (mitk::Exception& e)
+    m_Manager->StartRecording(directory.absolutePath());
+  }
+  catch (mitk::Exception& e)
   {
     QMessageBox msgbox;
     msgbox.setText("Error creating descriptor file.");
