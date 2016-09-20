@@ -53,7 +53,7 @@ if(MITK_USE_OpenCV)
 endif()
 
 if(${NIFTK_USE_CUDA})
-  set(CPU_ONLY OFF)
+  set(CPU_ONLY ON)
 else()
   set(CPU_ONLY ON)
 endif()
