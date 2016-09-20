@@ -148,8 +148,6 @@ void IGIDataSourcePlaybackWidget::StopRecording()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::PauseUpdate()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->StopUpdateTimer();
 }
 
@@ -157,8 +155,6 @@ void IGIDataSourcePlaybackWidget::PauseUpdate()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::RestartUpdate()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->StartUpdateTimer();
 }
 
