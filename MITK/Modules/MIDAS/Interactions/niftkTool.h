@@ -113,10 +113,10 @@ public:
   static const std::string INITIAL_SEEDS_NAME;
 
   /// \brief When called, we get a reference to the set of seeds, and set up the interactor(s).
-  virtual void Activated();
+  virtual void Activated() override;
 
   /// \brief When called, we unregister the reference to the set of seeds, and deactivate the interactors(s).
-  virtual void Deactivated();
+  virtual void Deactivated() override;
 
   /// \brief Used to signal that the number of seeds has changed
   mitk::Message1<int> NumberOfSeedsHasChanged;
@@ -130,12 +130,12 @@ public:
   /// \brief Adds an event filter that can reject a state machine event or let it pass through.
   /// Overrides niftk::FilteringStateMachine::InstallEventFilter() so that it adds every filter also to the
   /// internal point set interactor.
-  virtual void InstallEventFilter(StateMachineEventFilter* eventFilter);
+  virtual void InstallEventFilter(StateMachineEventFilter* eventFilter) override;
 
   /// \brief Removes an event filter that can reject a state machine event or let it pass through.
   /// Overrides niftkFilteringStateMachine::InstallEventFilter() to that it removes every filter also from the
   /// internal point set interactor.
-  virtual void RemoveEventFilter(StateMachineEventFilter* eventFilter);
+  virtual void RemoveEventFilter(StateMachineEventFilter* eventFilter) override;
 
 protected:
 
@@ -150,7 +150,7 @@ protected:
   ///
   /// Note that this function is purposefully not virtual. Eventual subclasses should
   /// override the CanHandle function.
-  bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode);
+  bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode) override;
 
   /// \brief Makes the current window re-render
   virtual void RenderCurrentWindow(const mitk::PositionEvent& event);

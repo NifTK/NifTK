@@ -41,36 +41,37 @@ namespace niftk
  * and includes Undo/Redo functionality. Given the above list, to remove seeds most people
  * hold the middle mouse button down, and drag it around, sucking up the seed points like a hoover.
  */
-class NIFTKMIDAS_EXPORT SeedTool : public Tool {
+class NIFTKMIDAS_EXPORT SeedTool : public Tool
+{
 
 public:
 
   mitkClassMacro(SeedTool, Tool)
   itkNewMacro(SeedTool)
 
-  virtual void InitializeStateMachine();
+  virtual void InitializeStateMachine() override;
 
   /// \see mitk::Tool::GetName()
-  virtual const char* GetName() const;
+  virtual const char* GetName() const override;
 
   /// \see mitk::Tool::GetXPM()
-  virtual const char** GetXPM() const;
+  virtual const char** GetXPM() const override;
 
   /// \brief When called, we create and register a point set interactor.
-  virtual void Activated();
+  virtual void Activated() override;
 
   /// \brief When called, we unregister the point set interactor.
-  virtual void Deactivated();
+  virtual void Deactivated() override;
 
   /// \brief Adds an event filter that can reject a state machine event or let it pass through.
   /// Overrides niftk::FilteringStateMachine::InstallEventFilter() so that it adds every filter also to the
   /// internal point set interactor.
-  virtual void InstallEventFilter(StateMachineEventFilter* eventFilter);
+  virtual void InstallEventFilter(StateMachineEventFilter* eventFilter) override;
 
   /// \brief Removes an event filter that can reject a state machine event or let it pass through.
   /// Overrides niftk::tateMachineFilters::InstallEventFilter() to that it removes every filter also from the
   /// internal point set interactor.
-  virtual void RemoveEventFilter(StateMachineEventFilter* eventFilter);
+  virtual void RemoveEventFilter(StateMachineEventFilter* eventFilter) override;
 
 protected:
 

@@ -46,7 +46,7 @@ protected:
   /**
    * \brief Derived classes implement this to grab a new image.
    */
-  virtual niftk::IGIDataType::Pointer GrabImage() = 0;
+  virtual niftk::IGIDataType::Pointer GrabImage() override = 0;
 
   /**
    * \see niftk::SingleVideoFrameDataSourceService::SaveImage().
