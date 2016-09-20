@@ -22,7 +22,6 @@
 #include <QmitkAbstractView.h>
 
 #include <niftkIBaseView.h>
-#include "internal/niftkVisibilityChangeObserver.h"
 
 namespace mitk
 {
@@ -39,15 +38,13 @@ class BaseViewPrivate;
 
 /**
  * \class BaseView
- * \brief Base view component for plugins listening to visibility change events,
- * focus changed events and so on.
+ * \brief Base view component for plugins listening to focus change events and so on.
  *
  * \ingroup uk_ac_ucl_cmic_common
  */
 class COMMON_EXPORT BaseView
   : public QmitkAbstractView,
     public virtual IBaseView,
-    public VisibilityChangeObserver,
     public mitk::ILifecycleAwarePart
 {
   Q_OBJECT
@@ -58,12 +55,6 @@ public:
 
   explicit BaseView();
   virtual ~BaseView();
-
-  /**
-   * \brief Called when the visibility of a node in the data storage changed.
-   * \param node The node in the data storage whose visibility property has been modified.
-   */
-  virtual void onVisibilityChanged(const mitk::DataNode* node) override;
 
   /**
    * \brief Called when the window focus changes, and tracks the current mitk::BaseRenderer*.
@@ -197,9 +188,6 @@ protected:
   void SetViewToCoordinate(const mitk::Point3D &coordinate);
 
 private:
-
-  void onNodeAddedInternal(const mitk::DataNode*);
-  void onNodeRemovedInternal(const mitk::DataNode*);
 
   QScopedPointer<BaseViewPrivate> d_ptr;
 

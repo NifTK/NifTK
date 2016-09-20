@@ -34,13 +34,19 @@
 #include <mitkIRenderWindowPartListener.h>
 
 #include <itkFixedArray.h>
+
 #include <niftkBaseView.h>
 
-class IntensityProfileViewPrivate;
+#include "internal/niftkVisibilityChangeObserver.h"
 
 namespace mitk {
 class DataNode;
 }
+
+namespace niftk
+{
+
+class IntensityProfileViewPrivate;
 
 /*!
  \brief IntensityProfileView
@@ -50,7 +56,10 @@ class DataNode;
  \sa QmitkFunctionality
  \ingroup Functionalities
  */
-class IntensityProfileView: public niftk::BaseView, public mitk::IRenderWindowPartListener
+class IntensityProfileView :
+    public niftk::BaseView,
+    public VisibilityChangeObserver,
+    public mitk::IRenderWindowPartListener
 {
   // this is needed for all Qt objects that should have a Qt meta-object
   // (everything that derives from QObject and wants to have signal/slots)
@@ -65,10 +74,10 @@ public:
   IntensityProfileView();
   virtual ~IntensityProfileView();
 
-  virtual void CreateQtPartControl(QWidget *parent);
+  virtual void CreateQtPartControl(QWidget *parent) override;
 
   /// \brief Called by framework, sets the focus on a specific widget.
-  virtual void SetFocus();
+  virtual void SetFocus() override;
 
 
   void plotProfileNode(mitk::DataNode::Pointer selectedNode);
@@ -76,17 +85,17 @@ public:
   ///
   /// Called when the visibility of a node in the data storage changed
   ///
-  virtual void onVisibilityChanged(const mitk::DataNode* node);
+  virtual void OnVisibilityChanged(const mitk::DataNode* node) override;
 
-  virtual void NodeAdded(const mitk::DataNode* node);
-  virtual void NodeRemoved(const mitk::DataNode* node);
-  virtual void NodeChanged(const mitk::DataNode* node);
+  virtual void NodeAdded(const mitk::DataNode* node) override;
+  virtual void NodeRemoved(const mitk::DataNode* node) override;
+  virtual void NodeChanged(const mitk::DataNode* node) override;
 
-  virtual void RenderWindowPartActivated(mitk::IRenderWindowPart* renderWindowPart);
-  virtual void RenderWindowPartDeactivated(mitk::IRenderWindowPart* renderWindowPart);
+  virtual void RenderWindowPartActivated(mitk::IRenderWindowPart* renderWindowPart) override;
+  virtual void RenderWindowPartDeactivated(mitk::IRenderWindowPart* renderWindowPart) override;
 
 protected:
-  bool eventFilter(QObject *obj, QEvent *event);
+  bool eventFilter(QObject *obj, QEvent *event) override;
 
 private slots:
   void onProfileNodeChanged();
@@ -102,6 +111,10 @@ private slots:
   void plotStoredProfiles();
 
 private:
+
+  void onNodeAddedInternal(const mitk::DataNode* node);
+  void onNodeRemovedInternal(const mitk::DataNode* node);
+
   void onCrosshairVisibilityOn();
   void onCrosshairVisibilityOff();
 
@@ -139,8 +152,11 @@ private:
   QScopedPointer<IntensityProfileViewPrivate> d_ptr;
   Ui::IntensityProfileView* ui;
 
-  Q_DECLARE_PRIVATE(IntensityProfileView);
-  Q_DISABLE_COPY(IntensityProfileView);
+  Q_DECLARE_PRIVATE(IntensityProfileView)
+  Q_DISABLE_COPY(IntensityProfileView)
+
 };
+
+}
 
 #endif

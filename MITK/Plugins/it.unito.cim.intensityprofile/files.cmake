@@ -2,10 +2,12 @@ set(SRC_CPP_FILES
 )
 
 set(INTERNAL_CPP_FILES
-  it_unito_cim_intensityprofile_Activator.cxx
+  niftkPluginActivator.cxx
   IntensityProfileView.cxx
   PropagateSegmentationAlongTimeAction.cxx
   ItkProcessObserver.cxx
+  niftkVisibilityChangedCommand.cxx
+  niftkVisibilityChangeObserver.cxx
 )
 
 set(UI_FILES
@@ -13,7 +15,7 @@ set(UI_FILES
 )
 
 set(MOC_H_FILES
-  src/internal/it_unito_cim_intensityprofile_Activator.h
+  src/internal/niftkPluginActivator.h
   src/internal/IntensityProfileView.h
   src/internal/PropagateSegmentationAlongTimeAction.h
 )

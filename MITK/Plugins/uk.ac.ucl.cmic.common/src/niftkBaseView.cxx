@@ -25,8 +25,6 @@
 #include <mitkWeakPointerProperty.h>
 #include <QmitkRenderWindow.h>
 
-#include "internal/niftkVisibilityChangedCommand.h"
-
 
 namespace niftk
 {
@@ -37,11 +35,6 @@ public:
 
   BaseViewPrivate();
   ~BaseViewPrivate();
-
-  QMap<const mitk::DataNode*, unsigned long> visibilityObserverTags;
-
-  mitk::MessageDelegate1<BaseView, const mitk::DataNode*>* addNodeEventListener;
-  mitk::MessageDelegate1<BaseView, const mitk::DataNode*>* removeNodeEventListener;
 
   void OnFocusedWindowDeleted()
   {
@@ -93,27 +86,6 @@ BaseView::BaseView()
 {
   Q_D(BaseView);
 
-  mitk::DataStorage* dataStorage = this->GetDataStorage();
-  if (dataStorage) {
-
-    mitk::DataStorage::SetOfObjects::ConstPointer everyNode = dataStorage->GetAll();
-    mitk::DataStorage::SetOfObjects::ConstIterator it = everyNode->Begin();
-    mitk::DataStorage::SetOfObjects::ConstIterator end = everyNode->End();
-    while (it != end)
-    {
-      this->onNodeAddedInternal(it->Value());
-      ++it;
-    }
-
-    d->addNodeEventListener =
-        new mitk::MessageDelegate1<BaseView, const mitk::DataNode*>(this, &BaseView::onNodeAddedInternal);
-    dataStorage->AddNodeEvent.AddListener(*d->addNodeEventListener);
-
-    d->removeNodeEventListener =
-        new mitk::MessageDelegate1<BaseView, const mitk::DataNode*>(this, &BaseView::onNodeRemovedInternal);
-    dataStorage->RemoveNodeEvent.AddListener(*d->removeNodeEventListener);
-  }
-
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   if (focusManager)
   {
@@ -130,25 +102,6 @@ BaseView::BaseView()
 BaseView::~BaseView() {
   Q_D(BaseView);
 
-  mitk::DataStorage* dataStorage = GetDataStorage();
-  if (dataStorage)
-  {
-    dataStorage->AddNodeEvent.RemoveListener(*d->addNodeEventListener);
-    dataStorage->RemoveNodeEvent.RemoveListener(*d->removeNodeEventListener);
-
-    delete d->addNodeEventListener;
-    delete d->removeNodeEventListener;
-  }
-
-  foreach (const mitk::DataNode* node, d->visibilityObserverTags.keys())
-  {
-    mitk::BaseProperty* property = node->GetProperty("visible");
-    if (property)
-    {
-      property->RemoveObserver(d->visibilityObserverTags[node]);
-    }
-  }
-
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
   if (focusManager)
   {
@@ -161,40 +114,6 @@ BaseView::~BaseView() {
 bool BaseView::IsExclusiveFunctionality() const
 {
   return false;
-}
-
-
-//-----------------------------------------------------------------------------
-void BaseView::onNodeAddedInternal(const mitk::DataNode* node)
-{
-  Q_D(BaseView);
-  mitk::BaseProperty* property = node->GetProperty("visible");
-  if (property)
-  {
-    VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node);
-    d->visibilityObserverTags[node] = property->AddObserver(itk::ModifiedEvent(), command);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void BaseView::onNodeRemovedInternal(const mitk::DataNode* node)
-{
-  Q_D(BaseView);
-  if (d->visibilityObserverTags.contains(node))
-  {
-    mitk::BaseProperty* property = node->GetProperty("visible");
-    if (property) {
-      property->RemoveObserver(d->visibilityObserverTags[node]);
-    }
-    d->visibilityObserverTags.remove(node);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void BaseView::onVisibilityChanged(const mitk::DataNode* /*node*/)
-{
 }
 
 
