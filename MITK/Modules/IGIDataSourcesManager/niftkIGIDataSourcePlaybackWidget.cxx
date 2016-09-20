@@ -162,8 +162,6 @@ void IGIDataSourcePlaybackWidget::RestartUpdate()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnPlayStart()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (m_PlayPushButton->isChecked())
   {
     QString playbackpath = m_DirectoryChooser->currentPath();

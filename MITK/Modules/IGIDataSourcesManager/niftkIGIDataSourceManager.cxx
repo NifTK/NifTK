@@ -609,6 +609,8 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
                                          int& sliderValue
                                          )
 {
+  QMutexLocker locker(&m_Lock);
+
   if (m_Sources.size() == 0)
   {
     mitkThrow() << "Please create sources first.";
