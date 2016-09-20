@@ -297,8 +297,6 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnStop()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (m_PlayPushButton->isChecked())
   {
     m_Manager->SetIsPlayingBackAutomatically(false);

@@ -564,6 +564,8 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StopRecording()
 {
+  QMutexLocker locker(&m_Lock);
+
   for (int i = 0; i < m_Sources.size(); i++)
   {
     m_Sources[i]->StopRecording();
@@ -729,7 +731,6 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StopPlayback()
 {
-
   QMutexLocker locker(&m_Lock);
 
   for (int i = 0; i < m_Sources.size(); i++)
@@ -809,6 +810,8 @@ void IGIDataSourceManager::SetIsPlayingBack(bool isPlayingBack)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetIsPlayingBackAutomatically(bool isPlayingBackAutomatically)
 {
+  QMutexLocker locker(&m_Lock);
+
   m_IsPlayingBackAutomatically = isPlayingBackAutomatically;
 }
 
