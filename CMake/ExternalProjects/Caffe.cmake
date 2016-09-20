@@ -38,7 +38,7 @@ endif()
 # Microsoft Caffe Windows branch https://github.com/BVLC/caffe/tree/windows
 #set(version "5db3074")
 # Microsoft Caffe Windows branch with CaffeNifTK master commits copied over
-set(version "fbd28e6713")
+set(version "aa46571a11")
 
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
