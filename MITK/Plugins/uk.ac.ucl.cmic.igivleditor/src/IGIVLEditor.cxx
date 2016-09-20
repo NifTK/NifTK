@@ -322,7 +322,7 @@ void IGIVLEditor::CreateQtPartControl(QWidget* parent)
 void IGIVLEditor::OnPreferencesChanged()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer   prefsNode   = prefService->GetSystemPreferences()->Node(EDITOR_ID).Cast<berry::IBerryPreferences>();
+  berry::IPreferences::Pointer prefsNode = prefService->GetSystemPreferences()->Node(EDITOR_ID);
 
   this->OnPreferencesChanged(prefsNode.GetPointer());
 }

@@ -150,7 +150,7 @@ void SurfaceReconView::OnPreferencesChanged(const berry::IBerryPreferences*)
 void SurfaceReconView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(SurfaceReconViewPreferencePage::s_PrefsNodeName)).Cast<berry::IBerryPreferences>();
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(SurfaceReconViewPreferencePage::s_PrefsNodeName);
   assert(prefs);
 
   m_MaxTriangulationErrorThresholdSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultTriangulationErrorPrefsName, 0.1f));
@@ -165,7 +165,7 @@ void SurfaceReconView::RetrievePreferenceValues()
     // FIXME: hard-coded prefs node names, etc.
     //        how to access header files in another plugin?
     //        see https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/2505
-    berry::IBerryPreferences::Pointer undistortPrefs = (prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.igiundistort")).Cast<berry::IBerryPreferences>();
+    berry::IPreferences::Pointer undistortPrefs = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.igiundistort");
     if (undistortPrefs.IsNotNull())
     {
       QString lastDirectory = undistortPrefs->Get("default calib file path", "");
