@@ -520,6 +520,7 @@ void IGIDataSourceManager::AddSource(QString name, QMap<QString, QVariant>& prop
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::RemoveSource(int rowIndex)
 {
+  QMutexLocker locker(&m_Lock);
   bool updateTimerWasOn = this->IsUpdateTimerOn();
   this->StopUpdateTimer();
 

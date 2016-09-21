@@ -221,8 +221,6 @@ void IGIDataSourceManagerWidget::OnAddSource()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnRemoveSource()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (m_TableWidget->rowCount() == 0)
   {
     return;
