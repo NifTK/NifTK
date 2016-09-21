@@ -38,7 +38,7 @@ endif()
 # Microsoft Caffe Windows branch https://github.com/BVLC/caffe/tree/windows
 #set(version "5db3074")
 # Microsoft Caffe Windows branch with CaffeNifTK master commits copied over
-set(version "864d9e49b9")
+set(version "da7db227de")
 
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
@@ -131,7 +131,7 @@ if(NOT DEFINED Caffe_DIR)
       -DHDF5_INCLUDE_DIRS:STRING=${HDF5_INCLUDE_DIR}
       -DHDF5_HL_INCLUDE_DIR:PATH=${HDF5_INCLUDE_DIR}
       -DHDF5_LIBRARY_DIR:PATH=${HDF5_LIBRARY_DIR}
-      -DUSE_OPENCV:BOOL=${MITK_USE_OpenCV}
+      -DUSE_OPENCV:BOOL=OFF
       -DOpenCV_DIR:PATH=${OpenCV_DIR}
       -DUSE_LEVELDB:BOOL=OFF
       -DUSE_LMDB:BOOL=OFF
