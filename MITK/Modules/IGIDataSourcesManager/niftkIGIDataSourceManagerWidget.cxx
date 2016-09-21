@@ -131,32 +131,24 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::SetDirectoryPrefix(const QString& directoryPrefix)
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->SetDirectoryPrefix(directoryPrefix);
 }
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::SetFramesPerSecond(const int& framesPerSecond)
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->SetFramesPerSecond(framesPerSecond);
 }
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::PauseUpdate()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->StopUpdateTimer();
 }
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::RestartUpdate()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->StartUpdateTimer();
 }
 

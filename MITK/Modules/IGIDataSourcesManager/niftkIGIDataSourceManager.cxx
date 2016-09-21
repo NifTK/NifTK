@@ -269,6 +269,7 @@ void IGIDataSourceManager::RetrieveAllDataSourceFactories()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetDirectoryPrefix(const QString& directoryPrefix)
 {
+  QMutexLocker locker(&m_Lock);
   m_DirectoryPrefix = directoryPrefix;
 }
 
@@ -276,6 +277,7 @@ void IGIDataSourceManager::SetDirectoryPrefix(const QString& directoryPrefix)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetFramesPerSecond(const int& framesPerSecond)
 {
+  QMutexLocker locker(&m_Lock);
   if (m_GuiUpdateTimer != NULL)
   {
     int milliseconds = 1000 / framesPerSecond; // Rounding error, but Qt is only very approximate anyway.
