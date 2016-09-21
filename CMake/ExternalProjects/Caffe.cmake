@@ -38,7 +38,7 @@ endif()
 # Microsoft Caffe Windows branch https://github.com/BVLC/caffe/tree/windows
 #set(version "5db3074")
 # Microsoft Caffe Windows branch with CaffeNifTK master commits copied over
-set(version "375b029fd5")
+set(version "801c75fd84")
 
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
@@ -53,7 +53,7 @@ if(MITK_USE_OpenCV)
 endif()
 
 if(${NIFTK_USE_CUDA})
-  set(CPU_ONLY ON)
+  set(CPU_ONLY OFF)
 else()
   set(CPU_ONLY ON)
 endif()
