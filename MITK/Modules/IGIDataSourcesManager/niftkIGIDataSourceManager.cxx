@@ -494,6 +494,7 @@ void IGIDataSourceManager::GlobalReInit()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::AddSource(QString name, QMap<QString, QVariant>& properties)
 {
+  QMutexLocker locker(&m_Lock);
   // Remember: All our code should throw mitk::Exception.
   niftk::IGIDataSourceFactoryServiceI *factory = this->GetFactory(name);
   niftk::IGIDataSourceI::Pointer source = factory->CreateService(m_DataStorage, properties);
