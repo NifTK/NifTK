@@ -23,7 +23,6 @@
 #include <QTextStream>
 #include <QList>
 #include <QPainter>
-#include <QMutexLocker>
 
 namespace niftk
 {
@@ -87,8 +86,6 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
 //-----------------------------------------------------------------------------
 IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (m_Manager->IsUpdateTimerOn())
   {
     m_Manager->StopUpdateTimer();

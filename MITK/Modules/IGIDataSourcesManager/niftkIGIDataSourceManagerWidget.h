@@ -22,7 +22,6 @@
 
 #include <mitkDataStorage.h>
 #include <QWidget>
-#include <QMutex>
 
 namespace niftk
 {
@@ -125,7 +124,6 @@ private slots:
 
 private:
 
-  QMutex                m_Lock;
   IGIDataSourceManager* m_Manager;
 
   IGIDataSourcePlaybackWidget* m_PlaybackWidget;
