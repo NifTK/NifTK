@@ -38,7 +38,7 @@ endif()
 # Microsoft Caffe Windows branch https://github.com/BVLC/caffe/tree/windows
 #set(version "5db3074")
 # Microsoft Caffe Windows branch with CaffeNifTK master commits copied over
-set(version "aa46571a11")
+set(version "864d9e49b9")
 
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
@@ -126,25 +126,15 @@ if(NOT DEFINED Caffe_DIR)
       ${_openblas_args}
       #
       -DBoost_ADDITIONAL_VERSIONS:STRING=1.56
+      -DHDF5_PREFIX:String=niftk
       -DHDF5_DIR:PATH=${HDF5_DIR}
-      #-DHDF5_ROOT:PATH=${HDF5_DIR}
-      #-DHDF5_ROOT_DIR:PATH=${HDF5_DIR}
       -DHDF5_INCLUDE_DIRS:STRING=${HDF5_INCLUDE_DIR}
       -DHDF5_HL_INCLUDE_DIR:PATH=${HDF5_INCLUDE_DIR}
       -DHDF5_LIBRARY_DIR:PATH=${HDF5_LIBRARY_DIR}
-      #-DHDF5_LIBRARY_DIRS:PATH=${HDF5_LIBRARY_DIR}
-      #-DHDF5_CONFIG_DIR:PATH=${HDF5_DIR}/share/cmake
-      #-DHDF5_CONFIG_DIR_HINT:PATH=${HDF5_DIR}/share/cmake
-      #-DHDF5_ROOT_DIR_HINT:PATH=${HDF5_DIR}/share/cmake
-      #-DHDF5_LIBRARIES:STRING=${HDF5_LIBRARIES}
-      #
-      #-DUSE_OPENCV:BOOL=${MITK_USE_OpenCV}
-      -DUSE_OPENCV:BOOL=OFF
-      #-DOpenCV_DIR:PATH=${OpenCV_DIR}
-      #
+      -DUSE_OPENCV:BOOL=${MITK_USE_OpenCV}
+      -DOpenCV_DIR:PATH=${OpenCV_DIR}
       -DUSE_LEVELDB:BOOL=OFF
       -DUSE_LMDB:BOOL=OFF
-      -DUSE_OPENCV:BOOL=ON
       -DBUILD_python:BOOL=OFF
       -DCPU_ONLY:BOOL=${CPU_ONLY}
     CMAKE_CACHE_ARGS
