@@ -291,8 +291,6 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(
 {
   emit UpdateGuiFinishedDataSources (timeNow);
 
-  QMutexLocker locker(&m_Lock);
-
   // This can happen if this gets called before a data source is added.
   if (infos.size() == 0)
   {

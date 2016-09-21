@@ -591,6 +591,8 @@ bool IGIDataSourceManager::IsFrozen(unsigned int i) const
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::FreezeAllDataSources(bool isFrozen)
 {
+  QMutexLocker locker(&m_Lock);
+
   for (int i = 0; i < m_Sources.size(); i++)
   {
     this->FreezeDataSource(i, isFrozen);
@@ -601,6 +603,8 @@ void IGIDataSourceManager::FreezeAllDataSources(bool isFrozen)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::FreezeDataSource(unsigned int i, bool isFrozen)
 {
+  QMutexLocker locker(&m_Lock);
+
   if (i >= m_Sources.size())
   {
     mitkThrow() << "Index out of bounds, size=" << m_Sources.size() << ", i=" << i;
