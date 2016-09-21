@@ -296,6 +296,11 @@ signals:
   */
   void BroadcastStatusString(QString);
 
+  /**
+  * \brief Emmitted when recording has successfully started.
+  */
+  void RecordingStarted(QString basedirectory);
+
 protected:
 
   IGIDataSourceManager(const IGIDataSourceManager&); // Purposefully not implemented.

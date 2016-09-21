@@ -281,11 +281,6 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
   m_DirectoryChooser->setCurrentPath(directory.absolutePath());
   m_DirectoryChooser->setEnabled(false);
 
-  // Tell interested parties (e.g. other plugins) that recording has started.
-  // We do this before starting recording because that might pop up a message box,
-  // which would stall delivering this signal.
-  emit RecordingStarted(directory.absolutePath());
-
   try
   {
     m_Manager->StartRecording(directory.absolutePath());
