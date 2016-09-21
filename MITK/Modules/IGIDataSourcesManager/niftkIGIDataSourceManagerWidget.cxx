@@ -23,6 +23,7 @@
 #include <QTextStream>
 #include <QList>
 #include <QPainter>
+#include <QMutexLocker>
 
 namespace niftk
 {
@@ -86,6 +87,8 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
 //-----------------------------------------------------------------------------
 IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
 {
+  QMutexLocker locker(&m_Lock);
+
   if (m_Manager->IsUpdateTimerOn())
   {
     m_Manager->StopUpdateTimer();
@@ -152,6 +155,7 @@ void IGIDataSourceManagerWidget::RestartUpdate()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnAddSource()
 {
+  QMutexLocker locker(&m_Lock);
   m_Manager->StopUpdateTimer();
 
   QString name = m_SourceSelectComboBox->currentText();
@@ -218,6 +222,8 @@ void IGIDataSourceManagerWidget::OnAddSource()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnRemoveSource()
 {
+  QMutexLocker locker(&m_Lock);
+
   if (m_TableWidget->rowCount() == 0)
   {
     return;
@@ -248,6 +254,8 @@ void IGIDataSourceManagerWidget::OnRemoveSource()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnCellDoubleClicked(int row, int column)
 {
+  QMutexLocker locker(&m_Lock);
+
   niftk::IGIDataSourceFactoryServiceI* factory = m_Manager->GetFactory(row);
   if (factory->HasConfigurationGui())
   {
@@ -287,6 +295,8 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(
     niftk::IGIDataType::IGITimeType timeNow, QList< QList<IGIDataItemInfo> > infos)
 {
   emit UpdateGuiFinishedDataSources (timeNow);
+
+  QMutexLocker locker(&m_Lock);
 
   // This can happen if this gets called before a data source is added.
   if (infos.size() == 0)

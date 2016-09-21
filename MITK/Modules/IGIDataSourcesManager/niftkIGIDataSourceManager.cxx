@@ -494,7 +494,6 @@ void IGIDataSourceManager::GlobalReInit()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::AddSource(QString name, QMap<QString, QVariant>& properties)
 {
-  QMutexLocker locker(&m_Lock);
   // Remember: All our code should throw mitk::Exception.
   niftk::IGIDataSourceFactoryServiceI *factory = this->GetFactory(name);
   niftk::IGIDataSourceI::Pointer source = factory->CreateService(m_DataStorage, properties);
@@ -520,7 +519,6 @@ void IGIDataSourceManager::AddSource(QString name, QMap<QString, QVariant>& prop
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::RemoveSource(int rowIndex)
 {
-  QMutexLocker locker(&m_Lock);
   bool updateTimerWasOn = this->IsUpdateTimerOn();
   this->StopUpdateTimer();
 
@@ -591,8 +589,6 @@ bool IGIDataSourceManager::IsFrozen(unsigned int i) const
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::FreezeAllDataSources(bool isFrozen)
 {
-  QMutexLocker locker(&m_Lock);
-
   for (int i = 0; i < m_Sources.size(); i++)
   {
     this->FreezeDataSource(i, isFrozen);
@@ -603,8 +599,6 @@ void IGIDataSourceManager::FreezeAllDataSources(bool isFrozen)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::FreezeDataSource(unsigned int i, bool isFrozen)
 {
-  QMutexLocker locker(&m_Lock);
-
   if (i >= m_Sources.size())
   {
     mitkThrow() << "Index out of bounds, size=" << m_Sources.size() << ", i=" << i;
