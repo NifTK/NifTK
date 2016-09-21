@@ -22,7 +22,6 @@
 #include <QTextStream>
 #include <QList>
 #include <QPainter>
-#include <QMutexLocker>
 
 namespace niftk
 {
