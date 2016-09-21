@@ -29,11 +29,9 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Pointer dataStorage,
-    QMutex& lock, IGIDataSourceManager* manager,
+    IGIDataSourceManager* manager,
     QWidget *parent)
-: m_Manager(new IGIDataSourceManager(dataStorage, parent))
 {
-//  m_Lock = lock;
   m_Manager = manager;
   Ui_IGIDataSourcePlaybackWidget::setupUi(parent);
 
@@ -88,8 +86,6 @@ IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Poin
 //-----------------------------------------------------------------------------
 IGIDataSourcePlaybackWidget::~IGIDataSourcePlaybackWidget()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (m_Manager->IsPlayingBack())
   {
     m_Manager->StopPlayback();

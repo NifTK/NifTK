@@ -21,7 +21,6 @@
 
 #include <mitkDataStorage.h>
 #include <QWidget>
-#include <QMutex>
 
 namespace niftk
 {
@@ -44,7 +43,7 @@ class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourcePlaybackWidget :
 public:
 
   IGIDataSourcePlaybackWidget(mitk::DataStorage::Pointer dataStorage,
-      QMutex& lock, IGIDataSourceManager* manager,
+      IGIDataSourceManager* manager,
       QWidget *parent = 0);
 
   virtual ~IGIDataSourcePlaybackWidget();
@@ -140,7 +139,6 @@ private slots:
 
 private:
   
-  QMutex                m_Lock;
   IGIDataSourceManager* m_Manager;
 
 }; // end class;
