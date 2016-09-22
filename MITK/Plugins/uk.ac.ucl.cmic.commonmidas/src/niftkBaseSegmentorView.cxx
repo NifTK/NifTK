@@ -125,9 +125,8 @@ void BaseSegmentorView::RetrievePreferenceValues()
 
   assert( prefService );
 
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(this->GetPreferencesNodeName()))
-        .Cast<berry::IBerryPreferences>();
+  berry::IPreferences::Pointer prefs =
+      prefService->GetSystemPreferences()->Node(this->GetPreferencesNodeName());
 
   assert( prefs );
 

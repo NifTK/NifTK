@@ -288,7 +288,7 @@ void SingleViewerEditor::CreateQtPartControl(QWidget* parent)
     assert(dataStorage);
 
     berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-    berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(EDITOR_ID)).Cast<berry::IBerryPreferences>();
+    berry::IBerryPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(EDITOR_ID).Cast<berry::IBerryPreferences>();
     assert( prefs );
 
     DnDDisplayInterpolationType defaultInterpolationType =

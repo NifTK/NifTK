@@ -29,7 +29,7 @@ public:
   VisibilityChangeObserver();
   virtual ~VisibilityChangeObserver();
 
-  virtual void onVisibilityChanged(const mitk::DataNode* node) = 0;
+  virtual void OnVisibilityChanged(const mitk::DataNode* node) = 0;
 
 };
 

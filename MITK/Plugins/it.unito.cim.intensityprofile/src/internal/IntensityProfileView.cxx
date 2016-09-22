@@ -44,6 +44,11 @@
 #include <QWheelEvent>
 #include <QInputDialog>
 
+#include "internal/niftkVisibilityChangedCommand.h"
+
+namespace niftk
+{
+
 void MedianHybridQuickSort(std::vector<double> array, std::vector<unsigned>& array2);
 
 class IntensityProfileViewPrivate {
@@ -59,6 +64,11 @@ class IntensityProfileViewPrivate {
 
 public:
   IntensityProfileViewPrivate();
+
+  QMap<const mitk::DataNode*, unsigned long> visibilityObserverTags;
+
+  mitk::MessageDelegate1<IntensityProfileView, const mitk::DataNode*>* addNodeEventListener;
+  mitk::MessageDelegate1<IntensityProfileView, const mitk::DataNode*>* removeNodeEventListener;
 
   static const int MaxSymbols = 8;
   static QwtSymbol* Symbols[MaxSymbols];
@@ -214,6 +224,28 @@ IntensityProfileView::IntensityProfileView()
 {
   MITK_INFO << "IntensityProfileView::IntensityProfileView()";
   Q_D(IntensityProfileView);
+
+  mitk::DataStorage* dataStorage = this->GetDataStorage();
+  if (dataStorage) {
+
+    mitk::DataStorage::SetOfObjects::ConstPointer everyNode = dataStorage->GetAll();
+    mitk::DataStorage::SetOfObjects::ConstIterator it = everyNode->Begin();
+    mitk::DataStorage::SetOfObjects::ConstIterator end = everyNode->End();
+    while (it != end)
+    {
+      this->onNodeAddedInternal(it->Value());
+      ++it;
+    }
+
+    d->addNodeEventListener =
+        new mitk::MessageDelegate1<IntensityProfileView, const mitk::DataNode*>(this, &IntensityProfileView::onNodeAddedInternal);
+    dataStorage->AddNodeEvent.AddListener(*d->addNodeEventListener);
+
+    d->removeNodeEventListener =
+        new mitk::MessageDelegate1<IntensityProfileView, const mitk::DataNode*>(this, &IntensityProfileView::onNodeRemovedInternal);
+    dataStorage->RemoveNodeEvent.AddListener(*d->removeNodeEventListener);
+  }
+
   d->pendingCrosshairPositionEvent = false;
   d->showCrosshairProfile = true;
   d->crosshairPositionListenerIsAdded = false;
@@ -243,6 +275,25 @@ IntensityProfileView::IntensityProfileView()
 IntensityProfileView::~IntensityProfileView()
 {
   Q_D(IntensityProfileView);
+
+  mitk::DataStorage* dataStorage = GetDataStorage();
+  if (dataStorage)
+  {
+    dataStorage->AddNodeEvent.RemoveListener(*d->addNodeEventListener);
+    dataStorage->RemoveNodeEvent.RemoveListener(*d->removeNodeEventListener);
+
+    delete d->addNodeEventListener;
+    delete d->removeNodeEventListener;
+  }
+
+  foreach (const mitk::DataNode* node, d->visibilityObserverTags.keys())
+  {
+    mitk::BaseProperty* property = node->GetProperty("visible");
+    if (property)
+    {
+      property->RemoveObserver(d->visibilityObserverTags[node]);
+    }
+  }
 
   if (d->showCrosshairProfile) {
     onCrosshairVisibilityOff();
@@ -309,13 +360,41 @@ IntensityProfileView::SetFocus()
   ui->plotter->setFocus();
 }
 
-void
-IntensityProfileView::onVisibilityChanged(const mitk::DataNode* node)
+//-----------------------------------------------------------------------------
+void IntensityProfileView::onNodeAddedInternal(const mitk::DataNode* node)
 {
-//  MITK_INFO << "IntensityProfileView::onVisibilityChanged(const mitk::DataNode* node)";
+  Q_D(IntensityProfileView);
+  mitk::BaseProperty* property = node->GetProperty("visible");
+  if (property)
+  {
+    VisibilityChangedCommand::Pointer command = VisibilityChangedCommand::New(this, node);
+    d->visibilityObserverTags[node] = property->AddObserver(itk::ModifiedEvent(), command);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void IntensityProfileView::onNodeRemovedInternal(const mitk::DataNode* node)
+{
+  Q_D(IntensityProfileView);
+  if (d->visibilityObserverTags.contains(node))
+  {
+    mitk::BaseProperty* property = node->GetProperty("visible");
+    if (property) {
+      property->RemoveObserver(d->visibilityObserverTags[node]);
+    }
+    d->visibilityObserverTags.remove(node);
+  }
+}
+
+
+void
+IntensityProfileView::OnVisibilityChanged(const mitk::DataNode* node)
+{
+//  MITK_INFO << "IntensityProfileView::OnVisibilityChanged(const mitk::DataNode* node)";
   Q_D(IntensityProfileView);
   if (node->IsVisible(0)) {
-//    MITK_INFO << "IntensityProfileView::onVisibilityChanged(const mitk::DataNode* node) render independent visible property on";
+//    MITK_INFO << "IntensityProfileView::OnVisibilityChanged(const mitk::DataNode* node) render independent visible property on";
     onVisibilityOn(node);
   }
   else if (d->display) {
@@ -1575,4 +1654,6 @@ IntensityProfileView::setDefaultLevelWindow(mitk::DataNode* node)
   levelWindow.SetRangeMinMax(rangeMin, rangeMax);
   levelWindow.SetWindowBounds(windowMin, windowMax);
   node->SetLevelWindow(levelWindow);
+}
+
 }
