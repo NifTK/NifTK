@@ -12,42 +12,41 @@
 #
 #============================================================================*/
 
-set(GFlags_FOUND)
+set(gflags_FOUND)
 
-set(GFlags_DIR @GFlags_DIR@ CACHE PATH "Directory containing GFlags installation")
+set(gflags_DIR @gflags_DIRECTORY@ CACHE PATH "Directory containing gflags installation" FORCE)
 
-set(GFlags_INCLUDE_DIR
+find_path(gflags_INC
   NAME gflags.h
-  PATHS ${GFlags_DIR}/include
+  PATHS ${gflags_DIR}/include/gflags
   NO_DEFAULT_PATH
 )
 
-set(GFlags_LIBRARY_DIR ${GFlags_DIR}/lib)
-
-set(GFlags_LIBRARY )
+set(gflags_LIBRARY_DIR ${gflags_DIR}/lib)
+set(gflags_LIBRARY )
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 
-  find_library(GFlags_LIBRARY NAMES gflags
-               PATHS ${GFlags_LIBRARY_DIR}
+  find_library(gflags_LIBRARY NAMES gflags
+               PATHS ${gflags_LIBRARY_DIR}
                PATH_SUFFIXES Release
                NO_DEFAULT_PATH)
 
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
-  find_library(GFlags_LIBRARY NAMES gflagsd
-               PATHS ${GFlags_LIBRARY_DIR}
+  find_library(gflags_LIBRARY NAMES gflags${NIFTK_SUPERBUILD_DEBUG_POSTFIX}
+               PATHS ${gflags_LIBRARY_DIR}
                PATH_SUFFIXES Debug
                NO_DEFAULT_PATH)
 
 endif()
 
-if(GFlags_LIBRARY AND GFlags_INCLUDE_DIR)
-
-  set(GFlags_FOUND 1)
-
+if(gflags_LIBRARY AND gflags_INC)
+  set(gflags_FOUND 1)
+  get_filename_component(_inc_dir ${gflags_INC} PATH)
+  set(gflags_INCLUDE_DIR ${_inc_dir})
 endif()
 
-message( "GFlags_INCLUDE_DIR: ${GFlags_INCLUDE_DIR}" )
-message( "GFlags_LIBRARY_DIR: ${GFlags_LIBRARY_DIR}" )
-message( "GFlags_LIBRARY: ${GFlags_LIBRARY}" )
+message( "NifTK Findgflags.cmake: gflags_INCLUDE_DIR: ${gflags_INCLUDE_DIR}" )
+message( "NifTK Findgflags.cmake: gflags_LIBRARY_DIR: ${gflags_LIBRARY_DIR}" )
+message( "NifTK Findgflags.cmake: gflags_LIBRARY:     ${gflags_LIBRARY}" )

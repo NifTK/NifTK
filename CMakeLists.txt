@@ -159,7 +159,7 @@ option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
-option(BUILD_CAFFE "Build Caffe." ON)
+option(BUILD_CAFFE "Build Caffe." OFF)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 # the console window is normally shown only for debug builds. but can be explicitly enabled.
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -272,7 +272,6 @@ mark_as_advanced(BUILD_CAMINO)
 mark_as_advanced(BUILD_PCL)
 mark_as_advanced(BUILD_RTK)
 mark_as_advanced(BUILD_MESHING)
-mark_as_advanced(BUILD_CAFFE)
 
 ######################################################################
 # Make sure Git is available.
@@ -581,7 +580,7 @@ mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 
 mitkFunctionAddExternalProject(NAME DCMTK     ON  ADVANCED)
 mitkFunctionAddExternalProject(NAME GDCM      ON  ADVANCED)
-mitkFunctionAddExternalProject(NAME HDF5      OFF ADVANCED) # Needs to be built prior to ITK (used by Caffe)
+mitkFunctionAddExternalProject(NAME HDF5      OFF ADVANCED NO_PACKAGE) # Needs to be built prior to ITK (used by Caffe)
 mitkFunctionAddExternalProject(NAME ITK       ON  ADVANCED NO_CACHE DEPENDS GDCM)
 mitkFunctionAddExternalProject(NAME SimpleITK OFF ADVANCED DEPENDS ITK GDCM SWIG)
 mitkFunctionAddExternalProject(NAME VTK       ON  ADVANCED NO_CACHE)
@@ -594,17 +593,17 @@ mitkFunctionAddExternalProject(NAME RTK                  OFF ADVANCED DEPENDS IT
 
 mitkFunctionAddExternalProject(NAME NiftyCal  OFF ADVANCED DEPENDS OpenCV AprilTags Eigen ITK)
 
-mitkFunctionAddExternalProject(NAME OpenBLAS OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME ProtoBuf OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME ProtoBuf-CMake OFF ADVANCED ProtoBuf)
-mitkFunctionAddExternalProject(NAME gflags   OFF ADVANCED)
-mitkFunctionAddExternalProject(NAME glog     OFF ADVANCED gflags)
+mitkFunctionAddExternalProject(NAME OpenBLAS       OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME ProtoBuf       OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME ProtoBuf-CMake OFF ADVANCED NO_PACKAGE ProtoBuf)
+mitkFunctionAddExternalProject(NAME gflags         OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME glog           OFF ADVANCED NO_PACKAGE gflags)
 
 set(_caffe_depends Boost ProtoBuf-CMake ProtoBuf glog gflags HDF5 ZLIB)
 if(NOT APPLE)
   list(APPEND _caffe_depends OpenBLAS)
 endif()
-mitkFunctionAddExternalProject(NAME Caffe    OFF ADVANCED DEPENDS ${_caffe_depends})
+mitkFunctionAddExternalProject(NAME Caffe    OFF ADVANCED NO_PACKAGE DEPENDS ${_caffe_depends})
 
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
@@ -1024,7 +1023,6 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/FindProtoBuf.cmake ${CMAKE_BINARY_DIR}/
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindHDF5.cmake ${CMAKE_BINARY_DIR}/FindHDF5.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/Findglog.cmake ${CMAKE_BINARY_DIR}/Findglog.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/Findgflags.cmake ${CMAKE_BINARY_DIR}/Findgflags.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindCaffe.cmake ${CMAKE_BINARY_DIR}/FindCaffe.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
@@ -1251,23 +1249,6 @@ if(BUILD_IGI)
   endif()
 
 endif(BUILD_IGI)
-
-
-######################################################################
-# Find Caffe
-######################################################################
-
-#message("CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}")
-#
-if(BUILD_Caffe)
-  find_package(Caffe)
-  if(Caffe_FOUND)
-    message("Found Caffe")
-  else()
-    message("Didn't find Caffe")
-  endif()
-endif()
-
 
 ######################################################################
 # Find MITK. Even though MITK can be built without Qt, CTK can't.
@@ -1810,18 +1791,6 @@ if(BUILD_CAMINO AND NOT WIN32 AND NOT APPLE )
   install(FILES ${CAMINO_BIN_FILES} DESTINATION bin PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif()
 
-# Caffe
-if(BUILD_CAFFE)
-  file(GLOB CAFFE_BIN_FILES
-       ${Caffe_DIR}/bin/*
-      )
-  file(GLOB CAFFE_MAN_FILES
-       ${Caffe_DIR}/man/man1/*
-      )
-  install(FILES ${CAFFE_MAN_FILES} DESTINATION man/man1/ PERMISSIONS OWNER_READ GROUP_READ WORLD_READ)
-  install(FILES ${CAFFE_BIN_FILES} DESTINATION bin PERMISSIONS OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-endif()
-
 ######################################################################
 # ffmpeg packaging hacks.
 ######################################################################
@@ -1848,6 +1817,39 @@ if(OPENCV_WITH_FFMPEG)
       set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
     endif()
   endif()
+endif()
+
+######################################################################
+# Caffe packaging hacks.
+######################################################################
+if(BUILD_CAFFE)
+
+  if(WIN32)
+    set(_library_sub_dir "\bin")
+  else()
+    set(_library_sub_dir "/lib")
+  endif()
+
+  get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+
+  foreach(lib gflags glog HDF5 ProtoBuf)
+    find_package(${lib} REQUIRED)
+    list(APPEND _additional_search_paths ${${lib}_DIR}${_library_sub_dir})
+  endforeach()
+
+  if (NOT APPLE)
+    find_package(OpenBLAS REQUIRED)
+    list(APPEND _additional_search_paths ${OpenBLAS_DIR}${_library_sub_dir})
+  endif()
+
+  find_package(Caffe REQUIRED)
+  get_filename_component(_up_dir ${Caffe_CMAKE_DIR} PATH)
+  get_filename_component(_up_dir2 ${_up_dir} PATH)
+  list(APPEND _additional_search_paths ${_up_dir2}${_library_sub_dir})
+
+  set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
+
+  message("Caffe MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS=${_additional_search_paths}")
 endif()
 
 ######################################################################

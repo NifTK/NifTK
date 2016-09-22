@@ -14,7 +14,7 @@
 
 set(HDF5_FOUND)
 
-set(HDF5_DIR @HDF5_DIR@ CACHE PATH "Directory containing HDF5 installation")
+set(HDF5_DIR @HDF5_DIRECTORY@ CACHE PATH "Directory containing HDF5 installation" FORCE)
 
 find_path(HDF5_INCLUDE_DIR
   NAME hdf5.h
@@ -34,13 +34,13 @@ set(HDF5_PREFIX niftk)
 set(HDF5_SUFFIX)
 if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   if(WIN32)
-    set(HDF5_SUFFIX _D${CMAKE_DEBUG_POSTFIX})
+    set(HDF5_SUFFIX _D${NIFTK_SUPERBUILD_DEBUG_POSTFIX})
   else()
-    set(HDF5_SUFFIX _debug${CMAKE_DEBUG_POSTFIX})
+    set(HDF5_SUFFIX _debug${NIFTK_SUPERBUILD_DEBUG_POSTFIX})
   endif()
 endif()
 
-message("HDF5.cmake Looking for prefix=${HDF5_PREFIX}, suffix=${HDF5_SUFFIX}")
+# message("NifTK FindHDF5.cmake Looking for prefix=${HDF5_PREFIX}, suffix=${HDF5_SUFFIX}")
 
 foreach (LIB
          hdf5
@@ -48,8 +48,6 @@ foreach (LIB
          hdf5_hl
          hdf5_cpp
          hdf5_hl_cpp)
-
-  message("HDF5.cmake Looking for ${LIB}")
 
   if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 
@@ -61,7 +59,6 @@ foreach (LIB
                  NO_DEFAULT_PATH)
              
     if(HDF5_LIBRARY_RELEASE_${LIB})
-      message("HDF5.cmake Found ${HDF5_LIBRARY_RELEASE_${LIB}}")
       set(HDF5_LIBRARIES ${HDF5_LIBRARIES};${HDF5_LIBRARY_RELEASE_${LIB}})
     endif()
 
@@ -77,7 +74,6 @@ foreach (LIB
                  NO_DEFAULT_PATH)
 
     if(HDF5_LIBRARY_DEBUG_${LIB})
-      message("HDF5.cmake Found ${HDF5_LIBRARY_DEBUG_${LIB}}")
       set(HDF5_LIBRARIES ${HDF5_LIBRARIES};${HDF5_LIBRARY_DEBUG_${LIB}})
     endif()
 
@@ -86,11 +82,10 @@ foreach (LIB
 endforeach()
 
 if(HDF5_LIBRARIES AND HDF5_INCLUDE_DIR)
-
   set(HDF5_FOUND 1)
-
-  message( "HDF5_INCLUDE_DIR: ${HDF5_INCLUDE_DIR}" )
-  message( "HDF5_LIBRARY_DIR: ${HDF5_LIBRARY_DIR}" )
-  message( "HDF5_LIBRARIES:   ${HDF5_LIBRARIES}" )
-
 endif()
+
+message( "NifTK FindHDF5.cmake: HDF5_INCLUDE_DIR: ${HDF5_INCLUDE_DIR}" )
+message( "NifTK FindHDF5.cmake: HDF5_LIBRARY_DIR: ${HDF5_LIBRARY_DIR}" )
+message( "NifTK FindHDF5.cmake: HDF5_LIBRARIES:   ${HDF5_LIBRARIES}" )
+

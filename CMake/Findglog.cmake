@@ -12,42 +12,41 @@
 #
 #============================================================================*/
 
-set(GLog_FOUND)
+set(glog_FOUND)
 
-set(GLog_DIR @GLog_DIR@ CACHE PATH "Directory containing GLog installation")
+set(glog_DIR @glog_DIRECTORY@ CACHE PATH "Directory containing glog installation" FORCE)
 
-set(GLog_INCLUDE_DIR
-  NAME glog.h
-  PATHS ${GLog_DIR}/include
+find_path(glog_INC
+  NAME logging.h
+  PATHS ${glog_DIR}/include/glog
   NO_DEFAULT_PATH
 )
 
-set(GLog_LIBRARY_DIR ${GLog_DIR}/lib)
-
-set(GLog_LIBRARY )
+set(glog_LIBRARY_DIR ${glog_DIR}/lib)
+set(glog_LIBRARY )
 
 if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
 
-  find_library(GLog_LIBRARY NAMES glog
-               PATHS ${GLog_LIBRARY_DIR}
+  find_library(glog_LIBRARY NAMES glog
+               PATHS ${glog_LIBRARY_DIR}
                PATH_SUFFIXES Release
                NO_DEFAULT_PATH)
 
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
-  find_library(GLog_LIBRARY NAMES glogd
-               PATHS ${GLog_LIBRARY_DIR}
+  find_library(glog_LIBRARY NAMES glog${NIFTK_SUPERBUILD_DEBUG_POSTFIX}
+               PATHS ${glog_LIBRARY_DIR}
                PATH_SUFFIXES Debug
                NO_DEFAULT_PATH)
 
 endif()
 
-if(GLog_LIBRARY AND GLog_INCLUDE_DIR)
-
-  set(GLog_FOUND 1)
-
+if(glog_LIBRARY AND glog_INC)
+  set(glog_FOUND 1)
+  get_filename_component(_inc_dir ${glog_INC} PATH)
+  set(glog_INCLUDE_DIR ${_inc_dir})
 endif()
 
-message( "GLog_INCLUDE_DIR: ${GLog_INCLUDE_DIR}" )
-message( "GLog_LIBRARY_DIR: ${GLog_LIBRARY_DIR}" )
-message( "GLog_LIBRARY:     ${GLog_LIBRARY}" )
+message( "NifTK Findglog.cmake: glog_INCLUDE_DIR: ${glog_INCLUDE_DIR}" )
+message( "NifTK Findglog.cmake: glog_LIBRARY_DIR: ${glog_LIBRARY_DIR}" )
+message( "NifTK Findglog.cmake: glog_LIBRARY:     ${glog_LIBRARY}" )
