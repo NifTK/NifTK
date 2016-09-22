@@ -14,21 +14,22 @@
 
 
 #-----------------------------------------------------------------------------
-# GFlags
+# glog
 #-----------------------------------------------------------------------------
 
 # Sanity checks
-if(DEFINED GFlags_DIR AND NOT EXISTS ${GFlags_DIR})
-  message(FATAL_ERROR "GFlags_DIR variable is defined but corresponds to non-existing directory \"${GFlags_ROOT}\".")
+if(DEFINED glog_DIR AND NOT EXISTS ${glog_DIR})
+  message(FATAL_ERROR "glog_DIR variable is defined but corresponds to non-existing directory \"${glog_ROOT}\".")
 endif()
 
-#set(GFlags_VERSION "2.1.2")
-set(GFlags_VERSION "3476433")
-set(location "${NIFTK_EP_TARBALL_LOCATION}/gflags-${GFlags_VERSION}.tar.gz")
+set(glog_VERSION "e8ddd96")
+set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${glog_VERSION}.tar.gz")
 
-niftkMacroDefineExternalProjectVariables(GFlags ${GFlags_VERSION} ${location})
+niftkMacroDefineExternalProjectVariables(glog ${glog_VERSION} ${location})
 
-if(NOT DEFINED GFlags_DIR)
+set(proj_DEPENDENCIES gflags)
+
+if(NOT DEFINED glog_DIR)
 
   ExternalProject_Add(${proj}
     LIST_SEPARATOR ^^
@@ -38,14 +39,13 @@ if(NOT DEFINED GFlags_DIR)
     INSTALL_DIR ${proj_INSTALL}
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
-    #CONFIGURE_COMMAND ""
-    #UPDATE_COMMAND ""
-    #BUILD_COMMAND ""
-    #INSTALL_COMMAND ""
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
+      -Dgflags_DIR:PATH=${gflags_DIR}/lib/cmake/gflags
+      -DCMAKE_SHARED_LINKER_FLAGS:STRING="-L${gflags_LIBRARY_DIR}" # gflags-config.cmake doesn't export this.
+      -DCMAKE_EXE_LINKER_FLAGS:STRING="-L${gflags_LIBRARY_DIR}"    # gflags-config.cmake doesn't export this.
     CMAKE_CACHE_ARGS
       ${EP_COMMON_CACHE_ARGS}
     CMAKE_CACHE_DEFAULT_ARGS
@@ -53,17 +53,16 @@ if(NOT DEFINED GFlags_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  #set(GFlags_SOURCE_DIR ${proj_SOURCE})
-  set(GFlags_DIR ${proj_INSTALL})
-  set(GFlags_INCLUDE_DIR ${GFlags_DIR}/include)
-  set(GFlags_LIBRARY_DIR ${GFlags_DIR}/lib)
-  
+  set(glog_DIR ${proj_INSTALL})
+  set(glog_INCLUDE_DIR ${glog_DIR}/include)
+  set(glog_LIBRARY_DIR ${glog_DIR}/lib)
+#  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH}) # Can't really use config mode.
   mitkFunctionInstallExternalCMakeProject(${proj})
 
-  message("SuperBuild loading GFlags from ${GFlags_DIR}.")
+  message("SuperBuild loading glog from ${glog_DIR}.")
 
-else(NOT DEFINED GFlags_DIR)
+else(NOT DEFINED glog_DIR)
 
   mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
-endif(NOT DEFINED GFlags_DIR)
+endif(NOT DEFINED glog_DIR)

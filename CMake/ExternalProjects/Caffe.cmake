@@ -37,6 +37,7 @@ endif()
 
 # Microsoft Caffe Windows branch https://github.com/BVLC/caffe/tree/windows
 #set(version "5db3074")
+
 # Microsoft Caffe Windows branch with CaffeNifTK master commits copied over
 set(version "801c75fd84")
 
@@ -44,7 +45,7 @@ set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(Caffe ${version} ${location})
 
-set(proj_DEPENDENCIES Boost GFlags GLog ProtoBuf-CMake ProtoBuf HDF5)
+set(proj_DEPENDENCIES Boost gflags glog ProtoBuf-CMake ProtoBuf HDF5)
 if(NOT APPLE)
   list(APPEND proj_DEPENDENCIES OpenBLAS)
 endif()
@@ -97,34 +98,20 @@ if(NOT DEFINED Caffe_DIR)
     INSTALL_DIR ${proj_INSTALL}
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
-    #CONFIGURE_COMMAND ""
-    #UPDATE_COMMAND ""
-    #BUILD_COMMAND ""
-    #INSTALL_COMMAND ""
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
-	  "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${CAFFE_CXX_FLAGS}"
+      "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS} ${CAFFE_CXX_FLAGS}"
       -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
       -DNIFTK_BINARY_DIR:PATH=${CMAKE_BINARY_DIR}
-      #-DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
-      #-DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
-      #
-      -DGFLAGS_DIR:PATH=${GFlags_DIR}
-      -DGFLAGS_INCLUDE_DIRS:PATH=${GFlags_INCLUDE_DIR}
-      -DGFLAGS_LIBRARY_DIR:PATH=${GFlags_LIBRARY_DIR}
-      #-DGFLAGS_LIBRARIES:PATH=${GFlags_LIBRARY}
-      #
-      -DGLOG_DIR:PATH=${GLog_DIR}
-      -DGLOG_INCLUDE_DIRS:PATH=${GLog_INCLUDE_DIR}
-      -DGLOG_LIBRARY_DIR:PATH=${GLog_LIBRARY_DIR}
-      #-DGLOG_LIBRARIES:PATH=${GLog_LIBRARY}
-      #
-      #
+      -DGFLAGS_DIR:PATH=${gflags_DIR}
+      -DGFLAGS_INCLUDE_DIRS:PATH=${gflags_INCLUDE_DIR}
+      -DGFLAGS_LIBRARY_DIR:PATH=${gflags_LIBRARY_DIR}
+      -DGLOG_DIR:PATH=${glog_DIR}
+      -DGLOG_INCLUDE_DIRS:PATH=${glog_INCLUDE_DIR}
+      -DGLOG_LIBRARY_DIR:PATH=${glog_LIBRARY_DIR}
       ${_protobuf_args}
-      #
       ${_openblas_args}
-      #
       -DBoost_ADDITIONAL_VERSIONS:STRING=1.56
       -DHDF5_PREFIX:String=niftk
       -DHDF5_DIR:PATH=${HDF5_DIR}
@@ -145,16 +132,8 @@ if(NOT DEFINED Caffe_DIR)
     DEPENDS ${proj_DEPENDENCIES}
   )
 
-  set(Caffe_SOURCE_DIR ${proj_SOURCE})
   set(Caffe_DIR ${proj_INSTALL})
-  set(Caffe_INCLUDE_DIR ${Caffe_DIR}/include)
-  set(Caffe_LIBRARY_DIR ${Caffe_DIR}/lib)
-
-  message("Caffe_SOURCE_DIR ${Caffe_SOURCE_DIR}")
-  message("Caffe_DIR ${Caffe_DIR}")
-  message("Caffe_INCLUDE_DIR ${Caffe_INCLUDE_DIR}")
-  message("Caffe_LIBRARY_DIR ${Caffe_LIBRARY_DIR}")
-
+  set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
   mitkFunctionInstallExternalCMakeProject(${proj})
 
   message("SuperBuild loading Caffe from ${Caffe_DIR}.")
