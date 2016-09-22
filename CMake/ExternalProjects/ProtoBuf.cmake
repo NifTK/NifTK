@@ -23,7 +23,6 @@ if(DEFINED ProtoBuf_DIR AND NOT EXISTS ${ProtoBuf_DIR})
 endif()
 
 set(version "2.6.1")
-#set(version "77b08af")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/protobuf-${version}.tar.gz")
 
 niftkMacroDefineExternalProjectVariables(ProtoBuf ${version} ${location})
@@ -39,19 +38,9 @@ if(NOT DEFINED ProtoBuf_DIR)
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
     CONFIGURE_COMMAND ""
-    #CONFIGURE_COMMAND "${proj_SOURCE}/configure"
-    #  "--prefix=${proj_INSTALL}"
     UPDATE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
-    #CMAKE_GENERATOR ${gen}
-    #CMAKE_ARGS
-    #  ${EP_COMMON_ARGS}
-    #  -DCMAKE_PREFIX_PATH:PATH=${NifTK_PREFIX_PATH}
-    #CMAKE_CACHE_ARGS
-    #  ${EP_COMMON_CACHE_ARGS}
-    #CMAKE_CACHE_DEFAULT_ARGS
-    #  ${EP_COMMON_CACHE_DEFAULT_ARGS}
     DEPENDS ${proj_DEPENDENCIES}
   )
 

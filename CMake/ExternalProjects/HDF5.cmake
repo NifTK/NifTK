@@ -19,9 +19,7 @@
 
 # Sanity checks
 if(DEFINED HDF5_DIR AND NOT EXISTS ${HDF5_DIR})
-
   message(FATAL_ERROR "HDF5_DIR variable is defined but corresponds to non-existing directory \"${HDF5_DIR}\".")
-
 endif()
 
 set(HDF5_VERSION "1.10.0-patch1")
@@ -39,10 +37,6 @@ if(NOT DEFINED HDF5_DIR)
     INSTALL_DIR ${proj_INSTALL}
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
-    #CONFIGURE_COMMAND ""
-    #UPDATE_COMMAND ""
-    #BUILD_COMMAND ""
-    #INSTALL_COMMAND ""
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
