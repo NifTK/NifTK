@@ -16,6 +16,7 @@
 
 #include <mitkTestingMacros.h>
 #include <mitkDataNode.h>
+#include <caffe/caffe.hpp>
 
 /**
  * \file Test harness for niftk::CaffeManager.
@@ -30,6 +31,8 @@ int niftkCaffeBasicTest(int argc, char * argv[])
     MITK_ERROR << "Usage: niftkCaffeBasicTest model.prototxt weights.caffemodel image.png iterations expectedNumberOfSegmentedPixels";
     return EXIT_FAILURE;
   }
+
+  caffe::GlobalInit(&argc, &argv);
 
   std::string modelFile = argv[1];
   std::string weightsFile = argv[2];
