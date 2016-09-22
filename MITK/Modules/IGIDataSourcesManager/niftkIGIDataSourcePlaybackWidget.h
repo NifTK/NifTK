@@ -71,11 +71,6 @@ public:
 
 signals:
 
-  /**
-  * \brief Emmitted when recording has successfully started.
-  */
-  void RecordingStarted(QString basedirectory);
-
 protected:
 
   IGIDataSourcePlaybackWidget(const IGIDataSourcePlaybackWidget&); // Purposefully not implemented.
