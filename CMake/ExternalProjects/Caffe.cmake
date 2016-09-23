@@ -39,7 +39,7 @@ endif()
 #set(version "5db3074")
 
 # Microsoft Caffe Windows branch with CaffeNifTK master commits copied over
-set(version "801c75fd84")
+set(version "9f932ed5dd")
 
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
