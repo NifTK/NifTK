@@ -186,6 +186,8 @@ MultiWindowWidget::MultiWindowWidget(
   this->SetWidgetPlanesLocked(true);
   this->SetWidgetPlanesRotationLocked(true);
 
+  m_OrientationString[0] = '\0';
+
   // Need each widget to react to Qt drag/drop events.
   this->mitkWidget1->setAcceptDrops(true);
   this->mitkWidget2->setAcceptDrops(true);
