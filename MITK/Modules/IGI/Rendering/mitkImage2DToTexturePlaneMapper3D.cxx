@@ -178,7 +178,9 @@ void Image2DToTexturePlaneMapper3D::GenerateDataForRenderer(mitk::BaseRenderer* 
 
   mitk::Image* image = const_cast<mitk::Image*>(this->GetInput());
 
-  if (image != NULL && image->GetNumberOfChannels() == 1 && image->GetDimension() == 2)
+  if (image != NULL
+      && (image->GetDimension() == 2 || (image->GetDimension() == 3 && image->GetDimensions()[2] == 1))
+      )
   {
     indexPoints[0][0] = -0.5;
     indexPoints[0][1] = -0.5;

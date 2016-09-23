@@ -26,7 +26,6 @@
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 
-#include <itkLogHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -46,7 +45,6 @@
 #include <itkInvertIntensityBetweenMaxAndMinImageFilter.h>
 #include <itkGDCMImageIO.h>
 
-#include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <vector>

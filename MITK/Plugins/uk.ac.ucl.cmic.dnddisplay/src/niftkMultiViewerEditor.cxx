@@ -33,6 +33,7 @@
 
 #include <niftkMultiViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
+#include "internal/niftkPluginActivator.h"
 #include "niftkDnDDisplayPreferencePage.h"
 
 
@@ -47,11 +48,18 @@ public:
   MultiViewerEditorPrivate(MultiViewerEditor* q);
   ~MultiViewerEditorPrivate();
 
-  static bool s_AreCommandLineArgumentsProcessed;
+  static bool s_OptionsProcessed;
 
-  static bool AreCommandLineArgumentsProcessed();
+  static bool AreOptionsProcessed();
 
-  void ProcessCommandLineArguments();
+  void ProcessOptions();
+
+  void ProcessViewerNumberOption();
+  void ProcessDragAndDropOption();
+  void ProcessWindowLayoutOption();
+  void ProcessBindWindowsOption();
+  void ProcessBindViewersOption();
+  void ProcessAnnotationOption();
 
   void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
 
@@ -64,7 +72,7 @@ public:
   MultiViewerEditor* q_ptr;
 };
 
-bool MultiViewerEditorPrivate::s_AreCommandLineArgumentsProcessed = false;
+bool MultiViewerEditorPrivate::s_OptionsProcessed = false;
 
 //-----------------------------------------------------------------------------
 struct MultiViewerEditorPartListener : public berry::IPartListener
@@ -178,533 +186,639 @@ MultiViewerEditorPrivate::~MultiViewerEditorPrivate()
 
 
 //-----------------------------------------------------------------------------
-bool MultiViewerEditorPrivate::AreCommandLineArgumentsProcessed()
+bool MultiViewerEditorPrivate::AreOptionsProcessed()
 {
-  return s_AreCommandLineArgumentsProcessed;
+  return s_OptionsProcessed;
 }
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerEditorPrivate::ProcessCommandLineArguments()
+void MultiViewerEditorPrivate::ProcessOptions()
 {
-  QStringList args = berry::Platform::GetApplicationArgs();
+  this->ProcessViewerNumberOption();
+  this->ProcessDragAndDropOption();
+  this->ProcessWindowLayoutOption();
+  this->ProcessBindWindowsOption();
+  this->ProcessBindViewersOption();
+  this->ProcessAnnotationOption();
 
-  for (QStringList::const_iterator it = args.begin(); it != args.end(); ++it)
+  s_OptionsProcessed = true;
+}
+
+
+// --------------------------------------------------------------------------
+void MultiViewerEditorPrivate::ProcessViewerNumberOption()
+{
+  ctkPluginContext* pluginContext = PluginActivator::GetInstance()->GetContext();
+
+  QString viewerNumberArg = pluginContext->getProperty("applicationArgs.viewer-number").toString();
+
+  if (!viewerNumberArg.isNull())
   {
-    QString arg = *it;
-    if (arg == QString("--viewer-number"))
+    int rows = 0;
+    int columns = 0;
+
+    QStringList viewersArgParts = viewerNumberArg.split("x");
+    if (viewersArgParts.size() == 2)
     {
-      if (it + 1 == args.end()
-          || (it + 1)->isEmpty()
-          || (*(it + 1))[0] == '-')
-      {
-        MITK_ERROR << "Invalid arguments: viewer number missing.";
-        continue;
-      }
-
-      ++it;
-      QString viewerNumberArg = *it;
-
-      int viewerRows = 0;
-      int viewerColumns = 0;
-
-      QStringList viewerNumberArgParts = viewerNumberArg.split("x");
-      if (viewerNumberArgParts.size() == 2)
-      {
-        viewerRows = viewerNumberArgParts[0].toInt();
-        viewerColumns = viewerNumberArgParts[1].toInt();
-      }
-      else if (viewerNumberArgParts.size() == 1)
-      {
-        viewerRows = 1;
-        viewerColumns = viewerNumberArg.toInt();
-      }
-
-      if (viewerRows == 0 || viewerColumns == 0)
-      {
-        MITK_ERROR << "Invalid viewer number.";
-        continue;
-      }
-
-      m_MultiViewer->SetViewerNumber(viewerRows, viewerColumns);
+      rows = viewersArgParts[0].toInt();
+      columns = viewersArgParts[1].toInt();
     }
-    else if (arg == QString("--dnd") || arg == QString("--drag-and-drop"))
+    else if (viewersArgParts.size() == 1)
     {
-      if (it + 1 == args.end()
-          || (it + 1)->isEmpty()
-          || (*(it + 1))[0] == '-')
+      rows = 1;
+      columns = viewerNumberArg.toInt();
+    }
+
+    if (rows == 0 || columns == 0)
+    {
+      MITK_ERROR << "Invalid viewer number: " << viewerNumberArg.toStdString();
+    }
+    else
+    {
+      m_MultiViewer->SetViewerNumber(rows, columns);
+    }
+  }
+
+}
+
+
+// --------------------------------------------------------------------------
+void MultiViewerEditorPrivate::ProcessDragAndDropOption()
+{
+  ctkPluginContext* pluginContext = PluginActivator::GetInstance()->GetContext();
+
+  for (QString dndArg: pluginContext->getProperty("applicationArgs.drag-and-drop").toStringList())
+  {
+    QStringList dndArgParts = dndArg.split(":");
+
+    if (dndArgParts.size() == 0)
+    {
+      MITK_ERROR << "No data node specified for the --drag-and-drop option. Skipping option.";
+      continue;
+    }
+
+    QString nodeNamesPart = dndArgParts[0];
+    QStringList nodeNames = nodeNamesPart.split(",");
+
+    if (nodeNames.empty())
+    {
+      MITK_ERROR << "Invalid arguments: No data specified to drag.";
+      continue;
+    }
+
+    mitk::DataStorage::Pointer dataStorage = q_ptr->GetDataStorage();
+
+    std::vector<mitk::DataNode*> nodes;
+
+    for (const QString& nodeName: nodeNames)
+    {
+      mitk::DataNode* node = dataStorage->GetNamedNode(nodeName.toStdString());
+      if (node)
       {
-        MITK_ERROR << "Invalid arguments: no data specified to drag.";
+        nodes.push_back(node);
+      }
+      else
+      {
+        MITK_ERROR << "Invalid argument: unknown data to drag: " << nodeName.toStdString();
         continue;
       }
+    }
 
-      ++it;
-      QString dndArg = *it;
-      QStringList dndArgParts = dndArg.split(":");
+    QSet<int> viewerIndices;
 
-      int viewerRow = 0;
-      int viewerColumn = 0;
-
-      QString nodeNamesArg = dndArgParts[0];
-
-      if (dndArgParts.size() == 2)
+    if (dndArgParts.size() == 1)
+    {
+      int viewerNumber = m_MultiViewer->GetNumberOfRows() * m_MultiViewer->GetNumberOfColumns();
+      for (int i = 0; i < viewerNumber; ++i)
       {
-        QString viewerIndexArg = dndArgParts[1];
-
-        QStringList viewerIndexArgParts = viewerIndexArg.split(",");
-        if (viewerIndexArgParts.size() == 1)
-        {
-          bool ok;
-          viewerColumn = viewerIndexArgParts[0].toInt(&ok) - 1;
-          if (!ok || viewerColumn < 0)
-          {
-            MITK_ERROR << "Invalid viewer index.";
-            continue;
-          }
-        }
-        else if (viewerIndexArgParts.size() == 2)
-        {
-          bool ok1, ok2;
-          viewerRow = viewerIndexArgParts[0].toInt(&ok1) - 1;
-          viewerColumn = viewerIndexArgParts[1].toInt(&ok2) - 1;
-          if (!ok1 || !ok2 || viewerRow < 0 || viewerColumn < 0)
-          {
-            MITK_ERROR << "Invalid viewer index.";
-            continue;
-          }
-        }
+        viewerIndices.insert(i);
       }
-      else if (dndArgParts.size() > 2)
+    }
+    else if (dndArgParts.size() == 2)
+    {
+      for (const QString& viewerIndexPart: dndArgParts[1].split(","))
       {
-        MITK_ERROR << "Invalid syntax for the --drag-and-drop option.";
-        continue;
-      }
-
-      QStringList nodeNames = nodeNamesArg.split(",");
-      if (nodeNames.empty())
-      {
-        MITK_ERROR << "Invalid arguments: No data specified to drag.";
-        continue;
-      }
-
-      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(viewerRow, viewerColumn);
-
-      if (!viewer)
-      {
-        MITK_ERROR << "Invalid argument: the specified viewer does not exist.";
-        continue;
-      }
-
-      mitk::DataStorage::Pointer dataStorage = q_ptr->GetDataStorage();
-
-      std::vector<mitk::DataNode*> nodes;
-
-      foreach (QString nodeName, nodeNames)
-      {
-        mitk::DataNode* node = dataStorage->GetNamedNode(nodeName.toStdString());
-        if (node)
+        bool ok;
+        int viewerIndex = viewerIndexPart.toInt(&ok) - 1;
+        int rows = m_MultiViewer->GetNumberOfRows();
+        int columns = m_MultiViewer->GetNumberOfColumns();
+        if (!ok || viewerIndex < 0 || viewerIndex >= rows * columns)
         {
-          nodes.push_back(node);
-        }
-        else
-        {
-          MITK_ERROR << "Invalid argument: unknown data to drag: " << nodeName.toStdString();
+          MITK_ERROR << "Invalid viewer index: " << viewerIndexPart.toStdString();
           continue;
         }
+
+        viewerIndices.insert(viewerIndex);
       }
+    }
+    else if (dndArgParts.size() > 2)
+    {
+      MITK_ERROR << "Invalid syntax for the --drag-and-drop option.";
+      continue;
+    }
+
+    for (int viewerIndex: viewerIndices)
+    {
+      int row = viewerIndex / m_MultiViewer->GetNumberOfColumns();
+      int column = viewerIndex % m_MultiViewer->GetNumberOfColumns();
+
+      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(row, column);
+      assert(viewer);
 
       QmitkRenderWindow* selectedWindow = viewer->GetSelectedRenderWindow();
+      assert(selectedWindow);
 
       this->DropNodes(selectedWindow, nodes);
     }
-    else if (arg == QString("--window-layout"))
+  }
+}
+
+
+// --------------------------------------------------------------------------
+void MultiViewerEditorPrivate::ProcessWindowLayoutOption()
+{
+  ctkPluginContext* pluginContext = PluginActivator::GetInstance()->GetContext();
+
+  for (QString windowLayoutArg: pluginContext->getProperty("applicationArgs.window-layout").toStringList())
+  {
+    QStringList windowLayoutArgParts = windowLayoutArg.split(":");
+
+    if (windowLayoutArgParts.size() == 0)
     {
-      if (it + 1 == args.end()
-          || (it + 1)->isEmpty()
-          || (*(it + 1))[0] == '-')
+      MITK_ERROR << "Window layout not specified for the --window-layout option. Skipping option.";
+      continue;
+    }
+
+    int rows = m_MultiViewer->GetNumberOfRows();
+    int columns = m_MultiViewer->GetNumberOfColumns();
+
+    QSet<int> viewerIndices;
+
+    QString windowLayoutName;
+    if (windowLayoutArgParts.size() == 1)
+    {
+      windowLayoutName = windowLayoutArgParts[0];
+      int viewerNumber = rows * columns;
+      for (int i = 0; i < viewerNumber; ++i)
       {
-        MITK_ERROR << "Invalid arguments: window layout name missing.";
+        viewerIndices.insert(i);
+      }
+    }
+    else if (windowLayoutArgParts.size() == 2)
+    {
+      QString viewerIndicesPart = windowLayoutArgParts[0];
+      windowLayoutName = windowLayoutArgParts[1];
+
+      QStringList viewerIndexParts = viewerIndicesPart.split(",");
+      if (viewerIndexParts.empty())
+      {
+        MITK_ERROR << "Viewer not specified for the --window-layout option. Skipping option.";
         continue;
       }
 
-      ++it;
-      QString windowLayoutArg = *it;
-      QStringList windowLayoutArgParts = windowLayoutArg.split(":");
-
-      int viewerRow = 0;
-      int viewerColumn = 0;
-      QString windowLayoutName;
-      if (windowLayoutArgParts.size() == 1)
+      for (const QString& viewerIndexPart: viewerIndexParts)
       {
-        windowLayoutName = windowLayoutArgParts[0];
-
-        viewerRow = 1;
-        viewerColumn = 1;
-      }
-      else if (windowLayoutArgParts.size() == 2)
-      {
-        QString viewerName = windowLayoutArgParts[0];
-        windowLayoutName = windowLayoutArgParts[1];
-
-        QStringList viewerNameParts = viewerName.split(",");
-        if (viewerNameParts.size() == 1)
+        bool ok = false;
+        int viewerIndex = viewerIndexPart.toInt(&ok) - 1;
+        if (!ok || viewerIndex < 0 || viewerIndex >= rows * columns)
         {
-          viewerRow = 1;
-          viewerColumn = viewerNameParts[0].toInt();
+          MITK_ERROR << "Invalid viewer index: " << viewerIndexPart.toStdString();
+          continue;
         }
-        else if (viewerNameParts.size() == 2)
-        {
-          viewerRow = viewerNameParts[0].toInt();
-          viewerColumn = viewerNameParts[1].toInt();
-        }
+
+        viewerIndices.insert(viewerIndex);
       }
+    }
 
-      if (viewerRow == 0
-          || viewerColumn == 0)
-      {
-        MITK_ERROR << "Invalid arguments: invalid viewer name for the --window-layout option.";
-        continue;
-      }
+    if (viewerIndices.empty())
+    {
+      MITK_ERROR << "No valid viewer specified for the --window-layout option. Skipping option.";
+      continue;
+    }
 
-      --viewerRow;
-      --viewerColumn;
+    WindowLayout windowLayout = niftk::GetWindowLayout(windowLayoutName.toStdString());
 
-      WindowLayout windowLayout = niftk::GetWindowLayout(windowLayoutName.toStdString());
+    if (windowLayout == WINDOW_LAYOUT_UNKNOWN)
+    {
+      MITK_ERROR << "Invalid window layout name: " << windowLayoutName.toStdString();
+      continue;
+    }
 
-      if (windowLayout == WINDOW_LAYOUT_UNKNOWN)
-      {
-        MITK_ERROR << "Invalid arguments: invalid window layout name.";
-        continue;
-      }
-
-      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(viewerRow, viewerColumn);
+    for (int viewerIndex: viewerIndices)
+    {
+      int row = viewerIndex / columns;
+      int column = viewerIndex % columns;
+      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(row, column);
 
       if (!viewer)
       {
-        MITK_ERROR << "Invalid argument: the specified viewer does not exist.";
+        MITK_ERROR << "Invalid argument: the specified viewer does not exist.\n"
+                      "Use the --viewer-number option to specify the number of viewers.";
         continue;
       }
 
       viewer->SetWindowLayout(windowLayout);
     }
-    else if (arg == QString("--bind-windows"))
+  }
+}
+
+
+// --------------------------------------------------------------------------
+void MultiViewerEditorPrivate::ProcessBindWindowsOption()
+{
+  ctkPluginContext* pluginContext = PluginActivator::GetInstance()->GetContext();
+
+  for (QString bindWindowsArg: pluginContext->getProperty("applicationArgs.bind-windows").toStringList())
+  {
+    QStringList bindWindowsArgParts = bindWindowsArg.split(":");
+
+    if (bindWindowsArgParts.size() == 0)
     {
-      if (it + 1 == args.end()
-          || (it + 1)->isEmpty()
-          || (*(it + 1))[0] == '-')
+      MITK_ERROR << "Binding options not specified for the --bind-windows option. Skipping option.";
+      continue;
+    }
+
+    int rows = m_MultiViewer->GetNumberOfRows();
+    int columns = m_MultiViewer->GetNumberOfColumns();
+
+    QSet<int> viewerIndices;
+
+    QString bindingOptionsPart;
+    if (bindWindowsArgParts.size() == 1)
+    {
+      bindingOptionsPart = bindWindowsArgParts[0];
+      int viewerNumber = rows * columns;
+      for (int i = 0; i < viewerNumber; ++i)
       {
-        MITK_ERROR << "Invalid arguments: window layout name missing.";
+        viewerIndices.insert(i);
+      }
+    }
+    else if (bindWindowsArgParts.size() == 2)
+    {
+      QString viewerIndicesPart = bindWindowsArgParts[0];
+      bindingOptionsPart = bindWindowsArgParts[1];
+
+      QStringList viewerIndexParts = viewerIndicesPart.split(",");
+      if (viewerIndexParts.empty())
+      {
+        MITK_ERROR << "Viewer not specified for the --bind-windows option. Skipping option.";
         continue;
       }
 
-      ++it;
-      QString windowBindingsArg = *it;
-      QStringList windowBindingsArgParts = windowBindingsArg.split(":");
-
-      int viewerRow = 0;
-      int viewerColumn = 0;
-      QString viewerBindingArg;
-      if (windowBindingsArgParts.size() == 1)
+      for (const QString& viewerIndexPart: viewerIndexParts)
       {
-        viewerBindingArg = windowBindingsArgParts[0];
-
-        viewerRow = 1;
-        viewerColumn = 1;
-      }
-      else if (windowBindingsArgParts.size() == 2)
-      {
-        QString viewerName = windowBindingsArgParts[0];
-        viewerBindingArg = windowBindingsArgParts[1];
-
-        QStringList viewerNameParts = viewerName.split(",");
-        if (viewerNameParts.size() == 1)
+        bool ok = false;
+        int viewerIndex = viewerIndexPart.toInt(&ok) - 1;
+        if (!ok || viewerIndex < 0 || viewerIndex >= rows * columns)
         {
-          viewerRow = 1;
-          viewerColumn = viewerNameParts[0].toInt();
-        }
-        else if (viewerNameParts.size() == 2)
-        {
-          viewerRow = viewerNameParts[0].toInt();
-          viewerColumn = viewerNameParts[1].toInt();
-        }
-      }
-
-      if (viewerRow == 0
-          || viewerColumn == 0)
-      {
-        MITK_ERROR << "Invalid arguments: invalid viewer name for the --window-layout option.";
-        continue;
-      }
-
-      --viewerRow;
-      --viewerColumn;
-
-      QStringList windowBindingOptions = viewerBindingArg.split(",");
-
-      enum BindingOptions
-      {
-        CursorBinding = 1,
-        MagnificationBinding = 2
-      };
-
-      int bindingOptions = 0;
-
-      foreach (QString windowBindingOption, windowBindingOptions)
-      {
-        bool value;
-
-        QStringList windowBindingOptionParts = windowBindingOption.split("=");
-        if (windowBindingOptionParts.size() != 1 && windowBindingOptionParts.size() != 2)
-        {
-          MITK_ERROR << "Invalid argument format for window bindings.";
+          MITK_ERROR << "Invalid viewer index: " << viewerIndexPart.toStdString();
           continue;
         }
 
-        QString windowBindingOptionName = windowBindingOptionParts[0];
+        viewerIndices.insert(viewerIndex);
+      }
+    }
 
-        if (windowBindingOptionParts.size() == 1)
+    if (viewerIndices.empty())
+    {
+      MITK_ERROR << "No valid viewer specified for the --bind-windows option. Skipping option.";
+      continue;
+    }
+
+    QStringList bindingOptionParts = bindingOptionsPart.split(",");
+
+    enum BindingOptionFlag
+    {
+      CursorBinding = 1,
+      MagnificationBinding = 2
+    };
+
+    int bindingOptions = 0;
+
+    for (const QString& bindingOptionPart: bindingOptionParts)
+    {
+      QStringList bindingNameAndValue = bindingOptionPart.split("=");
+
+      QString name;
+      bool value;
+
+      if (bindingNameAndValue.size() == 1)
+      {
+        name = bindingNameAndValue[0];
+        value = true;
+      }
+      else if (bindingNameAndValue.size() == 2)
+      {
+        name = bindingNameAndValue[0];
+        QString valuePart = bindingNameAndValue[1];
+
+        if (valuePart == QString("true")
+            || valuePart == QString("on")
+            || valuePart == QString("yes")
+            )
         {
           value = true;
         }
-        else if (windowBindingOptionParts.size() == 2)
+        else if (valuePart == QString("false")
+            || valuePart == QString("off")
+            || valuePart == QString("no")
+            )
         {
-          QString windowBindingOptionValue = windowBindingOptionParts[1];
-
-          if (windowBindingOptionValue == QString("true")
-              || windowBindingOptionValue == QString("on")
-              || windowBindingOptionValue == QString("yes")
-              )
-          {
-            value = true;
-          }
-          else if (windowBindingOptionValue == QString("false")
-              || windowBindingOptionValue == QString("off")
-              || windowBindingOptionValue == QString("no")
-              )
-          {
-            value = false;
-          }
-          else
-          {
-            MITK_ERROR << "Invalid argument format for window bindings.";
-            continue;
-          }
+          value = false;
         }
         else
         {
-          MITK_ERROR << "Invalid argument format for window bindings.";
-          continue;
-        }
-
-        if (windowBindingOptionName == QString("cursor"))
-        {
-          if (value)
-          {
-            bindingOptions |= CursorBinding;
-          }
-          else
-          {
-            bindingOptions &= ~CursorBinding;
-          }
-        }
-        else if (windowBindingOptionName == QString("magnification"))
-        {
-          if (value)
-          {
-            bindingOptions |= MagnificationBinding;
-          }
-          else
-          {
-            bindingOptions &= ~MagnificationBinding;
-          }
-        }
-        else if (windowBindingOptionName == QString("all"))
-        {
-          if (value)
-          {
-            bindingOptions =
-                CursorBinding
-                | MagnificationBinding
-                ;
-          }
-          else
-          {
-            bindingOptions = 0;
-          }
-        }
-        else if (windowBindingOptionName == QString("none"))
-        {
-          bindingOptions = 0;
-        }
-        else
-        {
+          MITK_ERROR << "Invalid value for window binding option: " << valuePart.toStdString();
           continue;
         }
       }
+      else
+      {
+        MITK_ERROR << "Invalid argument format for window bindings: " << bindingOptionPart.toStdString();
+        continue;
+      }
 
-      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(viewerRow, viewerColumn);
+      if (name == QString("cursor"))
+      {
+        if (value)
+        {
+          bindingOptions |= CursorBinding;
+        }
+        else
+        {
+          bindingOptions &= ~CursorBinding;
+        }
+      }
+      else if (name == QString("magnification"))
+      {
+        if (value)
+        {
+          bindingOptions |= MagnificationBinding;
+        }
+        else
+        {
+          bindingOptions &= ~MagnificationBinding;
+        }
+      }
+      else if (name == QString("all"))
+      {
+        if (value)
+        {
+          bindingOptions =
+              CursorBinding
+              | MagnificationBinding
+              ;
+        }
+        else
+        {
+          bindingOptions = 0;
+        }
+      }
+      else
+      {
+        MITK_ERROR << "Invalid window binding mode: " << name.toStdString();
+        continue;
+      }
+    }
+
+    for (int viewerIndex: viewerIndices)
+    {
+      int row = viewerIndex / columns;
+      int column = viewerIndex % columns;
+
+      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(row, column);
 
       if (!viewer)
       {
-        MITK_ERROR << "Invalid argument: the specified viewer does not exist.";
+        MITK_ERROR << "Invalid argument: the specified viewer does not exist.\n"
+                      "Use the --viewer-number option to specify the number of viewers.";
         continue;
       }
 
       viewer->SetCursorPositionBinding(bindingOptions & CursorBinding);
       viewer->SetScaleFactorBinding(bindingOptions & MagnificationBinding);
     }
-    else if (arg == QString("--bind-viewers"))
+  }
+}
+
+
+// --------------------------------------------------------------------------
+void MultiViewerEditorPrivate::ProcessBindViewersOption()
+{
+  ctkPluginContext* pluginContext = PluginActivator::GetInstance()->GetContext();
+
+  QString bindViewersArg = pluginContext->getProperty("applicationArgs.bind-viewers").toString();
+
+  if (!bindViewersArg.isEmpty())
+  {
+    QStringList bindingOptionParts = bindViewersArg.split(",");
+
+    int bindingOptions = 0;
+
+    for (const QString& bindingOptionPart: bindingOptionParts)
     {
-      if (it + 1 == args.end()
-          || (it + 1)->isEmpty()
-          || (*(it + 1))[0] == '-')
+      QStringList bindingNameAndValue = bindingOptionPart.split("=");
+
+      QString name;
+      bool value;
+
+      if (bindingNameAndValue.size() == 1)
       {
-        MITK_ERROR << "Invalid arguments: missing argument for viewer bindings.";
-        continue;
+        name = bindingNameAndValue[0];
+        value = true;
       }
-
-      ++it;
-      QString viewerBindingArg = *it;
-
-      QStringList viewerBindingOptions = viewerBindingArg.split(",");
-
-      int bindingOptions = 0;
-
-      foreach (QString viewerBindingOption, viewerBindingOptions)
+      else if (bindingNameAndValue.size() == 2)
       {
-        bool value;
+        name = bindingNameAndValue[0];
+        QString valuePart = bindingNameAndValue[1];
 
-        QStringList viewerBindingOptionParts = viewerBindingOption.split("=");
-        if (viewerBindingOptionParts.size() != 1 && viewerBindingOptionParts.size() != 2)
-        {
-          MITK_ERROR << "Invalid argument format for viewer bindings.";
-          continue;
-        }
-
-        QString viewerBindingOptionName = viewerBindingOptionParts[0];
-
-        if (viewerBindingOptionParts.size() == 1)
+        if (valuePart == QString("true")
+            || valuePart == QString("on")
+            || valuePart == QString("yes")
+            )
         {
           value = true;
         }
-        else if (viewerBindingOptionParts.size() == 2)
+        else if (valuePart == QString("false")
+                 || valuePart == QString("off")
+                 || valuePart == QString("no")
+                 )
         {
-          QString viewerBindingOptionValue = viewerBindingOptionParts[1];
-
-          if (viewerBindingOptionValue == QString("true")
-              || viewerBindingOptionValue == QString("on")
-              || viewerBindingOptionValue == QString("yes")
-              )
-          {
-            value = true;
-          }
-          else if (viewerBindingOptionValue == QString("false")
-                   || viewerBindingOptionValue == QString("off")
-                   || viewerBindingOptionValue == QString("no")
-                   )
-          {
-            value = false;
-          }
-          else
-          {
-            MITK_ERROR << "Invalid argument format for viewer bindings.";
-            continue;
-          }
+          value = false;
         }
         else
         {
-          MITK_ERROR << "Invalid argument format for viewer bindings.";
-          continue;
-        }
-
-
-        if (viewerBindingOptionName == QString("position"))
-        {
-          if (value)
-          {
-            bindingOptions |= MultiViewerWidget::PositionBinding;
-          }
-          else
-          {
-            bindingOptions &= ~MultiViewerWidget::PositionBinding;
-          }
-        }
-        else if (viewerBindingOptionName == QString("cursor"))
-        {
-          if (value)
-          {
-            bindingOptions |= MultiViewerWidget::CursorBinding;
-          }
-          else
-          {
-            bindingOptions &= ~MultiViewerWidget::CursorBinding;
-          }
-        }
-        else if (viewerBindingOptionName == QString("magnification"))
-        {
-          if (value)
-          {
-            bindingOptions |= MultiViewerWidget::MagnificationBinding;
-          }
-          else
-          {
-            bindingOptions &= ~MultiViewerWidget::MagnificationBinding;
-          }
-        }
-        else if (viewerBindingOptionName == QString("layout"))
-        {
-          if (value)
-          {
-            bindingOptions |= MultiViewerWidget::WindowLayoutBinding;
-          }
-          else
-          {
-            bindingOptions &= ~MultiViewerWidget::WindowLayoutBinding;
-          }
-        }
-        else if (viewerBindingOptionName == QString("geometry"))
-        {
-          if (value)
-          {
-            bindingOptions |= MultiViewerWidget::GeometryBinding;
-          }
-          else
-          {
-            bindingOptions &= ~MultiViewerWidget::GeometryBinding;
-          }
-        }
-        else if (viewerBindingOptionName == QString("all"))
-        {
-          if (value)
-          {
-            bindingOptions =
-                MultiViewerWidget::PositionBinding
-                | MultiViewerWidget::CursorBinding
-                | MultiViewerWidget::MagnificationBinding
-                | MultiViewerWidget::WindowLayoutBinding
-                | MultiViewerWidget::GeometryBinding
-                ;
-          }
-          else
-          {
-            bindingOptions = 0;
-          }
-        }
-        else if (viewerBindingOptionName == QString("none"))
-        {
-          bindingOptions = 0;
-        }
-        else
-        {
+          MITK_ERROR << "Invalid value for for viewer binding option: " << valuePart.toStdString();
           continue;
         }
       }
+      else
+      {
+        MITK_ERROR << "Invalid argument format for viewer bindings: " << bindingOptionPart.toStdString();
+        continue;
+      }
 
-      m_MultiViewer->SetBindingOptions(bindingOptions);
+
+      if (name == QString("position"))
+      {
+        if (value)
+        {
+          bindingOptions |= MultiViewerWidget::PositionBinding;
+        }
+        else
+        {
+          bindingOptions &= ~MultiViewerWidget::PositionBinding;
+        }
+      }
+      else if (name == QString("cursor"))
+      {
+        if (value)
+        {
+          bindingOptions |= MultiViewerWidget::CursorBinding;
+        }
+        else
+        {
+          bindingOptions &= ~MultiViewerWidget::CursorBinding;
+        }
+      }
+      else if (name == QString("magnification"))
+      {
+        if (value)
+        {
+          bindingOptions |= MultiViewerWidget::MagnificationBinding;
+        }
+        else
+        {
+          bindingOptions &= ~MultiViewerWidget::MagnificationBinding;
+        }
+      }
+      else if (name == QString("layout"))
+      {
+        if (value)
+        {
+          bindingOptions |= MultiViewerWidget::WindowLayoutBinding;
+        }
+        else
+        {
+          bindingOptions &= ~MultiViewerWidget::WindowLayoutBinding;
+        }
+      }
+      else if (name == QString("geometry"))
+      {
+        if (value)
+        {
+          bindingOptions |= MultiViewerWidget::GeometryBinding;
+        }
+        else
+        {
+          bindingOptions &= ~MultiViewerWidget::GeometryBinding;
+        }
+      }
+      else if (name == QString("all"))
+      {
+        if (value)
+        {
+          bindingOptions =
+              MultiViewerWidget::PositionBinding
+              | MultiViewerWidget::CursorBinding
+              | MultiViewerWidget::MagnificationBinding
+              | MultiViewerWidget::WindowLayoutBinding
+              | MultiViewerWidget::GeometryBinding
+              ;
+        }
+        else
+        {
+          bindingOptions = 0;
+        }
+      }
+      else
+      {
+        MITK_ERROR << "Invalid viewer binding mode: " << name.toStdString();
+        continue;
+      }
+    }
+
+    m_MultiViewer->SetBindingOptions(bindingOptions);
+  }
+}
+
+
+// --------------------------------------------------------------------------
+void MultiViewerEditorPrivate::ProcessAnnotationOption()
+{
+  ctkPluginContext* pluginContext = PluginActivator::GetInstance()->GetContext();
+
+  for (QString annotationArg: pluginContext->getProperty("applicationArgs.annotation").toStringList())
+  {
+    QStringList annotationArgParts = annotationArg.split(":");
+
+    if (annotationArgParts.size() == 0)
+    {
+      MITK_ERROR << "No property specified for the --annotation option. Skipping option.";
+      continue;
+    }
+
+    if (annotationArgParts.size() > 2)
+    {
+      MITK_ERROR << "Invalid syntax for the --annotation option. Skipping options.";
+      continue;
+    }
+
+    QSet<int> viewerIndices;
+
+    int rows = m_MultiViewer->GetNumberOfRows();
+    int columns = m_MultiViewer->GetNumberOfColumns();
+
+    QString propertiesPart;
+
+    if (annotationArgParts.size() == 1)
+    {
+      int viewerNumber = rows * columns;
+      for (int i = 0; i < viewerNumber; ++i)
+      {
+        viewerIndices.insert(i);
+      }
+
+      propertiesPart = annotationArgParts[0];
+    }
+    else if (annotationArgParts.size() == 2)
+    {
+      for (const QString& viewerIndexPart: annotationArgParts[0].split(","))
+      {
+        bool ok;
+        int viewerIndex = viewerIndexPart.toInt(&ok) - 1;
+        if (!ok || viewerIndex < 0 || viewerIndex >= rows * columns)
+        {
+          MITK_ERROR << "Invalid viewer index: " << viewerIndexPart.toStdString();
+          continue;
+        }
+
+        viewerIndices.insert(viewerIndex);
+      }
+
+      propertiesPart = annotationArgParts[1];
+    }
+
+    QStringList properties = propertiesPart.split(",");
+
+    if (properties.empty())
+    {
+      MITK_ERROR << "Invalid arguments: No property name specified for the annotation. Skipping option.";
+      continue;
+    }
+
+    for (int viewerIndex: viewerIndices)
+    {
+      int row = viewerIndex / m_MultiViewer->GetNumberOfColumns();
+      int column = viewerIndex % m_MultiViewer->GetNumberOfColumns();
+
+      SingleViewerWidget* viewer = m_MultiViewer->GetViewer(row, column);
+      assert(viewer);
+
+      viewer->SetPropertiesForAnnotation(properties);
     }
   }
-
-  s_AreCommandLineArgumentsProcessed = true;
 }
 
 
@@ -771,7 +885,7 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     assert(dataStorage);
 
     berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-    berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(EDITOR_ID)).Cast<berry::IBerryPreferences>();
+    berry::IBerryPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(EDITOR_ID).Cast<berry::IBerryPreferences>();
     assert( prefs );
 
     DnDDisplayInterpolationType defaultInterpolationType =
@@ -785,12 +899,14 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     int defaultNumberOfColumns = prefs->GetInt(DnDDisplayPreferencePage::DNDDISPLAY_DEFAULT_VIEWER_COLUMN_NUMBER, 1);
     bool showDropTypeControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DROP_TYPE_CONTROLS, false);
     bool showDirectionAnnotations = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true);
+    bool showPositionAnnotation = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_POSITION_ANNOTATION, true);
     bool showIntensityAnnotation = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true);
+    bool showPropertyAnnotation = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_PROPERTY_ANNOTATION, false);
+    QStringList propertiesForAnnotation = prefs->Get(DnDDisplayPreferencePage::DNDDISPLAY_PROPERTIES_FOR_ANNOTATION, "name").split(", ");
     bool showShowingOptions = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
     bool showWindowLayoutControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
     bool showViewerNumberControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_VIEWER_NUMBER_CONTROLS, true);
     bool showMagnificationSlider = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true);
-    bool show3DWindowInMultiWindowLayout = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false);
     bool show2DCursors = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true);
     bool rememberSettingsPerLayout = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true);
     bool sliceIndexTracking = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true);
@@ -820,8 +936,10 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_MultiViewer->SetShowDropTypeControls(showDropTypeControls);
     d->m_MultiViewer->SetCursorDefaultVisibility(show2DCursors);
     d->m_MultiViewer->SetDirectionAnnotationsVisible(showDirectionAnnotations);
+    d->m_MultiViewer->SetPositionAnnotationVisible(showPositionAnnotation);
     d->m_MultiViewer->SetIntensityAnnotationVisible(showIntensityAnnotation);
-    d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(show3DWindowInMultiWindowLayout);
+    d->m_MultiViewer->SetPropertyAnnotationVisible(showPropertyAnnotation);
+    d->m_MultiViewer->SetPropertiesForAnnotation(propertiesForAnnotation);
     d->m_MultiViewer->SetShowMagnificationSlider(showMagnificationSlider);
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
     d->m_MultiViewer->SetSliceTracking(sliceIndexTracking);
@@ -850,17 +968,17 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
   /// event filters and such, we delay the call to process the command line arguments by
   /// one millisecond. This leaves time for this function to return, and the arguments will
   /// be processed as soon as possible.
-  if (!MultiViewerEditorPrivate::AreCommandLineArgumentsProcessed())
+  if (!MultiViewerEditorPrivate::AreOptionsProcessed())
   {
-    QTimer::singleShot(1, this, SLOT(ProcessCommandLineArguments()));
+    QTimer::singleShot(1, this, SLOT(ProcessOptions()));
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerEditor::ProcessCommandLineArguments()
+void MultiViewerEditor::ProcessOptions()
 {
-  d->ProcessCommandLineArguments();
+  d->ProcessOptions();
 }
 
 
@@ -899,8 +1017,10 @@ void MultiViewerEditor::OnPreferencesChanged( const berry::IBerryPreferences* pr
     d->m_MultiViewer->SetShowMagnificationSlider(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true));
     d->m_MultiViewer->SetCursorDefaultVisibility(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true));
     d->m_MultiViewer->SetDirectionAnnotationsVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
+    d->m_MultiViewer->SetPositionAnnotationVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_POSITION_ANNOTATION, true));
     d->m_MultiViewer->SetIntensityAnnotationVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
-    d->m_MultiViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
+    d->m_MultiViewer->SetPropertyAnnotationVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_PROPERTY_ANNOTATION, false));
+    d->m_MultiViewer->SetPropertiesForAnnotation(prefs->Get(DnDDisplayPreferencePage::DNDDISPLAY_PROPERTIES_FOR_ANNOTATION, "name").split(", "));
     d->m_MultiViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
     d->m_MultiViewer->SetSliceTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
     d->m_MultiViewer->SetTimeStepTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));

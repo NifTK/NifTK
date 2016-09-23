@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -26,21 +26,21 @@
  * \section niftkRescaleSummary Runs ITK RescaleIntensityImageFilter.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK RescaleIntensityImageFilter." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image " << std::endl;
-    std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;   
-    std::cout << "    -min  <short> 0         Output minimum value" << std::endl;
-    std::cout << "    -max  <short> 255       Output maximum value" << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Runs ITK RescaleIntensityImageFilter." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i    <filename>        Input image " << std::endl;
+  std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
+  std::cout << "*** [options]   ***" << std::endl << std::endl;   
+  std::cout << "    -min  <short> 0         Output minimum value" << std::endl;
+  std::cout << "    -max  <short> 255       Output maximum value" << std::endl;
+}
 
 struct arguments
 {

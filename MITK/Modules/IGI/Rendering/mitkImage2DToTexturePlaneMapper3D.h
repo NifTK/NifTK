@@ -36,6 +36,8 @@ class Image;
 
 /**
  * \brief Vtk-based mapper for a 2D image, that displays a texture mapped plane in 3D space.
+ *
+ * Note, when we say "2D", we actually mean "3D image of 1 slice".
  */
 class NIFTKIGI_EXPORT Image2DToTexturePlaneMapper3D : public VtkMapper
 {

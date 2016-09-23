@@ -66,6 +66,8 @@
   #endif
 #endif
 
+using namespace vl;
+
 //-----------------------------------------------------------------------------
 // Init and shutdown VL
 //-----------------------------------------------------------------------------
@@ -75,8 +77,8 @@ namespace
 class VLInit
 {
 public:
-  VLInit() { vl::VisualizationLibrary::init(); }
-  ~VLInit() { vl::VisualizationLibrary::shutdown(); }
+  VLInit() { VisualizationLibrary::init(); }
+  ~VLInit() { VisualizationLibrary::shutdown(); }
 };
 
 VLInit s_ModuleInit;
@@ -94,6 +96,8 @@ VLInit s_ModuleInit;
 #include <niftkCUDAImageProperty.h>
 #include <niftkFlipImageLauncher.h>
 #include <cuda_gl_interop.h>
+
+using namespace vl;
 
 // #define VL_CUDA_TEST
 namespace niftk
@@ -168,8 +172,8 @@ public:
     glClearColor( 1.0f, 1.0f, 0.0f, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT );
     glMatrixMode( GL_MODELVIEW );
-    float zrot = vl::fract( vl::Time::currentTime() ) * 360.0f;
-    glLoadMatrixf( vl::mat4::getRotationXYZ( 0, 0, zrot ).ptr() );
+    float zrot = fract( Time::currentTime() ) * 360.0f;
+    glLoadMatrixf( mat4::getRotationXYZ( 0, 0, zrot ).ptr() );
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
     glOrtho(-1, 1, -1, 1, -1, 1);
@@ -292,12 +296,12 @@ VLSceneView::VLSceneView( VLWidget* vlwidget ) :
   // Note: here we don't have yet access to openglContext(), ie it's NULL
 
   // Interface VL with Qt's resource system to load GLSL shaders.
-  vl::defFileSystem()->directories().clear();
-  vl::defFileSystem()->directories().push_back( new vl::QtDirectory( ":/VL/" ) );
+  defFileSystem()->directories().clear();
+  defFileSystem()->directories().push_back( new QtDirectory( ":/VL/" ) );
 
   // Create our VividRendering!
-  m_VividRendering = new vl::VividRendering;
-  m_VividRendering->setRenderingMode( vl::Vivid::DepthPeeling ); /* (default) */
+  m_VividRendering = new VividRendering;
+  m_VividRendering->setRenderingMode( Vivid::DepthPeeling ); /* (default) */
   m_VividRendering->setCullingEnabled( false );
   // This creates some flickering on the skin for some reason
   m_VividRendering->setNearFarClippingPlanesOptimized( false );
@@ -305,10 +309,9 @@ VLSceneView::VLSceneView( VLWidget* vlwidget ) :
   m_VividRendering->setDepthPeelingAutoThrottleEnabled( true );
 
   // VividRendering nicely prepares for us all the structures we need to use ;)
-  m_VividRenderer = m_VividRendering->vividRenderer();
   m_SceneManager = m_VividRendering->sceneManager();
 
-  // In the future Camera (and Trackball) should belong in VLView and be set upon rendering.
+  // In the future Camera (and Trackball) may belong in VLView and be set upon rendering.
   m_Camera = m_VividRendering->calibratedCamera();
 
   // Initialize the trackball manipulator
@@ -316,7 +319,7 @@ VLSceneView::VLSceneView( VLWidget* vlwidget ) :
   m_Trackball->setEnabled( true );
   m_Trackball->setCamera( m_Camera.get() );
   m_Trackball->setTransform( NULL );
-  m_Trackball->setPivot( vl::vec3(0,0,0) );
+  m_Trackball->setPivot( vec3(0,0,0) );
 }
 
 VLSceneView::~VLSceneView() {
@@ -340,7 +343,6 @@ void VLSceneView::destroyEvent()
   // is still available as it disposes all the internal GL objects used.
 
   m_VividRendering = NULL;
-  m_VividRenderer = NULL;
   m_SceneManager = NULL;
   m_Camera = NULL;
   m_Trackball = NULL;
@@ -529,16 +531,16 @@ void VLSceneView::initSceneFromDataStorage()
 
   #if 0
     // dump scene to VLB/VLT format for debugging
-    vl::ref< vl::ResourceDatabase > db = new vl::ResourceDatabase;
+    ref< ResourceDatabase > db = new ResourceDatabase;
     for( int i = 0; i < m_SceneManager->tree()->actors()->size(); ++i ) {
-      vl::Actor* act = m_SceneManager->tree()->actors()->at(i);
+      Actor* act = m_SceneManager->tree()->actors()->at(i);
       if ( act->enableMask() ) {
         // db->resources().push_back( act );
-        // vl::String fname = filename( files[i] );
+        // String fname = filename( files[i] );
         db->resources().push_back( act );
-        vl::String fname = "niftk-liver";
-        vl::saveVLT( "C:/git-ucl/VisualizationLibrary/data/tmp/" + fname + ".vlt", db.get() );
-        vl::saveVLB( "C:/git-ucl/VisualizationLibrary/data/tmp/" + fname + ".vlb", db.get() );
+        String fname = "niftk-liver";
+        saveVLT( "C:/git-ucl/VisualizationLibrary/data/tmp/" + fname + ".vlt", db.get() );
+        saveVLB( "C:/git-ucl/VisualizationLibrary/data/tmp/" + fname + ".vlb", db.get() );
       }
     }
   #endif
@@ -560,7 +562,7 @@ void VLSceneView::addDataNode(const mitk::DataNode* node)
     dumpNodeInfo( "addDataNode()->GetData()", node->GetData() );
   #endif
 
-  vl::ref<VLMapper> vl_node = VLMapper::create( node, this );
+  ref<VLMapper> vl_node = VLMapper::create( node, this );
   if ( vl_node ) {
     if ( vl_node->init() ) {
       m_DataNodeVLMapperMap[ node ] = vl_node;
@@ -677,7 +679,7 @@ void VLSceneView::initEvent()
     /*
      10,000 Points Test:
      3D Spheres mode:
-      - In debug mode allocation/deallocation is quite slow, can take 30 seconds or so. 
+      - In debug mode allocation/deallocation is quite slow, can take 30 seconds or so.
         Even if we share the same geometry every point has to dinamically allocate it's own Actor, Effect, Shader, several Uniforms and Transform.
       - Rendering is slower than I expected, probably not so much for the number of triangles but for the overhead of setting up the object before rendering.
         The Vivid renderer is not heavily optimized to minimize the number of render state changes favouring flexibility instead.
@@ -777,7 +779,7 @@ void VLSceneView::updateScene() {
   // Reset trackball view on demand
 
   if ( m_ScheduleTrackballAdjustView && m_Trackball->isEnabled() ) {
-    m_Trackball->adjustView( m_VividRendering.get(), vl::vec3(0,0,1), vl::vec3(0,1,0), 1.0f );
+    m_Trackball->adjustView( m_VividRendering.get(), vec3(0,0,1), vec3(0,1,0), 1.0f );
     m_ScheduleTrackballAdjustView = false;
   }
 }
@@ -793,7 +795,7 @@ void VLSceneView::renderScene()
   updateScene();
 
   // Set frame time for all the rendering
-  vl::real now_time = vl::Time::currentTime();
+  real now_time = Time::currentTime();
   m_VividRendering->setFrameClock( now_time );
 
   // Execute rendering
@@ -846,7 +848,7 @@ void VLSceneView::clearScene()
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::setRenderingMode( vl::Vivid::ERenderingMode mode )
+void VLSceneView::setRenderingMode( Vivid::ERenderingMode mode )
 {
   m_VividRendering->setRenderingMode( mode );
   openglContext()->update();
@@ -854,7 +856,7 @@ void VLSceneView::setRenderingMode( vl::Vivid::ERenderingMode mode )
 
 //-----------------------------------------------------------------------------
 
-vl::Vivid::ERenderingMode VLSceneView::renderingMode() const
+Vivid::ERenderingMode VLSceneView::renderingMode() const
 {
   return m_VividRendering->renderingMode();
 }
@@ -864,13 +866,13 @@ vl::Vivid::ERenderingMode VLSceneView::renderingMode() const
 void VLSceneView::setBackgroundColor(float r, float g, float b)
 {
   VIVID_CHECK( m_VividRendering );
-  m_VividRendering->setBackgroundColor( vl::fvec4(r, g, b, 1) );
+  m_VividRendering->setBackgroundColor( fvec4(r, g, b, 1) );
   openglContext()->update();
 }
 
 //-----------------------------------------------------------------------------
 
-vl::vec3 VLSceneView::backgroundColor() const
+vec3 VLSceneView::backgroundColor() const
 {
   VIVID_CHECK( m_VividRendering );
   return m_VividRendering->backgroundColor().rgb();
@@ -893,17 +895,17 @@ float VLSceneView::opacity() const
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::setDepthPeelingPasses( int n ) 
+void VLSceneView::setDepthPeelingPasses( int n )
 {
-  m_VividRenderer->setNumPasses( n );
+  m_VividRendering->setDepthPeelingPasses( n );
   openglContext()->update();
 }
 
 //-----------------------------------------------------------------------------
 
-int VLSceneView::depthPeelingPasses() const 
+int VLSceneView::depthPeelingPasses() const
 {
-  return m_VividRenderer->numPasses();
+  return m_VividRendering->depthPeelingPasses();
 }
 
 //-----------------------------------------------------------------------------
@@ -922,7 +924,7 @@ bool VLSceneView::isStencilEnabled() const
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::setStencilBackgroundColor( const vl::vec4& color )
+void VLSceneView::setStencilBackgroundColor( const vec4& color )
 {
   m_VividRendering->setStencilBackgroundColor( color );
   openglContext()->update();
@@ -930,7 +932,7 @@ void VLSceneView::setStencilBackgroundColor( const vl::vec4& color )
 
 //-----------------------------------------------------------------------------
 
-const vl::vec4& VLSceneView::stencilBackgroundColor() const
+const vec4& VLSceneView::stencilBackgroundColor() const
 {
   return m_VividRendering->stencilBackgroundColor();
 }
@@ -952,8 +954,8 @@ float VLSceneView::stencilSmoothness() const
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::reInit(const vl::vec3& dir, const vl::vec3& up, float bias) {
-  vl::AABB aabb;
+void VLSceneView::reInit(const vec3& dir, const vec3& up, float bias) {
+  AABB aabb;
   for ( DataNodeVLMapperMapType::iterator it = m_DataNodeVLMapperMap.begin();
         it != m_DataNodeVLMapperMap.end();
         ++it ) {
@@ -970,7 +972,7 @@ void VLSceneView::reInit(const vl::vec3& dir, const vl::vec3& up, float bias) {
 
 //-----------------------------------------------------------------------------
 
-void VLSceneView::globalReInit(const vl::vec3& dir, const vl::vec3& up, float bias) {
+void VLSceneView::globalReInit(const vec3& dir, const vec3& up, float bias) {
   m_Trackball->adjustView( m_VividRendering.get(), dir, up, bias );
   openglContext()->update();
 }
@@ -994,7 +996,7 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
     updateCameraParameters();
   }
 
-  vl::Texture* tex = NULL;
+  Texture* tex = NULL;
   mitk::Vector3D img_spacing;
   int width  = 0;
   int height = 0;
@@ -1068,8 +1070,10 @@ bool VLSceneView::setCameraTrackingNode(const mitk::DataNode* node)
     m_Trackball->setEnabled( true );
     scheduleTrackballAdjustView( true );
   } else {
+#if 0
     VLUtils::dumpNodeInfo( "CameraNode():", node );
     VLUtils::dumpNodeInfo( "node->GetData()", node->GetData() );
+#endif
     m_Trackball->setEnabled( false );
     scheduleTrackballAdjustView( false );
     // update camera position
@@ -1158,9 +1162,9 @@ void VLSceneView::updateCameraParameters()
   if ( m_CameraNode ) {
     // This implies a right handed coordinate system.
     // By default, assume camera position is at origin, looking down the world +ve z-axis.
-    vl::vec3 origin(0, 0, 0);
-    vl::vec3 focalPoint(0, 0, 1000);
-    vl::vec3 viewUp(0, -1000, 0);
+    vec3 origin(0, 0, 0);
+    vec3 focalPoint(0, 0, 1000);
+    vec3 viewUp(0, -1000, 0);
 
     // If the stereo right to left matrix exists, we must be doing the right hand image.
     // So, in this case, we have an extra transformation to consider.
@@ -1172,7 +1176,7 @@ void VLSceneView::updateCameraParameters()
 
       if ( prop.IsNotNull() )
       {
-        vl::mat4 rig_txf = VLUtils::getVLMatrix( prop->GetValue() );
+        mat4 rig_txf = VLUtils::getVLMatrix( prop->GetValue() );
         origin = rig_txf * origin;
         focalPoint = rig_txf * focalPoint;
         viewUp = rig_txf * viewUp;
@@ -1187,8 +1191,8 @@ void VLSceneView::updateCameraParameters()
     //                                    - to construct the camera to world.
 
     // this is the camera modeling matrix (not the view matrix, its inverse)
-    vl::mat4 camera_to_world;
-    vl::mat4 supplied_matrix = VLUtils::getVLMatrix( m_CameraNode->GetData() );
+    mat4 camera_to_world;
+    mat4 supplied_matrix = VLUtils::getVLMatrix( m_CameraNode->GetData() );
     VIVID_CHECK( ! supplied_matrix.isNull() );
     if ( ! supplied_matrix.isNull() )
     {
@@ -1209,7 +1213,7 @@ void VLSceneView::updateCameraParameters()
       viewUp = viewUp - origin;
     }
 
-    m_Camera->setViewMatrix( vl::mat4::getLookAt(origin, focalPoint, viewUp) );
+    m_Camera->setViewMatrix( mat4::getLookAt(origin, focalPoint, viewUp) );
   }
 }
 

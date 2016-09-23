@@ -23,7 +23,6 @@
 
 #include <niftkConversionUtils.h>
 
-#include <itkLogHelper.h>
 #include <itkCommandLineHelper.h>
 #include <itkMath.h>
 #include <itkImage.h>

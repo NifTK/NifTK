@@ -22,7 +22,7 @@
 #include <mitkPointSet.h>
 
 #include <niftkCoordinateAxesData.h>
-#include <niftkImageConversion.h>
+#include <niftkOpenCVImageConversion.h>
 #ifdef _USE_PCL
 #include <niftkPCLData.h>
 #endif

@@ -17,8 +17,6 @@
 
 #include "itkVelocityFieldMultiResolutionMethod.h"
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 /*

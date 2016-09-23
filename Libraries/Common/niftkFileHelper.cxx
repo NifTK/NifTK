@@ -74,7 +74,7 @@ std::string ConcatenatePath(const std::string& path, const std::string& name)
 
 
 //-----------------------------------------------------------------------------
-fs::path ConvertToFullPath(const std::string& pathName)
+static fs::path ConvertToFullPath(const std::string& pathName)
 {
   if (pathName.length() == 0)
     {

@@ -17,8 +17,6 @@
 
 #include "itkHistogramSimilarityMeasure.h"
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 template <class TFixedImage, class TMovingImage>

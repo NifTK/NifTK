@@ -19,6 +19,7 @@
 #include <vlGraphics/Actor.hpp>
 #include <vlGraphics/GeometryPrimitives.hpp>
 #include <vlVivid/VividRendering.hpp>
+#include <vlVivid/VividVolume.hpp>
 #include <mitkDataNode.h>
 #include <mitkProperties.h>
 #include <mitkImageReadAccessor.h>
@@ -34,6 +35,8 @@
 #ifdef _USE_PCL
   #include <niftkPCLData.h>
 #endif
+
+using namespace vl;
 
 namespace niftk
 {
@@ -52,7 +55,7 @@ VLMapper::VLMapper( const mitk::DataNode* node, VLSceneView* sv )
   m_OpenGLContext = sv->openglContext();
   m_VividRendering = sv->vividRendering();
   m_DataStorage = sv->dataStorage();
-  m_DataNodeVividUpdateEnabled = true;
+  m_DataNodeTrackingEnabled = true;
   VIVID_CHECK( m_OpenGLContext );
   VIVID_CHECK( m_VividRendering );
   VIVID_CHECK( m_DataStorage );
@@ -81,7 +84,7 @@ void VLMapper::updateCommon()
     return;
   }
 
-  if ( isDataNodeVividUpdateEnabled() )
+  if ( isDataNodeTrackingEnabled() )
   {
     // Update visibility
     bool visible = VLUtils::getBoolProp( m_DataNode, "visible", true );
@@ -180,7 +183,7 @@ void VLMapperVLGlobalSettings::update()
   int render_mode = VLUtils::getEnumProp( m_DataNode, "VL.Global.RenderMode", 0 );
   // vl::vec4 bg_color = VLUtils::getColorProp( m_DataNode, "VL.Global.BackgroundColor", vl::black );
   // float opacity = VLUtils::getFloatProp( m_DataNode, "VL.Global.Opacity", 1 );
-  int passes = VLUtils::getIntProp( m_DataNode, "VL.Global.DepthPeelingPasses", 4 );
+  // int passes = VLUtils::getIntProp( m_DataNode, "VL.Global.DepthPeelingPasses", 4 );
 
   m_VLSceneView->setStencilEnabled( enable );
   m_VLSceneView->setStencilBackgroundColor( stencil_bg_color );
@@ -188,7 +191,7 @@ void VLMapperVLGlobalSettings::update()
   m_VLSceneView->setRenderingMode( (vl::Vivid::ERenderingMode)render_mode );
   // m_VividRendering->setBackgroundColor( bg_color );
   // m_VividRendering->setOpacity( opacity );
-  m_VLSceneView->setDepthPeelingPasses( passes );
+  // m_VLSceneView->setDepthPeelingPasses( passes );
 }
 
 void VLMapperVLGlobalSettings::updateVLGlobalSettings()
@@ -229,7 +232,7 @@ bool VLMapperSurface::init()
 void VLMapperSurface::update()
 {
   updateCommon();
-  if ( isDataNodeVividUpdateEnabled() )
+  if ( isDataNodeTrackingEnabled() )
   {
     VLUtils::updateMaterialProps( m_Actor->effect(), m_DataNode );
     VLUtils::updateRenderModeProps( m_Actor->effect(), m_DataNode );
@@ -245,13 +248,13 @@ void VLMapperSurface::update()
 //-----------------------------------------------------------------------------
 
 VLMapper2DImage::VLMapper2DImage( const mitk::DataNode* node, VLSceneView* sv )
-  : VLMapper( node, sv ) 
+  : VLMapper( node, sv )
 {
   m_MitkImage = dynamic_cast<mitk::Image*>( node->GetData() );
   VIVID_CHECK( m_MitkImage );
 }
 
-bool VLMapper2DImage::init() 
+bool VLMapper2DImage::init()
 {
   VIVID_CHECK( m_MitkImage );
 
@@ -268,7 +271,7 @@ bool VLMapper2DImage::init()
 
   m_Actor = initActor( geom.get() );
   // NOTE: for the moment we don't render it
-  // FIXME: the DataNode itself should be disabled
+  // FIXME: the DataNode itself should be disabled at init time?
   // m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
   vl::ref<vl::Effect> fx = m_Actor->effect();
 
@@ -287,12 +290,12 @@ bool VLMapper2DImage::init()
   return true;
 }
 
-void VLMapper2DImage::update() 
+void VLMapper2DImage::update()
 {
   VIVID_CHECK( m_MitkImage );
 
   updateCommon();
-  if ( isDataNodeVividUpdateEnabled() )
+  if ( isDataNodeTrackingEnabled() )
   {
     // VLUtils::updateRenderModeProps(); /* does not apply here */
     VLUtils::updateFogProps( m_Actor->effect(), m_DataNode );
@@ -558,8 +561,8 @@ void VLMapperPoints::initPointSetProps()
 
 bool VLMapperPoints::init()
 {
-  initPointSetProps(); 
-  return true; 
+  initPointSetProps();
+  return true;
 }
 
 void VLMapperPoints::init3D() {
@@ -815,9 +818,9 @@ bool VLMapperCUDAImage::init()
 
   m_Actor = initActor( vlquad.get() );
   // NOTE: for the moment we don't render it
-  // FIXME: the DataNode itself should be disabled
+  // FIXME: the DataNode itself should be disabled at init time?
   // m_VividRendering->sceneManager()->tree()->addActor( m_Actor.get() );
-  Effect* fx = m_Actor->effect();
+  vl::Effect* fx = m_Actor->effect();
 
   fx->shader()->getUniform("vl_Vivid.enableTextureMapping")->setUniformI( 1 );
   fx->shader()->getUniform("vl_Vivid.enableLighting")->setUniformI( 0 );
@@ -839,7 +842,7 @@ bool VLMapperCUDAImage::init()
 void VLMapperCUDAImage::update()
 {
   updateCommon();
-  if ( isDataNodeVividUpdateEnabled() )
+  if ( isDataNodeTrackingEnabled() )
   {
     // VLUtils::updateRenderModeProps(); /* does not apply here */
     VLUtils::updateFogProps( m_Actor->effect(), m_DataNode );
@@ -859,7 +862,7 @@ void VLMapperCUDAImage::update()
     VIVID_CHECK(m_CudaResource);
     cudaGraphicsUnregisterResource(m_CudaResource);
     m_CudaResource = NULL;
-    m_Texture->createTexture2D( lwci.GetWidth(), lwci.GetHeight(), TF_RGBA, false );
+    m_Texture->createTexture2D( lwci.GetWidth(), lwci.GetHeight(), vl::TF_RGBA, false );
     err = cudaGraphicsGLRegisterImage( &m_CudaResource, m_Texture->handle(), m_Texture->dimension(), cudaGraphicsRegisterFlagsNone );
     if ( err != cudaSuccess )
     {

@@ -13,7 +13,6 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Events Dialogs LookupTables
   DEPENDS MitkCore MitkQtWidgets MitkSegmentationUI niftkCore niftkCoreGui niftkMIDAS
 )
 

@@ -16,10 +16,10 @@ NIFTK_CREATE_COMMAND_LINE_APPLICATION(
   NAME niftkSplitVolumeIntoVoxelPlanes
   BUILD_CLI
   TARGET_LIBRARIES
+    ${Boost_LIBRARIES}
+    ${ITK_LIBRARIES}
     niftkcommon
     niftkITK
     niftkITKIO
-    ${ITK_LIBRARIES}
-    ${Boost_LIBRARIES}
 )
 

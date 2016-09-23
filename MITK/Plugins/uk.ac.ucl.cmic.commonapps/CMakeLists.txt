@@ -17,7 +17,7 @@ project(uk_ac_ucl_cmic_commonapps)
 mitk_create_plugin(
   EXPORT_DIRECTIVE COMMONAPPS_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS niftkCore niftkCoreGui MitkSceneSerialization MitkLegacyIO
+  MODULE_DEPENDS niftkCore niftkCoreGui
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

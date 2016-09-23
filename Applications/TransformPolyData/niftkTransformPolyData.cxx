@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
@@ -31,7 +31,7 @@
  */
 void Usage(char *exec)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "  Transform's a VTK Poly Data file by any number of affine transformations." << std::endl;
     std::cout << "  " << std::endl;

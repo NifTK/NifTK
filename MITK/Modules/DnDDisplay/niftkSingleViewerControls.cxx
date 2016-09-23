@@ -16,14 +16,18 @@
 
 #include "ui_niftkSingleViewerControls.h"
 
-#include <ctkDoubleSpinBox.h>
+#include <assert.h>
 
+#include <QInputDialog>
+
+#include <ctkDoubleSpinBox.h>
 
 namespace niftk
 {
 
 WindowLayout SingleViewerControls::s_MultiWindowLayouts[] = {
   WINDOW_LAYOUT_ORTHO,
+  WINDOW_LAYOUT_ORTHO_NO_3D,
   WINDOW_LAYOUT_3H,
   WINDOW_LAYOUT_3V,
   WINDOW_LAYOUT_COR_SAG_H,
@@ -75,13 +79,16 @@ SingleViewerControls::SingleViewerControls(QWidget *parent)
 
   this->connect(ui->m_ShowCursorCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowCursorChanged(bool)));
   this->connect(ui->m_ShowDirectionAnnotationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowDirectionAnnotationsChanged(bool)));
+  this->connect(ui->m_ShowPositionAnnotationCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowPositionAnnotationChanged(bool)));
   this->connect(ui->m_ShowIntensityAnnotationCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowIntensityAnnotationChanged(bool)));
-  this->connect(ui->m_Show3DWindowCheckBox, SIGNAL(toggled(bool)), SIGNAL(Show3DWindowChanged(bool)));
+  this->connect(ui->m_ShowPropertyAnnotationCheckBox, SIGNAL(toggled(bool)), SIGNAL(ShowPropertyAnnotationChanged(bool)));
+  this->connect(ui->m_PropertiesForAnnotationLabel, SIGNAL(clicked()), SLOT(OnPropertiesForAnnotationLabelClicked()));
 
   this->connect(ui->m_BindWindowCursorsCheckBox, SIGNAL(toggled(bool)), SIGNAL(WindowCursorBindingChanged(bool)));
   this->connect(ui->m_BindWindowMagnificationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(WindowMagnificationBindingChanged(bool)));
 
   ui->m_MultiWindowComboBox->addItem("2x2");
+  ui->m_MultiWindowComboBox->addItem("2x2 no 3D");
   ui->m_MultiWindowComboBox->addItem("3H");
   ui->m_MultiWindowComboBox->addItem("3V");
   ui->m_MultiWindowComboBox->addItem("cor sag H");
@@ -328,6 +335,8 @@ WindowLayout SingleViewerControls::GetWindowLayout() const
 //-----------------------------------------------------------------------------
 void SingleViewerControls::SetWindowLayout(WindowLayout windowLayout)
 {
+  assert(windowLayout >= 0 && windowLayout < WINDOW_LAYOUT_NUMBER);
+
   if (windowLayout == m_WindowLayout)
   {
     // Nothing to do.
@@ -360,13 +369,34 @@ void SingleViewerControls::SetWindowLayout(WindowLayout windowLayout)
     break;
   default:
     int windowLayoutIndex = 0;
-    while (windowLayoutIndex < s_MultiWindowLayoutNumber && windowLayout != s_MultiWindowLayouts[windowLayoutIndex])
+    while (windowLayoutIndex < s_MultiWindowLayoutNumber
+           && s_MultiWindowLayouts[windowLayoutIndex] != windowLayout)
     {
       ++windowLayoutIndex;
     }
+
     if (windowLayoutIndex == s_MultiWindowLayoutNumber)
     {
-      // Should not happen.
+      /// This can be WINDOW_LAYOUT_UNKNOWN or WINDOW_LAYOUT_AS_ACQUIRED.
+      /// We switch off everything.
+      wasBlocked = ui->m_AxialWindowRadioButton->blockSignals(true);
+      ui->m_AxialWindowRadioButton->setChecked(false);
+      ui->m_AxialWindowRadioButton->blockSignals(wasBlocked);
+      wasBlocked = ui->m_SagittalWindowRadioButton->blockSignals(true);
+      ui->m_SagittalWindowRadioButton->setChecked(false);
+      ui->m_SagittalWindowRadioButton->blockSignals(wasBlocked);
+      wasBlocked = ui->m_CoronalWindowRadioButton->blockSignals(true);
+      ui->m_CoronalWindowRadioButton->setChecked(false);
+      ui->m_CoronalWindowRadioButton->blockSignals(wasBlocked);
+      wasBlocked = ui->m_3DWindowRadioButton->blockSignals(true);
+      ui->m_3DWindowRadioButton->setChecked(false);
+      ui->m_3DWindowRadioButton->blockSignals(wasBlocked);
+      wasBlocked = ui->m_MultiWindowRadioButton->blockSignals(true);
+      ui->m_MultiWindowRadioButton->setChecked(false);
+      ui->m_MultiWindowRadioButton->blockSignals(wasBlocked);
+      wasBlocked = ui->m_MultiWindowComboBox->blockSignals(true);
+      ui->m_MultiWindowComboBox->setCurrentIndex(-1);
+      ui->m_MultiWindowComboBox->blockSignals(wasBlocked);
       return;
     }
 
@@ -451,6 +481,22 @@ void SingleViewerControls::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+bool SingleViewerControls::IsPositionAnnotationVisible() const
+{
+  return ui->m_ShowPositionAnnotationCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerControls::SetPositionAnnotationVisible(bool visible)
+{
+  bool wasBlocked = ui->m_ShowPositionAnnotationCheckBox->blockSignals(true);
+  ui->m_ShowPositionAnnotationCheckBox->setChecked(visible);
+  ui->m_ShowPositionAnnotationCheckBox->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
 bool SingleViewerControls::IsIntensityAnnotationVisible() const
 {
   return ui->m_ShowIntensityAnnotationCheckBox->isChecked();
@@ -467,18 +513,62 @@ void SingleViewerControls::SetIntensityAnnotationVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
-bool SingleViewerControls::Is3DWindowVisible() const
+bool SingleViewerControls::IsPropertyAnnotationVisible() const
 {
-  return ui->m_Show3DWindowCheckBox->isChecked();
+  return ui->m_ShowPropertyAnnotationCheckBox->isChecked();
 }
 
 
 //-----------------------------------------------------------------------------
-void SingleViewerControls::Set3DWindowVisible(bool visible)
+void SingleViewerControls::SetPropertyAnnotationVisible(bool visible)
 {
-  bool wasBlocked = ui->m_Show3DWindowCheckBox->blockSignals(true);
-  ui->m_Show3DWindowCheckBox->setChecked(visible);
-  ui->m_Show3DWindowCheckBox->blockSignals(wasBlocked);
+  bool wasBlocked = ui->m_ShowPropertyAnnotationCheckBox->blockSignals(true);
+  ui->m_ShowPropertyAnnotationCheckBox->setChecked(visible);
+  ui->m_ShowPropertyAnnotationCheckBox->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+QStringList SingleViewerControls::GetPropertiesForAnnotation() const
+{
+  return m_PropertiesForAnnotation;
+}
+
+//-----------------------------------------------------------------------------
+void SingleViewerControls::SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation)
+{
+  m_PropertiesForAnnotation = propertiesForAnnotation;
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerControls::OnPropertiesForAnnotationLabelClicked()
+{
+  bool ok;
+  QString propertyNames = QInputDialog::getText(
+        this, tr("Property annotations"),
+        tr("Please give the comma separated list of property names:"),
+        QLineEdit::Normal, m_PropertiesForAnnotation.join(", "), &ok);
+  if (ok)
+  {
+    QStringList properties;
+    for (const QString& propertyName: propertyNames.split(","))
+    {
+      QString property = propertyName.trimmed();
+      if (!property.isEmpty())
+      {
+        properties.push_back(property);
+      }
+    }
+
+    m_PropertiesForAnnotation = properties;
+
+    bool wasBlocked = ui->m_ShowPropertyAnnotationCheckBox->blockSignals(true);
+    ui->m_ShowPropertyAnnotationCheckBox->setChecked(!properties.isEmpty());
+    ui->m_ShowPropertyAnnotationCheckBox->blockSignals(wasBlocked);
+
+    emit PropertiesForAnnotationChanged();
+  }
 }
 
 

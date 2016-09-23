@@ -11,9 +11,9 @@
   <extension point="org.blueberry.ui.perspectives">
     <perspective
       id="uk.ac.ucl.cmic.niftyigi.igiperspective"
-      name="IGI Perspective"
+      name="IGI"
       class="niftk::IGIPerspective"
-	  icon="resources/icon_cmic.xpm">
+      icon="resources/icon_cmic.xpm">
     </perspective>
   </extension>
 

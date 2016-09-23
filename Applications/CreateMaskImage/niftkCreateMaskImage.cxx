@@ -18,7 +18,6 @@
  * \section niftkCreateMaskImageSummary niftkCreateMaskImage creates a mask image using the input target image and a voxel-wise bounding box.
  */
 
-#include <itkLogHelper.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>

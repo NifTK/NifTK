@@ -13,7 +13,6 @@
 =============================================================================*/
 
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
 #include <boost/math/special_functions/round.hpp>
 #include "niftkConversionUtils.h"
 #include <math.h>

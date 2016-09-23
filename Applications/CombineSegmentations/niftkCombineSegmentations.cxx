@@ -16,7 +16,7 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkShapeBasedAveragingImageFilter.h>
 #include <itkSTAPLEImageFilter.h>
@@ -45,7 +45,7 @@ typedef short PixelType;
  */
 void StartUsage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Merges several segmentations together to create a single best segmentation using " << std::endl;
   std::cout << "    1. STAPLE: Validation of image segmentation and expert quality with an " << std::endl; 

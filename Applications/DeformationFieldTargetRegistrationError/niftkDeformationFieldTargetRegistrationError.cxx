@@ -12,7 +12,6 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>
 

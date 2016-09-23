@@ -12,21 +12,23 @@
 #
 #============================================================================*/
 
-if(VTK_FOUND AND MITK_USE_Qt4)
+if(VTK_FOUND)
 
   NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     NAME niftkCreateBreastMesh
     BUILD_CLI
     TARGET_LIBRARIES
-      ${NIFTK_VTK_LIBS_WITH_QT}
-      ${QT_LIBRARIES}
-      niftkVTK
-      ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
+      ${ITK_LIBRARIES}
+      vtkCommonCore
+      vtkFiltersCore
+      vtkFiltersSources
+      vtkIOCore
+      vtkIOLegacy
+      vtkRenderingCore
+      vtkRenderingFreeType
       niftkcommon
       niftkITK
       niftkITKIO
-      ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
   )
 
 endif()

@@ -24,7 +24,6 @@
 #include <iostream>
 #include <fstream>
 #include <boost/format.hpp>
-#include <itkLogHelper.h>
 
 namespace itk
 {

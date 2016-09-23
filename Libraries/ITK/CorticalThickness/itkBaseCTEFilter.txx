@@ -19,7 +19,7 @@
 #include <niftkConversionUtils.h>
 #include <itkImageRegionConstIteratorWithIndex.h>
 
-#include <itkLogHelper.h>
+#include <itkUCLMacro.h>
 
 namespace itk
 {

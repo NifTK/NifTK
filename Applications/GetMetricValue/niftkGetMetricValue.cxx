@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <itkImage.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkRescaleIntensityImageFilter.h>
@@ -33,7 +33,7 @@ typedef itk::RescaleIntensityImageFilter<ImageType,ImageType> RescaleFilter;
  */
 void Usage(char *exec)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout<<std::endl;
 	std::cout<<"This program returns a metric value between two input files"<<std::endl;
 	std::cout<< "Usage:\t"<< exec << " <inputFileName> <inputFileName> [metric] [bin number]"<<std::endl;

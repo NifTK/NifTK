@@ -19,7 +19,6 @@
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkImageRegionIterator.h>
 #include <itkUCLMacro.h>
-#include <itkLogHelper.h>
 
 
 namespace itk

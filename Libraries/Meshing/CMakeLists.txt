@@ -48,6 +48,7 @@ target_link_libraries(niftkMeshing
   ${CGAL_3RD_PARTY_LIBRARIES}
   ${ITK_LIBRARIES}
   ${VTK_LIBRARIES}
+  ${Boost_LIBRARIES}
   )
 
 install(TARGETS niftkMeshing

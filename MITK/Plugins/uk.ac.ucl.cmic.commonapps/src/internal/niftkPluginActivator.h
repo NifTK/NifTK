@@ -24,6 +24,7 @@
 #include <berryIPreferences.h>
 #include <mitkIDataStorageService.h>
 
+#include <niftkDataNodePropertyListener.h>
 #include <niftkLookupTableProviderService.h>
 
 
@@ -72,63 +73,50 @@ public:
 
 protected:
 
-  /**
-   * \brief Called when the user toggles the opacity control properties.
-   */
-  virtual void OnLookupTablePropertyChanged(const itk::Object *caller, const itk::EventObject &event);
-
   /// \brief Deliberately not virtual method that connects this class to DataStorage so that we can receive NodeAdded events etc.
-  void RegisterDataStorageListener();
+  void RegisterDataStorageListeners();
 
   /// \brief Deliberately not virtual method that ddisconnects this class from DataStorage so that we can receive NodeAdded events etc.
-  void UnregisterDataStorageListener();
+  void UnregisterDataStorageListeners();
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial LevelWindow property to each image.
-  void RegisterLevelWindowProperty(const QString& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterLevelWindowProperty(mitk::DataNode* node);
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial "Image Rendering.Mode" property to each image.
-  void RegisterImageRenderingModeProperties(const QString& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterImageRenderingModeProperties(mitk::DataNode* node);
 
   /// \brief Deliberately not virtual method thats called by derived classes, to register an initial value for Texture Interpolation, and Reslice Interpolation.
-  void RegisterInterpolationProperty(const QString& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterInterpolationProperty(mitk::DataNode* node);
 
   /// \brief Deliberately not virtual method that registers initial property values of "outline binary"=true and "opacity"=1 for binary images.
-  void RegisterBinaryImageProperties(const QString& preferencesNodeName, mitk::DataNode *constNode);
+  void RegisterBinaryImageProperties(mitk::DataNode* node);
 
   /// \brief Deliberately not virtual method thats called by derived classes, to set the departmental logo to blank.
   void BlankDepartmentalLogo();
 
-  /// \brief Called each time a data node is added, and derived classes can override it.
-  virtual void NodeAdded(const mitk::DataNode *node);
-
-  /// \brief Called each time a data node is removed, and derived classes can override it.
-  virtual void NodeRemoved(const mitk::DataNode *node);
-
   /// \brief Derived classes should provide a URL for which help page to use as the 'home' page.
-  virtual QString GetHelpHomePageURL() const { return QString(); }
+  virtual QString GetHelpHomePageURL() const override;
+
+  /// \brief Private method that retrieves the DataStorage from the m_DataStorageServiceTracker
+  mitk::DataStorage::Pointer GetDataStorage();
 
 private:
 
-  /// \brief Parses a node property value that was specified on the command line.
-  QVariant ParsePropertyValue(const QString& propertyValue);
+  void RegisterProperties(mitk::DataNode* node);
 
-  /// \brief Sets node properties from a map of QVariant values per renderer name per property name.
-  void SetNodeProperty(mitk::DataNode* node, const QString& propertyName, const QVariant& propertyValue, const QString& rendererName = QString());
-
-  /// \brief Private method that checks whether or not we are already updating and if not, calls NodeAdded()
-  void NodeAddedProxy(const mitk::DataNode *node);
-
-  /// \brief Private method that checks whether or not we are already removing and if not, calls NodeRemoved()
-  void NodeRemovedProxy(const mitk::DataNode *node);
+  void UpdateLookupTable(mitk::DataNode* node, const mitk::BaseRenderer* renderer);
 
   /// \brief Returns the lookup table provider service.
   niftk::LookupTableProviderService* GetLookupTableProvider();
 
-  /// \brief Private method that retrieves the DataStorage from the m_DataStorageServiceTracker
-  const mitk::DataStorage* GetDataStorage();
+  /// \brief Attempts to load all lookuptables cached in the berry service.
+  void LoadCachedLookupTables();
 
-  /// \brief Retrieves the preferences node name, or Null if unsuccessful.
-  berry::IPreferences::Pointer GetPreferencesNode(const QString& preferencesNodeName);
+  /// \brief Retrieves the system preferences node.
+  berry::IPreferences::Pointer GetSystemPreferences();
+
+  /// \brief Retrieves the preferences node of the given name, or Null if unsuccessful.
+  berry::IPreferences::Pointer GetPreferences(const QString& preferencesNodeName);
 
   /// \brief Private utility method to calculate min, max, mean and stdDev of an ITK image.
   template<typename TPixel, unsigned int VImageDimension>
@@ -140,25 +128,30 @@ private:
       float &mean,
       float &stdDev);
 
+  /// \brief Processes the command line options defined by niftk::BaseApplication.
+  void ProcessOptions();
 
-  void LoadDataFromDisk(const QStringList& args, bool globalReinit);
-  void startNewInstance(const QStringList& args, const QStringList &files);
+  /// \brief Processes the '--open' command line options.
+  void ProcessOpenOptions();
 
-private Q_SLOTS:
+  /// \brief Processes the '--derives-from' command line options.
+  void ProcessDerivesFromOptions();
 
-  void handleIPCMessage(const QByteArray &msg);
+  /// \brief Processes the '--property' command line options.
+  void ProcessPropertyOptions();
 
-private:
+  /// \brief Parses a node property value that was specified on the command line.
+  mitk::BaseProperty::Pointer ParsePropertyValue(const QString& propertyValue);
 
   ctkServiceTracker<mitk::IDataStorageService*>* m_DataStorageServiceTracker;
 
-  bool m_InDataStorageChanged;
-
   static PluginActivator* s_Instance;
 
-  std::map<mitk::BaseProperty*, mitk::DataNode*> m_PropertyToNodeMap;
-  std::map<mitk::DataNode*, unsigned long int>   m_NodeToLowestOpacityObserverMap;
-  std::map<mitk::DataNode*, unsigned long int>   m_NodeToHighestOpacityObserverMap;
+  DataStorageListener::Pointer m_DataNodePropertyRegisterer;
+  DataNodePropertyListener::Pointer m_LowestOpacityPropertyListener;
+  DataNodePropertyListener::Pointer m_HighestOpacityPropertyListener;
+  DataNodePropertyListener::Pointer m_LookupTableNamePropertyListener;
+
 };
 
 }

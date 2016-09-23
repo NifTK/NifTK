@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Common 
+  INCLUDE_DIRS Common
   DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI
   PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui QVTK NiftyLink
 )

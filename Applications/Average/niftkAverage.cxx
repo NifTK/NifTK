@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
@@ -38,18 +38,18 @@
  */
 
 void Usage(char *exec)
-  {
-	niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Uses ITK ImageFileReader to load any number of input images, creating the arithmetic mean on a voxel by voxel basis, writing the output with ITK ImageFileWriter. All input images must be the same size, and are converted to float on input, and hence are float on output." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -o outputImage -i inputImage " << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image (repeated) " << std::endl;
-    std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;   
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Uses ITK ImageFileReader to load any number of input images, creating the arithmetic mean on a voxel by voxel basis, writing the output with ITK ImageFileWriter. All input images must be the same size, and are converted to float on input, and hence are float on output." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -o outputImage -i inputImage " << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i    <filename>        Input image (repeated) " << std::endl;
+  std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
+  std::cout << "*** [options]   ***" << std::endl << std::endl;   
+}
 
 struct arguments
 {

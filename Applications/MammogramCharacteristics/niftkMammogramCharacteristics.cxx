@@ -18,7 +18,6 @@
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>
 
-#include <itkLogHelper.h>
 #include <itkImage.h>
 #include <itkCommandLineHelper.h>
 

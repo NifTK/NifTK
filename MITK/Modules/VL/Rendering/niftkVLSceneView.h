@@ -49,16 +49,16 @@ class VLWidget;
  * (see vl::VividRendering, vl::VividRenderer, vl::VividVolume and relative GLSL shaders).
  *
  * VLSceneView listens for the QGLWidget update, resize, mouse, keyboard events and updates the rendering accordingly
- * also allowing for user interaction via trackball. It also listens for mitk::DataStorage events and updates the 
- * scene adding, removing and updating objects according to the state of the mitk::DataStorage. 
+ * also allowing for user interaction via trackball. It also listens for mitk::DataStorage events and updates the
+ * scene adding, removing and updating objects according to the state of the mitk::DataStorage.
  *
- * VLSceneView keeps track of ievery mitk::DataNode added and uses a niftk::VLMapper sub-class to render it and 
+ * VLSceneView keeps track of every mitk::DataNode added and uses a niftk::VLMapper sub-class to render it and
  * update it's visual aspect. The mapping from mitk::DataNode to niftk::VLMapper is done in the factory method niftk::VLMapper::create().
  *
  * Supported objects types:
  *
  * - mitk::Surface -> niftk::VLMapperSurface: render polygonal objects (no lines, no points, no strips), see niftk::VLUtils::getVLGeometry() for details.
- * - mitk::Image: 
+ * - mitk::Image:
  *    2D images -> niftk::VLMapper2DImage: can be used as background.
  *    3D images -> niftk::VLMapper3DImage: rendered as a volume using vl::VividVolume
  * - niftk::CUDAImage -> niftk::VLMapperCUDAImage: can be used as background.
@@ -66,6 +66,10 @@ class VLWidget;
  * - niftk::PCLData -> niftk::VLMapperPCL: a static set of points of the same size but different color drawn as 3D spheres or 2D point sprites.
  * - CoordinateAxesData -> niftk::VLMapperCoordinateAxes: 3 red, green and blue lines perpedicular to one another representing the X, Y and Z axes.
  * - niftk::VLGlobalSettingsDataNode -> niftk::VLMapperVLGlobalSettings: a utility to change the global settings of all active VLWidgets like stencil settings, rendering mode and depth peeling passes.
+ *
+ * By default if you instantiate multiple VLWidgets all the DataNodes will be displayed in the same way, ie the various niftk::VLMapper will
+ * all track the node's properties. If you'd like to override the aspect of an object in a specific VLWidget you can use
+ * niftkVLMapper::setDataNodeVividUpdateEnabled(false) and then proceed to set the various options like niftk::VLMapper::setRenderingMode().
  */
 class NIFTKVL_EXPORT VLSceneView : public vl::UIEventListener
 {
@@ -77,7 +81,7 @@ public:
   ~VLSceneView();
 
   /**
-   * Sets the mitk::DataStorage to listen from. 
+   * Sets the mitk::DataStorage to listen from.
    * The scene will be destroyed and recreated and niftk::VLGlobalSettingsDataNode added if not present already.
    */
   void setDataStorage(mitk::DataStorage* ds);
@@ -120,13 +124,15 @@ public:
    */
   void setStencilBackgroundColor( const vl::vec4& color );
   const vl::vec4& stencilBackgroundColor() const;
-  
+
   /**
-   * Smoothness in pixels of the stencil background. Defines the size of the smoothing kernel so the bigger the slower the rendering.
+   * Smoothness in pixels of the stencil background.
+   * Defines the size of the smoothing kernel so the bigger the slower the rendering.
+   * See also this issue: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/4717
    */
   void setStencilSmoothness( float smoothness );
   float stencilSmoothness() const;
-  
+
   /**
    * The opacity of the 3D rendering above the background. The background is always fully opaque.
    */
@@ -203,7 +209,7 @@ protected:
 
   //! Removes from the scene the VLMapper subclass representing the given DataNode
   void removeDataNode(const mitk::DataNode* node);
-  
+
   //! Updates the VLMapper subclass representing the given DataNode
   void updateDataNode(const mitk::DataNode* node);
 
@@ -218,7 +224,6 @@ protected:
   VLWidget* m_VLWidget;
 
   vl::ref<vl::VividRendering>        m_VividRendering;
-  vl::ref<vl::VividRenderer>         m_VividRenderer;
   vl::ref<vl::SceneManagerActorTree> m_SceneManager;
   vl::ref<vl::CalibratedCamera>      m_Camera;
   vl::ref<niftk::VLTrackballManipulator> m_Trackball;

@@ -28,6 +28,7 @@ set(MODULE_DIRS
   Core
   CoreIO
   CoreGui
+  CoreApp
 )
 
 if(BUILD_MIDAS)
@@ -62,6 +63,7 @@ if(BUILD_IGI)
     NDICAPI 
     OpenCVUtils
     OpenCVImageConversion
+    QImageConversion
     PointReg
     ICPReg
     OpenCV
@@ -90,6 +92,8 @@ if(BUILD_IGI)
     NDITrackerDataSourceService
     NiftyLinkDataSourceService
     NVidiaSDIDataSourceService
+    QtCameraVideoDataSourceService
+    BKMedicalDataSourceService
   )
 endif()
 

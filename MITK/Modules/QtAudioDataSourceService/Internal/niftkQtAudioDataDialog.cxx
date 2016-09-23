@@ -19,7 +19,9 @@
 
 #include <cassert>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_DECLARE_METATYPE(QAudioFormat);
+#endif
 
 namespace niftk
 {
@@ -103,7 +105,7 @@ void QtAudioDataDialog::Update()
             foreach(QString m, codecs)
             {
               QAudioFormat f;
-              f.setChannels(c);
+              f.setChannelCount(c);
               f.setSampleRate(r);
               f.setCodec(m);
               f.setSampleSize(sampleSizes[s]);
@@ -112,7 +114,7 @@ void QtAudioDataDialog::Update()
               if (d.isFormatSupported(f))
               {
                 QString text = QString("%1 channels @ %2 Hz, %3 bit, %4")
-                    .arg(f.channels())
+                    .arg(f.channelCount())
                     .arg(f.sampleRate())
                     .arg(f.sampleSize())
                     .arg(f.codec());
@@ -127,7 +129,7 @@ void QtAudioDataDialog::Update()
   }
   QAudioFormat defaultFormat = selectedDevice.preferredFormat();
   QString defaultFormatText = QString("%1 channels @ %2 Hz, %3 bit, %4")
-      .arg(defaultFormat.channels())
+      .arg(defaultFormat.channelCount())
       .arg(defaultFormat.sampleRate())
       .arg(defaultFormat.sampleSize())
       .arg(defaultFormat.codec());

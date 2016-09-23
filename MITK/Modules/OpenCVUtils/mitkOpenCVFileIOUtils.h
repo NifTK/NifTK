@@ -111,6 +111,11 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT void SavePickedObjects ( const std::vector 
 extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is );
 
 /**
+ * \brief Loads a vector of picked objects from a directory containing time stamped xml files
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedObjectsFromDirectory ( std::vector < mitk::PickedObject > & points, const std::string& fullDirectoryName );
+
+/**
  * \brief Read a set of matrices, stored as plain text, 4x4 matrices from a directory and
  * put them in a vector of 4x4 cvMats
  */
@@ -174,7 +179,7 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadHandeyeFromPlainText ( const std::
  * in the file, while line ID's are stored in the file name
  * framenumber etc are settable by parameters
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedPointList::Pointer LoadPickedPointListFromDirectory (
+extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (
     const std::string& directoryName ,
     unsigned int frameNumber = 0 ,
     unsigned long long timestamp = 0, 

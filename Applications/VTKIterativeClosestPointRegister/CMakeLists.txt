@@ -19,13 +19,14 @@ if(SlicerExecutionModel_FOUND AND VTK_FOUND)
     BUILD_SLICER
     INSTALL_SCRIPT
     TARGET_LIBRARIES
-      niftkVTK
-      ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
-      niftkcommon
-      niftkITK
-      niftkITKIO
-      ${ITK_LIBRARIES}
       ${Boost_LIBRARIES}
+      vtkCommonCore
+      vtkFiltersCore
+      vtkIOLegacy
+      vtkInteractionStyle
+      vtkRenderingCore
+      niftkcommon
+      niftkVTK
   )
 
 endif()

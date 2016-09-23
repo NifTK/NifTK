@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -30,19 +30,19 @@
  *
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Runs ITK ContourExtractor2DImageFilter or NifTK's modified version OrthogonalContourExtractor2DImageFilter, taking 2D images and performing marching squares contour extraction." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName1 [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image. " << std::endl;
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -t    threshold         Threshold value." << std::endl;
-    std::cout << "    -o                      Do orthogonal extraction using NifTK OrthogonalContourExtractor2DImageFilter." << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Runs ITK ContourExtractor2DImageFilter or NifTK's modified version OrthogonalContourExtractor2DImageFilter, taking 2D images and performing marching squares contour extraction." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName1 [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i    <filename>        Input image. " << std::endl;
+  std::cout << "*** [options]   ***" << std::endl << std::endl;
+  std::cout << "    -t    threshold         Threshold value." << std::endl;
+  std::cout << "    -o                      Do orthogonal extraction using NifTK OrthogonalContourExtractor2DImageFilter." << std::endl;
+}
 
 struct arguments
 {

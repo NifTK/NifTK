@@ -8,15 +8,6 @@
     </application>
   </extension>
 
-  <extension point="org.blueberry.ui.perspectives">
-    <perspective
-      id="uk.ac.ucl.cmic.niftyview.minimalperspective"
-      name="Minimal Perspective"
-      class="niftk::MinimalPerspective"
-      icon="resources/icon_ucl.xpm">
-    </perspective>
-  </extension>
-
   <extension point="org.blueberry.ui.preferencePages">
     <page id="uk.ac.ucl.cmic.niftyview.NiftyViewPreferencePage" name="Application Preferences" class="niftk::NiftyViewPreferencePage">
       <keywordreference id="uk.ac.ucl.cmic.niftyview.NiftyViewPreferencePageKeywords"></keywordreference>

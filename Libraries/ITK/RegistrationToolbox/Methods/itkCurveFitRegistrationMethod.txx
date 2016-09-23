@@ -20,8 +20,6 @@
 
 #include "itkCurveFitRegistrationMethod.h"
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

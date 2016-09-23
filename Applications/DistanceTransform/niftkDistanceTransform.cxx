@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -33,24 +33,24 @@
  * \section niftkDistanceTransformSummary Runs the ITK DanielssonDistanceMapImageFilter, specifically for binary images, outputting the distance transform.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Runs the ITK DanielssonDistanceMapImageFilter, specifically for binary images, outputting the distance transform." << std::endl;
-    std::cout << "  Assumes your input image, has 1 object, with background = 0, and foreground = 1." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i <filename>        Input image " << std::endl;
-    std::cout << "    -o <filename>        Output image" << std::endl << std::endl;
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -invert              If specified, will invert the input image prior to calculating distances. " << std::endl;
-    std::cout << "    -internal            If specified, will calculate distances internal to the object. " << std::endl;
-    std::cout << "                         Usefull if you have 1 object, and want to simulate a level set." << std::endl;
-    std::cout << "    -abs                 If specified, will calculate absolute distances, " << std::endl;
-    std::cout << "                         otherwise internal distances are negative." << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Runs the ITK DanielssonDistanceMapImageFilter, specifically for binary images, outputting the distance transform." << std::endl;
+  std::cout << "  Assumes your input image, has 1 object, with background = 0, and foreground = 1." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i <filename>        Input image " << std::endl;
+  std::cout << "    -o <filename>        Output image" << std::endl << std::endl;
+  std::cout << "*** [options]   ***" << std::endl << std::endl;
+  std::cout << "    -invert              If specified, will invert the input image prior to calculating distances. " << std::endl;
+  std::cout << "    -internal            If specified, will calculate distances internal to the object. " << std::endl;
+  std::cout << "                         Usefull if you have 1 object, and want to simulate a level set." << std::endl;
+  std::cout << "    -abs                 If specified, will calculate absolute distances, " << std::endl;
+  std::cout << "                         otherwise internal distances are negative." << std::endl;
+}
 
 struct arguments
 {

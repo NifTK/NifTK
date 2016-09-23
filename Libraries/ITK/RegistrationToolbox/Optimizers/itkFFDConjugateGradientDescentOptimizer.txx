@@ -16,7 +16,6 @@
 #define ITKFFDConjugateGradientDescentOptimizer_TXX_
 
 #include "itkFFDConjugateGradientDescentOptimizer.h"
-#include <itkLogHelper.h>
 
 namespace itk
 {

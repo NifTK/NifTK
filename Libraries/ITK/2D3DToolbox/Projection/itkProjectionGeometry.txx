@@ -17,9 +17,6 @@
 
 #include "itkProjectionGeometry.h"
 
-#include "itkLogHelper.h"
-
-
 
 namespace itk
 {

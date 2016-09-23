@@ -14,7 +14,6 @@
 
 #include <map>
 
-#include <itkLogHelper.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>

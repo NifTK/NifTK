@@ -24,7 +24,6 @@
 *
 */
 
-#include <itkLogHelper.h>
 #include <NifTKConfigure.h>
 #include <niftkConversionUtils.h>
 #include <niftkVTKDistanceToSurfaceCLP.h>

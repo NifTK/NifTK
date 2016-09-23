@@ -26,7 +26,6 @@
 #include <itkLinearInterpolateImageFunction.h>
 #include <itkDisplacementFieldJacobianVectorFilter.h>
 #include <limits>
-#include <itkLogHelper.h>
 
 namespace itk
 {

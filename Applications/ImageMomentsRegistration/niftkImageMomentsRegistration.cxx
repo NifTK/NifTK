@@ -15,7 +15,6 @@
 #include <niftkConversionUtils.h>
 #include <niftkImageMomentsRegistrationCLP.h>
 
-#include <itkLogHelper.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>

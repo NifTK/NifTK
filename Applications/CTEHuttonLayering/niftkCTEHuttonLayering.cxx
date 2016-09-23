@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -36,7 +36,7 @@
  */
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Implements Chloe Hutton's method for detecting sulcal CSF via adding layers of GM and iteratively calculating thickness" << std::endl;
   std::cout << "  See section 'Preserving cortocal topography' as found in Hutton et. al. NeuroImage 2008 paper: doi:10.1016/j.neuroimage.2008.01.027" << std::endl;

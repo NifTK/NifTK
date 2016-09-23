@@ -21,6 +21,7 @@
 #include <vlCore/vlnamespace.hpp>
 #include <vlCore/Image.hpp>
 #include <vlGraphics/Geometry.hpp>
+#include <vlVivid/VividVolume.hpp>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <itkMatrix.h>
@@ -47,7 +48,7 @@
 
 class vtkPolyData;
 
-namespace mitk 
+namespace mitk
 {
   class BaseData;
   class DataNode;
@@ -235,15 +236,13 @@ public:
 
   static vl::mat4 getVLMatrix(const itk::Matrix<float, 4, 4>& itkmat);
 
-  // Returns null matrix if no vtk matrix is found
   static vl::mat4 getVLMatrix(vtkSmartPointer<vtkMatrix4x4> vtkmat);
 
-  // Returns null matrix if no vtk matrix is found
   static vl::mat4 getVLMatrix(const mitk::BaseData* data);
 
   static void updateTransform(vl::Transform* tr, const mitk::BaseData* data);
 
-  static void updateTransform(vl::Transform* txf, const mitk::DataNode* node);
+  static void updateTransform(vl::Transform* tr, const mitk::DataNode* node);
 
   static vl::ref<vl::Geometry> make2DImageGeometry(int width, int height);
 

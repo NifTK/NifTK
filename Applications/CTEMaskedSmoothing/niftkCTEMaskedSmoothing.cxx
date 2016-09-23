@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkBinaryThresholdImageFilter.h>
@@ -33,7 +33,7 @@
  */
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Takes a data image (eg. thickness) and a binary mask, and for each voxel in the mask image > 0" << std::endl;
   std::cout << "  will compute the inter quartile mean of the data image within a circular radius." << std::endl;

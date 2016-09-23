@@ -17,6 +17,7 @@
 
 #include "niftkIGIDataSourcesManagerExports.h"
 #include "ui_niftkIGIDataSourceManagerWidget.h"
+#include "niftkIGIDataSourcePlaybackWidget.h"
 #include "niftkIGIDataSourceManager.h"
 
 #include <mitkDataStorage.h>
@@ -57,16 +58,6 @@ public:
   void SetFramesPerSecond(const int& framesPerSecond);
 
   /**
-  * \brief Called from the Plugin (e.g. event bus foot-switch events) to start the recording process.
-  */
-  void StartRecording();
-
-  /**
-  * \brief Called from the Plugin (e.g. event bus foot-switch events) to stop the recording process.
-  */
-  void StopRecording();
-
-  /**
   * \brief Called from the Plugin (e.g event bus) to pause the DataStorage update process.
   */
   void PauseUpdate();
@@ -101,21 +92,6 @@ protected:
 private slots:
 
   /**
-   * \brief Callback to start playing back data.
-   */
-  void OnPlayStart();
-
-  /**
-   * \brief Callback to start recording data.
-   */
-  void OnRecordStart();
-
-  /**
-   * \brief Callback to stop recording/playing data.
-   */
-  void OnStop();
-
-  /**
   * \brief Adds a data source to the GUI table, getting the name from the combo box.
   */
   void OnAddSource();
@@ -143,59 +119,16 @@ private slots:
   void OnUpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >);
 
   /**
-  * \brief Called from Playback GUI to advance time.
-  */
-  void OnPlaybackTimestampEditFinished();
-
-  /**
-  * \brief Callback from niftk::IGIDataSourceManager to set the value on the slider.
-  */
-  void OnPlaybackTimeAdvanced(int newSliderValue);
-
-  /**
-  * \brief Callback from niftk::IGIDataSourceManager to set timestamps on the GUI.
-  */
-  void OnTimerUpdated(QString rawString, QString humanReadableString);
-
-  /**
-  * \brief Callback from GUI to set whether we are automatically playing or not.
-  */
-  void OnPlayingPushButtonClicked(bool isChecked);
-
-  /**
-  * \brief Callback from GUI to move to the last frame in playback sequence.
-  */
-  void OnEndPushButtonClicked(bool isChecked);
-
-  /**
-  * \brief Callback from GUI to move to the first frame in playback sequence.
-  */
-  void OnStartPushButtonClicked(bool isChecked);
-
-  /**
-  * \brief Callback from GUI to indicate when the timer has been moved.
-  */
-  void OnSliderReleased();
-
-  /**
   * \brief Called from niftk::IGIDataSourceManager to display status updates.
   */
   void OnBroadcastStatusString(QString);
-
-  /**
-  * \brief Triggers the manager to grab the screen.
-  */
-  void OnGrabScreen(bool isChecked);
 
 private:
 
   QMutex                m_Lock;
   IGIDataSourceManager* m_Manager;
 
-  /**
-  * \brief Very basic way to grab screenshots.
-  */
-  void GrabScreen();
+  IGIDataSourcePlaybackWidget* m_PlaybackWidget;
 
 }; // end class;
 

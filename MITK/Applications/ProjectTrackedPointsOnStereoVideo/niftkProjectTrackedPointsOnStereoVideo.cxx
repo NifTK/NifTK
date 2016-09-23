@@ -108,8 +108,23 @@ int main(int argc, char** argv)
     std::vector < mitk::WorldPoint > worldPointsWithScalars;
     if ( input3DDirectory.length() != 0 )
     {
-      projector->SetWorldPoints ( mitk::LoadPickedPointListFromDirectory ( input3DDirectory ));
+      projector->SetModelPoints ( mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( input3DDirectory ));
     }
+    if ( modelToWorld.length() != 0 )
+    {
+      cv::Mat* modelToWorldMat = new cv::Mat(4,4,CV_64FC1);
+      if ( mitk::ReadTrackerMatrix(modelToWorld, *modelToWorldMat) )
+      {
+        projector->SetModelToWorldTransform ( modelToWorldMat );
+      }
+      else
+      {
+        MITK_ERROR << "Failed to read mode to world file " << modelToWorld << ", halting";
+        return EXIT_FAILURE;
+      }
+    }
+
+
     if ( input2D.length() != 0 ) 
     {
       std::ifstream fin(input2D.c_str());
@@ -211,6 +226,13 @@ int main(int argc, char** argv)
         MITK_ERROR << "Failed to open " << goldStandardObjects << " for input";
       }
     }
+    if ( goldStandardDirectory.length() != 0 )
+    {
+      std::vector < mitk::PickedObject > pickedObjects;
+      mitk::LoadPickedObjectsFromDirectory ( pickedObjects, goldStandardDirectory );
+      projector->SetGoldStandardObjects (pickedObjects);
+    }
+
     if ( leftGoldStandard.length() != 0 ) 
     {
       std::ifstream fin(leftGoldStandard.c_str());
@@ -306,7 +328,8 @@ int main(int argc, char** argv)
     if ( outputErrors.length() != 0 ) 
     {
       projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
-      projector->CalculateProjectionErrors(outputErrors);
+      bool useNewOutputFormat = false;
+      projector->CalculateProjectionErrors(outputErrors, useNewOutputFormat);
       projector->CalculateTriangulationErrors(outputErrors);
     }
     else
@@ -317,7 +340,13 @@ int main(int argc, char** argv)
         projector->TriangulateGoldStandardPoints(outputTriangulatedPoints, matcher);
       }
     }
-   
+
+    if ( outputErrorsNewFormat.length() != 0 )
+    {
+      projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
+      bool useNewOutputFormat = true;
+      projector->CalculateProjectionErrors(outputErrorsNewFormat, useNewOutputFormat);
+    }
 
     returnStatus = EXIT_SUCCESS;
   }

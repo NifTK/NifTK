@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <iostream>
 #include <cuda_runtime.h>
@@ -27,15 +27,15 @@
  * \section niftkCUDAInfoSummary Prints out information on the GPU enabled devices on the current machine.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Prints out information on the GPU enabled devices on the current machine." << std::endl;
-    std::cout << "  Test program copied from 'deviceQuery' that ships with NVidia SDK" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  Usage: " << exec << std::endl;
-    std::cout << "  " << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Prints out information on the GPU enabled devices on the current machine." << std::endl;
+  std::cout << "  Test program copied from 'deviceQuery' that ships with NVidia SDK" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  Usage: " << exec << std::endl;
+  std::cout << "  " << std::endl;
+}
 
 /**
  * \brief Prints out CUDA capabilities of the installed cards

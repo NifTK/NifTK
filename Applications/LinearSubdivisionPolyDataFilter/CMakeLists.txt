@@ -23,8 +23,6 @@ if(VTK_FOUND)
       niftkcommon
       niftkITK
       niftkITKIO
-      ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
   )
 
 endif()

@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Events Dialogs LookupTables
+  INCLUDE_DIRS Interactions
   DEPENDS MitkCore MitkQtWidgets niftkITK niftkCore
   PACKAGE_DEPENDS Qt4|QtCore Qt5|Core CTK|CTKWidgets
 )
@@ -23,5 +23,5 @@ if (NIFTK_USE_COTIRE AND COMMAND cotire)
 endif()
 
 if(BUILD_TESTING)
-  add_subdirectory(Testing)
+#  add_subdirectory(Testing)
 endif()

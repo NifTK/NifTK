@@ -18,13 +18,10 @@ if(VTK_FOUND)
     NAME niftkMarchingCubes
     BUILD_CLI
     TARGET_LIBRARIES
-      niftkVTK
-      ${NIFTK_VTK_LIBS_BUT_WITHOUT_QT}
+      vtkCommonMisc
+      vtkFiltersCore
+      vtkIOLegacy
       niftkcommon
-      niftkITK
-      niftkITKIO
-      ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
   )
 
 endif()

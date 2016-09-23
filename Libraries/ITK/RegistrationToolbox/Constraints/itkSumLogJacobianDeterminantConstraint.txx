@@ -17,8 +17,6 @@
 
 #include "itkSumLogJacobianDeterminantConstraint.h"
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
   

@@ -17,6 +17,7 @@
 #include <QMessageBox>
 
 #include <mitkDataStorage.h>
+#include <mitkLogMacros.h>
 
 #include "niftkBaseWorkbenchWindowAdvisor.h"
 #include "internal/niftkPluginActivator.h"
@@ -85,26 +86,46 @@ mitk::DataStorage* BaseWorkbenchAdvisor::GetDataStorage()
 //-----------------------------------------------------------------------------
 void BaseWorkbenchAdvisor::PostStartup()
 {
-  /// Note:
-  /// The fixedLayer property is set to true for all the images opened from the command line, so that
-  /// the order of the images is not overwritten by the DataManager when it opens everything from the
-  /// data storage.
-  /// Now that the workbench is up and the data manager plugin loaded everything, we can clear the
-  /// fixedLayer property, so that the user can rearrange the layers by drag and drop in the data manager.
+  QString perspectiveLabel = PluginActivator::GetInstance()->GetContext()->getProperty("applicationArgs.perspective").toString();
 
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-  mitk::DataStorage::SetOfObjects::ConstPointer nodes = dataStorage->GetAll();
-
-  for (mitk::DataStorage::SetOfObjects::ConstIterator it = nodes->Begin(); it != nodes->End(); ++it)
+  if (!perspectiveLabel.isEmpty())
   {
-    mitk::DataNode* node = it->Value();
-    bool fixedLayer = false;
-    node->GetBoolProperty("fixedLayer", fixedLayer);
-    if (fixedLayer)
+    this->SetPerspective(perspectiveLabel);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseWorkbenchAdvisor::SetPerspective(const QString& perspectiveLabel)
+{
+  berry::IWorkbenchConfigurer::Pointer workbenchConfigurer = this->GetWorkbenchConfigurer();
+  berry::IWorkbench* workbench = workbenchConfigurer->GetWorkbench();
+  berry::IWorkbenchWindow::Pointer workbenchWindow = workbench->GetActiveWorkbenchWindow();
+  if (!workbenchWindow)
+  {
+    QList<berry::IWorkbenchWindow::Pointer> workbenchWindows = workbench->GetWorkbenchWindows();
+    if (!workbenchWindows.empty())
     {
-      node->SetBoolProperty("fixedLayer", false);
+      workbenchWindow = workbenchWindows[0];
+    }
+    else
+    {
+      /// TODO there is no active workbench window.
+      MITK_ERROR << "There is no active workbench window.";
+      return;
     }
   }
+
+  berry::IPerspectiveRegistry* perspectiveRegistry = workbench->GetPerspectiveRegistry();
+  berry::IPerspectiveDescriptor::Pointer perspectiveDescriptor = perspectiveRegistry->FindPerspectiveWithLabel(perspectiveLabel);
+
+  if (perspectiveDescriptor.IsNull())
+  {
+    MITK_ERROR << "Invalid arguments: unknown perspective.";
+    return;
+  }
+
+  workbench->ShowPerspective(perspectiveDescriptor->GetId(), workbenchWindow);
 }
 
 

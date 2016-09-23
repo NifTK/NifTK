@@ -63,7 +63,7 @@ else()
   # Our version number. Edit this to generate a new version.
   # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
   # Also, Trac 1592, version number must change if CTK changes significantly.
-  project(NIFTK VERSION 16.04.1)
+  project(NIFTK VERSION 16.09.1)
 endif()
 
 ######################################################################
@@ -154,7 +154,12 @@ option(BUILD_NiftySeg "Build NiftySeg." ON)
 option(BUILD_Python "Build Python wrapping." OFF)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
-option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
+if(NOT APPLE AND BUILD_IGI)
+  option(BUILD_VL "Build VisualizationLibrary - Experimental." ON)
+else()
+  option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
+endif()
+
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
@@ -1156,8 +1161,8 @@ if(Boost_FOUND)
       add_definitions(-DBoost_LIB_DIAGNOSTIC_DEFINITIONS)  # To get debug messages
       add_definitions(-DBOOST_ALL_NO_LIB)      # To stop auto-linking, which seems to be adding "lib" as library prefix in .obj files.
     endif(NIFTK_WITHIN_SUPERBUILD)
-  endif(WIN32)
-endif(Boost_FOUND)
+  endif()
+endif()
 
 ######################################################################
 # Find OpenMP and make sure Microsoft DirectComposition Library (dcomp.dll) is deployed
@@ -1301,6 +1306,7 @@ set(MITK_LEGACY_EXPORT_MACRO_NAME ${_mitk_legacy_export_macro_name})
 ######################################################################
 # Find Optional External packages
 ######################################################################
+find_package(UltrasonixUlterius)
 
 
 ######################################################################
@@ -1863,10 +1869,6 @@ add_subdirectory(Libraries)
 if(BUILD_COMMAND_LINE_PROGRAMS)
   add_subdirectory(Applications)
 endif()
-
-if(BUILD_UTILITIES)
-  add_subdirectory(Utilities)
-endif(BUILD_UTILITIES)
 
 if(BUILD_PROTOTYPE)
   add_subdirectory(Prototype)

@@ -20,11 +20,12 @@
 #include <berryIPreferences.h>
 
 class QWidget;
-class QPushButton;
-class QComboBox;
-class QSpinBox;
-class QCheckBox;
 
+
+namespace Ui
+{
+class niftkDnDDisplayPreferencePage;
+}
 
 namespace niftk
 {
@@ -83,11 +84,17 @@ public:
   /// \brief Stores the preference name for whether we show the direction annotations.
   static const QString DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS;
 
+  /// \brief Stores the preference name for whether we show the position annotation.
+  static const QString DNDDISPLAY_SHOW_POSITION_ANNOTATION;
+
   /// \brief Stores the preference name for whether we show the intensity annotation.
   static const QString DNDDISPLAY_SHOW_INTENSITY_ANNOTATION;
 
-  /// \brief Stores the preference name for whether we show the 3D window in multiple window layout, as screen can get a bit cluttered.
-  static const QString DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT;
+  /// \brief Stores the preference name for whether we show the property annotation.
+  static const QString DNDDISPLAY_SHOW_PROPERTY_ANNOTATION;
+
+  /// \brief Stores the preference name for the properties to show as annotation.
+  static const QString DNDDISPLAY_PROPERTIES_FOR_ANNOTATION;
 
   /// \brief Stores the preference name for the default window layout in the NifTK DnD Display.
   static const QString DNDDISPLAY_DEFAULT_WINDOW_LAYOUT;
@@ -128,30 +135,11 @@ public slots:
 
 private:
 
-  QWidget* m_MainControl;
+  QWidget* m_MainWidget;
+  Ui::niftkDnDDisplayPreferencePage* ui;
 
   QString m_BackgroundColorStyleSheet;
   QString m_BackgroundColor;
-
-  QComboBox* m_ImageInterpolationComboBox;
-  QCheckBox* m_SliceSelectTracking;
-  QCheckBox* m_TimeSelectTracking;
-  QCheckBox* m_MagnificationSelectTracking;
-  QCheckBox* m_Show2DCursorsCheckBox;
-  QCheckBox* m_ShowDirectionAnnotationsCheckBox;
-  QCheckBox* m_ShowIntensityAnnotationCheckBox;
-  QCheckBox* m_Show3DWindowInMultiWindowLayoutCheckBox;
-  QComboBox* m_DefaultWindowLayoutComboBox;
-  QCheckBox* m_RememberEachWindowLayoutsViewerSettings;
-  QSpinBox* m_DefaultNumberOfViewerRowsSpinBox;
-  QSpinBox* m_DefaultNumberOfViewerColumnsSpinBox;
-  QComboBox* m_DefaultDropType;
-  QCheckBox* m_ShowMagnificationSliderCheckBox;
-  QCheckBox* m_ShowShowingOptionsCheckBox;
-  QCheckBox* m_ShowWindowLayoutControlsCheckBox;
-  QCheckBox* m_ShowViewerNumberControlsCheckBox;
-  QCheckBox* m_ShowDropTypeControlsCheckBox;
-  QPushButton* m_BackgroundColourButton;
 
   berry::IPreferences::Pointer m_DnDDisplayPreferencesNode;
 };

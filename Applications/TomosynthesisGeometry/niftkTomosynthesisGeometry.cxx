@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkTransformFileWriter.h>
 #include <itkGE_TomosynthesisGeometry.h>
 
 void Usage(char *exec)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl
 	      << "  Create a set of tomosynthesis projection matrices."
 	      << std::endl << std::endl

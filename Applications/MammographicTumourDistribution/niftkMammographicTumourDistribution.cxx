@@ -12,7 +12,7 @@
 
   =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <boost/filesystem/path.hpp>
 
 #include <niftkFileHelper.h>
 #include <niftkConversionUtils.h>

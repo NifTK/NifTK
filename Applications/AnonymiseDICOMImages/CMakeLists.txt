@@ -19,11 +19,11 @@ if(SlicerExecutionModel_FOUND)
     BUILD_SLICER
     INSTALL_SCRIPT
     TARGET_LIBRARIES
+      ${Boost_LIBRARIES}
+      ${ITK_LIBRARIES}
       niftkcommon
       niftkITK
       niftkITKIO
-      ${ITK_LIBRARIES}
-      ${Boost_LIBRARIES}
   )
 
 endif()

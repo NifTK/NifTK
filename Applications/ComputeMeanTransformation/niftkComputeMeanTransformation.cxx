@@ -17,6 +17,7 @@
 #include <itkImageRegistrationFactory.h>
 #include <itkImageRegistrationFilter.h>
 #include <itkTransformFileWriter.h>
+#include <niftkLogHelper.h>
 
 /*!
  * \file niftkComputeMeanTransformation.cxx
@@ -29,7 +30,7 @@
 
 void Usage(char *exec)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Compute the geometric mean of the transformation." << std::endl;
   std::cout << "  " << std::endl;

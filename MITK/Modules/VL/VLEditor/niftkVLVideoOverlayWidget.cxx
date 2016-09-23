@@ -198,7 +198,7 @@ void VLVideoOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-void VLVideoOverlayWidget::SetEyeHandFileName(const std::string& fileName) 
+void VLVideoOverlayWidget::SetEyeHandFileName(const std::string& fileName)
 {
   m_3DViewer->vlSceneView()->setEyeHandFileName(fileName);
   m_LeftOverlayViewer->vlSceneView()->setEyeHandFileName(fileName);
@@ -216,7 +216,7 @@ void VLVideoOverlayWidget::SetDataStorage(mitk::DataStorage* storage)
   }
 
   m_DataStorage = storage;
-  
+
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->ChangedNodeEvent.AddListener

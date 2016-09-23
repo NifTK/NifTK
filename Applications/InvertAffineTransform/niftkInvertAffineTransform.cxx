@@ -12,9 +12,8 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
-#include <itkCommandLineHelper.h>
 #include <itkEulerAffineTransform.h>
 
 /*!
@@ -23,18 +22,18 @@
  * \section niftkInvertAffineTransformSummary Inverts an affine transform.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Inverts an affine transform" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input matrix, a plain text file, 4 rows, 4 columns." << std::endl;
-    std::cout << "    -o    <filename>        Output matrix, in same format as input." << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;   
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Inverts an affine transform" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i    <filename>        Input matrix, a plain text file, 4 rows, 4 columns." << std::endl;
+  std::cout << "    -o    <filename>        Output matrix, in same format as input." << std::endl << std::endl;      
+  std::cout << "*** [options]   ***" << std::endl << std::endl;   
+}
 
 struct arguments
 {

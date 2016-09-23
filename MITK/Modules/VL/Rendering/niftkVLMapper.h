@@ -23,6 +23,7 @@
 #include <vlCore/vlnamespace.hpp>
 #include <vlGraphics/Texture.hpp>
 #include <vlVivid/VividRendering.hpp>
+#include <vlVivid/VividVolume.hpp>
 
 #include <mitkDataNode.h>
 #include <mitkBaseData.h>
@@ -53,8 +54,8 @@ class PCLData;
 class VLSceneView;
 
 /**
- * \brief A VL representation of a mitk::DataNode for rendering purposes.
- * 
+ * \brief A VL representation of an mitk::DataNode for rendering purposes.
+ *
  * The niftk::VLSceneView class keeps a map of mitk::DataNode -> niftk::VLMapper according to the events it receives
  * from the data storage. Overall when a new data node is added to the store a new VLMapper is created
  * and its init() and update() methods called. When a data node is removed its VLMapper is also removed
@@ -72,59 +73,64 @@ public:
    */
   virtual ~VLMapper() { VIVID_CHECK( ! m_Actor ); }
 
-  /** 
-   * Used by niftk::VLSceneview to create the appropriate niftk::VLMapper given a mitk::DataNode.
+  /**
+   * Factory method: used by niftk::VLSceneview to create the appropriate niftk::VLMapper given an mitk::DataNode.
+   * \todo
+   * We may want to slightly improve the factory mechanism to provide a way to program the mitk::DataNode to niftk::VLMapper
+   * mapping so that certain niftk::VLMapper can be disabled or overridded by some other niftk::VLMapper.
    */
   static vl::ref<VLMapper> create(const mitk::DataNode* node, VLSceneView*);
 
-  /** 
-   * Initializes all the relevant VL data structures, uniforms etc. according to the node's settings. 
+  /**
+   * Initializes all the relevant VL data structures, uniforms etc. according to the node's settings.
    */
   virtual bool init() = 0;
 
-  /** 
-   * Updates all the relevant VL data structures, uniforms etc. according to the node's settings. 
+  /**
+   * Updates all the relevant VL data structures, uniforms etc. according to the node's settings.
    */
   virtual void update() = 0;
 
-  /** 
-   * Removes all the relevant Actor(s) from the scene. 
+  /**
+   * Removes all the relevant Actor(s) from the scene.
    */
   virtual void remove() {
     m_VividRendering->sceneManager()->tree()->eraseActor(m_Actor.get());
     m_Actor = 0;
   }
 
-  /** 
-   * Utility function to update the default niftk::VLMapper::actor()'s visibility and transform. 
+  /**
+   * Utility function to update the default niftk::VLMapper::actor()'s visibility and transform.
    * Note that not all VLMappers use the default Actor.
    */
   void updateCommon();
 
-  /** 
+  /**
    * Returns the default vl::Actor associated with this VLMapper used by those VLMappers that map a data node to a single vl::Actor.
-   * Note: more complex VLMappers may not use the default Actor and instantiate their own ones.
+   * \note
+   * Nore complex VLMappers may not use the default Actor at all and instantiate their own one(s).
    */
   vl::Actor* actor() { return m_Actor.get(); }
   const vl::Actor* actor() const { return m_Actor.get(); }
 
   //--------------------------------------------------------------------------------
+  // DataStorage Tracking Switch
+  //--------------------------------------------------------------------------------
 
-  /** 
+  /**
    * When enabled (default) the mapper will reflect updates to the VL.* variables coming from the DataNode.
    * Enable this when you want a data node to have its settings update all VLWidgets/VLSceneViews.
-   * Disable this when you want a data node to have different settings across different VLWidgets/VLSceneViews. 
+   * Disable this when you want a data node to have different settings across different VLWidgets/VLSceneViews.
    * Updates to the "visible" property are also ignored while updates to the transform are never ignored.
-   * At the moment this only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage. 
+   * At the moment this only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage.
    */
-  void setDataNodeVividUpdateEnabled( bool enable ) { m_DataNodeVividUpdateEnabled = enable; }
-  bool isDataNodeVividUpdateEnabled() const { return m_DataNodeVividUpdateEnabled; }
+  void setDataNodeTrackingEnabled( bool enable ) { m_DataNodeTrackingEnabled = enable; }
+  bool isDataNodeTrackingEnabled() const { return m_DataNodeTrackingEnabled; }
 
   //--------------------------------------------------------------------------------
-  // User managed Vivid API to be used when isDataNodeVividUpdateEnabled() == false
+  // User managed Vivid API to be used when isDataNodeTrackingEnabled() == false
+  //   --- Only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage ---
   //--------------------------------------------------------------------------------
-
-  // -- At the moment this only applies to VLMapperSurface, VLMapper2DImage, VLMapperCUDAImage ---
 
   // -- Rendering Mode --
 
@@ -141,11 +147,11 @@ public:
    * - do not interact with depth buffer (ie they're always in front of any geometry)
    * - look cleaner, renders only the external silhouette of an object
   */
-  void setRenderingMode(vl::Vivid::ERenderingMode mode) {
+  void setRenderingMode(vl::Vivid::ESurfaceMode mode) {
     actor()->effect()->shader()->getUniform("vl_Vivid.renderMode")->setUniformI( mode );
   }
-  vl::Vivid::ERenderingMode renderingMode() const {
-    return (vl::Vivid::ERenderingMode)actor()->effect()->shader()->getUniform("vl_Vivid.renderMode")->getUniformI();
+  vl::Vivid::ESurfaceMode renderingMode() const {
+    return (vl::Vivid::ESurfaceMode)actor()->effect()->shader()->getUniform("vl_Vivid.renderMode")->getUniformI();
   }
 
   // --- Outline properties of both the 2D and 3D outlines ---
@@ -170,8 +176,8 @@ public:
     return actor()->effect()->shader()->getUniform("vl_Vivid.outline.width")->getUniformF();
   }
 
-  /** 
-   * The plane equation to be used when rendering mode slicing mode is enabled.
+  /**
+   * The plane equation to be used when `vl::Vivid::Slice` rendering mode is enabled.
    */
   void setOutlineSlicePlane( const vl::vec4& plane ) {
     actor()->effect()->shader()->getUniform("vl_Vivid.outline.slicePlane")->setUniform( plane );
@@ -180,7 +186,7 @@ public:
     return actor()->effect()->shader()->getUniform("vl_Vivid.outline.slicePlane")->getUniform4F();
   }
 
-  // --- Stencil --- 
+  // --- Stencil ---
 
   /**
    * Use this VLMapper's Actor as stencil when VLSceneView->isStencilEnabled() == true.
@@ -207,8 +213,9 @@ public:
    *  - the vertex color is computed using the material properties below and the default light following the camera.
    *  - the object opacity is determined by its diffuse alpha value.
    * When lighting is disabled:
-   *  - the vertex color is computed using the Actor's Geometry's colorArray() (required)
+   *  - the vertex color is computed using the Actor's Geometry's colorArray() which is then required, color is undetermined otherwise
    *  - the object opacity is determined on a per-vertex basis according to the Actor's Geometry's colorArray()
+   * At the moment there is no equivalent to glColorMaterial() in Vivid.
    */
   void setLightingEnabled( bool enable ) {
     actor()->effect()->shader()->getUniform( "vl_Vivid.enableLighting" )->setUniformI( enable );
@@ -303,7 +310,7 @@ public:
   const vl::PolygonMode* polygonMode() const { return actor()->effect()->shader()->getPolygonMode(); }
 
   // --- "Smart" Fogging ---
-  
+
   /**
    * Enable/disable fogging and sets linear, exp or exp2 mode.
    * Fog behaves just like in standard OpenGL (see red book for settings) except that instead of just targeting the color
@@ -326,7 +333,7 @@ public:
     return (vl::Vivid::ESmartTarget)actor()->effect()->shader()->getUniform("vl_Vivid.smartFog.target")->getUniformI();
   }
 
-  /** 
+  /**
    * The fog color as per standard OpenGL.
    */
   void setFogColor( const vl::vec4& color ) {
@@ -336,8 +343,8 @@ public:
     return actor()->effect()->shader()->getFog()->color();
   }
 
-  /** 
-   * The fog start in camera coordinates as per standard OpenGL (only used if mode == linear)
+  /**
+   * The fog `start` in camera coordinates as per standard OpenGL (only used if mode == linear)
    */
   void setFogStart( float start ) {
     actor()->effect()->shader()->gocFog()->setStart( start );
@@ -346,8 +353,8 @@ public:
     return actor()->effect()->shader()->getFog()->start();
   }
 
-  /** 
-   * The fog end in camera coordinates as per standard OpenGL  (only used if mode == linear)
+  /**
+   * The fog `end` in camera coordinates as per standard OpenGL  (only used if mode == linear)
    */
   void setFogEnd( float end ) {
     actor()->effect()->shader()->gocFog()->setEnd( end );
@@ -356,8 +363,8 @@ public:
     return actor()->effect()->shader()->getFog()->end();
   }
 
-  /** 
-   * The fog density in camera coordinates as per standard OpenGL  (only used if mode == exp or exp2)
+  /**
+   * The fog `density` in camera coordinates as per standard OpenGL  (only used if mode == exp or exp2)
    */
   void setFogDensity( float density ) {
     actor()->effect()->shader()->gocFog()->setDensity( density );
@@ -377,9 +384,9 @@ public:
    * - Plane: clipping is performed according to the clipPlane() equation (world space).
    * - Sphere: clipping is performed according to the clipSphere() settings (world space).
    * - Box: clipping is performed according to the clipBoxMin/Max() settings (world space).
-   * We can target: color, alpha and saturation -> setClipTarget()
-   * We can have soft clipping: setClipFadeRange()
-   * We can reverse the clipping effect: setClipReverse(), by default the negative/outside space is the one "clipped".
+   * We can target color, alpha and saturation with setClipTarget()
+   * We can have soft clipping with setClipFadeRange()
+   * We can reverse the clipping effect with setClipReverse(), by default the negative/outside space is the one "clipped".
   */
   void setClipMode( int i, vl::Vivid::EClipMode mode ) {
     actor()->effect()->shader()->getUniform(VL_SMARTCLIP("mode"))->setUniformI( mode );
@@ -399,7 +406,7 @@ public:
   }
 
   /**
-   * The fuzzyness of the clipping in pixels.
+   * The fuzzyness distance of the clipping in world coords.
    */
   void setClipFadeRange( int i, float fadeRange ) {
     actor()->effect()->shader()->getUniform(VL_SMARTCLIP("fadeRange"))->setUniformF( fadeRange );
@@ -430,6 +437,7 @@ public:
 
   /**
    * The sphere equation used for clipping when clipping mode == sphere (world coords).
+   * \param sphere sphere.xyz() = center, sphere.w() = radius
    */
   void setClipSphere( int i, const vl::vec4& sphere ) {
     actor()->effect()->shader()->getUniform(VL_SMARTCLIP("sphere"))->setUniform( sphere );
@@ -481,11 +489,14 @@ protected:
   VLSceneView* m_VLSceneView;
   const mitk::DataNode* m_DataNode;
   vl::ref<vl::Actor> m_Actor;
-  bool m_DataNodeVividUpdateEnabled;
+  bool m_DataNodeTrackingEnabled;
 };
 
 //-----------------------------------------------------------------------------
 
+/**
+ * This mapper listens to niftk::VLGlobalSettingsDataNode updates and reflects the changes to the given VLSceneView.
+ */
 class NIFTKVL_EXPORT VLMapperVLGlobalSettings: public VLMapper
 {
 public:
@@ -495,11 +506,15 @@ public:
 
   virtual void update();
 
-  virtual void updateVLGlobalSettings();
+protected:
+  void updateVLGlobalSettings();
 };
 
 //-----------------------------------------------------------------------------
 
+/**
+ * Renders and updates an mitk::Surface
+ */
 class NIFTKVL_EXPORT VLMapperSurface: public VLMapper
 {
 public:
@@ -515,6 +530,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 
+/**
+ * Renders and updates an mitk::Image to be used as a background.
+ * It's also possible to show the image in 3D but this feature has been disabled for the moment as not useful (see sources).
+ */
 class NIFTKVL_EXPORT VLMapper2DImage: public VLMapper
 {
 public:
@@ -540,6 +559,17 @@ protected:
 
 //-----------------------------------------------------------------------------
 
+/**
+ * Renders and updates a 3D mitk::Image as a volume using vl::VividVolume
+ *
+ * \todo
+ * to properly render volumes we need to finalize how we map the incoming values
+ * to the 3D texture internal float format and track NifTK's transfer function settings.
+ *
+ * \todo
+ * Sometimes we may want to render 3D images with slicing planes not volumes, we need
+ * to provide a mechanism to make this possible. See notes in niftk::VLMapper::create()
+ */
 class NIFTKVL_EXPORT VLMapper3DImage: public VLMapper {
 public:
   VLMapper3DImage( const mitk::DataNode* node, VLSceneView* sv );
@@ -555,6 +585,9 @@ protected:
 
 //-----------------------------------------------------------------------------
 
+/**
+ * Renders and updates an niftk::CoordinateAxesData
+ */
 class NIFTKVL_EXPORT VLMapperCoordinateAxes: public VLMapper {
 public:
   VLMapperCoordinateAxes( const mitk::DataNode* node, VLSceneView* sv );
@@ -564,27 +597,28 @@ public:
   virtual void update();
 
 protected:
-  const CoordinateAxesData* m_MitkAxes;
+  const niftk::CoordinateAxesData* m_MitkAxes;
   vl::ref<vl::ArrayFloat3> m_Vertices;
 };
 
 //-----------------------------------------------------------------------------
 
+/**
+ * A base class providing the framework to render and update mitk::PointSet and niftk::PCLData.
+ */
 class NIFTKVL_EXPORT VLMapperPoints: public VLMapper {
 public:
   VLMapperPoints( const mitk::DataNode* node, VLSceneView* sv );
-
-  virtual void updatePoints( const vl::vec4& color ) = 0 ;
-
-  void initPointSetProps();
 
   virtual bool init();
 
   virtual void update();
 
-  void remove();
+  virtual void remove();
 
 protected:
+  virtual void updatePoints( const vl::vec4& color ) = 0 ;
+  void initPointSetProps();
   void init3D();
   void init2D();
 
@@ -601,14 +635,16 @@ protected:
 
 //-----------------------------------------------------------------------------
 
+/**
+ * Renders and updates mitk::PointSet.
+ */
 class NIFTKVL_EXPORT VLMapperPointSet: public VLMapperPoints
 {
 public:
   VLMapperPointSet( const mitk::DataNode* node, VLSceneView* sv );
 
-  virtual void updatePoints( const vl::vec4& color );
-
 protected:
+  virtual void updatePoints( const vl::vec4& color );
   const mitk::PointSet* m_MitkPointSet;
 };
 
@@ -616,14 +652,16 @@ protected:
 
 #ifdef _USE_PCL
 
+/**
+ * Renders and updates mitk::PointSet and niftk::PCLData.
+ */
 class NIFTKVL_EXPORT VLMapperPCL: public VLMapperPoints
 {
 public:
   VLMapperPCL( const mitk::DataNode* node, VLSceneView* sv );
 
-  virtual void updatePoints( const vl::vec4& /*color*/ );
-
 protected:
+  virtual void updatePoints( const vl::vec4& /*color*/ );
   const niftk::PCLData* m_NiftkPCL;
 };
 
@@ -633,6 +671,10 @@ protected:
 
 #ifdef _USE_CUDA
 
+/**
+ * Renders and updates a niftk::CUDAImage to be used as a background.
+ * It's also possible to show the image in 3D but this feature has been disabled for the moment as not useful (see sources).
+ */
 class NIFTKVL_EXPORT VLMapperCUDAImage: public VLMapper
 {
 public:

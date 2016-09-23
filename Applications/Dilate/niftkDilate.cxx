@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+//#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
@@ -56,22 +56,22 @@ struct arguments
 
 
 //void Usage(char *exec)
-//  {
-//    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-//    std::cout << "  " << std::endl;
-//    std::cout << "  Runs the ITK BinaryDilateImageFilter, using a BinaryCrossStructuringElement." << std::endl;
-//    std::cout << "  " << std::endl;
-//    std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-//    std::cout << "  " << std::endl;
-//    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-//    std::cout << "    -i    <filename>        Input mask image " << std::endl;
-//    std::cout << "    -o    <filename>        Output mask image" << std::endl << std::endl;      
-//    std::cout << "*** [options]   ***" << std::endl << std::endl;   
-//    std::cout << "    -r    <int>   [1]       Radius of structuring element" << std::endl;
-//    std::cout << "    -it   <int>   [1]       Iterations" << std::endl;
-//    std::cout << "    -d    <int>   [1]       Dilated value" << std::endl;
-//    std::cout << "    -b    <int>   [0]       Background value" << std::endl;
-//  }
+//{
+//  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+//  std::cout << "  " << std::endl;
+//  std::cout << "  Runs the ITK BinaryDilateImageFilter, using a BinaryCrossStructuringElement." << std::endl;
+//  std::cout << "  " << std::endl;
+//  std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
+//  std::cout << "  " << std::endl;
+//  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+//  std::cout << "    -i    <filename>        Input mask image " << std::endl;
+//  std::cout << "    -o    <filename>        Output mask image" << std::endl << std::endl;      
+//  std::cout << "*** [options]   ***" << std::endl << std::endl;   
+//  std::cout << "    -r    <int>   [1]       Radius of structuring element" << std::endl;
+//  std::cout << "    -it   <int>   [1]       Iterations" << std::endl;
+//  std::cout << "    -d    <int>   [1]       Dilated value" << std::endl;
+//  std::cout << "    -b    <int>   [0]       Background value" << std::endl;
+//}
 
 /**
  * \brief Takes image and uses ITK to do dilation.

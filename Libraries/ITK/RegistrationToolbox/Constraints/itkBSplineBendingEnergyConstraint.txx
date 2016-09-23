@@ -17,8 +17,6 @@
 
 #include "itkBSplineBendingEnergyConstraint.h"
 
-#include <itkLogHelper.h>
-
 namespace itk
 {
 /**

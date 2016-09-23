@@ -18,11 +18,16 @@
 
 #include <vtkLookupTable.h>
 
+#include <QFileInfo>
+#include <QXmlSimpleReader>
+
 #include <mitkExceptionMacro.h>
+#include <mitkIOUtil.h>
 #include <mitkLookupTable.h>
 
-#include "niftkLookupTableContainer.h"
-#include "niftkLookupTableManager.h"
+#include <niftkLookupTableContainer.h>
+#include <niftkLookupTableManager.h>
+#include <niftkLookupTableSaxHandler.h>
 
 
 namespace niftk
@@ -195,6 +200,70 @@ void LookupTableProviderServiceImpl
   }
 
   manager->ReplaceLookupTableContainer(container, container->GetDisplayName());
+}
+
+
+//-----------------------------------------------------------------------------
+QString LookupTableProviderServiceImpl::LoadLookupTable(const QString& fileName)
+{
+  QString lutName;
+
+  QFileInfo finfo(fileName);
+  if (!finfo.exists())
+  {
+    return lutName;
+  }
+
+  // create a lookup table
+  LookupTableContainer* loadedContainer = nullptr;
+
+  if (fileName.contains(".lut"))
+  {
+    QFile file(fileName);
+    QXmlInputSource inputSource(&file);
+
+    QXmlSimpleReader reader;
+    LookupTableSaxHandler handler;
+    reader.setContentHandler(&handler);
+    reader.setErrorHandler(&handler);
+
+    if (reader.parse(inputSource))
+    {
+      loadedContainer = handler.GetLookupTableContainer();
+    }
+    else
+    {
+      MITK_ERROR << "niftk::LookupTableManager(): failed to parse XML file (" << fileName.toStdString()
+                 << ") so returning null";
+    }
+  }
+  else
+  {
+    std::vector<mitk::BaseData::Pointer> containerData = mitk::IOUtil::Load(fileName.toStdString());
+    if (containerData.empty())
+    {
+      MITK_ERROR << "Unable to load LookupTableContainer from " << fileName.toStdString();
+    }
+    else
+    {
+      loadedContainer =
+        dynamic_cast<LookupTableContainer* >(containerData.at(0).GetPointer());
+
+      if (loadedContainer != NULL)
+      {
+        loadedContainer->SetDisplayName(loadedContainer->GetDisplayName());
+        loadedContainer->SetOrder(this->GetNumberOfLookupTables());
+      }
+    }
+  }
+
+  if (loadedContainer != NULL)
+  {
+    this->AddNewLookupTableContainer(loadedContainer);
+    lutName = loadedContainer->GetDisplayName();
+  }
+
+  return lutName;
 }
 
 }

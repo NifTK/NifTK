@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -25,19 +25,19 @@
  * \section niftkInjectSummary Injects a mask image into the input image.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Injects a mask image into the input image" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -m maskImageName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image " << std::endl;
-    std::cout << "    -m    <filename>        Mask image " << std::endl;
-    std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;   
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Injects a mask image into the input image" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName -m maskImageName -o outputFileName [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i    <filename>        Input image " << std::endl;
+  std::cout << "    -m    <filename>        Mask image " << std::endl;
+  std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
+  std::cout << "*** [options]   ***" << std::endl << std::endl;   
+}
 
 /**
  * \brief Takes mask and target and injects (ie. copies values that are non zero) mask into target.

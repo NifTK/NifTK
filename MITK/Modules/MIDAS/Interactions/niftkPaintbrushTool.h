@@ -97,11 +97,11 @@ public:
   typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, 3> ImageType;
   typedef itk::MIDASImageUpdatePixelWiseSingleValueProcessor<mitk::Tool::DefaultSegmentationDataType, 3> ProcessorType;
 
-  virtual void InitializeStateMachine();
+  virtual void InitializeStateMachine() override;
 
   /** Strings to help the tool identify itself in GUI. */
-  virtual const char* GetName() const;
-  virtual const char** GetXPM() const;
+  virtual const char* GetName() const override;
+  virtual const char** GetXPM() const override;
 
   /** We store the name of a property that stores the image region. */
   static const std::string REGION_PROPERTY_NAME;
@@ -147,7 +147,7 @@ protected:
   virtual ~PaintbrushTool(); // purposely hidden
 
   /// \brief Connects state machine actions to functions.
-  virtual void ConnectActionsAndFunctions();
+  virtual void ConnectActionsAndFunctions() override;
 
   /// \brief Tells if this tool can handle the given event.
   ///
@@ -157,21 +157,21 @@ protected:
   ///
   /// Note that this function is purposefully not virtual. Eventual subclasses should
   /// override the CanHandle function.
-  bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode);
+  bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode) override;
 
   /**
   \brief Called when the tool gets activated (registered to mitk::GlobalInteraction).
 
   Derived tools should call their parents implementation.
   */
-  virtual void Activated();
+  virtual void Activated() override;
 
   /**
   \brief Called when the tool gets deactivated (unregistered from mitk::GlobalInteraction).
 
   Derived tools should call their parents implementation.
   */
-  virtual void Deactivated();
+  virtual void Deactivated() override;
 
 private:
 
@@ -242,6 +242,10 @@ private:
   // Stores the current display interactor configurations when this tool is activated.
   // The configurations are restored when the tool is deactivated.
   std::map<us::ServiceReferenceU, mitk::EventConfig> m_DisplayInteractorConfigs;
+
+  bool m_AddingAdditionInProgress;
+  bool m_AddingSubtractionInProgress;
+  bool m_RemovingSubtractionInProgress;
 
 };
 

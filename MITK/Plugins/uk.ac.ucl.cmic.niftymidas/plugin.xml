@@ -11,7 +11,7 @@
   <extension point="org.blueberry.ui.perspectives">
     <perspective
       id="uk.ac.ucl.cmic.niftymidas.segmentation_perspective"
-      name="MIDAS Segmentation"
+      name="Segmentation"
       class="niftk::SegmentationPerspective"
       icon="resources/icon_ion.xpm">
     </perspective>
@@ -20,7 +20,7 @@
   <extension point="org.blueberry.ui.perspectives">
     <perspective
       id="uk.ac.ucl.cmic.niftymidas.qc_perspective"
-      name="MIDAS QC"
+      name="QC"
       class="niftk::QCPerspective"
       icon="resources/icon_ion.xpm">
     </perspective>

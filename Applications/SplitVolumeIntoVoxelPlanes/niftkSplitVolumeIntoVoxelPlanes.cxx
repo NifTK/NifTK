@@ -12,8 +12,6 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
-
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>
 #include <itkCommandLineHelper.h>
@@ -23,7 +21,7 @@
 #include <itkNifTKImageIOFactory.h>
 #include <itkExtractImageFilter.h>
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 
 
 /*!

@@ -21,8 +21,6 @@
 #include <itkCurvatureAnisotropicDiffusionImageFilter.h>
 #include <itkCastImageFilter.h>
 
-#include <itkLogHelper.h>
-
 namespace itk {
 
 template< class TFixedImage, class TMovingImage, class TScalar >

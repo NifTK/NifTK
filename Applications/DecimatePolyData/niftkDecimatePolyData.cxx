@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
@@ -25,22 +25,22 @@
  * \section niftkDecimatePolyDataSummary Runs the VTK vtkDecimatePro filter on a vtkPolyData.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Runs the VTK vtkDecimatePro filter on a vtkPolyData." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputPolyData.vtk -o outputPolyData.vtk [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i      <filename>        Input VTK Poly Data. eg. 0.9 means 90% reduction, 0.1 means 10% reduction" << std::endl;
-    std::cout << "    -o      <filename>        Output VTK Poly Data." << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -target <float>           Target Reduction Factor" << std::endl;
-    std::cout << "    -maxErr <float>           Maximum Error" << std::endl;
-    std::cout << "    -feat   <float>           Feature Angle" << std::endl;
-    std::cout << "    -preserve                 Preserve topology. Default off, as it may prevent you reaching the target reduction factor." << std::endl << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Runs the VTK vtkDecimatePro filter on a vtkPolyData." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputPolyData.vtk -o outputPolyData.vtk [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i      <filename>        Input VTK Poly Data. eg. 0.9 means 90% reduction, 0.1 means 10% reduction" << std::endl;
+  std::cout << "    -o      <filename>        Output VTK Poly Data." << std::endl << std::endl;      
+  std::cout << "*** [options]   ***" << std::endl << std::endl;
+  std::cout << "    -target <float>           Target Reduction Factor" << std::endl;
+  std::cout << "    -maxErr <float>           Maximum Error" << std::endl;
+  std::cout << "    -feat   <float>           Feature Angle" << std::endl;
+  std::cout << "    -preserve                 Preserve topology. Default off, as it may prevent you reaching the target reduction factor." << std::endl << std::endl;
+}
 
 struct arguments
 {

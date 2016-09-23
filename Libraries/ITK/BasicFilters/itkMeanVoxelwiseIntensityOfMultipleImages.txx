@@ -28,8 +28,6 @@
 #include <itkMinimumMaximumImageCalculator.h>
 #include <niftkConversionUtils.h>
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

@@ -19,7 +19,6 @@
 #include <opencv2/imgproc/imgproc_c.h>
 #include <opencv2/video/tracking.hpp>
 #include <opencv/highgui.h>
-#include <boost/typeof/typeof.hpp>
 #include <boost/static_assert.hpp>
 #include <stdexcept>
 
@@ -155,7 +154,7 @@ IplImage* SequentialCpuQds::CreateDisparityImage() const
   IplImage* dispimg = cvCreateImage(cvSize(GetWidth(), GetHeight()), IPL_DEPTH_8U, 4);
 
   // gil view that wraps the ipl image
-  BOOST_AUTO(dst, boost::gil::interleaved_view(dispimg->width, dispimg->height, (boost::gil::rgba8_pixel_t*) dispimg->imageData, dispimg->widthStep));
+  auto dst = boost::gil::interleaved_view(dispimg->width, dispimg->height, (boost::gil::rgba8_pixel_t*) dispimg->imageData, dispimg->widthStep);
 
   for (int y = 0; y < dispimg->height; ++y)
   {
@@ -165,7 +164,7 @@ IplImage* SequentialCpuQds::CreateDisparityImage() const
       const boost::gil::dev2n16c_pixel_t& r = boost::gil::const_view(m_LeftRefMap)(x, y);
 
       // output rgba pixel
-      BOOST_AUTO(& p, dst(x, y));
+      auto & p = dst(x, y);
 
       if (r[0] <= 0)
       {

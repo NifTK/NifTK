@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Registration</category>
+  <title>Landmark Based Registration</title>
+  <description><![CDATA[Transforms an image using itk::LandmarkBasedTransformInitializer. The transform computed gives the best fit transform that maps the fixed and moving images in a least squares sense.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>John Hipwell. </contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+
+    <label>Inputs</label>
+    <description><![CDATA[Input parameters]]></description>
+
+    <image>
+      <name>fileInputSourceImage</name>
+      <flag>s</flag>
+      <longflag>src</longflag>
+      <description>The input source image to be transformed</description>
+      <label>Source image</label>
+      <channel>input</channel>
+    </image>
+
+    <image>
+      <name>fileInputTargetImage</name>
+      <flag>t</flag>
+      <longflag>tgt</longflag>
+      <description>The target image to specify the region of the deformed image</description>
+      <label>Target image</label>
+      <channel>input</channel>
+    </image>
+
+    <file>
+      <name>fileSourceLandmarks</name>
+      <longflag>spts</longflag>
+      <description>The file name of an input set of source landmarks (MITK point set or csv file).</description>
+      <label>Source landmarks.</label>
+      <channel>input</channel>
+    </file>
+
+    <file>
+      <name>fileTargetLandmarks</name>
+      <longflag>tpts</longflag>
+      <description>The file name of an input set of target landmarks (MITK point set or csv file).</description>
+      <label>Target landmarks.</label>
+      <channel>input</channel>
+    </file>
+
+  </parameters>
+
+  <parameters>
+
+    <label>Outputs</label>
+    <description><![CDATA[Output parameters]]></description>
+
+
+    <image>
+      <name>fileOutputImage</name>
+      <flag>o</flag>
+      <longflag>out</longflag>
+      <description>The output deformed image</description>      
+      <label>Output image</label>
+      <channel>output</channel>
+    </image>
+
+    <file>
+      <name>fileOutputTransform</name>
+      <longflag>ot</longflag>
+      <description>The output transformation</description>      
+      <label>Output transformation</label>
+      <channel>output</channel>
+    </file>
+
+    <file>
+      <name>fileOutputDeformationField</name>
+      <flag>d</flag>
+      <longflag>odef</longflag>
+      <description>The output deformation field</description>      
+      <label>Output deformation field</label>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Options</label>
+    <description><![CDATA[Optional parameters]]></description>
+
+    <boolean>
+      <name>flgVerbose</name>
+      <flag>v</flag>
+      <longflag>verbose</longflag>
+      <description>Generate verbose output.</description>
+      <label>Print verbose information?</label>
+    </boolean>
+
+  </parameters>
+
+  <parameters advanced="true">
+
+    <label>Advanced</label>
+    <description><![CDATA[Advanced parameters]]></description>
+
+    <boolean>
+      <name>flgDebug</name>
+      <longflag>dbg</longflag>
+      <description>Generate debug output.</description>
+      <label>Print debugging output?</label>
+    </boolean>
+ 
+  </parameters>
+
+</executable>

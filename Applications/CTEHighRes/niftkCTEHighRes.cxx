@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImage.h>
@@ -34,7 +34,7 @@
  */
 void Usage(char *name)
 {
-  niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
   std::cout << "  Implements a high resolution version of Bourgeat et. al. ISBI 2008, to calculate cortical thickness" << std::endl;
   std::cout << "  using Yezzi and Prince, IEEE TMI Vol. 22, No. 10, Oct 2003 for solving the thickness PDE by relaxation, " << std::endl;

@@ -29,7 +29,6 @@
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 
-#include <itkLogHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -167,9 +166,7 @@ int DoMain(arguments args,
 
   // Get each tag
 
-  for ( iterTags = tagList.begin(); 
-	iterTags < tagList.end(); 
-	++iterTags, iTag += 1. )
+  for ( iterTags = tagList.begin(); iterTags < tagList.end(); ++iterTags, iTag += 1 )
   {
     found = false;
 
@@ -222,8 +219,8 @@ int main( int argc, char *argv[] )
 {
   itk::NifTKImageIOFactory::Initialize();
 
-  float progress = 0.;
-  float iFile = 0.;
+  float progress = 0.0f;
+  float iFile = 0.0f;
   float nFiles;
 
   struct arguments args;
@@ -342,9 +339,7 @@ int main( int argc, char *argv[] )
 
   nFiles = fileNames.size();
 
-  for ( iterFileNames = fileNames.begin(); 
-	iterFileNames < fileNames.end(); 
-	++iterFileNames, iFile += 1. )
+  for ( iterFileNames = fileNames.begin(); iterFileNames < fileNames.end(); ++iterFileNames, iFile += 1.0f )
   {
     args.iterFilename = *iterFileNames;
     
@@ -352,8 +347,8 @@ int main( int argc, char *argv[] )
 
     progress = iFile/nFiles;
     std::cout << "<filter-progress>" << std::endl
-	      << progress << std::endl
-	      << "</filter-progress>" << std::endl;
+              << progress << std::endl
+              << "</filter-progress>" << std::endl;
 
   
     itk::ImageIOBase::Pointer imageIO;
@@ -501,8 +496,8 @@ int main( int argc, char *argv[] )
 
     catch (itk::ExceptionObject &ex)
     {
-      std::cerr << "WARNING: Failed to read DICOM tags, skipping file: " 
-		<< args.iterFilename << std::endl;
+      std::cerr << "WARNING: Failed to read DICOM tags, skipping file: "
+                << args.iterFilename << std::endl;
       continue;
     }
   }
@@ -511,6 +506,3 @@ int main( int argc, char *argv[] )
 
   return EXIT_SUCCESS;
 }
- 
- 
-

@@ -29,9 +29,20 @@ namespace niftk
 
 /**
  * \class DataStorageListener
- * \brief Base class for objects that Listen to data storage, and want to update a node.
+ * \brief Class for listening to data storage events.
  *
- * Derived classes must override NodeAdded, NodeUpdated, NodeRemoved, NodeDeleted.
+ * This class can be used in two ways.
+ *
+ * The first way is to instantiate the class and assign handlers to the public
+ * 'NodeAdded', 'NodeChanged', 'NodeRemoved' or 'NodeDeleted' data members.
+ *
+ * The second way is deriving a class from this one and overriding the 'OnNodeAdded',
+ * 'OnNodeChanged', 'OnNodeRemoved' or 'OnNodeDeleted' member functions. If you
+ * follow this way, you must call the superclass implementation at the
+ * beginning of the function.
+ *
+ * The first way is recommended.
+ *
  * This class also provides a filter mechanism, where a chain of filters can be added,
  * and if any one of the filters blocks, then the methods NodeAdded, NodeUpdated,
  * NodeRemoved and NodeDeleted are not called.
@@ -43,6 +54,9 @@ public:
 
   mitkClassMacroItkParent(DataStorageListener, itk::LightObject)
   mitkNewMacro1Param(DataStorageListener, const mitk::DataStorage::Pointer)
+
+  DataStorageListener(const mitk::DataStorage::Pointer);
+  virtual ~DataStorageListener();
 
   /// \brief Gets the data storage.
   mitk::DataStorage::Pointer GetDataStorage() const;
@@ -70,9 +84,6 @@ public:
   mitk::Message1<mitk::DataNode*> NodeDeleted;
 
 protected:
-
-  DataStorageListener(const mitk::DataStorage::Pointer);
-  virtual ~DataStorageListener();
 
   DataStorageListener(const DataStorageListener&); // Purposefully not implemented.
   DataStorageListener& operator=(const DataStorageListener&); // Purposefully not implemented.

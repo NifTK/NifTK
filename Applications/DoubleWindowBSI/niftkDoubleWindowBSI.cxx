@@ -15,7 +15,7 @@
 #if defined(_MSC_VER)
 #pragma warning ( disable : 4786 )
 #endif
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNifTKImageIOFactory.h>
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
 
   if (argc < 21)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cerr);
+    niftk::LogHelper::PrintCommandLineHeader(std::cerr);
     std::cerr << std::endl;    
     std::cerr << "Program to calculate the double window boundary shift integral, based on the paper" << std::endl; 
     std::cerr << "  Freeborough PA and Fox NC, The boundary shift integral: an accurate and" << std::endl; 

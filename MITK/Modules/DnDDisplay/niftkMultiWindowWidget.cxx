@@ -49,7 +49,7 @@ namespace niftk
 class DisplayGeometryModificationCommand : public itk::Command
 {
 public:
-  mitkNewMacro2Param(DisplayGeometryModificationCommand, MultiWindowWidget*, int);
+  mitkNewMacro2Param(DisplayGeometryModificationCommand, MultiWindowWidget*, int)
 
 
   //-----------------------------------------------------------------------------
@@ -101,7 +101,6 @@ MultiWindowWidget::MultiWindowWidget(
 , m_SelectedWindowIndex(CORONAL)
 , m_FocusLosingWindowIndex(-1)
 , m_CursorVisibility(true)
-, m_Show3DWindowIn2x2WindowLayout(false)
 , m_WindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_TimeStep(0)
 , m_CursorPositions(3)
@@ -124,12 +123,16 @@ MultiWindowWidget::MultiWindowWidget(
 , m_ScaleFactorHasChanged(3)
 , m_CursorPositionBindingHasChanged(false)
 , m_ScaleFactorBindingHasChanged(false)
+, m_OrientationString{0}
 , m_CursorPositionBinding(true)
 , m_CursorAxialPositionsAreBound(true)
 , m_CursorSagittalPositionsAreBound(true)
 , m_CursorCoronalPositionsAreBound(false)
 , m_ScaleFactorBinding(true)
-, m_IntensityAnnotationIsVisible(false)
+, m_PositionAnnotationVisible(true)
+, m_IntensityAnnotationVisible(true)
+, m_PropertyAnnotationVisible(false)
+, m_EmptySpace(new QWidget(this))
 {
   /// Note:
   /// The rendering manager is surely not null. If NULL is specified then the superclass
@@ -150,6 +153,8 @@ MultiWindowWidget::MultiWindowWidget(
     m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
     m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
   }
+
+  m_EmptySpace->setAutoFillBackground(true);
 
   // See also SetEnabled(bool) to see things that are dynamically on/off
   this->HideAllWidgetToolbars();
@@ -210,6 +215,10 @@ MultiWindowWidget::MultiWindowWidget(
   m_DirectionAnnotations[CORONAL]->SetColour(1, sagittalColour);
   m_DirectionAnnotations[CORONAL]->SetColour(2, axialColour);
   m_DirectionAnnotations[CORONAL]->SetColour(3, sagittalColour);
+
+  this->InitialisePositionAnnotations();
+  this->InitialiseIntensityAnnotations();
+  this->InitialisePropertyAnnotations();
 
   // Set default layout. This must be ORTHO.
   this->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
@@ -284,8 +293,6 @@ MultiWindowWidget::MultiWindowWidget(
   // mitk::DisplayInteractor. This line decreases the reference counter of the mouse mode switcher
   // so that it is destructed and it unregisters and destructs its display interactor as well.
   m_MouseModeSwitcher = 0;
-
-  this->InitialiseIntensityAnnotations();
 }
 
 
@@ -415,6 +422,10 @@ void MultiWindowWidget::SetBackgroundColour(QColor colour)
   mitk::Color backgroundColour;
   backgroundColour.Set(colour.redF(), colour.greenF(), colour.blueF());
   this->SetGradientBackgroundColors(backgroundColour, backgroundColour);
+
+  QPalette palette;
+  palette.setColor(QPalette::Background, colour);
+  m_EmptySpace->setPalette(palette);
 }
 
 
@@ -490,15 +501,16 @@ void MultiWindowWidget::SetSelectedWindowIndex(int selectedWindowIndex)
 
     if (m_SelectedWindowIndex < 3)
     {
+      m_PositionAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
       m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
+      m_PropertyAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
     }
 
     m_SelectedWindowIndex = selectedWindowIndex;
 
-    if (m_SelectedWindowIndex < 3)
-    {
-      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(m_IntensityAnnotationIsVisible);
-    }
+    this->UpdatePositionAnnotation(m_SelectedWindowIndex);
+    this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
+    this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
 
     this->BlockUpdate(updateWasBlocked);
   }
@@ -605,6 +617,7 @@ void MultiWindowWidget::RequestUpdate()
       m_RenderingManager->RequestUpdate(mitkWidget3->GetRenderWindow());
       m_RenderingManager->RequestUpdate(mitkWidget4->GetRenderWindow());
       break;
+    case WINDOW_LAYOUT_ORTHO_NO_3D:
     case WINDOW_LAYOUT_3H:
     case WINDOW_LAYOUT_3V:
       m_RenderingManager->RequestUpdate(mitkWidget1->GetRenderWindow());
@@ -631,7 +644,7 @@ void MultiWindowWidget::RequestUpdate()
     break;
     default:
       // die, this should never happen
-      assert((m_WindowLayout >= 0 && m_WindowLayout <= 6) || (m_WindowLayout >= 9 && m_WindowLayout <= 14));
+      assert((m_WindowLayout >= 0 && m_WindowLayout <= 7) || (m_WindowLayout >= 10 && m_WindowLayout <= 15));
       break;
     }
   }
@@ -710,36 +723,74 @@ void MultiWindowWidget::SetDirectionAnnotationsVisible(bool visible)
 
 
 //-----------------------------------------------------------------------------
+bool MultiWindowWidget::IsPositionAnnotationVisible() const
+{
+  return m_PositionAnnotationVisible;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::SetPositionAnnotationVisible(bool visible)
+{
+  if (visible != m_PositionAnnotationVisible)
+  {
+    m_PositionAnnotationVisible = visible;
+    this->UpdatePositionAnnotation(m_SelectedWindowIndex);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool MultiWindowWidget::IsIntensityAnnotationVisible() const
 {
-  return m_IntensityAnnotationIsVisible;
+  return m_IntensityAnnotationVisible;
 }
 
 
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::SetIntensityAnnotationVisible(bool visible)
 {
-  if (visible != m_IntensityAnnotationIsVisible)
+  if (visible != m_IntensityAnnotationVisible)
   {
-    m_IntensityAnnotationIsVisible = visible;
-    m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(visible);
-    this->RequestUpdate();
+    m_IntensityAnnotationVisible = visible;
+    this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-bool MultiWindowWidget::GetShow3DWindowIn2x2WindowLayout() const
+bool MultiWindowWidget::IsPropertyAnnotationVisible() const
 {
-  return m_Show3DWindowIn2x2WindowLayout;
+  return m_PropertyAnnotationVisible;
 }
 
 
 //-----------------------------------------------------------------------------
-void MultiWindowWidget::SetShow3DWindowIn2x2WindowLayout(bool visible)
+void MultiWindowWidget::SetPropertyAnnotationVisible(bool visible)
 {
-  m_Show3DWindowIn2x2WindowLayout = visible;
-  this->Update3DWindowVisibility();
+  if (visible != m_PropertyAnnotationVisible)
+  {
+    m_PropertyAnnotationVisible = visible;
+    this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+QStringList MultiWindowWidget::GetPropertiesForAnnotation() const
+{
+  return m_PropertiesForAnnotation;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation)
+{
+  if (propertiesForAnnotation != m_PropertiesForAnnotation)
+  {
+    m_PropertiesForAnnotation = propertiesForAnnotation;
+    this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
+  }
 }
 
 
@@ -761,7 +812,7 @@ void MultiWindowWidget::Update3DWindowVisibility()
       }
 
       bool visibleIn3DWindow = false;
-      if ((m_WindowLayout == WINDOW_LAYOUT_ORTHO && m_Show3DWindowIn2x2WindowLayout)
+      if ((m_WindowLayout == WINDOW_LAYOUT_ORTHO)
           || m_WindowLayout == WINDOW_LAYOUT_3D)
       {
         visibleIn3DWindow = true;
@@ -819,7 +870,9 @@ void MultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool v
     this->SetVisibility(mitkWidget2, nodes[i], visibility);
     this->SetVisibility(mitkWidget3, nodes[i], visibility);
   }
+  this->UpdatePositionAnnotation(m_SelectedWindowIndex);
   this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
+  this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
   this->Update3DWindowVisibility();
 }
 
@@ -1146,6 +1199,10 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     m_OrientationAxes[SAGITTAL] = dominantAxisRL;
     m_OrientationAxes[CORONAL] = dominantAxisAP;
 
+    m_OrientationString[dominantAxisSI] = signSI > 0 ? 'S' : 'I';
+    m_OrientationString[dominantAxisRL] = signRL > 0 ? 'R' : 'L';
+    m_OrientationString[dominantAxisAP] = signAP > 0 ? 'A' : 'P';
+
 //    MITK_INFO << "Matt, image geometry=" << m_Geometry->GetImageGeometry();
 //    MITK_INFO << "Matt, origin=" << m_Geometry->GetOrigin();
 //    MITK_INFO << "Matt, centre=" << m_Geometry->GetCenter();
@@ -1416,8 +1473,9 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 
     if (m_SelectedWindowIndex < 3)
     {
+      this->UpdatePositionAnnotation(m_SelectedWindowIndex);
       this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
-      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(true);
+      this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
     }
 
     this->BlockUpdate(updateWasBlocked);
@@ -1519,7 +1577,14 @@ void MultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 1);  // coronal:  off
     m_GridLayout->addWidget(this->mitkWidget4Container, 1, 1);  // 3D:       off
   }
-  else
+  else if (windowLayout == WINDOW_LAYOUT_ORTHO_NO_3D)
+  {
+    m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
+    m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
+    m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
+    m_GridLayout->addWidget(m_EmptySpace, 1, 1);  // 3D:       on
+  }
+  else // ORTHO or ORTHO_NO_3D
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
@@ -1558,6 +1623,15 @@ void MultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     showSagittal = true;
     showCoronal = true;
     show3D = true;
+    defaultWindowIndex = CORONAL;
+    m_CursorAxialPositionsAreBound = true;
+    m_CursorSagittalPositionsAreBound = true;
+    break;
+  case WINDOW_LAYOUT_ORTHO_NO_3D:
+    showAxial = true;
+    showSagittal = true;
+    showCoronal = true;
+    show3D = false;
     defaultWindowIndex = CORONAL;
     m_CursorAxialPositionsAreBound = true;
     m_CursorSagittalPositionsAreBound = true;
@@ -1634,7 +1708,19 @@ void MultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 
   if (!m_RenderWindows[m_SelectedWindowIndex]->isVisible())
   {
+    if (m_SelectedWindowIndex < 3)
+    {
+      m_PositionAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
+      m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
+      m_PropertyAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
+    }
+
     m_SelectedWindowIndex = defaultWindowIndex;
+
+    this->UpdatePositionAnnotation(m_SelectedWindowIndex);
+    this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
+    this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
+
     if (m_IsFocused)
     {
       m_FocusHasChanged = true;
@@ -2157,10 +2243,35 @@ void MultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPositio
         windowIndex = CORONAL;
       }
       this->SynchroniseCursorPositions(windowIndex);
+      this->UpdatePositionAnnotation(windowIndex);
       this->UpdateIntensityAnnotation(windowIndex);
     }
 
     this->BlockUpdate(updateWasBlocked);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::InitialisePositionAnnotations()
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
+    mitk::OverlayManager::Pointer overlayManager = renderer->GetOverlayManager();
+    mitk::Overlay2DLayouter::Pointer layouter = mitk::Overlay2DLayouter::CreateLayouter(
+          mitk::Overlay2DLayouter::STANDARD_2D_TOPRIGHT(), renderer);
+    overlayManager->AddLayouter(layouter.GetPointer());
+
+    mitk::TextOverlay2D::Pointer annotation = mitk::TextOverlay2D::New();
+    m_PositionAnnotations[i] = annotation;
+    annotation->SetFontSize(12);
+    annotation->SetColor(0.0f, 1.0f, 0.0f);
+    annotation->SetOpacity(1.0f);
+    annotation->SetVisibility(false);
+
+    overlayManager->AddOverlay(annotation.GetPointer(), renderer);
+    overlayManager->SetLayouter(annotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_TOPRIGHT(), renderer);
   }
 }
 
@@ -2172,19 +2283,83 @@ void MultiWindowWidget::InitialiseIntensityAnnotations()
   {
     mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
     mitk::OverlayManager::Pointer overlayManager = renderer->GetOverlayManager();
-    mitk::Overlay2DLayouter::Pointer topLeftLayouter = mitk::Overlay2DLayouter::CreateLayouter(
+    mitk::Overlay2DLayouter::Pointer layouter = mitk::Overlay2DLayouter::CreateLayouter(
           mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
-    overlayManager->AddLayouter(topLeftLayouter.GetPointer());
+    overlayManager->AddLayouter(layouter.GetPointer());
 
-    mitk::TextOverlay2D::Pointer intensityAnnotation = mitk::TextOverlay2D::New();
-    m_IntensityAnnotations[i] = intensityAnnotation;
-    intensityAnnotation->SetFontSize(12);
-    intensityAnnotation->SetColor(0.0f, 1.0f, 0.0f);
-    intensityAnnotation->SetOpacity(1.0f);
-    intensityAnnotation->SetVisibility(i == m_SelectedWindowIndex && m_IntensityAnnotationIsVisible);
+    mitk::TextOverlay2D::Pointer annotation = mitk::TextOverlay2D::New();
+    m_IntensityAnnotations[i] = annotation;
+    annotation->SetFontSize(12);
+    annotation->SetColor(0.0f, 1.0f, 0.0f);
+    annotation->SetOpacity(1.0f);
+    annotation->SetVisibility(false);
 
-    overlayManager->AddOverlay(intensityAnnotation.GetPointer(), renderer);
-    overlayManager->SetLayouter(intensityAnnotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
+    overlayManager->AddOverlay(annotation.GetPointer(), renderer);
+    overlayManager->SetLayouter(annotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_BOTTOMRIGHT(), renderer);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::InitialisePropertyAnnotations()
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
+    mitk::OverlayManager::Pointer overlayManager = renderer->GetOverlayManager();
+    mitk::Overlay2DLayouter::Pointer layouter = mitk::Overlay2DLayouter::CreateLayouter(
+          mitk::Overlay2DLayouter::STANDARD_2D_TOPLEFT(), renderer);
+    overlayManager->AddLayouter(layouter.GetPointer());
+
+    mitk::TextOverlay2D::Pointer annotation = mitk::TextOverlay2D::New();
+    m_PropertyAnnotations[i] = annotation;
+    annotation->SetFontSize(12);
+    annotation->SetColor(0.0f, 1.0f, 0.0f);
+    annotation->SetOpacity(1.0f);
+    annotation->SetVisibility(false);
+
+    overlayManager->AddOverlay(annotation.GetPointer(), renderer);
+    overlayManager->SetLayouter(annotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_TOPLEFT(), renderer);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
+{
+  if (windowIndex >= 0 && windowIndex < 3)
+  {
+    mitk::TextOverlay2D::Pointer annotation = m_PositionAnnotations[windowIndex];
+
+    bool wasVisible = annotation->IsVisible(nullptr);
+    bool shouldBeVisible = m_PositionAnnotationVisible && windowIndex == m_SelectedWindowIndex && m_TimeGeometry;
+
+    if (wasVisible != shouldBeVisible)
+    {
+      annotation->SetVisibility(shouldBeVisible);
+    }
+
+    if (shouldBeVisible)
+    {
+      std::stringstream stream;
+      stream.precision(3);
+      stream.imbue(std::locale::classic());
+
+      mitk::Point3D selectedPositionInVx;
+      m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
+      stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << m_OrientationString << ")" << std::endl;
+      stream << m_SelectedPosition[0] << ", " << m_SelectedPosition[1] << ", " << m_SelectedPosition[2] << " mm";
+
+      if (m_TimeGeometry->CountTimeSteps() > 1)
+      {
+        stream << std::endl << "Time step: " << m_TimeStep;
+      }
+
+      annotation->SetText(stream.str());
+      annotation->Modified();
+    }
+
+    m_RenderingManager->RequestUpdate(m_RenderWindows[m_SelectedWindowIndex]->GetRenderWindow());
   }
 }
 
@@ -2195,82 +2370,179 @@ void MultiWindowWidget::UpdateIntensityAnnotation(int windowIndex) const
   if (windowIndex >= 0 && windowIndex < 3)
   {
     mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
-    mitk::TextOverlay2D::Pointer intensityAnnotation = m_IntensityAnnotations[windowIndex];
+    mitk::TextOverlay2D::Pointer annotation = m_IntensityAnnotations[windowIndex];
 
-    mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-    mitk::NodePredicateProperty::Pointer isBinary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true));
-    mitk::NodePredicateNot::Pointer isNotBinary = mitk::NodePredicateNot::New(isBinary);
-    mitk::NodePredicateAnd::Pointer isImageAndNotBinary = mitk::NodePredicateAnd::New(isImage, isNotBinary);
-    mitk::NodePredicateProperty::Pointer isVisible = mitk::NodePredicateProperty::New("visible", mitk::BoolProperty::New(true), renderer);
-    mitk::NodePredicateAnd::Pointer isVisibleAndImageAndNotBinary = mitk::NodePredicateAnd::New(isVisible, isImageAndNotBinary);
+    bool wasVisible = annotation->IsVisible(nullptr);
+    bool shouldBeVisible = m_IntensityAnnotationVisible && windowIndex == m_SelectedWindowIndex;
 
-    /// Note:
-    /// The nodes are printed in the order of their layer.
-    std::multimap<int, mitk::DataNode*> visibleNonBinaryImageNodes;
-
-    mitk::DataStorage::SetOfObjects::ConstPointer nodes = renderer->GetDataStorage()->GetSubset(isVisibleAndImageAndNotBinary).GetPointer();
-    for (mitk::DataStorage::SetOfObjects::ConstIterator it = nodes->Begin(); it != nodes->End(); ++it)
+    if (wasVisible != shouldBeVisible)
     {
-      mitk::DataNode* node = it->Value();
-      int layer = 0;
-      if (node->GetIntProperty("layer", layer, renderer))
+      annotation->SetVisibility(shouldBeVisible);
+    }
+
+    if (shouldBeVisible)
+    {
+      mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+      mitk::NodePredicateProperty::Pointer isBinary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true));
+      mitk::NodePredicateNot::Pointer isNotBinary = mitk::NodePredicateNot::New(isBinary);
+      mitk::NodePredicateAnd::Pointer isImageAndNotBinary = mitk::NodePredicateAnd::New(isImage, isNotBinary);
+      mitk::NodePredicateProperty::Pointer isVisible = mitk::NodePredicateProperty::New("visible", mitk::BoolProperty::New(true), renderer);
+      mitk::NodePredicateAnd::Pointer isVisibleAndImageAndNotBinary = mitk::NodePredicateAnd::New(isVisible, isImageAndNotBinary);
+
+      /// Note:
+      /// The nodes are printed in the order of their layer.
+      std::multimap<int, mitk::DataNode*> visibleNonBinaryImageNodes;
+
+      mitk::DataStorage::SetOfObjects::ConstPointer nodes = renderer->GetDataStorage()->GetSubset(isVisibleAndImageAndNotBinary).GetPointer();
+      for (mitk::DataStorage::SetOfObjects::ConstIterator it = nodes->Begin(); it != nodes->End(); ++it)
       {
-        visibleNonBinaryImageNodes.insert(std::make_pair(layer, node));
-      }
-    }
-
-    std::stringstream stream;
-    stream.precision(3);
-    stream.imbue(std::locale::classic());
-
-    if (visibleNonBinaryImageNodes.size() == 0)
-    {
-      intensityAnnotation->SetVisibility(false);
-    }
-    else if (visibleNonBinaryImageNodes.size() == 1)
-    {
-      stream << "Intensity: ";
-      intensityAnnotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_IntensityAnnotationIsVisible);
-    }
-    else if (visibleNonBinaryImageNodes.size() > 1)
-    {
-      stream << "Intensities: ";
-      intensityAnnotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_IntensityAnnotationIsVisible);
-    }
-
-    for (std::multimap<int, mitk::DataNode*>::const_iterator it = visibleNonBinaryImageNodes.begin(); it != visibleNonBinaryImageNodes.end(); ++it)
-    {
-      mitk::DataNode* node = it->second;
-
-      int component = 0;
-      node->GetIntProperty("Image.Displayed Component", component);
-
-      mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-
-      mitk::ScalarType intensity = image->GetPixelValueByWorldCoordinate(m_SelectedPosition, m_TimeStep, component);
-
-      if (it != visibleNonBinaryImageNodes.begin())
-      {
-        stream << "; ";
+        mitk::DataNode* node = it->Value();
+        int layer = 0;
+        if (node->GetIntProperty("layer", layer, renderer))
+        {
+          visibleNonBinaryImageNodes.insert(std::make_pair(layer, node));
+        }
       }
 
-      if (visibleNonBinaryImageNodes.size() != 1)
+      if (visibleNonBinaryImageNodes.empty())
       {
-        stream << node->GetName() << ": ";
+        annotation->SetVisibility(false);
+        return;
       }
 
-      if (std::fabs(intensity) > 10e6 || std::fabs(intensity) < 10e-3)
+      std::stringstream stream;
+      stream.precision(3);
+      stream.imbue(std::locale::classic());
+
+      for (auto it = visibleNonBinaryImageNodes.rbegin(); it != visibleNonBinaryImageNodes.rend(); ++it)
       {
-        stream << std::scientific << intensity;
+        mitk::DataNode* node = it->second;
+
+        int component = 0;
+        node->GetIntProperty("Image.Displayed Component", component);
+
+        mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+
+        mitk::ScalarType intensity = image->GetPixelValueByWorldCoordinate(m_SelectedPosition, m_TimeStep, component);
+
+        if (it != visibleNonBinaryImageNodes.rbegin())
+        {
+          stream << std::endl;
+        }
+
+        if (visibleNonBinaryImageNodes.size() != 1)
+        {
+          stream << node->GetName() << ": ";
+        }
+
+        if (std::fabs(intensity) > 10e6 || std::fabs(intensity) < 10e-3)
+        {
+          stream << std::scientific << intensity;
+        }
+        else
+        {
+          stream << intensity;
+        }
+      }
+
+      annotation->SetText(stream.str());
+      annotation->Modified();
+    }
+
+    m_RenderingManager->RequestUpdate(m_RenderWindows[m_SelectedWindowIndex]->GetRenderWindow());
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::UpdatePropertyAnnotation(int windowIndex) const
+{
+  if (windowIndex >= 0 && windowIndex < 3)
+  {
+    mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
+    mitk::TextOverlay2D::Pointer annotation = m_PropertyAnnotations[windowIndex];
+
+    bool wasVisible = annotation->IsVisible(nullptr);
+    bool shouldBeVisible = m_PropertyAnnotationVisible && windowIndex == m_SelectedWindowIndex;
+
+    if (wasVisible != shouldBeVisible)
+    {
+      annotation->SetVisibility(shouldBeVisible);
+    }
+
+    if (shouldBeVisible)
+    {
+      mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+      mitk::NodePredicateProperty::Pointer isVisible = mitk::NodePredicateProperty::New("visible", mitk::BoolProperty::New(true), renderer);
+      mitk::NodePredicateAnd::Pointer isVisibleAndImage = mitk::NodePredicateAnd::New(isVisible, isImage);
+
+      /// Note:
+      /// The nodes are printed in the reversed order of their layer.
+      std::multimap<int, mitk::DataNode*> visibleImageNodes;
+
+      mitk::DataStorage::SetOfObjects::ConstPointer nodes = renderer->GetDataStorage()->GetSubset(isVisibleAndImage).GetPointer();
+      for (auto it = nodes->Begin(); it != nodes->End(); ++it)
+      {
+        mitk::DataNode* node = it->Value();
+        int layer = 0;
+        if (node->GetIntProperty("layer", layer, renderer))
+        {
+          visibleImageNodes.insert(std::make_pair(layer, node));
+        }
+      }
+
+      std::stringstream stream;
+      stream.precision(3);
+      stream.imbue(std::locale::classic());
+
+      if (visibleImageNodes.size() == 0)
+      {
+        annotation->SetVisibility(false);
       }
       else
       {
-        stream << intensity;
+        annotation->SetVisibility(windowIndex == m_SelectedWindowIndex && m_PropertyAnnotationVisible);
       }
+
+      for (auto it = visibleImageNodes.rbegin(); it != visibleImageNodes.rend(); ++it)
+      {
+        mitk::DataNode* node = it->second;
+
+        if (it != visibleImageNodes.rbegin())
+        {
+          stream << std::endl;
+        }
+
+        /// Show the name in the first line if there are several visible images, or if the 'name'
+        /// property was explicitely requested.
+        if (visibleImageNodes.size() > 1 || m_PropertiesForAnnotation.contains(QString("name")))
+        {
+          stream << node->GetName() << std::endl;
+        }
+
+        for (const QString& propertyName: m_PropertiesForAnnotation)
+        {
+          if (propertyName == QString("name"))
+          {
+            /// The name is always shown in the first line.
+            continue;
+          }
+          mitk::BaseProperty* property = node->GetProperty(propertyName.toStdString().c_str());
+          if (property)
+          {
+            stream << propertyName.toStdString() << ": " << property->GetValueAsString() << std::endl;
+          }
+        }
+      }
+
+      /// Remove last '\n'.
+      stream.unget();
+
+      annotation->SetText(stream.str());
+      annotation->Modified();
     }
 
-    intensityAnnotation->SetText(stream.str());
-    intensityAnnotation->Modified();
+    m_RenderingManager->RequestUpdate(m_RenderWindows[m_SelectedWindowIndex]->GetRenderWindow());
   }
 }
 
@@ -2553,22 +2825,21 @@ void MultiWindowWidget::ZoomAroundCursorPosition(int windowIndex)
 {
   if (m_Geometry)
   {
-    mitk::DisplayGeometry* displayGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetDisplayGeometry();
-
-    mitk::Vector2D displaySize = displayGeometry->GetSizeInDisplayUnits();
-
-    mitk::Point2D focusPoint2DInPx;
-    focusPoint2DInPx[0] = m_CursorPositions[windowIndex][0] * displaySize[0];
-    focusPoint2DInPx[1] = m_CursorPositions[windowIndex][1] * displaySize[1];
+    mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
+    mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
 
     double scaleFactor = m_ScaleFactors[windowIndex];
-    double previousScaleFactor = displayGeometry->GetScaleFactorMMPerDisplayUnit();
+
+    mitk::Point2D focusPoint2DInMm;
+    displayGeometry->Map(m_SelectedPosition, focusPoint2DInMm);
+
+    mitk::Vector2D newOriginInMm;
+    newOriginInMm[0] = focusPoint2DInMm[0] - m_CursorPositions[windowIndex][0] * renderer->GetSizeX() * scaleFactor;
+    newOriginInMm[1] = focusPoint2DInMm[1] - m_CursorPositions[windowIndex][1] * renderer->GetSizeY() * scaleFactor;
+
     bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
-    if (displayGeometry->SetScaleFactor(scaleFactor))
-    {
-      mitk::Vector2D originInMm = displayGeometry->GetOriginInMM();
-      displayGeometry->SetOriginInMM(originInMm - focusPoint2DInPx.GetVectorFromOrigin() * (scaleFactor - previousScaleFactor));
-    }
+    displayGeometry->SetScaleFactor(scaleFactor);
+    displayGeometry->SetOriginInMM(newOriginInMm);
     this->BlockDisplayEvents(displayEventsWereBlocked);
   }
 }
@@ -2703,7 +2974,18 @@ void MultiWindowWidget::OnFocusChanged()
 
     if (isFocused)
     {
+      if (m_SelectedWindowIndex < 3)
+      {
+        m_PositionAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
+        m_IntensityAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
+        m_PropertyAnnotations[m_SelectedWindowIndex]->SetVisibility(false);
+      }
+
       m_SelectedWindowIndex = focusedWindowIndex;
+
+      this->UpdatePositionAnnotation(m_SelectedWindowIndex);
+      this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
+      this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
     }
 
     m_IsFocused = isFocused;

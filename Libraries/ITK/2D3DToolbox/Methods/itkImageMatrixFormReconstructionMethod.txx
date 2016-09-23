@@ -20,8 +20,6 @@
 
 #include "itkImageMatrixFormReconstructionMethod.h"
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

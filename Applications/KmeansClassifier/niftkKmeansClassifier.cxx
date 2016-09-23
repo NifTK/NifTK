@@ -15,7 +15,7 @@
 #pragma warning ( disable : 4786 )
 #endif
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -28,7 +28,7 @@ int main( int argc, char * argv [] )
 
   if( argc < 5 )
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cerr);
+    niftk::LogHelper::PrintCommandLineHeader(std::cerr);
     std::cerr << "Usage: ";
     std::cerr << argv[0];
     std::cerr << " inputScalarImage inputMask outputLabeledImage numberOfClasses mean1 mean2... meanN ";

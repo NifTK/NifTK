@@ -16,7 +16,7 @@
 #pragma warning ( disable : 4786 )
 #endif
 #ifndef OPEN_SOURCE_BSI
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #endif
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -537,7 +537,7 @@ int main(int argc, char* argv[])
   if (argc < 21)
   {
 #ifndef OPEN_SOURCE_BSI
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cerr);
+    niftk::LogHelper::PrintCommandLineHeader(std::cerr);
 #endif
     std::cerr << std::endl;
     std::cerr << "Program to calculate the k-means normalised double window boundary shift integral, based on the paper" << std::endl; 

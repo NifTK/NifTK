@@ -18,13 +18,13 @@ if(VTK_FOUND AND BUILD_MESHING)
     NAME niftkMeshFromLabels
     BUILD_CLI
     TARGET_LIBRARIES
-      niftkMeshing
-      niftkITK
-      niftkVTK
-      niftkcommon
-      ${ITK_LIBRARIES}
+      ${Boost_LIBRARIES}
       ${CGAL_LIBRARIES}
       ${CGAL_3RD_PARTY_LIBRARIES}
+      vtkCommonCore
+      vtkIOLegacy
+      niftkcommon
+      niftkMeshing
   )
 
 endif()

@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -28,20 +28,20 @@
  * \section niftkResetVoxelDimensionsFieldSummary Loads an image in, and sets the voxel size to the ones you specified.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Loads an image in, and sets the voxel size to the ones you specified." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i       <filename>        Input image " << std::endl;
-    std::cout << "    -o       <filename>        Output image" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl; 
-    std::cout << "    -spacing x y z      [1]    Set the spacing of the output image" << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Loads an image in, and sets the voxel size to the ones you specified." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i       <filename>        Input image " << std::endl;
+  std::cout << "    -o       <filename>        Output image" << std::endl << std::endl;      
+  std::cout << "*** [options]   ***" << std::endl << std::endl; 
+  std::cout << "    -spacing x y z      [1]    Set the spacing of the output image" << std::endl;
+}
 
 struct arguments
 {

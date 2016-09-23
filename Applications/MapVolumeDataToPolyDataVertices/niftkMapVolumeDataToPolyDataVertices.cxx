@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <vtkType.h>
 #include <vtkFloatArray.h>
@@ -32,7 +32,7 @@
  */
 void Usage(char *exec)
   {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
+    niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
     std::cout << "  Takes an image and a VTK PolyData, and for each vertex, interpolates the image, and stores the scalar value with the vertex." << std::endl;
     std::cout << "  In actuality, if you set radius to zero, we just interpolate volume." << std::endl;

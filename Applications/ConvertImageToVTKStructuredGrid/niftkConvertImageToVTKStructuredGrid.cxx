@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -42,21 +42,21 @@
  */
 
 void Usage(char *exec)
-  {
-	niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Transform's an image, as read by ITK, into a VTK structured grid. This program was written because ITK only writes VTK structured points, which doesn't include direction cosines." << std::endl;
-    std::cout << "  Note:" << std::endl;
-    std::cout << "    1. 2D images are converted to 3D images of 1 slice." << std::endl;
-    std::cout << "    2. Data is converted to float." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputImage.nii -o outputImage.vtk [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image, any format read by ITK, we recommend Nifti." << std::endl;
-    std::cout << "    -o    <filename>        Output image, specifically in VTK structured grid format." << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Transform's an image, as read by ITK, into a VTK structured grid. This program was written because ITK only writes VTK structured points, which doesn't include direction cosines." << std::endl;
+  std::cout << "  Note:" << std::endl;
+  std::cout << "    1. 2D images are converted to 3D images of 1 slice." << std::endl;
+  std::cout << "    2. Data is converted to float." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputImage.nii -o outputImage.vtk [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i    <filename>        Input image, any format read by ITK, we recommend Nifti." << std::endl;
+  std::cout << "    -o    <filename>        Output image, specifically in VTK structured grid format." << std::endl << std::endl;      
+  std::cout << "*** [options]   ***" << std::endl << std::endl;
+}
 
 struct arguments
 {

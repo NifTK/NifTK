@@ -9,8 +9,8 @@ for the platform and any further information can be obtained be joining:
 
 \li <a href="@NIFTK_USER_CONTACT@">the users' mailing list</a>
 
-The aim of providing this manual is to enable developers to understand the architecture, the code design, 
-layout and conventions, and to start coding and contributing to the platform. Where necessary or informative 
+The aim of providing this manual is to enable developers to understand the architecture, the code design,
+layout and conventions, and to start coding and contributing to the platform. Where necessary or informative
 the design decisions will be explained in detail. It is however assumed that the reader is a good C++ developer.
 
 \section TechnicalManualTable Table Of Contents
@@ -34,6 +34,7 @@ the design decisions will be explained in detail. It is however assumed that the
 \li \subpage BuildInstructionsKelvin
 \li \subpage TestingApplications
 \li \subpage TestingReportsGenerated
+\li \subpage VividRenderer
 
 \section TechnicalManualAdditional Additional Reading
 
@@ -57,17 +58,17 @@ Pete Freeborough and Nick Fox at the UCL Dementia Research Centre. Many of the i
 features of MIDAS have been re-implemented and brought to this multi-platform environment
 with a lot of new functionality. The interested reader should refer to:
 
-[1] Peter A. Freeborough, Nick C. Fox and Richard I. Kitney: Interactive Algorithms for the 
+[1] Peter A. Freeborough, Nick C. Fox and Richard I. Kitney: Interactive Algorithms for the
 segmentation and quantitation off 3-D MRI brain scans. Computer Methods and Programs In Biomedicine,
-(53), 15-25, 1997. 
+(53), 15-25, 1997.
 <a href="http://www.sciencedirect.com/science/article/pii/S0169260797018038">doi:10.1016/S0169-2607(97)01803-8</a>.
 
 <h3>The Slicer Execution Model</h3>
 
-The Graphical User Interface (GUI)'s contained within this project can run command line executables as a 
+The Graphical User Interface (GUI)'s contained within this project can run command line executables as a
 background process, using the Command Line Modules view. The underlying technology was developed as part
-of the <a href="http://www.slicer.org">Slicer</a> project, ported to the 
-<a href="http://www.gimias.org">GIMIAS</a> project, and then re-implemented within the 
+of the <a href="http://www.slicer.org">Slicer</a> project, ported to the
+<a href="http://www.gimias.org">GIMIAS</a> project, and then re-implemented within the
 <a href="http://www.commontk.org">Common Toolkit (CTK)</a> project. Technical details can be found
 <a href="http://www.slicer.org/slicerWiki/index.php/Slicer3:Execution_Model_Documentation">here</a>.
 This technology is particularly interesting for developers interested in inter-operability.

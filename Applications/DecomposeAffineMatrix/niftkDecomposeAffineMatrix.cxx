@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkEulerAffineTransform.h>
 #include <itkAffineTransform.h>
@@ -27,20 +27,20 @@
  * \section niftkDecomposeAffineMatrixSummary Decomposes an affine transformation, See also niftkCreateAffineTransform.
  */
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl
-        << "  Decomposes an affine transformation." << std::endl
-        << "  See also niftkCreateAffineTransform" << std::endl << std::endl
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl
+      << "  Decomposes an affine transformation." << std::endl
+      << "  See also niftkCreateAffineTransform" << std::endl << std::endl
 
-        << "  " << exec 
-        << " [-it ITKAffineTransform | -im AffineMatrix ] [options]" << std::endl << "  " << std::endl
+      << "  " << exec
+      << " [-it ITKAffineTransform | -im AffineMatrix ] [options]" << std::endl << "  " << std::endl
 
-        << "*** [mandatory, at least one of] ***" << std::endl << std::endl
-        << "    -iitk <filename>        Input transformation in ITK AffineTransformation format" << std::endl
-        << "    -itxt <filename>        Input transformation as a 4 x 4 matrix in a plain text file" << std::endl  << std::endl
-        << "*** [options]   ***" << std::endl << std::endl;
-  }
+      << "*** [mandatory, at least one of] ***" << std::endl << std::endl
+      << "    -iitk <filename>        Input transformation in ITK AffineTransformation format" << std::endl
+      << "    -itxt <filename>        Input transformation as a 4 x 4 matrix in a plain text file" << std::endl  << std::endl
+      << "*** [options]   ***" << std::endl << std::endl;
+}
 
 /**
  * \brief Create an affine transformation with various formats.

@@ -26,7 +26,6 @@
 #include <QMessageBox>
 #include <QTableWidgetItem>
 #include <QFileDialog>
-#include <boost/typeof/typeof.hpp>
 #include <QtConcurrentRun>
 #include <QFile>
 #include <QTextStream>
@@ -443,7 +442,7 @@ void UndistortView::OnGoButtonClick()
             if (hascalib)
             {
               // as long as we have an Undistortion object it will take care of validating itself
-              BOOST_AUTO(ci, m_UndistortionMap.find(inputImage));
+              auto ci = m_UndistortionMap.find(inputImage);
               if (ci == m_UndistortionMap.end())
               {
                 niftk::Undistortion*  undist = new niftk::Undistortion(inputImage);
@@ -687,7 +686,7 @@ void UndistortView::OnPreferencesChanged(const berry::IBerryPreferences*)
 void UndistortView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(UndistortViewPreferencesPage::s_PrefsNodeName)).Cast<berry::IBerryPreferences>();
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(UndistortViewPreferencesPage::s_PrefsNodeName);
   assert(prefs);
 
   m_LastFile = prefs->Get(UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName, "");

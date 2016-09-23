@@ -12,7 +12,26 @@
 #
 #============================================================================*/
 
-find_package(VTK REQUIRED)
+find_package(VTK REQUIRED
+  COMPONENTS
+    vtkCommonCore
+    vtkCommonExecutionModel
+    vtkCommonMisc
+    vtkFiltersCore
+    vtkFiltersGeneral
+    vtkFiltersSources
+    vtkInteractionStyle
+    vtkIOCore
+    vtkIOImage
+    vtkIOLegacy
+    vtkIOPLY
+    vtkRenderingCore
+    vtkRenderingFreeType
+    vtkRenderingFreeTypeOpenGL
+    vtkRenderingOpenGL
+  NO_MODULE
+)
+
 if(VTK_FOUND)
   include(${VTK_USE_FILE})
 endif(VTK_FOUND)
@@ -125,6 +144,7 @@ set(_applications
   KMeansWindowBSI
   KMeansWindowWithLinearRegressionNormalisationBSI
   KNDoubleWindowBSI
+  LandmarkBasedRegistration
   LinearSubdivisionPolyDataFilter
   LogInvertImage
   MakeLapUSProbeAprilTagsVisualisation

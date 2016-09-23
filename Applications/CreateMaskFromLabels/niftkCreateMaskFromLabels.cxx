@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include <itkLogHelper.h>
+#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
@@ -39,22 +39,22 @@
  */
 
 void Usage(char *exec)
-  {
-    niftk::itkLogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Given an image and a list of labels, will output a binary mask, where all voxels with" << std::endl;
-    std::cout << "  voxel intensities matching the list are output as foreground, and all other voxels are background." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>        Input image " << std::endl;
-    std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;   
-    std::cout << "    -l 1,2,3,4,5            Comma separated list of voxel intensities (labels in an atlas image for example)." << std::endl;    
-    std::cout << "    -bg <float>             Output background value. Default 0." << std::endl;
-    std::cout << "    -fg <float>             Output foreground value. Default 1." << std::endl;
-  }
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Given an image and a list of labels, will output a binary mask, where all voxels with" << std::endl;
+  std::cout << "  voxel intensities matching the list are output as foreground, and all other voxels are background." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
+  std::cout << "    -i    <filename>        Input image " << std::endl;
+  std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
+  std::cout << "*** [options]   ***" << std::endl << std::endl;   
+  std::cout << "    -l 1,2,3,4,5            Comma separated list of voxel intensities (labels in an atlas image for example)." << std::endl;    
+  std::cout << "    -bg <float>             Output background value. Default 0." << std::endl;
+  std::cout << "    -fg <float>             Output foreground value. Default 1." << std::endl;
+}
 
 struct arguments
 {

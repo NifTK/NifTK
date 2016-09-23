@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>229</width>
-    <height>138</height>
+    <width>302</width>
+    <height>150</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,7 +24,7 @@
           <string>The port number the server should listen on.</string>
          </property>
          <property name="text">
-          <string>IP Port number</string>
+          <string>IP port number:</string>
          </property>
         </widget>
        </item>

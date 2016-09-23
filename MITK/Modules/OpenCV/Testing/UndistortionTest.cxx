@@ -17,7 +17,7 @@
 #include <mitkProperties.h>
 #include <mitkPointSet.h>
 #include <CameraCalibration/niftkUndistortion.h>
-#include <niftkImageConversion.h>
+#include <niftkOpenCVImageConversion.h>
 
 
 //-----------------------------------------------------------------------------

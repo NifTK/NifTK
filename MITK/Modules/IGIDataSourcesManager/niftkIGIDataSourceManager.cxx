@@ -157,7 +157,7 @@ QString IGIDataSourceManager::GetDefaultPath()
     assert(paths.size() == 1);
     path = paths[0];
 #endif
-   
+
     directory.setPath(path);
   }
   if (!directory.exists())
@@ -552,6 +552,14 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
     m_Sources[i]->SetRecordingLocation(directory.absolutePath());
     m_Sources[i]->StartRecording();
   }
+
+  // Tell interested parties (e.g. other plugins) that recording has started.
+  // We do this before starting writing descriptor because that might throw an execption,
+  // which would stall delivering this signal.
+
+  emit RecordingStarted(absolutePath);
+
+  this->WriteDescriptorFile(absolutePath);
 }
 
 

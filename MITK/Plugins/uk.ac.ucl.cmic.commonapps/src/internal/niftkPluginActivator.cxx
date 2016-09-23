@@ -14,7 +14,6 @@
 
 #include "niftkPluginActivator.h"
 
-#include <itkCommand.h>
 #include <itkStatisticsImageFilter.h>
 
 #include <vtkLookupTable.h>
@@ -25,22 +24,19 @@
 #include <berryIPreferencesService.h>
 
 #include <mitkCoreServices.h>
-#include <mitkDataNodeFactory.h>
 #include <mitkDataStorage.h>
 #include <mitkExceptionMacro.h>
 #include <mitkFloatPropertyExtension.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
+#include <mitkIOUtil.h>
 #include <mitkIPropertyExtensions.h>
 #include <mitkLevelWindowProperty.h>
 #include <mitkLogMacros.h>
 #include <mitkProgressBar.h>
 #include <mitkProperties.h>
 #include <mitkRenderingModeProperty.h>
-#include <mitkSceneIO.h>
 #include <mitkVersion.h>
-#include <mitkLogMacros.h>
-#include <mitkDataStorage.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
@@ -65,58 +61,15 @@
 #include <QtPlugin>
 
 #include <NifTKConfigure.h>
+#include <niftkDataNodePropertyListener.h>
 #include <niftkDataStorageUtils.h>
 #include <niftkNamedLookupTableProperty.h>
 
 #include "niftkBaseApplicationPreferencePage.h"
+#include "niftkMinimalPerspective.h"
 
 
 US_INITIALIZE_MODULE
-
-
-/// \brief Helper class to store a pair of double values in a QVariant.
-class QLevelWindow : private QPair<double, double>
-{
-public:
-  QLevelWindow()
-  {
-  }
-
-  void SetWindowBounds(double lowerWindowBound, double upperWindowBound)
-  {
-    this->first = lowerWindowBound;
-    this->second = upperWindowBound;
-  }
-
-  void SetLevelWindow(double level, double window)
-  {
-    this->first = level - window / 2.0;
-    this->second = level + window / 2.0;
-  }
-
-  double GetLowerWindowBound() const
-  {
-    return this->first;
-  }
-
-  double GetUpperWindowBound() const
-  {
-    return this->second;
-  }
-
-  double GetLevel() const
-  {
-    return (this->first + this->second) / 2.0;
-  }
-
-  double GetWindow() const
-  {
-    return this->second - this->first;
-  }
-
-};
-
-Q_DECLARE_METATYPE(QLevelWindow)
 
 
 namespace niftk
@@ -126,8 +79,7 @@ PluginActivator* PluginActivator::s_Instance = nullptr;
 
 //-----------------------------------------------------------------------------
 PluginActivator::PluginActivator()
-: m_DataStorageServiceTracker(NULL)
-, m_InDataStorageChanged(false)
+: m_DataStorageServiceTracker(nullptr)
 {
   s_Instance = this;
 }
@@ -151,7 +103,9 @@ void PluginActivator::start(ctkPluginContext* context)
 {
   BaseApplicationPluginActivator::start(context);
 
-  this->RegisterDataStorageListener();
+  BERRY_REGISTER_EXTENSION_CLASS(MinimalPerspective, context);
+
+  this->RegisterDataStorageListeners();
   this->BlankDepartmentalLogo();
 
   // Get the MitkCore module context.
@@ -162,48 +116,30 @@ void PluginActivator::start(ctkPluginContext* context)
   propertyExtensions->AddExtension("Image Rendering.Lowest Value Opacity", opacityPropertyExtension.GetPointer());
   propertyExtensions->AddExtension("Image Rendering.Highest Value Opacity", opacityPropertyExtension.GetPointer());
 
-  // Get the property whether to process application arguments here.
-  // By default, the arguments are processed by MITK, but custom applications
-  // can suppress this and do the processing themselves, for example to introduce
-  // new switches or options.
-  QVariant processArgsByMITKProperty = context->getProperty("applicationArgs.processByMITK");
-  bool processArgs = processArgsByMITKProperty.isValid() && !processArgsByMITKProperty.toBool();
+  this->LoadCachedLookupTables();
 
-  if (processArgs)
-  {
-    /// Note:
-    /// Reimplementing functionality from QmitkCommonExtPlugin:
-
-    if (qApp->metaObject()->indexOfSignal("messageReceived(QByteArray)") > -1)
-    {
-      connect(qApp, SIGNAL(messageReceived(QByteArray)), this, SLOT(handleIPCMessage(QByteArray)));
-    }
-
-    QStringList args = berry::Platform::GetApplicationArgs();
-    // This is a potentially long running operation.
-    this->LoadDataFromDisk(args, true);
-  }
+  this->ProcessOptions();
 }
 
 
 //-----------------------------------------------------------------------------
 void PluginActivator::stop(ctkPluginContext* context)
 {
-  this->UnregisterDataStorageListener();
+  this->UnregisterDataStorageListeners();
 
   BaseApplicationPluginActivator::stop(context);
 }
 
 
 //-----------------------------------------------------------------------------
-const mitk::DataStorage* PluginActivator::GetDataStorage()
+mitk::DataStorage::Pointer PluginActivator::GetDataStorage()
 {
-  mitk::DataStorage::Pointer dataStorage = NULL;
+  mitk::DataStorage::Pointer dataStorage;
 
-  if (m_DataStorageServiceTracker != NULL)
+  if (m_DataStorageServiceTracker)
   {
     mitk::IDataStorageService* dsService = m_DataStorageServiceTracker->getService();
-    if (dsService != 0)
+    if (dsService)
     {
       dataStorage = dsService->GetDataStorage()->GetDataStorage();
     }
@@ -214,39 +150,87 @@ const mitk::DataStorage* PluginActivator::GetDataStorage()
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::RegisterDataStorageListener()
+void PluginActivator::RegisterDataStorageListeners()
 {
   m_DataStorageServiceTracker = new ctkServiceTracker<mitk::IDataStorageService*>(this->GetContext());
   m_DataStorageServiceTracker->open();
 
-  this->GetDataStorage()->AddNodeEvent.AddListener
-      ( mitk::MessageDelegate1<PluginActivator, const mitk::DataNode*>
-        ( this, &PluginActivator::NodeAddedProxy ) );
+  m_DataNodePropertyRegisterer = DataStorageListener::New(this->GetDataStorage());
+  m_DataNodePropertyRegisterer->NodeAdded
+      += mitk::MessageDelegate1<PluginActivator, mitk::DataNode*>(this, &PluginActivator::RegisterProperties);
 
-  this->GetDataStorage()->RemoveNodeEvent.AddListener
-      ( mitk::MessageDelegate1<PluginActivator, const mitk::DataNode*>
-        ( this, &PluginActivator::NodeRemovedProxy ) );
+  m_LowestOpacityPropertyListener = DataNodePropertyListener::New(this->GetDataStorage(), "Image Rendering.Lowest Value Opacity");
+  m_LowestOpacityPropertyListener->NodePropertyChanged
+      += mitk::MessageDelegate2<PluginActivator, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PluginActivator::UpdateLookupTable);
 
+  m_HighestOpacityPropertyListener = DataNodePropertyListener::New(this->GetDataStorage(), "Image Rendering.Highest Value Opacity");
+  m_HighestOpacityPropertyListener->NodePropertyChanged
+      += mitk::MessageDelegate2<PluginActivator, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PluginActivator::UpdateLookupTable);
+
+  m_LookupTableNamePropertyListener = DataNodePropertyListener::New(this->GetDataStorage(), "LookupTableName");
+  m_LookupTableNamePropertyListener->NodePropertyChanged
+      += mitk::MessageDelegate2<PluginActivator, mitk::DataNode*, const mitk::BaseRenderer*>(this, &PluginActivator::UpdateLookupTable);
 }
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::UnregisterDataStorageListener()
+void PluginActivator::UnregisterDataStorageListeners()
 {
-  if (m_DataStorageServiceTracker != NULL)
+  if (m_DataStorageServiceTracker)
   {
-
-    this->GetDataStorage()->AddNodeEvent.RemoveListener
-        ( mitk::MessageDelegate1<PluginActivator, const mitk::DataNode*>
-          ( this, &PluginActivator::NodeAddedProxy ) );
-
-    this->GetDataStorage()->RemoveNodeEvent.RemoveListener
-        ( mitk::MessageDelegate1<PluginActivator, const mitk::DataNode*>
-          ( this, &PluginActivator::NodeRemovedProxy ) );
+    m_DataNodePropertyRegisterer = nullptr;
+    m_LowestOpacityPropertyListener = nullptr;
+    m_HighestOpacityPropertyListener = nullptr;
+    m_LookupTableNamePropertyListener = nullptr;
 
     m_DataStorageServiceTracker->close();
     delete m_DataStorageServiceTracker;
-    m_DataStorageServiceTracker = NULL;
+    m_DataStorageServiceTracker = nullptr;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::RegisterProperties(mitk::DataNode* node)
+{
+  this->RegisterInterpolationProperty(node);
+  this->RegisterBinaryImageProperties(node);
+  this->RegisterImageRenderingModeProperties(node);
+  this->RegisterLevelWindowProperty(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::UpdateLookupTable(mitk::DataNode* node, const mitk::BaseRenderer* /*renderer*/)
+{
+  if (niftk::IsNodeAGreyScaleImage(node))
+  {
+    float lowestOpacity = 1;
+    bool gotLowest = node->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+
+    float highestOpacity = 1;
+    bool gotHighest = node->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+
+    std::string defaultName = "grey";
+    bool gotLookupTableName = node->GetStringProperty("LookupTableName", defaultName);
+
+    QString lutName = QString::fromStdString(defaultName);
+
+    if (gotLowest && gotHighest && gotLookupTableName)
+    {
+      // Get LUT from Micro Service.
+      niftk::LookupTableProviderService* lutService = this->GetLookupTableProvider();
+      try
+      {
+        niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
+        node->SetProperty("LookupTable", mitkLUTProperty);
+      }
+      catch (const mitk::Exception& e)
+      {
+        MITK_ERROR << "Failed to set lookup table: " << lutName.toStdString() << std::endl
+                   << e.what();
+      }
+    }
   }
 }
 
@@ -255,82 +239,15 @@ void PluginActivator::UnregisterDataStorageListener()
 void PluginActivator::BlankDepartmentalLogo()
 {
   // Blank the departmental logo for now.
-  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
-  berry::IPreferences::Pointer logoPref = prefService->GetSystemPreferences()->Node("org.mitk.editors.stdmultiwidget");
+  berry::IPreferences::Pointer logoPref = this->GetPreferences("org.mitk.editors.stdmultiwidget");
   logoPref->Put("DepartmentLogo", "");
 }
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::NodeAddedProxy(const mitk::DataNode *node)
+QString PluginActivator::GetHelpHomePageURL() const
 {
-  // guarantee no recursions when a new node event is thrown in NodeAdded()
-  if (!m_InDataStorageChanged)
-  {
-    m_InDataStorageChanged = true;
-    this->NodeAdded(node);
-    m_InDataStorageChanged = false;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::NodeAdded(const mitk::DataNode *constNode)
-{
-  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
-  this->RegisterInterpolationProperty("uk.ac.ucl.cmic.commonapps", node);
-  this->RegisterBinaryImageProperties("uk.ac.ucl.cmic.commonapps", node);
-  this->RegisterImageRenderingModeProperties("uk.ac.ucl.cmic.commonapps", node);
-  this->RegisterLevelWindowProperty("uk.ac.ucl.cmic.commonapps", node);
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::NodeRemovedProxy(const mitk::DataNode *node)
-{
-  // guarantee no recursions when a new node event is thrown in NodeRemoved()
-  if (!m_InDataStorageChanged)
-  {
-    m_InDataStorageChanged = true;
-    this->NodeRemoved(node);
-    m_InDataStorageChanged = false;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::NodeRemoved(const mitk::DataNode *constNode)
-{
-  mitk::DataNode::Pointer node = const_cast<mitk::DataNode*>(constNode);
-
-  // Removing observers on a node thats being deleted?
-
-  if (niftk::IsNodeAGreyScaleImage(node))
-  {
-    std::map<mitk::DataNode*, unsigned long int>::iterator lowestIter;
-    lowestIter = m_NodeToLowestOpacityObserverMap.find(node);
-
-    std::map<mitk::DataNode*, unsigned long int>::iterator highestIter;
-    highestIter = m_NodeToHighestOpacityObserverMap.find(node);
-
-    if (lowestIter != m_NodeToLowestOpacityObserverMap.end())
-    {
-      if (highestIter != m_NodeToHighestOpacityObserverMap.end())
-      {
-        mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
-        lowestIsOpaqueProperty->RemoveObserver(lowestIter->second);
-
-        mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
-        highestIsOpaqueProperty->RemoveObserver(highestIter->second);
-
-        m_NodeToLowestOpacityObserverMap.erase(lowestIter->first);
-        m_NodeToHighestOpacityObserverMap.erase(highestIter->first);
-        m_PropertyToNodeMap.erase(lowestIsOpaqueProperty.GetPointer());
-        m_PropertyToNodeMap.erase(highestIsOpaqueProperty.GetPointer());
-      }
-    }
-  }
+  return QString::null;
 }
 
 
@@ -359,35 +276,50 @@ PluginActivator
 
 
 //-----------------------------------------------------------------------------
-berry::IPreferences::Pointer PluginActivator::GetPreferencesNode(const QString& preferencesNodeName)
+berry::IPreferences::Pointer PluginActivator::GetSystemPreferences()
 {
-  berry::IPreferences::Pointer result(NULL);
+  berry::IPreferences::Pointer systemPreferences;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
   if (prefService)
   {
-    result = prefService->GetSystemPreferences()->Node(preferencesNodeName);
+    systemPreferences = prefService->GetSystemPreferences();
   }
 
-  return result;
+  return systemPreferences;
 }
 
+
 //-----------------------------------------------------------------------------
-void PluginActivator::RegisterLevelWindowProperty(
-    const QString& preferencesNodeName, mitk::DataNode *node)
+berry::IPreferences::Pointer PluginActivator::GetPreferences(const QString& preferencesNodeName)
+{
+  berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
+  berry::IPreferences::Pointer preferences;
+
+  if (systemPreferences.IsNotNull())
+  {
+    preferences = systemPreferences->Node(preferencesNodeName);
+  }
+
+  return preferences;
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::RegisterLevelWindowProperty(mitk::DataNode* node)
 {
   if (niftk::IsNodeAGreyScaleImage(node))
   {
     mitk::Image::ConstPointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
+    berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
 
-    if (prefNode.IsNotNull() && image.IsNotNull())
+    if (systemPreferences.IsNotNull() && image.IsNotNull())
     {
-      int minRange = prefNode->GetDouble(IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, 0);
-      int maxRange = prefNode->GetDouble(IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, 0);
-      double percentageOfRange = prefNode->GetDouble(IMAGE_INITIALISATION_PERCENTAGE_NAME, 50);
-      QString initialisationMethod = prefNode->Get(IMAGE_INITIALISATION_METHOD_NAME, IMAGE_INITIALISATION_PERCENTAGE);
+      int minRange = systemPreferences->GetDouble(IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, 0);
+      int maxRange = systemPreferences->GetDouble(IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, 0);
+      double percentageOfRange = systemPreferences->GetDouble(IMAGE_INITIALISATION_PERCENTAGE_NAME, 50);
+      QString initialisationMethod = systemPreferences->Get(IMAGE_INITIALISATION_METHOD_NAME, IMAGE_INITIALISATION_PERCENTAGE);
 
       float minDataLimit(0);
       float maxDataLimit(0);
@@ -518,50 +450,13 @@ void PluginActivator::RegisterLevelWindowProperty(
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::OnLookupTablePropertyChanged(const itk::Object *object, const itk::EventObject & event)
-{
-  const mitk::BaseProperty* prop = dynamic_cast<const mitk::BaseProperty*>(object);
-  if (prop != NULL)
-  {
-    std::map<mitk::BaseProperty*, mitk::DataNode*>::const_iterator iter;
-    iter = m_PropertyToNodeMap.find(const_cast<mitk::BaseProperty*>(prop));
-    if (iter != m_PropertyToNodeMap.end())
-    {
-      mitk::DataNode *node = iter->second;
-      if (node != NULL && niftk::IsNodeAGreyScaleImage(node))
-      {
-        float lowestOpacity = 1;
-        bool gotLowest = node->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
-
-        float highestOpacity = 1;
-        bool gotHighest = node->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
-
-        std::string defaultName = "grey";
-        bool gotIndex = node->GetStringProperty("LookupTableName", defaultName);
-
-        QString lutName = QString::fromStdString(defaultName);
-
-        if (gotLowest && gotHighest && gotIndex)
-        {
-          // Get LUT from Micro Service.
-          niftk::LookupTableProviderService *lutService = this->GetLookupTableProvider();
-          niftk::NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
-          node->SetProperty("LookupTable", mitkLUTProperty);
-        }
-      }
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 niftk::LookupTableProviderService* PluginActivator::GetLookupTableProvider()
 {
   us::ModuleContext* context = us::GetModuleContext();
   us::ServiceReference<niftk::LookupTableProviderService> ref = context->GetServiceReference<niftk::LookupTableProviderService>();
   niftk::LookupTableProviderService* lutService = context->GetService<niftk::LookupTableProviderService>(ref);
 
-  if (lutService == NULL)
+  if (!lutService)
   {
     mitkThrow() << "Failed to find niftk::LookupTableProviderService." << std::endl;
   }
@@ -571,19 +466,19 @@ niftk::LookupTableProviderService* PluginActivator::GetLookupTableProvider()
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::RegisterImageRenderingModeProperties(const QString& preferencesNodeName, mitk::DataNode *node)
+void PluginActivator::RegisterImageRenderingModeProperties(mitk::DataNode* node)
 {
   if (niftk::IsNodeAGreyScaleImage(node))
   {
-    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
-    if (prefNode.IsNotNull())
+    berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
+    if (systemPreferences.IsNotNull())
     {
-      float lowestOpacity = prefNode->GetFloat(BaseApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
-      float highestOpacity = prefNode->GetFloat(BaseApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
+      float lowestOpacity = systemPreferences->GetFloat(BaseApplicationPreferencePage::LOWEST_VALUE_OPACITY, 1);
+      float highestOpacity = systemPreferences->GetFloat(BaseApplicationPreferencePage::HIGHEST_VALUE_OPACITY, 1);
 
       mitk::BaseProperty::Pointer lutProp = node->GetProperty("LookupTable");
       const niftk::NamedLookupTableProperty* prop = dynamic_cast<const niftk::NamedLookupTableProperty*>(lutProp.GetPointer());
-      if(prop == NULL )
+      if(!prop )
       {
         QString defaultName = "grey";
 
@@ -598,44 +493,24 @@ void PluginActivator::RegisterImageRenderingModeProperties(const QString& prefer
 
       node->SetProperty("Image Rendering.Lowest Value Opacity", mitk::FloatProperty::New(lowestOpacity));
       node->SetProperty("Image Rendering.Highest Value Opacity", mitk::FloatProperty::New(highestOpacity));
-
-      if (niftk::IsNodeAGreyScaleImage(node))
-      {
-        unsigned long int observerId;
-
-        itk::MemberCommand<PluginActivator>::Pointer lowestIsOpaqueCommand = itk::MemberCommand<PluginActivator>::New();
-        lowestIsOpaqueCommand->SetCallbackFunction(this, &PluginActivator::OnLookupTablePropertyChanged);
-        mitk::BaseProperty::Pointer lowestIsOpaqueProperty = node->GetProperty("Image Rendering.Lowest Value Opacity");
-        observerId = lowestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), lowestIsOpaqueCommand);
-        m_PropertyToNodeMap.insert(std::pair<mitk::BaseProperty*, mitk::DataNode*>(lowestIsOpaqueProperty.GetPointer(), node));
-        m_NodeToLowestOpacityObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
-
-        itk::MemberCommand<PluginActivator>::Pointer highestIsOpaqueCommand = itk::MemberCommand<PluginActivator>::New();
-        highestIsOpaqueCommand->SetCallbackFunction(this, &PluginActivator::OnLookupTablePropertyChanged);
-        mitk::BaseProperty::Pointer highestIsOpaqueProperty = node->GetProperty("Image Rendering.Highest Value Opacity");
-        observerId = highestIsOpaqueProperty->AddObserver(itk::ModifiedEvent(), highestIsOpaqueCommand);
-        m_PropertyToNodeMap.insert(std::pair<mitk::BaseProperty*, mitk::DataNode*>(highestIsOpaqueProperty.GetPointer(), node));
-        m_NodeToHighestOpacityObserverMap.insert(std::pair<mitk::DataNode*, unsigned long int>(node, observerId));
-      }
     } // end if have pref node
   } // end if node is grey image
 }
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::RegisterInterpolationProperty(
-    const QString& preferencesNodeName, mitk::DataNode *node)
+void PluginActivator::RegisterInterpolationProperty(mitk::DataNode* node)
 {
   if (niftk::IsNodeAGreyScaleImage(node))
   {
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
+    berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
 
-    if (prefNode.IsNotNull() && image.IsNotNull())
+    if (systemPreferences.IsNotNull() && image.IsNotNull())
     {
 
-      int imageResliceInterpolation =  prefNode->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 2);
-      int imageTextureInterpolation =  prefNode->GetInt(BaseApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION, 2);
+      int imageResliceInterpolation =  systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 2);
+      int imageTextureInterpolation =  systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION, 2);
 
       mitk::BaseProperty::Pointer mitkLUT = node->GetProperty("LookupTable");
       if (mitkLUT.IsNotNull())
@@ -645,8 +520,8 @@ void PluginActivator::RegisterInterpolationProperty(
 
         if (labelProperty.IsNotNull() && labelProperty->GetIsScaled())
         {
-          imageResliceInterpolation = prefNode->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
-          imageTextureInterpolation = prefNode->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
+          imageResliceInterpolation = systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
+          imageTextureInterpolation = systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
         }
       }
 
@@ -681,16 +556,16 @@ void PluginActivator::RegisterInterpolationProperty(
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::RegisterBinaryImageProperties(const QString& preferencesNodeName, mitk::DataNode *node)
+void PluginActivator::RegisterBinaryImageProperties(mitk::DataNode* node)
 {
   if (niftk::IsNodeABinaryImage(node))
   {
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
-    berry::IPreferences::Pointer prefNode = this->GetPreferencesNode(preferencesNodeName);
+    berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
 
-    if (prefNode.IsNotNull() && image.IsNotNull())
+    if (systemPreferences.IsNotNull() && image.IsNotNull())
     {
-      double defaultBinaryOpacity = prefNode->GetDouble(BaseApplicationPreferencePage::BINARY_OPACITY_NAME, BaseApplicationPreferencePage::BINARY_OPACITY_VALUE);
+      double defaultBinaryOpacity = systemPreferences->GetDouble(BaseApplicationPreferencePage::BINARY_OPACITY_NAME, BaseApplicationPreferencePage::BINARY_OPACITY_VALUE);
       node->SetOpacity(defaultBinaryOpacity);
       node->SetBoolProperty("outline binary", true);
     } // end if have pref node
@@ -699,503 +574,385 @@ void PluginActivator::RegisterBinaryImageProperties(const QString& preferencesNo
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::LoadDataFromDisk(const QStringList &arguments, bool globalReinit)
+void PluginActivator::ProcessOptions()
 {
-  if (!arguments.empty())
+  this->ProcessOpenOptions();
+  this->ProcessDerivesFromOptions();
+  this->ProcessPropertyOptions();
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::ProcessOpenOptions()
+{
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+  QStringList openArgs = this->GetContext()->getProperty("applicationArgs.open").toStringList();
+  int layer = openArgs.size() - 1;
+
+  for (QString openArg: openArgs)
   {
-    ctkServiceReference serviceRef = this->GetContext()->getServiceReference<mitk::IDataStorageService>();
-    if (serviceRef)
+    int colonIndex = openArg.indexOf(':');
+    QString nodeNamesPart;
+    QString filePath;
+
+    if (colonIndex == -1)
     {
-      mitk::IDataStorageService* dataStorageService = this->GetContext()->getService<mitk::IDataStorageService>(serviceRef);
-      mitk::DataStorage::Pointer dataStorage = dataStorageService->GetDefaultDataStorage()->GetDataStorage();
-
-      std::vector<mitk::DataNode::Pointer> lastOpenedNodes;
-
-      int filesOpened = 0;
-      int layer = 0;
-
-      for (int i = 0; i < arguments.size(); ++i)
-      {
-        if (arguments[i] == "-o"
-            || arguments[i] == "--open")
-        {
-          /// --open should be followed by a file path, not an option.
-          if (i + 1 == arguments.size()
-              || arguments[i + 1].isEmpty()
-              || arguments[i + 1][0] == '-')
-          {
-            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
-            continue;
-          }
-        }
-        else if (arguments[i] == "-p"
-                 || arguments[i] == "--parents")
-        {
-          /// --parents should be followed by data node names, not by an option.
-          if (i + 1 == arguments.size()
-              || arguments[i + 1].isEmpty()
-              || arguments[i + 1][0] == '-')
-          {
-            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
-            continue;
-          }
-
-          ++i;
-          QString sourcesArg = arguments[i];
-
-          QStringList sourceNodeNames = sourcesArg.split(",");
-          if (sourceNodeNames.empty())
-          {
-            MITK_ERROR << "Invalid argument: You must specify data names with the " << arguments[i - 1].toStdString() << " option.";
-            continue;
-          }
-
-          mitk::DataStorage::SetOfObjects::Pointer lastOpenedNodesSources = mitk::DataStorage::SetOfObjects::New();
-          foreach (QString sourceNodeName, sourceNodeNames)
-          {
-            mitk::DataNode::Pointer sourceNode = dataStorage->GetNamedNode(sourceNodeName.toStdString());
-            if (sourceNode.IsNull())
-            {
-              MITK_ERROR << "The name has not be given to any data: " << sourceNodeName.toStdString();
-              continue;
-            }
-            lastOpenedNodesSources->push_back(sourceNode);
-          }
-
-          for (std::vector<mitk::DataNode::Pointer>::iterator lastOpenedNodesIt = lastOpenedNodes.begin();
-               lastOpenedNodesIt != lastOpenedNodes.end();
-               ++lastOpenedNodesIt)
-          {
-            if (dataStorage->Exists(*lastOpenedNodesIt))
-            {
-              dataStorage->Remove(*lastOpenedNodesIt);
-            }
-            dataStorage->Add(*lastOpenedNodesIt, lastOpenedNodesSources);
-          }
-        }
-        else if (arguments[i] == "-P"
-                 || arguments[i] == "--properties")
-        {
-          /// --properties should be followed by property values, not an option.
-          if (i + 1 == arguments.size()
-              || arguments[i + 1].isEmpty()
-              || arguments[i + 1][0] == '-')
-          {
-            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
-            continue;
-          }
-
-          ++i;
-          QString propertiesArg = arguments[i];
-          QStringList propertiesArgParts = propertiesArg.split(":");
-          QString propertyKeysAndValuesPart;
-
-          std::vector<mitk::DataNode::Pointer> nodesToSet;
-          if (propertiesArgParts.size() == 1)
-          {
-            nodesToSet = lastOpenedNodes;
-            propertyKeysAndValuesPart = propertiesArgParts[0];
-          }
-          else if (propertiesArgParts.size() == 2)
-          {
-            QString nodeNamesPart = propertiesArgParts[0];
-            QStringList nodeNames = nodeNamesPart.split(",");
-            foreach (QString nodeName, nodeNames)
-            {
-              mitk::DataNode::Pointer node = dataStorage->GetNamedNode(nodeName.toStdString());
-              if (node.IsNull())
-              {
-                MITK_ERROR << "The name has not be given to any data: " << nodeName.toStdString();
-                continue;
-              }
-              nodesToSet.push_back(node);
-            }
-
-            propertyKeysAndValuesPart = propertiesArgParts[1];
-          }
-          else
-          {
-            MITK_ERROR << "Invalid syntax for the " << arguments[i - 1].toStdString() << " option.";
-            continue;
-          }
-
-          QStringList propertyKeyAndValueParts = propertyKeysAndValuesPart.split(",");
-          if (propertyKeyAndValueParts.empty())
-          {
-            MITK_ERROR << "Invalid argument: You must specify properties with the " << arguments[i - 1].toStdString() << " option.";
-            continue;
-          }
-
-          foreach (QString propertyKeyAndValuePart, propertyKeyAndValueParts)
-          {
-            QStringList propertyKeyAndValue = propertyKeyAndValuePart.split("=");
-            if (propertyKeyAndValue.size() != 2)
-            {
-              MITK_ERROR << "Invalid argument: You must specify property values in the form <property name>=<value>.";
-              continue;
-            }
-
-            QString propertyKey = propertyKeyAndValue[0];
-            QString propertyValue = propertyKeyAndValue[1];
-
-            for (std::vector<mitk::DataNode::Pointer>::iterator nodesIt = nodesToSet.begin();
-                 nodesIt != nodesToSet.end();
-                 ++nodesIt)
-            {
-              QVariant value = this->ParsePropertyValue(propertyValue);
-              this->SetNodeProperty(*nodesIt, propertyKey, value);
-            }
-          }
-        }
-        else if (arguments[i] == "--perspective"
-                 || arguments[i] == "--window-layout"
-                 || arguments[i] == "--dnd"
-                 || arguments[i] == "--drag-and-drop"
-                 || arguments[i] == "--viewer-number"
-                 || arguments[i] == "--bind-viewers"
-                 || arguments[i] == "--bind-windows"
-                 )
-        {
-          /// Note:
-          /// These arguments are processed by the NiftyMIDAS workbench advisor.
-
-          if (i + 1 == arguments.size()
-              || arguments[i + 1].isEmpty()
-              || arguments[i + 1][0] == '-')
-          {
-            MITK_ERROR << "Missing command line argument after the " << arguments[i].toStdString() << " option.";
-            continue;
-          }
-
-          ++i;
-        }
-        else if (arguments[i].right(5) == ".mitk")
-        {
-          lastOpenedNodes.clear();
-
-          mitk::SceneIO::Pointer sceneIO = mitk::SceneIO::New();
-
-          bool clearDataStorageFirst(false);
-          mitk::ProgressBar::GetInstance()->AddStepsToDo(2);
-          dataStorage = sceneIO->LoadScene( arguments[i].toLocal8Bit().constData(), dataStorage, clearDataStorageFirst );
-          mitk::ProgressBar::GetInstance()->Progress(2);
-          ++filesOpened;
-        }
-        else
-        {
-          QString fileArg = arguments[i];
-
-          QStringList fileArgParts = fileArg.split(":");
-          QString nodeName;
-          QString filePath;
-          if (fileArgParts.size() == 1)
-          {
-            filePath = fileArgParts[0];
-          }
-          else if (fileArgParts.size() == 2)
-          {
-            nodeName = fileArgParts[0];
-            filePath = fileArgParts[1];
-          }
-          else
-          {
-            MITK_ERROR << "Invalid syntax for specifying input file.";
-            break;
-          }
-
-          lastOpenedNodes.clear();
-
-          /// If parents are specified for these nodes then the --parents option should follow
-          /// this argument either directly or after the properties option.
-          bool parentsSpecified;
-          if ((i + 1 < arguments.size()
-               && (arguments[i + 1] == "-p" || arguments[i + 1] == "--parents"))
-              || (i + 3 < arguments.size()
-                  && (arguments[i + 1] == "-P" || arguments[i + 1] == "--properties")
-                  && (arguments[i + 3] == "-p" || arguments[i + 3] == "--parents")))
-          {
-            parentsSpecified = true;
-          }
-          else
-          {
-            parentsSpecified = false;
-          }
-
-          mitk::DataNodeFactory::Pointer nodeReader = mitk::DataNodeFactory::New();
-          try
-          {
-            nodeReader->SetFileName(filePath.toStdString());
-            nodeReader->Update();
-            for (unsigned int j = 0 ; j < nodeReader->GetNumberOfOutputs(); ++j)
-            {
-              mitk::DataNode::Pointer node = nodeReader->GetOutput(j);
-              if (node->GetData() != 0)
-              {
-                lastOpenedNodes.push_back(node);
-
-                if (!nodeName.isEmpty())
-                {
-                  if (j == 0)
-                  {
-                    node->SetName(nodeName.toStdString().c_str());
-                  }
-                  else
-                  {
-                    node->SetName(QString("%1 #%2").arg(nodeName, j + 1).toStdString().c_str());
-                  }
-                  ++filesOpened;
-                }
-
-                ++layer;
-                node->SetIntProperty("layer", layer);
-                node->SetBoolProperty("fixedLayer", true);
-
-                if (!parentsSpecified)
-                {
-                  dataStorage->Add(node);
-                }
-              }
-            }
-          }
-          catch (...)
-          {
-            MITK_ERROR << "Failed to open file: " << filePath.toStdString();
-          }
-        }
-      } // end for each command line argument
-
-      if (filesOpened > 0 && globalReinit)
-      {
-        // calculate bounding geometry
-        mitk::RenderingManager::GetInstance()->InitializeViews(dataStorage->ComputeBoundingGeometry3D());
-      }
+      filePath = openArg;
+      int lastSlashOrBackslash = filePath.lastIndexOf(QRegExp("[\\/]"));
+      int firstDotAfterLastSlashOrBackslash = filePath.indexOf('.', lastSlashOrBackslash + 1);
+      int length = firstDotAfterLastSlashOrBackslash - lastSlashOrBackslash - 1;
+      nodeNamesPart = filePath.mid(lastSlashOrBackslash + 1, length);
     }
     else
     {
-      MITK_ERROR << "A service reference for mitk::IDataStorageService does not exist";
+      nodeNamesPart = openArg.mid(0, colonIndex);
+      filePath = openArg.mid(colonIndex + 1);
+    }
+
+    if (filePath.right(5) == ".mitk")
+    {
+      MITK_WARN << "Invalid syntax for opening an MITK project. The '--open' option is for opening single data files with a given name." << std::endl
+                << "Omit the '--open' option and provide the file path only. Skipping option." << std::endl;
+      continue;
+    }
+
+    if (filePath.isEmpty())
+    {
+      MITK_WARN << "Invalid syntax for opening a file. Provide a path to the file. For example:\n"
+                   "\n"
+                   "    --open T1:/path/to/reference-image.nii.gz\n"
+                   "\n"
+                   "Skipping option.\n";
+      continue;
+    }
+
+    try
+    {
+      for (const QString& nodeName: nodeNamesPart.split(","))
+      {
+        mitk::DataStorage::SetOfObjects::Pointer nodes = mitk::IOUtil::Load(filePath.toStdString(), *dataStorage);
+        int counter = 0;
+        for (auto& node: *nodes)
+        {
+          if (counter == 0)
+          {
+            node->SetName(nodeName.toStdString().c_str());
+          }
+          else
+          {
+            node->SetName(QString("%1 #%2").arg(nodeName, counter + 1).toStdString().c_str());
+          }
+
+          node->SetIntProperty("layer", layer--);
+        }
+      }
+    }
+    catch (const mitk::Exception& exception)
+    {
+      MITK_ERROR << "Failed to open file: " << filePath.toStdString();
+      MITK_ERROR << exception.what();
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-QVariant PluginActivator::ParsePropertyValue(const QString& propertyValue)
+void PluginActivator::ProcessDerivesFromOptions()
 {
-  QVariant propertyTypedValue;
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+  /// This set contains the name of the derived nodes from every application of the
+  /// --derives-from option. Data node names can occur only once on the right side.
+  QSet<QString> everyDerivedNodeName;
+
+  for (QString derivesFromArg: this->GetContext()->getProperty("applicationArgs.derives-from").toStringList())
+  {
+    int colonIndex = derivesFromArg.indexOf(':');
+
+    QString sourceNodeNamesPart = derivesFromArg.mid(0, colonIndex);
+    QString derivedNodeNamesPart = derivesFromArg.mid(colonIndex + 1);
+
+    if (sourceNodeNamesPart.isEmpty())
+    {
+      MITK_ERROR << "Source data node not specified for the '--derives-from' option. Skipping option.";
+      continue;
+    }
+
+    if (derivedNodeNamesPart.isEmpty())
+    {
+      MITK_ERROR << "Data node not specified for the '--derives-from' option. Skipping option.";
+      continue;
+    }
+
+    bool invalidOption = false;
+
+    mitk::DataStorage::SetOfObjects::Pointer sourceNodes = mitk::DataStorage::SetOfObjects::New();
+    for (const QString& sourceNodeName: sourceNodeNamesPart.split(","))
+    {
+      mitk::DataNode::Pointer sourceNode = dataStorage->GetNamedNode(sourceNodeName.toStdString());
+
+      if (sourceNode.IsNull())
+      {
+        MITK_ERROR << "Data node not found with the name: " << sourceNodeName.toStdString() << ".\n"
+                   << "Make sure you specified a data file with this name or used the '--open' option to open a data file with this name.";
+        invalidOption = true;
+        break;
+      }
+
+      sourceNodes->InsertElement(sourceNodes->Size(), sourceNode);
+    }
+
+    if (invalidOption)
+    {
+      MITK_ERROR << "Skipping option.";
+      break;
+    }
+
+    for (const QString& derivedNodeName: derivedNodeNamesPart.split(","))
+    {
+      mitk::DataNode::Pointer derivedNode = dataStorage->GetNamedNode(derivedNodeName.toStdString());
+
+      if (derivedNode.IsNull())
+      {
+        MITK_ERROR << "Data node not found with the name: " << derivedNodeName.toStdString() << ".\n"
+                      "Make sure you specified a data file with this name or used the '--open' option to open a data file with this name.";
+        invalidOption = true;
+        break;
+      }
+
+      if (everyDerivedNodeName.contains(derivedNodeName))
+      {
+        MITK_ERROR << "Source nodes have already been defined for this data node: " << derivedNodeName.toStdString() << ".";
+        invalidOption = true;
+        break;
+      }
+
+      dataStorage->Remove(derivedNode);
+      dataStorage->Add(derivedNode, sourceNodes);
+    }
+
+    if (invalidOption)
+    {
+      MITK_ERROR << "Skipping option.";
+      break;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void PluginActivator::ProcessPropertyOptions()
+{
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+  for (QString propertyArg: this->GetContext()->getProperty("applicationArgs.property").toStringList())
+  {
+    int colonIndex = propertyArg.indexOf(':');
+    QString dataNodeNamesPart = propertyArg.mid(0, colonIndex);
+    QString propertyNamesAndValuesPart = propertyArg.mid(colonIndex + 1);
+
+    if (dataNodeNamesPart.isEmpty())
+    {
+      MITK_ERROR << "Data node not specified for the '--property' option. Skipping option.";
+      continue;
+    }
+
+    if (propertyNamesAndValuesPart.isEmpty())
+    {
+      MITK_ERROR << "Property assignments not specified for the '--property' option. Skipping option.";
+      continue;
+    }
+
+    QStringList dataNodeNames = dataNodeNamesPart.split(",");
+    std::vector<mitk::DataNode::Pointer> dataNodes(dataNodeNames.size());
+    std::size_t index = 0;
+
+    for (const QString& dataNodeName: dataNodeNames)
+    {
+      mitk::DataNode::Pointer dataNode = dataStorage->GetNamedNode(dataNodeName.toStdString());
+
+      if (dataNode.IsNull())
+      {
+        MITK_ERROR << "Data node not found with the name: " << dataNodeName.toStdString() << ".\n"
+                      "Make sure you specified a data file with this name or used the '--open' option "
+                      "to open a data file with this name.\n"
+                      "Skipping setting properties for this data: " << dataNodeName.toStdString() << ".";
+        continue;
+      }
+
+      dataNodes[index++] = dataNode;
+    }
+
+    dataNodes.resize(index);
+
+    for (QString propertyNameAndValuePart: propertyNamesAndValuesPart.split(","))
+    {
+      QStringList propertyNameAndValue = propertyNameAndValuePart.split("=");
+      if (propertyNameAndValue.size() != 2)
+      {
+        MITK_ERROR << "Invalid argument: You must specify property values in the form <property name>=<value>.";
+        continue;
+      }
+
+      const QString& propertyName = propertyNameAndValue[0];
+      const QString& propertyValue = propertyNameAndValue[1];
+
+      mitk::BaseProperty::Pointer property = this->ParsePropertyValue(propertyValue);
+
+      for (mitk::DataNode::Pointer dataNode: dataNodes)
+      {
+        /// The level-window property values contain only the lower and upper window
+        /// bounds. So that we do not loose other components of the property like the
+        /// range min and max values, we retrieve the original level window, and over-
+        /// write it with the values specified on the command line.
+        /// Note also that we set these properties for the data as well, not only the
+        /// node.
+        if (mitk::LevelWindowProperty* levelWindowProperty =
+            dynamic_cast<mitk::LevelWindowProperty*>(property.GetPointer()))
+        {
+          mitk::LevelWindow nodeLevelWindow;
+          dataNode->GetLevelWindow(nodeLevelWindow, nullptr, propertyName.toStdString().c_str());
+          mitk::LevelWindow newLevelWindow = levelWindowProperty->GetLevelWindow();
+          nodeLevelWindow.SetWindowBounds(newLevelWindow.GetLowerWindowBound(), newLevelWindow.GetUpperWindowBound());
+          levelWindowProperty->SetLevelWindow(nodeLevelWindow);
+
+          dataNode->GetData()->SetProperty(propertyName.toStdString().c_str(), levelWindowProperty);
+        }
+
+        dataNode->SetProperty(propertyName.toStdString().c_str(), property);
+      }
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::BaseProperty::Pointer PluginActivator::ParsePropertyValue(const QString& propertyValue)
+{
+  mitk::BaseProperty::Pointer property;
 
   if (propertyValue == QString("true")
       || propertyValue == QString("on")
       || propertyValue == QString("yes"))
   {
-    propertyTypedValue.setValue(true);
+    property = mitk::BoolProperty::New(true);
   }
   else if (propertyValue == QString("false")
            || propertyValue == QString("off")
            || propertyValue == QString("no"))
   {
-    propertyTypedValue.setValue(false);
+    property = mitk::BoolProperty::New(false);
   }
   else if (propertyValue.size() >= 2
            && ((propertyValue[0] == '\'' && propertyValue[propertyValue.size() - 1] == '\'')
                || (propertyValue[0] == '"' && propertyValue[propertyValue.size() - 1] == '"')))
   {
-    propertyTypedValue.setValue(propertyValue.mid(1, propertyValue.size() - 2));
+    property = mitk::StringProperty::New(propertyValue.mid(1, propertyValue.size() - 2).toStdString());
+  }
+  else if (QColor::isValidColor(propertyValue))
+  {
+    QColor colour(propertyValue);
+    property = mitk::ColorProperty::New(colour.redF(), colour.greenF(), colour.blueF());
   }
   else
   {
     bool ok = false;
-    int intValue = propertyValue.toInt(&ok);
+    double doubleValue = propertyValue.toDouble(&ok);
     if (ok)
     {
-      propertyTypedValue.setValue(intValue);
-    }
-    else
-    {
-      double doubleValue = propertyValue.toDouble(&ok);
-      if (ok)
+      if (propertyValue.contains('.') || propertyValue.contains('e') || propertyValue.contains('E'))
       {
-        propertyTypedValue.setValue(doubleValue);
+        property = mitk::FloatProperty::New(doubleValue);
       }
       else
       {
-        int hyphenIndex = propertyValue.indexOf('-', 1);
-        if (hyphenIndex != -1)
+        int intValue = propertyValue.toInt(&ok);
+        if (ok)
         {
-          /// It might be a level window min-max range.
-          QString minPart = propertyValue.mid(0, hyphenIndex);
-          QString maxPart = propertyValue.mid(hyphenIndex + 1, propertyValue.length() - hyphenIndex);
-          double minValue = minPart.toDouble(&ok);
+          property = mitk::IntProperty::New(intValue);
+        }
+      }
+    }
+    else
+    {
+      int hyphenIndex = propertyValue.indexOf('-', 1);
+      if (hyphenIndex != -1)
+      {
+        /// It might be a level window min-max range.
+        QString minPart = propertyValue.mid(0, hyphenIndex);
+        QString maxPart = propertyValue.mid(hyphenIndex + 1, propertyValue.length() - hyphenIndex);
+        double minValue = minPart.toDouble(&ok);
+        if (ok)
+        {
+          double maxValue = maxPart.toDouble(&ok);
           if (ok)
           {
-            double maxValue = maxPart.toDouble(&ok);
-            if (ok)
-            {
-              QLevelWindow range;
-              range.SetWindowBounds(minValue, maxValue);
-              propertyTypedValue.setValue(range);
-            }
+            mitk::LevelWindow levelWindow;
+            levelWindow.SetWindowBounds(minValue, maxValue);
+            property = mitk::LevelWindowProperty::New(levelWindow);
           }
         }
-
-        if (!ok)
-        {
-          propertyTypedValue.setValue(propertyValue);
-        }
       }
+    }
+
+    if (!ok)
+    {
+      property = mitk::StringProperty::New(propertyValue.toStdString());
     }
   }
 
-  return propertyTypedValue;
+  return property;
 }
 
 
 //-----------------------------------------------------------------------------
-void PluginActivator::SetNodeProperty(mitk::DataNode* node, const QString& propertyName, const QVariant& propertyValue, const QString& rendererName)
+void PluginActivator::LoadCachedLookupTables()
 {
-  mitk::BaseProperty::Pointer mitkProperty;
-  if (propertyValue.type() == QVariant::Bool)
+  berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
+  assert(systemPreferences);
+
+  QString cachedFileNames = systemPreferences->Get("LABEL_MAP_NAMES", "");
+  if (cachedFileNames.isNull() || cachedFileNames.isEmpty())
   {
-    mitkProperty = mitk::BoolProperty::New(propertyValue.toBool());
+    return;
   }
-  else if (propertyValue.type() == QVariant::Int)
+
+  niftk::LookupTableProviderService* lutService = this->GetLookupTableProvider();
+
+  QStringList labelList = cachedFileNames.split(",");
+  QStringList removedItems;
+  int skippedItems = 0;
+
+  for (int i = 0; i < labelList.count(); i++)
   {
-    mitkProperty = mitk::IntProperty::New(propertyValue.toInt());
-  }
-  else if (propertyValue.type() == QVariant::Double)
-  {
-    mitkProperty = mitk::FloatProperty::New(propertyValue.toFloat());
-  }
-  else if (propertyValue.type() == QVariant::String)
-  {
-    mitkProperty = mitk::StringProperty::New(propertyValue.toString().toStdString());
-  }
-  else if (propertyValue.type() == QVariant::UserType)
-  {
-    if (propertyValue.canConvert<QLevelWindow>())
+    QString currLabelName = labelList.at(i);
+
+    if (currLabelName.isNull() || currLabelName.isEmpty() || currLabelName == QString(" "))
     {
-      QLevelWindow qLevelWindow = propertyValue.value<QLevelWindow>();
-      mitk::LevelWindow levelWindow;
-      node->GetLevelWindow(levelWindow);
-      levelWindow.SetWindowBounds(qLevelWindow.GetLowerWindowBound(), qLevelWindow.GetUpperWindowBound());
-      node->SetLevelWindow(levelWindow);
-      node->GetData()->SetProperty("levelwindow", mitk::LevelWindowProperty::New(levelWindow));
+      skippedItems++;
+      continue;
+    }
+
+    QString filenameWithPath = systemPreferences->Get(currLabelName, "");
+    QString lutName = lutService->LoadLookupTable(filenameWithPath);
+    if (lutName.isEmpty())
+    {
+      removedItems.append(currLabelName);
     }
   }
 
-  if (rendererName.isEmpty())
+  if (removedItems.size() > 0 || skippedItems > 0)
   {
-    node->SetProperty(propertyName.toStdString().c_str(), mitkProperty);
+    // Tidy up preferences: remove entries that don't exist
+    for (int i = 0; i < removedItems.size(); i++)
+    {
+      systemPreferences->Remove(removedItems.at(i));
+    }
+
+    // Update the list of profile names
+    systemPreferences->Put("LABEL_MAP_NAMES", cachedFileNames);
   }
-  else
-  {
-    node->GetPropertyList(rendererName.toStdString())->SetProperty(propertyName.toStdString().c_str(), mitkProperty);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::startNewInstance(const QStringList &args, const QStringList& files)
-{
-  QStringList newArgs(args);
-#ifdef Q_OS_UNIX
-  newArgs << QString("--") + berry::Platform::PROP_NEWINSTANCE;
-#else
-  newArgs << QString("/") + berry::Platform::PROP_NEWINSTANCE;
-#endif
-  newArgs << files;
-  QProcess::startDetached(qApp->applicationFilePath(), newArgs);
-}
-
-
-//-----------------------------------------------------------------------------
-void PluginActivator::handleIPCMessage(const QByteArray& msg)
-{
-  QDataStream ds(msg);
-  QString msgType;
-  ds >> msgType;
-
-  // we only handle messages containing command line arguments
-  if (msgType != "$cmdLineArgs") return;
-
-  // activate the current workbench window
-  berry::IWorkbenchWindow::Pointer window =
-      berry::PlatformUI::GetWorkbench()->GetActiveWorkbenchWindow();
-
-  QMainWindow* mainWindow =
-   static_cast<QMainWindow*> (window->GetShell()->GetControl());
-
-  mainWindow->setWindowState(mainWindow->windowState() & ~Qt::WindowMinimized);
-  mainWindow->raise();
-  mainWindow->activateWindow();
-
-  // Get the preferences for the instantiation behavior
-  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node("/General");
-  bool newInstanceAlways = prefs->GetBool("newInstance.always", false);
-  bool newInstanceScene = prefs->GetBool("newInstance.scene", true);
-
-  QStringList args;
-  ds >> args;
-
-  QStringList fileArgs;
-  QStringList sceneArgs;
-
-  QStringList applicationArgs = berry::Platform::GetApplicationArgs();
-  args.pop_front();
-  QStringList::Iterator it = args.begin();
-  while (it != args.end())
-  {
-    if (it->startsWith("-"))
-    {
-      ++it;
-    }
-    else
-    {
-      if (it->endsWith(".mitk"))
-      {
-        sceneArgs << *it;
-      }
-      else
-      {
-        fileArgs << *it;
-      }
-      it = args.erase(it);
-    }
-  }
-
-  if (newInstanceAlways)
-  {
-    if (newInstanceScene)
-    {
-      startNewInstance(args, fileArgs);
-
-      foreach(QString sceneFile, sceneArgs)
-      {
-        startNewInstance(args, QStringList(sceneFile));
-      }
-    }
-    else
-    {
-      fileArgs.append(sceneArgs);
-      startNewInstance(args, fileArgs);
-    }
-  }
-  else
-  {
-    LoadDataFromDisk(fileArgs, false);
-    if (newInstanceScene)
-    {
-      foreach(QString sceneFile, sceneArgs)
-      {
-        startNewInstance(args, QStringList(sceneFile));
-      }
-    }
-    else
-    {
-      LoadDataFromDisk(sceneArgs, false);
-    }
-  }
-
 }
 
 }

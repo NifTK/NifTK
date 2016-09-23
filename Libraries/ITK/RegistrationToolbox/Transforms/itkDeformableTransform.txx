@@ -26,8 +26,7 @@
 #include <niftkConversionUtils.h>
 #include <itkLinearInterpolateImageFunction.h>
 #include <itkBSplineInterpolateImageFunction.h>
-
-#include <itkLogHelper.h>
+#include <itkUCLMacro.h>
 
 namespace itk
 {

@@ -20,8 +20,6 @@
 
 #include "itkImageReconstructionMethod.h"
 
-#include <itkLogHelper.h>
-
 
 namespace itk
 {

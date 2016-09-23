@@ -15,7 +15,6 @@
 #include <fstream>
 #include <iomanip>
 
-#include <itkLogHelper.h>
 
 #include <niftkConversionUtils.h>
 #include <itkCommandLineHelper.h>
