@@ -15,5 +15,5 @@
 MITK_CREATE_MODULE_TESTS(LABELS niftkCaffe)
 mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES Caffe)
 
-mitkAddCustomModuleTest(Caffe-Basic-1 niftkCaffeBasicTest ${NIFTK_DATA_DIR}/Caffe/model1.prototxt ${NIFTK_DATA_DIR}/Caffe/weights1.caffemodel ${NIFTK_DATA_DIR}/Caffe/image1.png 1 1000)
+mitkAddCustomModuleTest(Caffe-Basic-1 niftkCaffeBasicTest /Users/mattclarkson/Data/cmic/SmartSurgeryLiver/2016.08.03-Eli/test.resnet3.prototxt /Users/mattclarkson/Data/cmic/SmartSurgeryLiver/2016.08.03-Eli/snapshotC.resnet3.leaveOutLS08_iter_10000.caffemodel ${NIFTK_DATA_DIR}/Caffe/image1.png 1 1000)
 
