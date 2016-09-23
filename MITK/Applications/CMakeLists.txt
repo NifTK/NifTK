@@ -26,7 +26,6 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
       add_subdirectory(AverageStationaryChessboards)
       add_subdirectory(AverageTrackingMatrices)
       add_subdirectory(BifurcationToPointSet)
-      add_subdirectory(CaffeSeg)
       add_subdirectory(CameraCalibration)
       add_subdirectory(CorrectVideoDistortion)
       add_subdirectory(EvaluateIntrinsicParametersOnNumberOfFrames)
@@ -76,6 +75,10 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
         add_subdirectory(SURF)
       endif()
 
+    endif()
+
+    if(BUILD_CAFFE)
+      add_subdirectory(CaffeSeg)
     endif()
 
   endif()
