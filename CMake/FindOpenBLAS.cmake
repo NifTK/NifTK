@@ -16,7 +16,7 @@ set(OpenBLAS_FOUND)
 
 set(OpenBLAS_DIR @OpenBLAS_DIRECTORY@ CACHE PATH "Directory containing OpenBLAS installation")
 
-set(OpenBLAS_INC
+find_path(OpenBLAS_INC
   NAME cblas.h
   PATHS ${OpenBLAS_DIR}/include
   NO_DEFAULT_PATH
