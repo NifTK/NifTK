@@ -112,6 +112,7 @@ if(NOT DEFINED Caffe_DIR)
       -DGLOG_LIBRARY_DIR:PATH=${glog_LIBRARY_DIR}
       ${_protobuf_args}
       ${_openblas_args}
+      -DBoost_NO_SYSTEM_PATHS:BOOL=ON
       -DBoost_ADDITIONAL_VERSIONS:STRING=1.56
       -DHDF5_PREFIX:String=niftk
       -DHDF5_DIR:PATH=${HDF5_DIR}
