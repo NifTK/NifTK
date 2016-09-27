@@ -35,6 +35,7 @@ mitk::Image::Pointer NIFTKOPENCVIMAGECONVERSION_EXPORT CreateMitkImage(const cv:
 
 /**
 * mitk::Image::Pointer to cv::Mat* , supports 8 bit per channel RGB, RGBA and gray
+* Known bug: does not take care of different channel layouts: BGR vs RGB!
 */
 cv::Mat NIFTKOPENCVIMAGECONVERSION_EXPORT MitkImageToOpenCVMat ( const mitk::Image::Pointer );
 
