@@ -134,17 +134,29 @@ public:
   /// \brief Sets the show orientation direction check box to the given value.
   void SetDirectionAnnotationsVisible(bool visible);
 
+  /// \brief Returns true if the show position check box is set, otherwise false.
+  bool IsPositionAnnotationVisible() const;
+
+  /// \brief Sets the show position check box to the given value.
+  void SetPositionAnnotationVisible(bool visible);
+
   /// \brief Returns true if the show intensity check box is set, otherwise false.
   bool IsIntensityAnnotationVisible() const;
 
   /// \brief Sets the show intensity check box to the given value.
   void SetIntensityAnnotationVisible(bool visible);
 
-  /// \brief Returns true if the show 3D window check box is set, otherwise false.
-  bool Is3DWindowVisible() const;
+  /// \brief Returns true if the show property annotation check box is set, otherwise false.
+  bool IsPropertyAnnotationVisible() const;
 
-  /// \brief Sets the show 3D window option check box to the given value.
-  void Set3DWindowVisible(bool visible);
+  /// \brief Sets the show property annotation check box to the given value.
+  void SetPropertyAnnotationVisible(bool visible);
+
+  /// \brief Returns the list of properties to show as annotation.
+  QStringList GetPropertiesForAnnotation() const;
+
+  /// \brief Sets the list of properties to show as annotation.
+  void SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation);
 
   /// \brief Gets the selected render window layout.
   WindowLayout GetWindowLayout() const;
@@ -181,11 +193,17 @@ signals:
   /// \brief Emitted when the show direction annotations option has changed.
   void ShowDirectionAnnotationsChanged(bool visible);
 
+  /// \brief Emitted when the show position annotation option has changed.
+  void ShowPositionAnnotationChanged(bool visible);
+
   /// \brief Emitted when the show intensity annotation option has changed.
   void ShowIntensityAnnotationChanged(bool visible);
 
-  /// \brief Emitted when the show 3D window option has changed.
-  void Show3DWindowChanged(bool visible);
+  /// \brief Emitted when the show property annotations option has changed.
+  void ShowPropertyAnnotationChanged(bool visible);
+
+  /// \brief Emitted when the list of properties to be displayed as annotations option has changed.
+  void PropertiesForAnnotationChanged();
 
   /// \brief Emitted when the select layout has changed.
   void WindowLayoutChanged(WindowLayout windowLayout);
@@ -199,6 +217,7 @@ signals:
 protected slots:
 
   void OnSelectedSliceChanged(double selectedSlice);
+
   void OnTimeStepChanged(double timeStep);
 
   /// \brief Called when the axial window radio button is toggled.
@@ -219,12 +238,18 @@ protected slots:
   /// \brief Called when a window layout is selected in the the combo box.
   void OnMultiWindowComboBoxIndexChanged(int index);
 
+  /// \brief Pops up an input dialog to set the list of properties to display as annotation.
+  /// Called when the checkable push button is clicked on.
+  void OnPropertiesForAnnotationLabelClicked();
+
 private:
 
   Ui::niftkSingleViewerControls* ui;
 
   bool m_ShowShowOptions;
   bool m_ShowWindowLayoutControls;
+
+  QStringList m_PropertiesForAnnotation;
 
   /// \brief Stores the currently selected window layout.
   WindowLayout m_WindowLayout;

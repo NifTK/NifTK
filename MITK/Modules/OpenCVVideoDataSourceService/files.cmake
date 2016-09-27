@@ -13,9 +13,21 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Internal/niftkOpenCVCameraDialog.cxx
   Internal/niftkOpenCVVideoDataSourceFactory.cxx
   Internal/niftkOpenCVVideoDataSourceActivator.cxx
   Internal/niftkOpenCVVideoDataSourceService.cxx
   Internal/niftkOpenCVVideoDataType.cxx
+)
+
+set(MOC_H_FILES
+  Internal/niftkOpenCVCameraDialog.h
+)
+
+set(UI_FILES
+  Internal/niftkOpenCVCameraDialog.ui
+)
+
+set(QRC_FILES
 )
 

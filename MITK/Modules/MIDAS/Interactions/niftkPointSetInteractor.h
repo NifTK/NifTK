@@ -59,12 +59,12 @@ protected:
   ///
   /// Note that this function is purposefully not virtual. Eventual subclasses should
   /// override the CanHandle function.
-  float CanHandleEvent(const mitk::StateEvent* stateEvent) const;
+  float CanHandleEvent(const mitk::StateEvent* stateEvent) const override;
 
   /**
    * \brief overriden the base class function, to enable mouse move events.
    */
-  virtual float CanHandle(const mitk::StateEvent* stateEvent) const;
+  virtual float CanHandle(const mitk::StateEvent* stateEvent) const override;
 
   /**
   * @brief Convert the given Actions to Operations and send to data and UndoController
@@ -72,7 +72,7 @@ protected:
   * Overrides mitk::PointSetInteractor::ExecuteAction() so that for any operation the
   * display position is modified to be in the middle of a pixel.
   */
-  virtual bool ExecuteAction( mitk::Action* action, mitk::StateEvent const* stateEvent );
+  virtual bool ExecuteAction( mitk::Action* action, mitk::StateEvent const* stateEvent ) override;
 
 };
 }

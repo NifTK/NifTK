@@ -13,7 +13,7 @@
 #============================================================================*/
 
 # render code needs opencl for translucent triangle sorting.
-set(_modules MitkOpenCL niftkCoreGui)
+set(_modules niftkCoreGui)
 set(_packages Qt4|QtGui Qt4|QtOpenGL Qt5|Gui Qt5|OpenGL VL|VLCore VL|VLGraphics VL|VLVolume VL|VLVivid VL|VLQt4)
 
 if(BUILD_PCL)

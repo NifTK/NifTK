@@ -154,7 +154,12 @@ option(BUILD_NiftySeg "Build NiftySeg." ON)
 option(BUILD_Python "Build Python wrapping." OFF)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
-option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
+if(NOT APPLE AND BUILD_IGI)
+  option(BUILD_VL "Build VisualizationLibrary - Experimental." ON)
+else()
+  option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
+endif()
+
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
@@ -1256,6 +1261,7 @@ set(MITK_LEGACY_EXPORT_MACRO_NAME ${_mitk_legacy_export_macro_name})
 ######################################################################
 # Find Optional External packages
 ######################################################################
+find_package(UltrasonixUlterius)
 
 
 ######################################################################

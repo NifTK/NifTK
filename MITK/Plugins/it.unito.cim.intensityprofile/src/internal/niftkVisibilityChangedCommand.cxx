@@ -31,12 +31,12 @@ VisibilityChangedCommand::~VisibilityChangedCommand()
 
 void VisibilityChangedCommand::Execute(itk::Object* /*caller*/, const itk::EventObject& /*event*/)
 {
-  m_Observer->onVisibilityChanged(m_Node);
+  m_Observer->OnVisibilityChanged(m_Node);
 }
 
 void VisibilityChangedCommand::Execute(const itk::Object* /*caller*/, const itk::EventObject& /*event*/)
 {
-  m_Observer->onVisibilityChanged(m_Node);
+  m_Observer->OnVisibilityChanged(m_Node);
 }
 
 }

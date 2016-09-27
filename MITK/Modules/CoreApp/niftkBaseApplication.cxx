@@ -55,7 +55,8 @@ void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
       "\n"
       "<data node names> is a comma separated list of data node names. It is typically one "
       "name only, but you can specify multiple names to open copies of the same data. "
-      "At least one name has to be given.\n");
+      "It can be omitted (with the colon), then the name will be taken from the file name, "
+      "by removing the extensions.\n");
   openOption.argument("<data node names>:<file>").repeatable(true);
   openOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::HandleRepeatableOption));
   options.addOption(openOption);

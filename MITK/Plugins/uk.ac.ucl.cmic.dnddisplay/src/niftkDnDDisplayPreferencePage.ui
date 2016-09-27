@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>niftkDnDDisplayPreferencePage</class>
+ <widget class="QWidget" name="niftkDnDDisplayPreferencePage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>691</width>
+    <height>556</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="m_ImageInterpolationLabel">
+     <property name="text">
+      <string>Image interpolation:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <layout class="QHBoxLayout" name="m_ImageInterpolationLayout">
+     <item>
+      <widget class="QComboBox" name="m_ImageInterpolationComboBox">
+       <item>
+        <property name="text">
+         <string>none</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>linear</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>cubic</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <spacer name="m_ImageInterpolationSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="m_SliceTrackingLabel">
+     <property name="text">
+      <string>Slice select tracking:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QCheckBox" name="m_SliceTrackingCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="m_TimeTrackingLabel">
+     <property name="text">
+      <string>Time select tracking:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QCheckBox" name="m_TimeTrackingCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="m_MagnificationTrackingLabel">
+     <property name="text">
+      <string>Magnification select tracking:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QCheckBox" name="m_MagnificationTrackingCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="m_Show2DCursorsLabel">
+     <property name="text">
+      <string>Show 2D cursors:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QCheckBox" name="m_Show2DCursorsCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="m_ShowDirectionAnnotationsLabel">
+     <property name="text">
+      <string>Show direction annotations:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QCheckBox" name="m_ShowDirectionAnnotationsCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="m_ShowPositionAnnotationLabel">
+     <property name="text">
+      <string>Show position annotation:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QCheckBox" name="m_ShowPositionAnnotationCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="m_ShowIntensityAnnotationLabel">
+     <property name="text">
+      <string>Show intensity annotation:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QCheckBox" name="m_ShowIntensityAnnotationCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="m_ShowPropertyAnnotationLabel">
+     <property name="text">
+      <string>Show property annotation:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <layout class="QHBoxLayout" name="m_PropertyAnnotationLayout">
+     <item>
+      <widget class="QCheckBox" name="m_ShowPropertyAnnotationCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="m_PropertiesForAnnotationLineEdit"/>
+     </item>
+    </layout>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="m_WindowLayoutLabel">
+     <property name="text">
+      <string>Default window layout:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <layout class="QHBoxLayout" name="m_WindowLayoutLayout">
+     <item>
+      <widget class="QComboBox" name="m_WindowLayoutComboBox">
+       <item>
+        <property name="text">
+         <string>axial</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>sagittal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>coronal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2x2 orthogonal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>2x2 orthogonal without 3D</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3D</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3 windows horizontally</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>3 windows vertically</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>as acquired (XY plane)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <spacer name="m_WindowLayoutSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="m_RememberViewerSettingsPerWindowLayoutLabel">
+     <property name="text">
+      <string>Remember settings of each window layout:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <widget class="QCheckBox" name="m_RememberViewerSettingsPerWindowLayoutCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0">
+    <widget class="QLabel" name="m_ViewerNumberLabel">
+     <property name="text">
+      <string>Initial number of viewers:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="1">
+    <layout class="QHBoxLayout" name="m_ViewerNumberLayout">
+     <item>
+      <widget class="QSpinBox" name="m_ViewerRowsSpinBox">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>5</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="m_ViewerRowsAndColumnsSeparatorLabel">
+       <property name="text">
+        <string>x</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="m_ViewerColumnsSpinBox">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>5</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="m_ViewerNumberSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="12" column="0">
+    <widget class="QLabel" name="m_DefaultDropTypeLabel">
+     <property name="text">
+      <string>Default drop type:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="1">
+    <layout class="QHBoxLayout" name="m_DefaultDropTypeLayout">
+     <item>
+      <widget class="QComboBox" name="m_DefaultDropTypeComboBox">
+       <item>
+        <property name="text">
+         <string>single</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>multiple</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>all</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item>
+      <spacer name="m_DefaultDropTypeSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="13" column="0">
+    <widget class="QLabel" name="m_ShowMagnificationSliderLabel">
+     <property name="text">
+      <string>Show magnification slider:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="1">
+    <widget class="QCheckBox" name="m_ShowMagnificationSliderCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="0">
+    <widget class="QLabel" name="m_ShowShowOptionsLabel">
+     <property name="text">
+      <string>Show 'show' options:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="14" column="1">
+    <widget class="QCheckBox" name="m_ShowShowOptionsCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="15" column="0">
+    <widget class="QLabel" name="m_ShowWindowLayoutControlsLabel">
+     <property name="text">
+      <string>Show window layout controls:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="15" column="1">
+    <widget class="QCheckBox" name="m_ShowWindowLayoutControlsCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="0">
+    <widget class="QLabel" name="m_ShowViewerNumberControlsLabel">
+     <property name="text">
+      <string>Show viewer number controls:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="1">
+    <widget class="QCheckBox" name="m_ShowViewerNumberControlsCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="17" column="0">
+    <widget class="QLabel" name="m_ShowDropTypeControlsLabel">
+     <property name="text">
+      <string>Show drop type controls:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="17" column="1">
+    <widget class="QCheckBox" name="m_ShowDropTypeControlsCheckBox">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="18" column="0">
+    <widget class="QLabel" name="m_BackgroundColourLabel">
+     <property name="text">
+      <string>Background colour:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="18" column="1">
+    <layout class="QGridLayout" name="m_BackgroundColourLayout">
+     <item row="0" column="2">
+      <widget class="QPushButton" name="m_BackgroundColourResetButton">
+       <property name="text">
+        <string>Reset</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="m_BackgroundColourMIDASDefaultButton">
+       <property name="text">
+        <string>MIDAS default</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <spacer name="m_BackgroundColourSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="0" column="0">
+      <widget class="QPushButton" name="m_BackgroundColourColourButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

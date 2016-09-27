@@ -13,6 +13,6 @@
 #============================================================================*/
 
 set(CPP_FILES
-  niftkImageConversion.cxx
+  niftkOpenCVImageConversion.cxx
 )
 

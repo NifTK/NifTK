@@ -16,6 +16,5 @@ set(CPP_FILES
   Internal/niftkUltrasonixDataSourceFactory.cxx
   Internal/niftkUltrasonixDataSourceActivator.cxx
   Internal/niftkUltrasonixDataSourceService.cxx
-  Internal/niftkUltrasonixDataType.cxx
 )
 

@@ -18,8 +18,6 @@ set(SRC_CPP_FILES
 
 set(INTERNAL_CPP_FILES
   niftkPluginActivator.cxx
-  niftkVisibilityChangedCommand.cxx
-  niftkVisibilityChangeObserver.cxx
 )
 
 set(UI_FILES

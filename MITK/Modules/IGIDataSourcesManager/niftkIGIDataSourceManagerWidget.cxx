@@ -77,7 +77,7 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   ok = QObject::connect(m_Manager, SIGNAL(BroadcastStatusString(QString)),
                         this, SLOT(OnBroadcastStatusString(QString)));
   assert(ok);
-  ok = QObject::connect(m_PlaybackWidget, SIGNAL (RecordingStarted(QString)) ,
+  ok = QObject::connect(m_Manager, SIGNAL (RecordingStarted(QString)) ,
                         this, SIGNAL (RecordingStarted(QString)));
   assert(ok);
 
@@ -121,7 +121,7 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
   ok = QObject::disconnect(m_Manager, SIGNAL(BroadcastStatusString(QString)),
                            this, SLOT(OnBroadcastStatusString(QString)));
   assert(ok);
-  ok = QObject::disconnect(m_PlaybackWidget, SIGNAL (RecordingStarted(QString)) ,
+  ok = QObject::disconnect(m_Manager, SIGNAL (RecordingStarted(QString)) ,
                         this, SIGNAL (RecordingStarted(QString)));
   assert(ok);
 
@@ -254,8 +254,6 @@ void IGIDataSourceManagerWidget::OnRemoveSource()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnCellDoubleClicked(int row, int column)
 {
-  QMutexLocker locker(&m_Lock);
-
   niftk::IGIDataSourceFactoryServiceI* factory = m_Manager->GetFactory(row);
   if (factory->HasConfigurationGui())
   {

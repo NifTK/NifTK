@@ -288,7 +288,7 @@ void SingleViewerEditor::CreateQtPartControl(QWidget* parent)
     assert(dataStorage);
 
     berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-    berry::IBerryPreferences::Pointer prefs = (prefService->GetSystemPreferences()->Node(EDITOR_ID)).Cast<berry::IBerryPreferences>();
+    berry::IBerryPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(EDITOR_ID).Cast<berry::IBerryPreferences>();
     assert( prefs );
 
     DnDDisplayInterpolationType defaultInterpolationType =
@@ -303,7 +303,6 @@ void SingleViewerEditor::CreateQtPartControl(QWidget* parent)
     bool showShowingOptions = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_SHOWING_OPTIONS, true);
     bool showWindowLayoutControls = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_WINDOW_LAYOUT_CONTROLS, true);
     bool showMagnificationSlider = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_MAGNIFICATION_SLIDER, true);
-    bool show3DWindowInMultiWindowLayout = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false);
     bool show2DCursors = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_2D_CURSORS, true);
     bool rememberSettingsPerLayout = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true);
     bool sliceIndexTracking = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true);
@@ -334,7 +333,6 @@ void SingleViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_ControlPanel->SetDirectionAnnotationsVisible(showDirectionAnnotations);
     d->m_SingleViewer->SetIntensityAnnotationVisible(showIntensityAnnotation);
     d->m_ControlPanel->SetIntensityAnnotationVisible(showIntensityAnnotation);
-    d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(show3DWindowInMultiWindowLayout);
     d->m_ControlPanel->SetMagnificationControlsVisible(showMagnificationSlider);
     d->m_SingleViewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerLayout);
     d->m_ControlPanel->SetSliceTracking(sliceIndexTracking);
@@ -371,7 +369,6 @@ void SingleViewerEditor::CreateQtPartControl(QWidget* parent)
     this->connect(d->m_ControlPanel, SIGNAL(ShowCursorChanged(bool)), SLOT(OnCursorVisibilityControlChanged(bool)));
     this->connect(d->m_ControlPanel, SIGNAL(ShowDirectionAnnotationsChanged(bool)), SLOT(OnShowDirectionAnnotationsControlChanged(bool)));
     this->connect(d->m_ControlPanel, SIGNAL(ShowIntensityAnnotationChanged(bool)), SLOT(OnShowIntensityAnnotationControlChanged(bool)));
-    this->connect(d->m_ControlPanel, SIGNAL(Show3DWindowChanged(bool)), SLOT(OnShow3DWindowControlChanged(bool)));
 
     this->connect(d->m_ControlPanel, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutControlChanged(WindowLayout)));
     this->connect(d->m_ControlPanel, SIGNAL(WindowCursorBindingChanged(bool)), SLOT(OnWindowCursorBindingControlChanged(bool)));
@@ -444,7 +441,6 @@ void SingleViewerEditor::OnPreferencesChanged( const berry::IBerryPreferences* p
 
     d->m_SingleViewer->SetDirectionAnnotationsVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_DIRECTION_ANNOTATIONS, true));
     d->m_SingleViewer->SetIntensityAnnotationVisible(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_INTENSITY_ANNOTATION, true));
-    d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SHOW_3D_WINDOW_IN_MULTI_WINDOW_LAYOUT, false));
     d->m_SingleViewer->SetRememberSettingsPerWindowLayout(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_REMEMBER_VIEWER_SETTINGS_PER_WINDOW_LAYOUT, true));
     d->m_ControlPanel->SetSliceTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_SLICE_SELECT_TRACKING, true));
     d->m_ControlPanel->SetTimeStepTracking(prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true));
@@ -761,15 +757,6 @@ void SingleViewerEditor::OnCursorVisibilityControlChanged(bool visible)
 {
   bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
   d->m_SingleViewer->SetCursorVisible(visible);
-  d->m_SingleViewer->blockSignals(signalsWereBlocked);
-}
-
-
-//-----------------------------------------------------------------------------
-void SingleViewerEditor::OnShow3DWindowControlChanged(bool visible)
-{
-  bool signalsWereBlocked = d->m_SingleViewer->blockSignals(true);
-  d->m_SingleViewer->SetShow3DWindowIn2x2WindowLayout(visible);
   d->m_SingleViewer->blockSignals(signalsWereBlocked);
 }
 

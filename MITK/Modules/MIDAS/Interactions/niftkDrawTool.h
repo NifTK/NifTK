@@ -41,7 +41,8 @@ namespace niftk
  * </pre>
  * and includes Undo/Redo functionality.
  */
-class NIFTKMIDAS_EXPORT DrawTool : public ContourTool {
+class NIFTKMIDAS_EXPORT DrawTool : public ContourTool
+{
 
 public:
 
@@ -102,12 +103,11 @@ protected:
   /// \brief Connects state machine actions to functions.
   virtual void ConnectActionsAndFunctions();
 
-  /**
-  \brief Called when the tool gets activated (registered to mitk::GlobalInteraction).
+  /// \brief Called when the tool gets activated
+  virtual void Activated() override;
 
-  Derived tools should call their parents implementation.
-  */
-  virtual void Activated();
+  /// \brief Called when the tool gets activated
+  virtual void Deactivated() override;
 
 private:
 
@@ -144,6 +144,15 @@ private:
   mitk::PlanarCircle::Pointer m_EraserScope;
   mitk::DataNode::Pointer m_EraserScopeNode;
   bool m_EraserScopeVisible;
+
+  /// \brief Flag that indicates if a drawing interaction is being performed.
+  bool m_DrawingInProgress;
+
+  /// \brief Flag that indicates if an erasing interaction is being performed.
+  bool m_ErasingInProgress;
+
+  /// \brief The last interaction event during erasing.
+  mitk::InteractionEvent::Pointer m_ErasingEvent;
 
 };
 

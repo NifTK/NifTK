@@ -86,7 +86,7 @@ void BaseApplicationPreferencePage::CreateQtControl(QWidget* parent)
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
-  m_PreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.common");
+  m_PreferencesNode = prefService->GetSystemPreferences();
 
   m_MainControl = new QWidget(parent);
 

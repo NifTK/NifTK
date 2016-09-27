@@ -168,7 +168,9 @@ void BitmapOverlay::NodeAdded (const mitk::DataNode *node)
   if (m_ImageDataNode.IsNull())
   {
     mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-    if (image != NULL && image->GetDimension() == 2)
+    if (image != NULL
+        && (image->GetDimension() == 2 || (image->GetDimension() == 3 && image->GetDimensions()[2] == 1))
+        )
     {
       this->SetNode(node);
     }
@@ -182,7 +184,9 @@ void BitmapOverlay::NodeChanged (const mitk::DataNode *node)
   if (m_ImageDataNode.IsNotNull() && node == m_ImageDataNode)
   {
     mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-    if (image != NULL && image->GetDimension() == 2)
+    if (image != NULL
+        && (image->GetDimension() == 2 || (image->GetDimension() == 3 && image->GetDimensions()[2] == 1))
+        )
     {
       // Basically, as we know the node has changed in some way,
       // and its the node we are watching, then we are trying to
@@ -230,7 +234,9 @@ bool BitmapOverlay::SetNode(const mitk::DataNode* node)
     else
     {
       mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-      if (image != NULL && image->GetDimension() == 2)
+      if (image != NULL
+          && (image->GetDimension() == 2 || (image->GetDimension() == 3 && image->GetDimensions()[2] == 1))
+          )
       {
         m_FrontActor->SetInputData(image->GetVtkImageData());
         m_BackActor->SetInputData(image->GetVtkImageData());

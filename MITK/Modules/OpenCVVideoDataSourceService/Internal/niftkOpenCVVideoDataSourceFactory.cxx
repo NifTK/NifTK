@@ -14,6 +14,7 @@
 
 #include "niftkOpenCVVideoDataSourceFactory.h"
 #include "niftkOpenCVVideoDataSourceService.h"
+#include "niftkOpenCVCameraDialog.h"
 #include <niftkLagDialog.h>
 
 namespace niftk
@@ -21,9 +22,9 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 OpenCVVideoDataSourceFactory::OpenCVVideoDataSourceFactory()
-: IGIDataSourceFactoryServiceI("USB Frame Grabber",
-                               false, // don't need to configure at startup
-                               true   // can configure lag while running
+: IGIDataSourceFactoryServiceI("OpenCV Video",
+                               true, // can configure save format at startup
+                               true  // can configure lag while running
                                )
 {
 }
@@ -53,8 +54,7 @@ IGIDataSourceI::Pointer OpenCVVideoDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* OpenCVVideoDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  mitkThrow() << "OpenCVVideoDataSourceService does not provide an initialisation dialog.";
-  return NULL;
+  return new niftk::OpenCVCameraDialog(parent);
 }
 
 

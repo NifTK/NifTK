@@ -21,10 +21,13 @@ set(CPP_FILES
   Interfaces/niftkIGIDataSourceFactoryServiceI.cxx
   Interfaces/niftkIGIDataSourceFactoryServiceRAII.cxx
   DataType/niftkIGIDataType.cxx
+  DataType/niftkQImageDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceLocker.cxx
   DataSource/niftkIGIDataSourceBuffer.cxx
   DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
+  DataSource/niftkSingleFrameDataSourceService.cxx
+  DataSource/niftkQImageDataSourceService.cxx
   Threads/niftkIGITimerBasedThread.cxx
   Threads/niftkIGIDataSourceGrabbingThread.cxx
   Threads/niftkIGIDataSourceBackgroundSaveThread.cxx
@@ -33,6 +36,8 @@ set(CPP_FILES
   Dialogs/niftkIGIConfigurationDialog.cxx
   Dialogs/niftkIPPortDialog.cxx
   Dialogs/niftkIPHostPortDialog.cxx
+  Dialogs/niftkIPHostPortExtensionDialog.cxx
+  Dialogs/niftkIPHostExtensionDialog.cxx
   Dialogs/niftkLagDialog.cxx
   Conversion/niftkQImageToMitkImageFilter.cxx
   Utils/niftkIGIDataSourceUtils.cxx
@@ -44,12 +49,16 @@ set(MOC_H_FILES
   Dialogs/niftkIGIConfigurationDialog.h
   Dialogs/niftkIPPortDialog.h
   Dialogs/niftkIPHostPortDialog.h
+  Dialogs/niftkIPHostPortExtensionDialog.h
+  Dialogs/niftkIPHostExtensionDialog.h
   Dialogs/niftkLagDialog.h
 )
 
 set(UI_FILES
   Dialogs/niftkIPPortDialog.ui
   Dialogs/niftkIPHostPortDialog.ui
+  Dialogs/niftkIPHostPortExtensionDialog.ui
+  Dialogs/niftkIPHostExtensionDialog.ui
   Dialogs/niftkLagDialog.ui
 )
 

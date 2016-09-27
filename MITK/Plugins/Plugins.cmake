@@ -68,12 +68,13 @@ set(NiftyView_PLUGINS
   Plugins/uk.ac.ucl.cmic.niftyview:ON
 )
 
-if(BUILD_VL)
-  set(NiftyView_PLUGINS
-    ${NiftyView_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.vlstandarddisplayeditor:ON
-  )
-endif()
+# Unfortunately not finished yet.
+#if(BUILD_VL)
+#  set(NiftyView_PLUGINS
+#    ${NiftyView_PLUGINS}
+#    Plugins/uk.ac.ucl.cmic.vlstandarddisplayeditor:ON
+#  )
+#endif()
 
 if(NIFTK_Apps/NiftyView)
   set(PROJECT_PLUGINS
@@ -133,7 +134,7 @@ if(WIN32)
   )
 endif()
 
-if(BUILD_VL)
+if(BUILD_VL AND NOT APPLE)
   set(NiftyIGI_PLUGINS
     ${NiftyIGI_PLUGINS}
     Plugins/uk.ac.ucl.cmic.igivlvideooverlayeditor:ON

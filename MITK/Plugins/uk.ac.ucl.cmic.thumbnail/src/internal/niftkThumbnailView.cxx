@@ -237,9 +237,7 @@ void ThumbnailView::RetrievePreferenceValues()
 
   assert( prefService );
 
-  berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.thumbnail"))
-        .Cast<berry::IBerryPreferences>();
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.thumbnail");
 
   assert( prefs );
 

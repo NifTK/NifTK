@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Algorithms Common Controllers DataManagement DataNodeProperties Interactions IO Rendering
+  INCLUDE_DIRS Algorithms DataManagement Interactions
   PACKAGE_DEPENDS ITK|ITKCommon
   DEPENDS niftkCore MitkSegmentation
 )
@@ -25,5 +25,5 @@ if (NIFTK_USE_COTIRE AND COMMAND cotire)
 endif()
 
 if(BUILD_TESTING)
-  add_subdirectory(Testing)
+#  add_subdirectory(Testing)
 endif()
