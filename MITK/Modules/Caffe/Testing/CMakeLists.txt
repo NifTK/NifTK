@@ -13,7 +13,36 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE_TESTS(LABELS niftkCaffe)
-mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES Caffe)
 
-mitkAddCustomModuleTest(Caffe-Basic-1 niftkCaffeBasicTest /Users/mattclarkson/Data/cmic/SmartSurgeryLiver/2016.08.03-Eli/test.resnet3.prototxt /Users/mattclarkson/Data/cmic/SmartSurgeryLiver/2016.08.03-Eli/snapshotC.resnet3.leaveOutLS08_iter_10000.caffemodel ${NIFTK_DATA_DIR}/Caffe/image1.png 1 1000)
+if(TARGET ${TESTDRIVER})
+
+  mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES Caffe)
+
+  add_test(Caffe-Liver1 ${CXX_TEST_PATH}/niftkCaffeTestDriver
+           niftkCaffeSegmentImageTest
+           ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/resnet3.deploy.with-memory-layer.prototxt
+           ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/resnet3.leaveOutLS08_iter10000.caffemodel
+           prediction                     # name of output node
+           321 81                         # size (x, y) of expected input
+            81 21                         # size (x, y) of expected output
+#           -127.34116,-189.179,-197.013   # additive offset of + (-128,-128,-128) + (0.65884,-61.179,-69.013)
+           -128.65884,-66.821,-58.987   # additive offset of + (-128,-128,-128) - (0.65884,-61.179,-69.013)
+           ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/1449229588798812400_left.png
+           ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/1449229588798812400_leftMask.png
+           ${TEMP}/Caffe-Liver1-output.png
+           )
+
+  add_test(Caffe-Phantom1 ${CXX_TEST_PATH}/niftkCaffeTestDriver
+           niftkCaffeSegmentImageTest
+           ${NIFTK_DATA_DIR}/Input/Caffe/Phantom-2016-09-27/phantom.deploy.with-memory-layer.prototxt
+           ${NIFTK_DATA_DIR}/Input/Caffe/Phantom-2016-09-27/snapshot.resnet3.phantom_iter_300.caffemodel
+           prediction                     # name of output node
+           321 81                         # size (x, y) of expected input
+            81 21                         # size (x, y) of expected output
+           -128,-128,-128                 # additive offset for input pixels
+           ${NIFTK_DATA_DIR}/Input/Caffe/Phantom-2016-09-27/1386775970515321200_left.png
+           ${NIFTK_DATA_DIR}/Input/Caffe/Phantom-2016-09-27/1386775970515321200_leftMask.png
+           ${TEMP}/Caffe-Phantom1-output.png
+           )
+endif()
 

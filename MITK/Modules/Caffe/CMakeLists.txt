@@ -12,7 +12,7 @@
 #
 #============================================================================*/
 
-set(_modules niftkCoreGui)
+set(_modules niftkOpenCVImageConversion)
 
 if(CUDA_FOUND AND NIFTK_USE_CUDA)
   list(APPEND _modules CUDA)
@@ -20,7 +20,7 @@ endif()
 
 MITK_CREATE_MODULE(
   DEPENDS ${_modules}
-  PACKAGE_DEPENDS Caffe
+  PACKAGE_DEPENDS PRIVATE Caffe OpenCV
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

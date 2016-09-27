@@ -13,6 +13,6 @@
 #============================================================================*/
 
 set(CPP_FILES
-  niftkCaffeManager.cxx
+  niftkCaffeFCNSegmentor.cxx
 )
 
