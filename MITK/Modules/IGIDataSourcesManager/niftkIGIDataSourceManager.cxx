@@ -298,8 +298,6 @@ int IGIDataSourceManager::GetFramesPerSecond() const
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::WriteDescriptorFile(QString absolutePath)
 {
-  QMutexLocker locker(&m_Lock);
-
   // dump our descriptor file
   QDir directory(absolutePath);
   QFile descfile(absolutePath + QDir::separator() + "descriptor.cfg");
