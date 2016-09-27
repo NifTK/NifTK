@@ -48,14 +48,6 @@ if(BUILD_PCL)
   )
 endif()
 
-if(BUILD_CAFFE)
-  set(MODULE_DIRS
-    ${MODULE_DIRS}
-    Caffe
-    CaffeGui
-  )
-endif()
-
 if(BUILD_IGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
@@ -95,6 +87,15 @@ if(BUILD_IGI)
     QtCameraVideoDataSourceService
     BKMedicalDataSourceService
   )
+
+  if(BUILD_CAFFE)
+    set(MODULE_DIRS
+      ${MODULE_DIRS}
+      Caffe
+      CaffeGui
+    )
+  endif()
+
 endif()
 
 if(BUILD_VL)
