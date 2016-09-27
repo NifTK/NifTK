@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkCaffeSegController.h"
-#include <niftkCaffeManager.h>
+#include <niftkCaffeFCNSegmentor.h>
 #include <Internal/niftkCaffeSegGUI.h>
 #include <itkFastMutexLock.h>
 
@@ -33,9 +33,9 @@ public:
   CaffeSegGUI*                 m_GUI;
   std::string                  m_NetworkDescriptionFileName;
   std::string                  m_NetworkWeightsFileName;
-  niftk::CaffeManager::Pointer m_LeftManager;
+  niftk::CaffeFCNSegmentor::Pointer m_LeftManager;
   mitk::DataNode*              m_LeftDataNode;
-  niftk::CaffeManager::Pointer m_RightManager;
+  niftk::CaffeFCNSegmentor::Pointer m_RightManager;
   mitk::DataNode*              m_RightDataNode;
   bool                         m_IsUpdatingManually;
   itk::FastMutexLock::Pointer  m_Mutex;
@@ -176,9 +176,11 @@ void CaffeSegController::OnLeftSelectionChanged(const mitk::DataNode* node)
       && !(d->m_NetworkDescriptionFileName.empty())
       && !(d->m_NetworkWeightsFileName.empty()))
   {
-    d->m_LeftManager = niftk::CaffeManager::New(d->m_NetworkDescriptionFileName,
+/*
+    d->m_LeftManager = niftk::CaffeFCNSegmentor::New(d->m_NetworkDescriptionFileName,
                                                 d->m_NetworkWeightsFileName
                                                );
+*/
   }
   d->m_LeftDataNode = const_cast<mitk::DataNode*>(node);
 }
@@ -195,9 +197,11 @@ void CaffeSegController::OnRightSelectionChanged(const mitk::DataNode* node)
       && !(d->m_NetworkDescriptionFileName.empty())
       && !(d->m_NetworkWeightsFileName.empty()))
   {
-    d->m_RightManager = niftk::CaffeManager::New(d->m_NetworkDescriptionFileName,
+/*
+    d->m_RightManager = niftk::CaffeFCNSegmentor::New(d->m_NetworkDescriptionFileName,
                                                  d->m_NetworkWeightsFileName
                                                 );
+*/
   }
   d->m_RightDataNode = const_cast<mitk::DataNode*>(node);
 }
@@ -214,13 +218,13 @@ void CaffeSegController::InternalUpdate()
   if (   d->m_LeftManager.IsNotNull()
       && d->m_LeftDataNode != nullptr)
   {
-    d->m_LeftManager->Segment(this->GetDataStorage(), d->m_LeftDataNode);
+    //d->m_LeftManager->Segment(this->GetDataStorage(), d->m_LeftDataNode);
   }
 
   if (   d->m_RightManager.IsNotNull()
       && d->m_RightDataNode != nullptr)
   {
-    d->m_RightManager->Segment(this->GetDataStorage(), d->m_RightDataNode);
+    //d->m_RightManager->Segment(this->GetDataStorage(), d->m_RightDataNode);
   }
 }
 

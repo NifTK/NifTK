@@ -16,6 +16,7 @@
 #define niftkCaffeFCNSegmentor_h
 
 #include "niftkCaffeExports.h"
+#include <cv.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 #include <mitkCommon.h>
@@ -24,7 +25,6 @@
 #include <memory>
 #include <caffe/caffe.hpp>
 #include <caffe/layers/memory_data_layer.hpp>
-#include <opencv/cv.h>
 
 namespace niftk
 {

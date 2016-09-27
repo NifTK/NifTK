@@ -13,7 +13,8 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  DEPENDS MitkQtWidgets niftkCaffe
+  DEPENDS MitkQtWidgets niftkCaffe niftkCoreGui
+  PACKAGE_DEPENDS OpenCV Caffe
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

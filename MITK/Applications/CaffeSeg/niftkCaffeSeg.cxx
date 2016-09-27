@@ -13,7 +13,6 @@
 =============================================================================*/
 
 #include <niftkCaffeSegCLP.h>
-#include <niftkCaffeManager.h>
 #include <mitkException.h>
 #include <mitkVector.h>
 #include <mitkDataNode.h>
@@ -46,7 +45,7 @@ int main(int argc, char* argv[])
     mitk::DataNode::ConstPointer inputImage;
     mitk::DataNode::Pointer outputImage = mitk::DataNode::New();
 
-    niftk::CaffeManager::Pointer manager = niftk::CaffeManager::New(model, weights);
+//    niftk::CaffeFCNSegmentor::Pointer manager = niftk::CaffeManager::New(model, weights);
 
     // ToDo: Create an mitk::DataStorage like we do in unit tests 
     // manager->Segment(dataStorage, inputImage);
