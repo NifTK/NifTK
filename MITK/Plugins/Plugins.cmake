@@ -59,13 +59,6 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
 )
 
-if(BUILD_CAFFE)
-  set(PROJECT_PLUGINS
-    ${PROJECT_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.caffesegmentor:ON
-  )
-endif()
-
 # ---------------------------------------------------------------------------------------------------
 # NiftyView Specific Plugins
 # ---------------------------------------------------------------------------------------------------
@@ -144,6 +137,13 @@ if(BUILD_VL AND NOT APPLE)
   set(NiftyIGI_PLUGINS
     ${NiftyIGI_PLUGINS}
     Plugins/uk.ac.ucl.cmic.igivlvideooverlayeditor:ON
+  )
+endif()
+
+if(BUILD_CAFFE)
+  set(NiftyIGI_PLUGINS
+    ${NiftyIGI_PLUGINS}
+    Plugins/uk.ac.ucl.cmic.caffesegmentor:ON
   )
 endif()
 
