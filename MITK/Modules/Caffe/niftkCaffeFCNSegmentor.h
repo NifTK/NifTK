@@ -99,7 +99,7 @@ private:
   cv::Mat                              m_DownSampledOutputImage;
   cv::Mat                              m_UpSampledOutputImage;
   cv::Mat                              m_UpSampledPaddedOutputImage;
-
+  cv::Mat                              m_ResizedOutputImage;
 }; // end class
 
 } // end namespace

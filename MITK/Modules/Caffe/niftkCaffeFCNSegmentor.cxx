@@ -33,9 +33,16 @@ CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileNa
 , m_InputBlob(nullptr)
 , m_InputLabel(nullptr)
 {
+/*
+  m_OffsetRGB[0] = -127.34116;
+  m_OffsetRGB[1] = -189.179;
+  m_OffsetRGB[2] = -197.013;
+*/
+
   m_OffsetRGB[0] = -128.65884;
   m_OffsetRGB[1] = -66.821;
   m_OffsetRGB[2] = -58.987;
+
   m_Margin[0] = 5;
   m_Margin[1] = 5;
 
@@ -126,22 +133,23 @@ void CaffeFCNSegmentor::Segment(const mitk::Image::Pointer& inputImage,
 
   this->ValidateInputs(inputImage, outputImage);
 
-  // Should not copy, due to OpenCV reference counting.
-  cv::Mat wrappedImage = niftk::MitkImageToOpenCVMat(inputImage);
-
-  // Crop: also, should just reference the input.
-  cv::Rect roi(m_Margin[0], m_Margin[1], wrappedImage.cols - (m_Margin[0]*2), wrappedImage.rows - (m_Margin[1]*2));
-  m_CroppedInputImage = wrappedImage(roi);
-
   // The memory layer tells us about the expected input image size.
   boost::shared_ptr<caffe::MemoryDataLayer<float> > memoryLayer =
       boost::dynamic_pointer_cast <caffe::MemoryDataLayer<float> >(m_Net->layer_by_name(m_InputLayerName));
 
+  // Should not copy, due to OpenCV reference counting.
+  cv::Mat wrappedImage = niftk::MitkImageToOpenCVMat(inputImage);
+
   // Should not keep re-allocating if m_ResizedInputImage the right size.
-  cv::resize(m_CroppedInputImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
+  cv::resize(wrappedImage, m_ResizedInputImage, cv::Size(memoryLayer->width() + (m_Margin[0]*2),
+                                                         memoryLayer->height() + (m_Margin[1]*2)));
+
+  // Crop: also, should just reference the input.
+  cv::Rect roi(m_Margin[0], m_Margin[1], memoryLayer->width(), memoryLayer->height());
+  m_CroppedInputImage = m_ResizedInputImage(roi);
 
   // As above, and images allocated in constructor, so no reallocating on the fly.
-  cv::add(m_ResizedInputImage, m_OffsetValueImage, m_InputImageWithOffset, cv::noArray(), CV_32FC3);
+  cv::add(m_CroppedInputImage, m_OffsetValueImage, m_InputImageWithOffset, cv::noArray(), CV_32FC3);
 
   // Copy data to Caffe blob.
   for (int c = 0; c < 3; ++c)
@@ -196,13 +204,14 @@ void CaffeFCNSegmentor::Segment(const mitk::Image::Pointer& inputImage,
   cv::resize(m_DownSampledOutputImage, m_UpSampledOutputImage, cv::Size(m_CroppedInputImage.cols, m_CroppedInputImage.rows));
 
   // Make sure the output image is the right size and type.
-  if (   m_UpSampledPaddedOutputImage.rows != wrappedImage.rows
-      || m_UpSampledPaddedOutputImage.cols != wrappedImage.cols
+  if (   m_UpSampledPaddedOutputImage.rows != m_UpSampledOutputImage.rows + (m_Margin[0]*2)
+      || m_UpSampledPaddedOutputImage.cols != m_UpSampledOutputImage.cols + (m_Margin[1]*2)
       || m_UpSampledPaddedOutputImage.channels() != 1
       || m_UpSampledPaddedOutputImage.type() != CV_8UC1
       )
   {
-    m_UpSampledPaddedOutputImage = cvCreateMat(wrappedImage.rows, wrappedImage.cols, CV_8UC1);
+    m_UpSampledPaddedOutputImage = cvCreateMat(m_UpSampledOutputImage.rows + (m_Margin[0]*2),
+                                               m_UpSampledOutputImage.cols + (m_Margin[1]*2), CV_8UC1);
   }
 
   // Now copy data out.
@@ -230,10 +239,22 @@ void CaffeFCNSegmentor::Segment(const mitk::Image::Pointer& inputImage,
     }
   }
 
+  if (   m_ResizedOutputImage.rows != wrappedImage.rows
+      || m_ResizedOutputImage.cols != wrappedImage.cols
+      || m_ResizedOutputImage.channels() != 1
+      || m_ResizedOutputImage.type() != CV_8UC1
+      )
+  {
+    m_ResizedOutputImage = cvCreateMat(wrappedImage.rows, wrappedImage.cols, CV_8UC1);
+  }
+
+  // Should not keep re-allocating if m_ResizedInputImage the right size.
+  cv::resize(m_UpSampledPaddedOutputImage, m_ResizedOutputImage, cv::Size(wrappedImage.cols, wrappedImage.rows), 0, 0, CV_INTER_NN);
+
   // Copy to output. This relies on the fact that output is always 1 channel, 8 bit, uchar.
   mitk::ImageWriteAccessor writeAccess(outputImage);
   void* vPointer = writeAccess.GetData();
-  memcpy(vPointer, m_UpSampledPaddedOutputImage.data, m_UpSampledPaddedOutputImage.rows * m_UpSampledPaddedOutputImage.cols);
+  memcpy(vPointer, m_ResizedOutputImage.data, m_ResizedOutputImage.rows * m_ResizedOutputImage.cols);
 }
 
 } // end namespace
