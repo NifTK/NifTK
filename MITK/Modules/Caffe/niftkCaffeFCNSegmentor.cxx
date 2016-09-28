@@ -22,48 +22,48 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string&    networkDescriptionFileName,  // Purposefully hidden.
-                                     const std::string&    networkWeightsFileName,
-                                     const mitk::Vector3D& offsetRGB,
-                                     const mitk::Point2I&  inputNetworkImageSize,
-                                     const std::string&    outputLayerName,
-                                     const mitk::Point2I&  outputNetworkImageSize
+CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileName,  // Purposefully hidden.
+                                     const std::string& networkWeightsFileName,
+                                     const std::string& inputLayerName,
+                                     const std::string& outputBlobName
                                     )
-: m_OffsetRGB(offsetRGB)
-, m_InputNetworkImageSize(inputNetworkImageSize)
-, m_OutputLayerName(outputLayerName)
-, m_OutputNetworkImageSize(outputNetworkImageSize)
+: m_InputLayerName(inputLayerName)
+, m_OutputBlobName(outputBlobName)
 , m_Net(nullptr)
 , m_InputBlob(nullptr)
 , m_InputLabel(nullptr)
 {
+  m_OffsetRGB[0] = -128.65884;
+  m_OffsetRGB[1] = -66.821;
+  m_OffsetRGB[2] = -58.987;
+  m_Margin[0] = 5;
+  m_Margin[1] = 5;
+
   caffe::Caffe::set_mode(caffe::Caffe::CPU);
   m_Net.reset(new caffe::Net<float>(networkDescriptionFileName, caffe::TEST));
   m_Net->CopyTrainedLayersFrom(networkWeightsFileName);
 
-  if (!m_Net->has_layer(outputLayerName))
+  if (!m_Net->has_layer(m_OutputBlobName))
   {
-    mitkThrow() << "Can't find output:" << outputLayerName
-                << ", in network:" << networkDescriptionFileName;
+    mitkThrow() << "Can't find output blob:" << m_OutputBlobName
+                << " in network:" << networkDescriptionFileName;
   }
 
-  m_OffsetValueImage = cvCreateMat(m_InputNetworkImageSize[1], m_InputNetworkImageSize[0], CV_32FC3);
+  boost::shared_ptr<caffe::MemoryDataLayer<float> > memoryLayer =
+      boost::dynamic_pointer_cast <caffe::MemoryDataLayer<float> >(m_Net->layer_by_name(m_InputLayerName));
+
+  if (!memoryLayer.get())
+  {
+    mitkThrow() << "Can't find input layer:" << m_InputLayerName
+                << " in network:" << networkDescriptionFileName;
+  }
+
+  m_OffsetValueImage = cvCreateMat(memoryLayer->height(), memoryLayer->width(), CV_32FC3);
   m_OffsetValueImage.setTo(cv::Vec3f(m_OffsetRGB[0], m_OffsetRGB[1], m_OffsetRGB[2]));
-  m_InputImageWithOffset = cvCreateMat(m_InputNetworkImageSize[1], m_InputNetworkImageSize[0], CV_32FC3);
-  m_InputBlob.reset(new caffe::Blob<float>(1, 3, m_InputNetworkImageSize[1], m_InputNetworkImageSize[0]));
+  m_InputImageWithOffset = cvCreateMat(memoryLayer->height(), memoryLayer->width(), CV_32FC3);
+  m_InputBlob.reset(new caffe::Blob<float>(1, 3, memoryLayer->height(), memoryLayer->width()));
   m_InputLabel.reset(new caffe::Blob<float>(1, 1, 1, 1));
   m_InputLabel->mutable_cpu_data()[m_InputBlob->offset(0, 0, 0, 0)] = 1;
-  m_DownSampledOutputImage = cvCreateMat(m_OutputNetworkImageSize[1], m_OutputNetworkImageSize[0], CV_8UC1);
-
-  MITK_INFO << "CaffeFCNSegmentor initialised with("
-            << networkDescriptionFileName << ", "
-            << networkWeightsFileName
-            << ", inputImageSize=" << m_InputNetworkImageSize
-            << ", outputImageSize=" << m_OutputNetworkImageSize
-            << ", offsetValueImageSize=" << m_OffsetValueImage.size()
-            << ", inputImageWithOffsetSize=" << m_InputImageWithOffset.size()
-            << ", downSampledOutputImageSize=" << m_DownSampledOutputImage.size()
-            << ", offsetRGB=" << m_OffsetRGB;
 }
 
 
@@ -103,33 +103,19 @@ void CaffeFCNSegmentor::ValidateInputs(const mitk::Image::Pointer& inputImage,
   {
     mitkThrow() << "The output image should be single channel, 8 bit, unsigned char";
   }
-}
 
+  mitk::PixelType pixelType = inputImage->GetPixelType();
 
-//-----------------------------------------------------------------------------
-boost::shared_ptr<caffe::MemoryDataLayer<float> > CaffeFCNSegmentor::GetAndValidateMemoryLayer()
-{
-  boost::shared_ptr<caffe::MemoryDataLayer<float> > memoryLayer =
-      boost::dynamic_pointer_cast <caffe::MemoryDataLayer<float> >(m_Net->layer_by_name("data"));
-
-  if (memoryLayer == nullptr)
+  if (!(pixelType.GetPixelType() == itk::ImageIOBase::SCALAR
+        && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+      && !(pixelType.GetPixelType() == itk::ImageIOBase::RGB
+           && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+      && !(pixelType.GetPixelType() == itk::ImageIOBase::RGBA
+           && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+     )
   {
-    mitkThrow() << "Failed to find memory layer.";
+    mitkThrow() << "The input image should be an RGB or RGBA vector image, or greyscale unsigned char.";
   }
-  if (memoryLayer->width() != m_InputImageWithOffset.cols)
-  {
-    mitkThrow() << "Width doesn't match: OpenCV=" << m_InputImageWithOffset.cols << ", Caffe=" << memoryLayer->width() << std::endl;
-  }
-  if (memoryLayer->height() != m_InputImageWithOffset.rows)
-  {
-    mitkThrow() << "Height doesn't match: OpenCV=" << m_InputImageWithOffset.rows << ", Caffe=" << memoryLayer->height() << std::endl;
-  }
-  if (memoryLayer->channels() != m_InputImageWithOffset.channels())
-  {
-    mitkThrow() << "Number of channels doesn't match: OpenCV=" << m_InputImageWithOffset.channels() << ", Caffe=" << memoryLayer->channels() << std::endl;
-  }
-
-  return memoryLayer;
 }
 
 
@@ -143,19 +129,21 @@ void CaffeFCNSegmentor::Segment(const mitk::Image::Pointer& inputImage,
   // Should not copy, due to OpenCV reference counting.
   cv::Mat wrappedImage = niftk::MitkImageToOpenCVMat(inputImage);
 
-  // Easier to check the number of resultant channels than check the MITK image.
-  if (wrappedImage.channels() != 3 && wrappedImage.channels() != 4)
-  {
-    mitkThrow() << "The input image should be RGB or RGBA vector data.";
-  }
+  // Crop: also, should just reference the input.
+  cv::Rect roi(m_Margin[0], m_Margin[1], wrappedImage.cols - (m_Margin[0]*2), wrappedImage.rows - (m_Margin[1]*2));
+  m_CroppedInputImage = wrappedImage(roi);
 
-  // Should not re-allocate if m_ResizedInputImage the right size.
-  cv::resize(wrappedImage, m_ResizedInputImage, cv::Size(m_InputNetworkImageSize[0], m_InputNetworkImageSize[1]));
+  // The memory layer tells us about the expected input image size.
+  boost::shared_ptr<caffe::MemoryDataLayer<float> > memoryLayer =
+      boost::dynamic_pointer_cast <caffe::MemoryDataLayer<float> >(m_Net->layer_by_name(m_InputLayerName));
+
+  // Should not keep re-allocating if m_ResizedInputImage the right size.
+  cv::resize(m_CroppedInputImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
 
   // As above, and images allocated in constructor, so no reallocating on the fly.
   cv::add(m_ResizedInputImage, m_OffsetValueImage, m_InputImageWithOffset, cv::noArray(), CV_32FC3);
 
-  // Copy data to Caffe blob - ToDo - look for faster alternative.
+  // Copy data to Caffe blob.
   for (int c = 0; c < 3; ++c)
   {
     for (int h = 0; h < m_InputImageWithOffset.rows; ++h)
@@ -167,81 +155,85 @@ void CaffeFCNSegmentor::Segment(const mitk::Image::Pointer& inputImage,
       }
     }
   }
-
-  boost::shared_ptr<caffe::MemoryDataLayer<float> > memoryLayer = this->GetAndValidateMemoryLayer();
   memoryLayer->Reset(m_InputBlob->mutable_cpu_data(), m_InputLabel->mutable_cpu_data(), 1);
 
   // Runs Caffe classification.
   m_Net->Forward();
 
-  double total = 0;
-  boost::shared_ptr<caffe::Blob<float> > conv0 = m_Net->blob_by_name("finalC");
-  std::cerr << "Matt, finalC=" << conv0->shape_string() << std::endl;
-
-  total = 0;
-
-  for (int c = 0; c < conv0->shape(1); c++)
+  // Get output blob.
+  boost::shared_ptr<caffe::Blob<float> > outputBlob = m_Net->blob_by_name(m_OutputBlobName);
+  if (   outputBlob->shape(0) != 1
+      || outputBlob->shape(1) != 2
+      )
   {
-    for (int h = 0; h < conv0->shape(2); h++)
+    mitkThrow() << "Unexpected output blob shape:" << outputBlob->shape_string();
+  }
+
+  // We want the output directly (float, 2 channel), so we can scale up, which interpolates.
+  if (   m_DownSampledOutputImage.rows != outputBlob->shape(2)
+      || m_DownSampledOutputImage.cols != outputBlob->shape(3)
+      || m_DownSampledOutputImage.channels() != 2
+      || m_DownSampledOutputImage.type() != CV_32FC2
+      )
+  {
+    m_DownSampledOutputImage = cvCreateMat(outputBlob->shape(2), outputBlob->shape(3), CV_32FC2);
+  }
+
+  // Now fill the output float data.
+  for (int c = 0; c < 2; c++)
+  {
+    for (int h = 0; h < m_DownSampledOutputImage.rows; ++h)
     {
-      for (int w = 0; w < conv0->shape(3); w++)
+      for (int w = 0; w < m_DownSampledOutputImage.cols; ++w)
       {
-        total += conv0->cpu_data()[conv0->offset(0, c, h, w)];
+        m_DownSampledOutputImage.at<cv::Vec2f>(h, w)[c] =
+          outputBlob->cpu_data()[outputBlob->offset(0, c, h, w)];
       }
     }
   }
-  std::cerr << "Matt, second total=" << total << std::endl;
 
-  std::vector<caffe::Blob<float>*> outputVecs = m_Net->output_blobs();
+  // Should not keep re-allocating if m_ResizedInputImage the right size.
+  cv::resize(m_DownSampledOutputImage, m_UpSampledOutputImage, cv::Size(m_CroppedInputImage.cols, m_CroppedInputImage.rows));
 
-  // Need to find output with correct size.
-  int i = 0;
-  total = 0;
-  for (i = 0; i < outputVecs.size(); i++)
+  // Make sure the output image is the right size and type.
+  if (   m_UpSampledPaddedOutputImage.rows != wrappedImage.rows
+      || m_UpSampledPaddedOutputImage.cols != wrappedImage.cols
+      || m_UpSampledPaddedOutputImage.channels() != 1
+      || m_UpSampledPaddedOutputImage.type() != CV_8UC1
+      )
   {
-    caffe::Blob<float>* blob = outputVecs[i];
+    m_UpSampledPaddedOutputImage = cvCreateMat(wrappedImage.rows, wrappedImage.cols, CV_8UC1);
+  }
 
-    if (   blob->shape(0) == 1
-        && blob->shape(1) == 2
-        && blob->shape(2) == m_DownSampledOutputImage.rows
-        && blob->shape(3) == m_DownSampledOutputImage.cols
-       )
+  // Now copy data out.
+  cv::Point2i p;
+  cv::Point2i q;
+  cv::Vec2f   v;
+  m_UpSampledPaddedOutputImage.setTo(0);
+  for (int h = 0; h < m_UpSampledPaddedOutputImage.rows; ++h)
+  {
+    for (int w = 0; w < m_UpSampledPaddedOutputImage.cols; ++w)
     {
+      p.x = w;
+      p.y = h;
+      q.x = w - m_Margin[0];
+      q.y = h - m_Margin[1];
 
-      for (int h = 0; h < m_DownSampledOutputImage.rows; ++h)
+      if (roi.contains(p))
       {
-        for (int w = 0; w < m_DownSampledOutputImage.cols; ++w)
+        v = m_UpSampledOutputImage.at<cv::Vec2f>(q.y, q.x);
+        if (v[1] > v[0])
         {
-          if (  blob->cpu_data()[blob->offset(0, 1, h, w)]  // channel 1 = p(foreground)
-              > blob->cpu_data()[blob->offset(0, 0, h, w)]  // channel 2 = p(background)
-              )
-          {
-            m_DownSampledOutputImage.at<unsigned char>(h, w) = 255;
-            total += 1;
-          }
-          else
-          {
-            m_DownSampledOutputImage.at<unsigned char>(h, w) = 0;
-          }
+          m_UpSampledPaddedOutputImage.at<unsigned char>(h, w) = 255;
         }
       }
-      MITK_INFO << "Matt, total added to output=" << total << ", channel=" << i;
-      break;
     }
   }
 
-  if (i == outputVecs.size())
-  {
-    mitkThrow() << "Failed to find correct output blob.";
-  }
-
-  // Should not re-allocate if m_ResizedInputImage the right size.
-  cv::resize(m_DownSampledOutputImage, m_UpSampledOutputImage, cv::Size(inputImage->GetDimension(0), inputImage->GetDimension(1)), 0, 0, cv::INTER_NEAREST);
-
-  // Copy to output. Relies on the fact that output is always 1 channel, 8 bit, uchar.
+  // Copy to output. This relies on the fact that output is always 1 channel, 8 bit, uchar.
   mitk::ImageWriteAccessor writeAccess(outputImage);
   void* vPointer = writeAccess.GetData();
-  memcpy(vPointer, m_UpSampledOutputImage.data, m_UpSampledOutputImage.rows * m_UpSampledOutputImage.cols);
+  memcpy(vPointer, m_UpSampledPaddedOutputImage.data, m_UpSampledPaddedOutputImage.rows * m_UpSampledPaddedOutputImage.cols);
 }
 
 } // end namespace

@@ -22,10 +22,10 @@ if(TARGET ${TESTDRIVER})
            niftkCaffeSegmentImageTest
            ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/resnet3.deploy.with-memory-layer.prototxt
            ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/resnet3.leaveOutLS08_iter10000.caffemodel
-           prediction                     # name of output node
-           321 81                         # size (x, y) of expected input
-            81 21                         # size (x, y) of expected output
-           -128.65884,-66.821,-58.987     # additive offset for input pixels (RGB): (-128,-128,-128) - (0.65884,-61.179,-69.013)
+           data                           # input layer
+           prediction                     # output blob
+           5  5                           # padding
+           -127.34116,-189.179,-197.013   # additive offset for input pixels (RGB): (-128,-128,-128) + (0.65884,-61.179,-69.013)
            ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/1449229588798812400_left.png
            ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/1449229588798812400_leftMask.png
            ${TEMP}/Caffe-Liver1-output.png

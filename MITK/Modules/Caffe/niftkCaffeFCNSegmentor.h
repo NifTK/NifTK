@@ -52,16 +52,16 @@ class NIFTKCAFFE_EXPORT CaffeFCNSegmentor : public itk::Object
 public:
 
   mitkClassMacroItkParent(CaffeFCNSegmentor, itk::Object)
-  mitkNewMacro6Param(CaffeFCNSegmentor, const std::string&, const std::string&, const mitk::Vector3D&, const mitk::Point2I&, const std::string&, const mitk::Point2I&)
+  mitkNewMacro4Param(CaffeFCNSegmentor, const std::string&, const std::string&, const std::string&, const std::string&)
 
   /**
    * \brief Segments the inputImage, and writes to outputImage.
-   * \param inputImage RGB or RGBA image
+   * \param inputImage RGB or RGBA vector image, or grey scale (single channel) scalar image
    * \param outputImage grey scale (single channel), 8 bit, unsigned char image, with 2 values, 0 = background, 1 = foreground.
    */
   void Segment(const mitk::Image::Pointer& inputImage,
                const mitk::Image::Pointer& outputImage
-               );
+              );
 
 protected:
 
@@ -69,17 +69,11 @@ protected:
    * \brief Constructor
    * \param networkDescriptionFileName .prototxt file
    * \param networkWeightsFileName .caffemodel file
-   * \param meanRGB additive offset, normally a mean value from the training process
-   * \param inputNetworkImageSize image size that the network expects
-   * \param outputLayerName name of the Caffe layer representing the output
-   * \param outputNetworkImageSize image size that the network outputs
    */
-  CaffeFCNSegmentor(const std::string&    networkDescriptionFileName,  // Purposefully hidden.
-                    const std::string&    networkWeightsFileName,
-                    const mitk::Vector3D& offsetRGB,
-                    const mitk::Point2I&  inputNetworkImageSize,
-                    const std::string&    outputLayerName,
-                    const mitk::Point2I&  outputNetworkImageSize
+  CaffeFCNSegmentor(const std::string& networkDescriptionFileName,  // Purposefully hidden.
+                    const std::string& networkWeightsFileName,
+                    const std::string& inputLayerName,
+                    const std::string& outputBlobName
                    );
   virtual ~CaffeFCNSegmentor();                                        // Purposefully hidden.
 
@@ -91,20 +85,21 @@ private:
   void ValidateInputs(const mitk::Image::Pointer& inputImage,
                       const mitk::Image::Pointer& outputImage);
 
-  boost::shared_ptr<caffe::MemoryDataLayer<float> > GetAndValidateMemoryLayer();
-
-  mitk::Vector3D                       m_OffsetRGB;
-  mitk::Point2I                        m_InputNetworkImageSize;
-  std::string                          m_OutputLayerName;
-  mitk::Point2I                        m_OutputNetworkImageSize;
+  std::string                          m_InputLayerName;
+  std::string                          m_OutputBlobName;
   std::unique_ptr<caffe::Net<float> >  m_Net;
   std::unique_ptr<caffe::Blob<float> > m_InputBlob;
   std::unique_ptr<caffe::Blob<float> > m_InputLabel;
+  mitk::Vector3D                       m_OffsetRGB;
+  mitk::Point2I                        m_Margin;
+  cv::Mat                              m_CroppedInputImage;
   cv::Mat                              m_ResizedInputImage;
   cv::Mat                              m_OffsetValueImage;
   cv::Mat                              m_InputImageWithOffset;
   cv::Mat                              m_DownSampledOutputImage;
   cv::Mat                              m_UpSampledOutputImage;
+  cv::Mat                              m_UpSampledPaddedOutputImage;
+
 }; // end class
 
 } // end namespace

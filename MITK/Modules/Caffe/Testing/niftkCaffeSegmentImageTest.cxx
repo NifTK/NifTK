@@ -32,23 +32,22 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
   // Always start with this, with name of function.
   MITK_TEST_BEGIN("niftkCaffeSegmentImageTest");
 
-  if (argc != 12)
+  if (argc != 11)
   {
-    MITK_ERROR << "Usage: niftkCaffeSegmentImageTest network.prototxt weights.caffemodel outputLayerName inputSizeX inputSizeY outputSizeX outputSizeY meanRed,meanGreen,meanBlue inputImage.png expectedOutputImage.png actualOutputImage.png";
+    MITK_ERROR << "Usage: niftkCaffeSegmentImageTest network.prototxt weights.caffemodel inputLayerName outputBlobName paddingX paddingY meanRed,meanGreen,meanBlue inputImage.png expectedOutputImage.png actualOutputImage.png";
     return EXIT_FAILURE;
   }
 
   std::string networkFile = argv[1];
   std::string weightsFile = argv[2];
-  std::string outputLayerName = argv[3];
-  int inputSizeX = atoi(argv[4]);
-  int inputSizeY = atoi(argv[5]);
-  int outputSizeX = atoi(argv[6]);
-  int outputSizeY = atoi(argv[7]);
-  std::string offsetString = argv[8];
-  std::string inputImageFileName = argv[9];
-  std::string expectedOutputImageFileName = argv[10];
-  std::string actualOutputImageFileName = argv[11]; // written to, for debugging.
+  std::string inputLayerName = argv[3];
+  std::string outputBlobName = argv[4];
+  int paddingX = atoi(argv[5]);
+  int paddingY = atoi(argv[6]);
+  std::string offsetString = argv[7];
+  std::string inputImageFileName = argv[8];
+  std::string expectedOutputImageFileName = argv[9];
+  std::string actualOutputImageFileName = argv[10]; // written to, for debugging.
 
   float offsets[3];
   boost::char_separator<char> sep(",");
@@ -89,21 +88,15 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
   offsetRGB[1] = offsets[1];
   offsetRGB[2] = offsets[2];
 
-  mitk::Point2I inputSize;
-  inputSize[0] = inputSizeX;
-  inputSize[1] = inputSizeY;
-
-  mitk::Point2I outputSize;
-  outputSize[0] = outputSizeX;
-  outputSize[1] = outputSizeY;
+  mitk::Point2I padding;
+  padding[0] = paddingX;
+  padding[1] = paddingY;
 
   niftk::CaffeFCNSegmentor::Pointer manager =
     niftk::CaffeFCNSegmentor::New(networkFile,
                                   weightsFile,
-                                  offsetRGB,
-                                  inputSize,
-                                  outputLayerName,
-                                  outputSize
+                                  inputLayerName,
+                                  outputBlobName
                                  );
 
   manager->Segment(inputImage, outputImage);
