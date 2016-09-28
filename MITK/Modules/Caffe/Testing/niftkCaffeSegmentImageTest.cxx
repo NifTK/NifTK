@@ -23,6 +23,8 @@
 #include <caffe/caffe.hpp>
 #include <boost/tokenizer.hpp>
 #include <highgui.h>
+#include <chrono>
+#include <ctime>
 
 /**
  * \file Test harness for niftk::CaffeManager.
@@ -99,7 +101,22 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
                                   outputBlobName
                                  );
 
+  std::chrono::time_point<std::chrono::system_clock> start, end;
+  start = std::chrono::system_clock::now();
+
   manager->Segment(inputImage, outputImage);
+
+  end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed = end-start;
+  std::cout << "elapsed time: " << elapsed.count() << "s\n";
+
+  start = std::chrono::system_clock::now();
+
+  manager->Segment(inputImage, outputImage);
+
+  end = std::chrono::system_clock::now();
+  elapsed = end-start;
+  std::cout << "elapsed time: " << elapsed.count() << "s\n";
 
   // For debugging:
   mitk::IOUtil::Save(outputImage, actualOutputImageFileName);
