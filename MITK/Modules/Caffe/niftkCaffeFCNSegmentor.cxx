@@ -14,6 +14,7 @@
 #include "niftkCaffeFCNSegmentor.h"
 #include <mitkExceptionMacro.h>
 #include <mitkImageWriteAccessor.h>
+#include <mitkIOUtil.h>
 #include <niftkOpenCVImageConversion.h>
 #include <highgui.h>
 
@@ -47,7 +48,7 @@ CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string&    networkDescriptionFil
   }
 
   m_OffsetValueImage = cvCreateMat(m_InputNetworkImageSize[1], m_InputNetworkImageSize[0], CV_32FC3);
-  m_OffsetValueImage.setTo(cv::Scalar(m_OffsetRGB[0], m_OffsetRGB[1], m_OffsetRGB[2]));
+  m_OffsetValueImage.setTo(cv::Vec3f(m_OffsetRGB[0], m_OffsetRGB[1], m_OffsetRGB[2]));
   m_InputImageWithOffset = cvCreateMat(m_InputNetworkImageSize[1], m_InputNetworkImageSize[0], CV_32FC3);
   m_InputBlob.reset(new caffe::Blob<float>(1, 3, m_InputNetworkImageSize[1], m_InputNetworkImageSize[0]));
   m_InputLabel.reset(new caffe::Blob<float>(1, 1, 1, 1));
@@ -59,6 +60,9 @@ CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string&    networkDescriptionFil
             << networkWeightsFileName
             << ", inputImageSize=" << m_InputNetworkImageSize
             << ", outputImageSize=" << m_OutputNetworkImageSize
+            << ", offsetValueImageSize=" << m_OffsetValueImage.size()
+            << ", inputImageWithOffsetSize=" << m_InputImageWithOffset.size()
+            << ", downSampledOutputImageSize=" << m_DownSampledOutputImage.size()
             << ", offsetRGB=" << m_OffsetRGB;
 }
 
@@ -106,7 +110,7 @@ void CaffeFCNSegmentor::ValidateInputs(const mitk::Image::Pointer& inputImage,
 boost::shared_ptr<caffe::MemoryDataLayer<float> > CaffeFCNSegmentor::GetAndValidateMemoryLayer()
 {
   boost::shared_ptr<caffe::MemoryDataLayer<float> > memoryLayer =
-      boost::dynamic_pointer_cast <caffe::MemoryDataLayer<float> >(m_Net->layers()[0]);
+      boost::dynamic_pointer_cast <caffe::MemoryDataLayer<float> >(m_Net->layer_by_name("data"));
 
   if (memoryLayer == nullptr)
   {
@@ -151,61 +155,84 @@ void CaffeFCNSegmentor::Segment(const mitk::Image::Pointer& inputImage,
   // As above, and images allocated in constructor, so no reallocating on the fly.
   cv::add(m_ResizedInputImage, m_OffsetValueImage, m_InputImageWithOffset, cv::noArray(), CV_32FC3);
 
-  // Find memory layer and check it fits the image.
-  boost::shared_ptr<caffe::MemoryDataLayer<float> > memoryLayer = this->GetAndValidateMemoryLayer();
-
   // Copy data to Caffe blob - ToDo - look for faster alternative.
-  // Assuming input = RGB or RGBA, and Caffe requires BGR
-  for (int c = 0; c < 3; ++c) // RGB, but could be RGBA, so limit to 3.
+  for (int c = 0; c < 3; ++c)
   {
-    int outputChannel;
-
-    if (c == 0)
-    {
-      outputChannel = 2;
-    }
-    else if (c == 1)
-    {
-      outputChannel = 1;
-    }
-    else if (c == 2)
-    {
-      outputChannel = 0;
-    }
-
     for (int h = 0; h < m_InputImageWithOffset.rows; ++h)
     {
       for (int w = 0; w < m_InputImageWithOffset.cols; ++w)
       {
-        m_InputBlob->mutable_cpu_data()[m_InputBlob->offset(0, outputChannel, h, w)]
+        m_InputBlob->mutable_cpu_data()[m_InputBlob->offset(0, c, h, w)]
           = m_InputImageWithOffset.at<cv::Vec3f>(h, w)[c];
       }
     }
   }
 
-  // Sets the data onto the input memory layer.
+  boost::shared_ptr<caffe::MemoryDataLayer<float> > memoryLayer = this->GetAndValidateMemoryLayer();
   memoryLayer->Reset(m_InputBlob->mutable_cpu_data(), m_InputLabel->mutable_cpu_data(), 1);
 
   // Runs Caffe classification.
   m_Net->Forward();
 
-  // Get output, and copy out - ToDo - look for faster alternative.
-  boost::shared_ptr<caffe::Blob<float> > outputBlob = m_Net->blob_by_name(m_OutputLayerName);
-  for (int h = 0; h < m_DownSampledOutputImage.rows; ++h)
+  double total = 0;
+  boost::shared_ptr<caffe::Blob<float> > conv0 = m_Net->blob_by_name("finalC");
+  std::cerr << "Matt, finalC=" << conv0->shape_string() << std::endl;
+
+  total = 0;
+
+  for (int c = 0; c < conv0->shape(1); c++)
   {
-    for (int w = 0; w < m_DownSampledOutputImage.cols; ++w)
+    for (int h = 0; h < conv0->shape(2); h++)
     {
-      if (  outputBlob->mutable_cpu_data()[outputBlob->offset(0, 1, h, w)]  // channel 1 = p(foreground)
-          > outputBlob->mutable_cpu_data()[outputBlob->offset(0, 0, h, w)]  // channel 2 = p(background)
-          )
+      for (int w = 0; w < conv0->shape(3); w++)
       {
-        m_DownSampledOutputImage.at<unsigned char>(h, w) = 255;
-      }
-      else
-      {
-        m_DownSampledOutputImage.at<unsigned char>(h, w) = 0;
+        total += conv0->cpu_data()[conv0->offset(0, c, h, w)];
       }
     }
+  }
+  std::cerr << "Matt, second total=" << total << std::endl;
+
+  std::vector<caffe::Blob<float>*> outputVecs = m_Net->output_blobs();
+
+  // Need to find output with correct size.
+  int i = 0;
+  total = 0;
+  for (i = 0; i < outputVecs.size(); i++)
+  {
+    caffe::Blob<float>* blob = outputVecs[i];
+
+    if (   blob->shape(0) == 1
+        && blob->shape(1) == 2
+        && blob->shape(2) == m_DownSampledOutputImage.rows
+        && blob->shape(3) == m_DownSampledOutputImage.cols
+       )
+    {
+
+      for (int h = 0; h < m_DownSampledOutputImage.rows; ++h)
+      {
+        for (int w = 0; w < m_DownSampledOutputImage.cols; ++w)
+        {
+          if (  blob->cpu_data()[blob->offset(0, 1, h, w)]  // channel 1 = p(foreground)
+              > blob->cpu_data()[blob->offset(0, 0, h, w)]  // channel 2 = p(background)
+              )
+          {
+            m_DownSampledOutputImage.at<unsigned char>(h, w) = 255;
+            total += 1;
+          }
+          else
+          {
+            m_DownSampledOutputImage.at<unsigned char>(h, w) = 0;
+          }
+        }
+      }
+      MITK_INFO << "Matt, total added to output=" << total << ", channel=" << i;
+      break;
+    }
+  }
+
+  if (i == outputVecs.size())
+  {
+    mitkThrow() << "Failed to find correct output blob.";
   }
 
   // Should not re-allocate if m_ResizedInputImage the right size.

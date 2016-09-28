@@ -31,7 +31,7 @@ namespace niftk
 
 /**
  * \class CaffeFCNSegmentor
- * \brief RAII class to coordinate Caffe FCN-based segmentation.
+ * \brief RAII class to coordinate Caffe FCN semantic segmentation.
  *
  * All errors must be thrown as a subclass of mitk::Exception.
  *
@@ -39,6 +39,13 @@ namespace niftk
  * initialise the network, so if the constructor is successful,
  * the class should be ready to segment. Then all subsequent
  * calls to the Segment method will compute a segmented image.
+ *
+ * This class assumes the existence of a Caffe MemoryData layer
+ * meaning that the images are loaded from in-memory.
+ * So, in the Segment() method, the inputImage is loaded into
+ * the MemoryData layer. The outputImage is the already-created
+ * unsigned char binary mask, which must be exactly the same size
+ * as the inputImage.
  */
 class NIFTKCAFFE_EXPORT CaffeFCNSegmentor : public itk::Object
 {
@@ -50,7 +57,7 @@ public:
   /**
    * \brief Segments the inputImage, and writes to outputImage.
    * \param inputImage RGB or RGBA image
-   * \param outputImage grey scale (single channel), 8 bit, unsigned char image.
+   * \param outputImage grey scale (single channel), 8 bit, unsigned char image, with 2 values, 0 = background, 1 = foreground.
    */
   void Segment(const mitk::Image::Pointer& inputImage,
                const mitk::Image::Pointer& outputImage
