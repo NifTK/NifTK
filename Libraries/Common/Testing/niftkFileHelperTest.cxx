@@ -70,41 +70,48 @@ int TestValidDirectory()
 //-----------------------------------------------------------------------------
 int TestMatchingPrefixAndExtension()
 {
-  if (!niftk::FilenameHasPrefixAndExtension("test1.txt", "", "txt"))
+  if (! ( niftk::FilenameHasPrefixAndExtension("test1.txt", "", "txt")))
   {
     std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return true if the prefix is empty, as this is valid, and the file extension matches." << std::endl;
     return EXIT_FAILURE;
   }
 
-  if (!niftk::FilenameHasPrefixAndExtension("test1.txt", "t", "txt"))
+  if ( ! (niftk::FilenameHasPrefixAndExtension("test1.txt", "t", "txt")))
   {
     std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return true if the prefix is non empty and the file extension matches." << std::endl;
     return EXIT_FAILURE;
   }
 
-  if (niftk::FilenameHasPrefixAndExtension("test1.txt", "t", "xt"))
+  if ( ! (niftk::FilenameHasPrefixAndExtension("test1.txt", "t", "xt")))
   {
-    std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return false if the extension is not the bit after the last dot." << std::endl;
+    std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return true if the extension is not the bit after the last dot." << std::endl;
     return EXIT_FAILURE;
   }
 
-  if (niftk::FilenameHasPrefixAndExtension("test1.txt", "t", ".txt"))
+  if ( ! (niftk::FilenameHasPrefixAndExtension("test1.txt", "t", ".txt")) )
   {
-    std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return false if the specified extension contains the dot." << std::endl;
+    std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return true if the specified extension contains the dot." << std::endl;
     return EXIT_FAILURE;
   }
 
-  if (niftk::FilenameHasPrefixAndExtension("test1.txt", "f", "txt"))
+  if ( niftk::FilenameHasPrefixAndExtension("test1.txt", "f", "txt") )
   {
     std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return false if the specified prefix is not empty and is not contained at the start of the file name." << std::endl;
     return EXIT_FAILURE;
   }
 
-  if (!(niftk::FilenameHasPrefixAndExtension("1.", "", "")))
+  if ( niftk::FilenameHasPrefixAndExtension("1.", "", "") )
   {
-    std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return false if the the extension is not specified, even if this matches the filename." << std::endl;
+    std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return false if the extension is not specified, even if this matches the filename." << std::endl;
     return EXIT_FAILURE;
   }
+
+  if ( ! (niftk::FilenameHasPrefixAndExtension("test.extrinsic.xml", "", ".extrinsic.xml")))
+  {
+    std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return true if the extension has more than one full stop" << std::endl;
+    return EXIT_FAILURE;
+  }
+
 
   return EXIT_SUCCESS;
 }
