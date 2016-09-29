@@ -17,16 +17,54 @@
 #include <mitkIOUtil.h>
 #include <niftkOpenCVImageConversion.h>
 #include <highgui.h>
+#include <cv.h>
+#include <caffe/caffe.hpp>
+#include <caffe/layers/memory_data_layer.hpp>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileName,  // Purposefully hidden.
-                                     const std::string& networkWeightsFileName,
-                                     const std::string& inputLayerName,
-                                     const std::string& outputBlobName
-                                    )
+class CaffeFCNSegmentorPrivate {
+
+public:
+
+  CaffeFCNSegmentorPrivate(const std::string& networkDescriptionFileName,
+                    const std::string& networkWeightsFileName,
+                    const std::string& inputLayerName,
+                    const std::string& outputBlobName
+                   );
+  virtual ~CaffeFCNSegmentorPrivate();
+
+  void SetRGBOffset(const mitk::Vector3D& offset);
+  void Segment(const mitk::Image::Pointer& inputImage, const mitk::Image::Pointer& outputImage);
+
+private:
+
+  void ValidateInputs(const mitk::Image::Pointer& inputImage,
+                      const mitk::Image::Pointer& outputImage);
+
+  std::string                          m_InputLayerName;
+  std::string                          m_OutputBlobName;
+  std::unique_ptr<caffe::Net<float> >  m_Net;
+  std::unique_ptr<caffe::Blob<float> > m_InputBlob;
+  std::unique_ptr<caffe::Blob<float> > m_InputLabel;
+  mitk::Vector3D                       m_OffsetRGB;
+  cv::Mat                              m_ResizedInputImage;
+  cv::Mat                              m_OffsetValueImage;
+  cv::Mat                              m_InputImageWithOffset;
+  cv::Mat                              m_DownSampledFloatImage;
+  cv::Mat                              m_UpSampledFloatImage;
+  cv::Mat                              m_ClassifiedImage;
+  cv::Mat                              m_ResizedOutputImage;
+};
+
+//-----------------------------------------------------------------------------
+CaffeFCNSegmentorPrivate::CaffeFCNSegmentorPrivate(const std::string& networkDescriptionFileName,
+                                                   const std::string& networkWeightsFileName,
+                                                   const std::string& inputLayerName,
+                                                   const std::string& outputBlobName
+                                                  )
 : m_InputLayerName(inputLayerName)
 , m_OutputBlobName(outputBlobName)
 , m_Net(nullptr)
@@ -63,7 +101,7 @@ CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileNa
 
 
 //-----------------------------------------------------------------------------
-CaffeFCNSegmentor::~CaffeFCNSegmentor()
+CaffeFCNSegmentorPrivate::~CaffeFCNSegmentorPrivate()
 {
   // m_Net destroyed by std::unique_ptr.
   // m_InputBlob destroyed by std::unique_ptr.
@@ -71,7 +109,7 @@ CaffeFCNSegmentor::~CaffeFCNSegmentor()
 
 
 //-----------------------------------------------------------------------------
-void CaffeFCNSegmentor::SetRGBOffset(const mitk::Vector3D& offset)
+void CaffeFCNSegmentorPrivate::SetRGBOffset(const mitk::Vector3D& offset)
 {
   m_OffsetRGB = offset;
   m_OffsetValueImage.setTo(cv::Vec3f(m_OffsetRGB[0], m_OffsetRGB[1], m_OffsetRGB[2]));
@@ -79,9 +117,9 @@ void CaffeFCNSegmentor::SetRGBOffset(const mitk::Vector3D& offset)
 
 
 //-----------------------------------------------------------------------------
-void CaffeFCNSegmentor::ValidateInputs(const mitk::Image::Pointer& inputImage,
-                                       const mitk::Image::Pointer& outputImage
-                                      )
+void CaffeFCNSegmentorPrivate::ValidateInputs(const mitk::Image::Pointer& inputImage,
+                                              const mitk::Image::Pointer& outputImage
+                                             )
 {
   if (inputImage.IsNull())
   {
@@ -124,8 +162,8 @@ void CaffeFCNSegmentor::ValidateInputs(const mitk::Image::Pointer& inputImage,
 
 
 //-----------------------------------------------------------------------------
-void CaffeFCNSegmentor::Segment(const mitk::Image::Pointer& inputImage,
-                                const mitk::Image::Pointer& outputImage)
+void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
+                                       const mitk::Image::Pointer& outputImage)
 {
 
   this->ValidateInputs(inputImage, outputImage);
@@ -229,6 +267,42 @@ void CaffeFCNSegmentor::Segment(const mitk::Image::Pointer& inputImage,
   mitk::ImageWriteAccessor writeAccess(outputImage);
   void* vPointer = writeAccess.GetData();
   memcpy(vPointer, m_ResizedOutputImage.data, m_ResizedOutputImage.rows * m_ResizedOutputImage.cols);
+}
+
+
+//-----------------------------------------------------------------------------
+CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileName,
+                                     const std::string& networkWeightsFileName,
+                                     const std::string& inputLayerName,
+                                     const std::string& outputBlobName
+                                    )
+: m_Impl(new CaffeFCNSegmentorPrivate(networkDescriptionFileName,
+                                      networkWeightsFileName,
+                                      inputLayerName,
+                                      outputBlobName
+                                      ))
+{
+}
+
+
+//-----------------------------------------------------------------------------
+CaffeFCNSegmentor::~CaffeFCNSegmentor()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void CaffeFCNSegmentor::SetRGBOffset(const mitk::Vector3D& offset)
+{
+  m_Impl->SetRGBOffset(offset);
+}
+
+
+//-----------------------------------------------------------------------------
+void CaffeFCNSegmentor::Segment(const mitk::Image::Pointer& inputImage,
+                                const mitk::Image::Pointer& outputImage)
+{
+  m_Impl->Segment(inputImage, outputImage);
 }
 
 } // end namespace

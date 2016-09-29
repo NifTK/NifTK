@@ -16,18 +16,17 @@
 #define niftkCaffeFCNSegmentor_h
 
 #include "niftkCaffeExports.h"
-#include <cv.h>
 #include <itkObject.h>
 #include <itkObjectFactoryBase.h>
 #include <mitkCommon.h>
 #include <mitkDataNode.h>
 #include <mitkImage.h>
 #include <memory>
-#include <caffe/caffe.hpp>
-#include <caffe/layers/memory_data_layer.hpp>
 
 namespace niftk
 {
+
+class CaffeFCNSegmentorPrivate;
 
 /**
  * \class CaffeFCNSegmentor
@@ -91,22 +90,8 @@ protected:
 
 private:
 
-  void ValidateInputs(const mitk::Image::Pointer& inputImage,
-                      const mitk::Image::Pointer& outputImage);
+  std::unique_ptr<CaffeFCNSegmentorPrivate> m_Impl;
 
-  std::string                          m_InputLayerName;
-  std::string                          m_OutputBlobName;
-  std::unique_ptr<caffe::Net<float> >  m_Net;
-  std::unique_ptr<caffe::Blob<float> > m_InputBlob;
-  std::unique_ptr<caffe::Blob<float> > m_InputLabel;
-  mitk::Vector3D                       m_OffsetRGB;
-  cv::Mat                              m_ResizedInputImage;
-  cv::Mat                              m_OffsetValueImage;
-  cv::Mat                              m_InputImageWithOffset;
-  cv::Mat                              m_DownSampledFloatImage;
-  cv::Mat                              m_UpSampledFloatImage;
-  cv::Mat                              m_ClassifiedImage;
-  cv::Mat                              m_ResizedOutputImage;
 }; // end class
 
 } // end namespace
