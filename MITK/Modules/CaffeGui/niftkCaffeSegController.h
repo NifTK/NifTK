@@ -66,6 +66,8 @@ protected:
   /// that returns an object whose class derives from niftk::BaseGUI.
   virtual BaseGUI* CreateGUI(QWidget* parent);
 
+  virtual void OnNodeRemoved(const mitk::DataNode* node);
+
 protected slots:
 
 private:
@@ -74,7 +76,8 @@ private:
   Q_DECLARE_PRIVATE(CaffeSegController);
 
   void InternalUpdate();
-
+  void SelectionChanged(const mitk::DataNode* node, const int& i);
+  void ClearNode(const int& i);
 };
 
 } // end namespace

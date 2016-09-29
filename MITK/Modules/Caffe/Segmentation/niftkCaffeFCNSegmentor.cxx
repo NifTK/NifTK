@@ -234,6 +234,7 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
   mitk::ImageWriteAccessor writeAccess(outputImage);
   void* vPointer = writeAccess.GetData();
   memcpy(vPointer, m_ResizedOutputImage.data, m_ResizedOutputImage.rows * m_ResizedOutputImage.cols);
+  outputImage->Modified();
 }
 
 

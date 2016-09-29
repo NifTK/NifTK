@@ -51,6 +51,10 @@ CaffeSegmentorView::CaffeSegmentorView(const CaffeSegmentorView& other)
 //-----------------------------------------------------------------------------
 CaffeSegmentorView::~CaffeSegmentorView()
 {
+  if (m_CaffeSegController != nullptr)
+  {
+    delete m_CaffeSegController;
+  }
 }
 
 
