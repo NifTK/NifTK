@@ -299,10 +299,13 @@ NDICAPITracker::NDICAPITracker()
 
   this->LastFrameNumber=0;
 
+  m_SuppressUpateErrorsAfterNRepeats = 5;
+  m_UpdateErrorRepeatCounter = 0;
+
   memset(this->CommandReply,0,VTK_NDI_REPLY_LEN);
 
   // PortName for data source is not required if RomFile is specified, so we don't need to enable this->RequirePortNameInDeviceSetConfiguration
-  
+
   // No callback function provided by the device, so the data capture thread will be used to poll the hardware and add new items to the buffer
   // NifTK commented out: this->StartThreadForInternalUpdates=true;
   // NifTK commented out: this->AcquisitionRate=50;
@@ -332,9 +335,9 @@ NDICAPITracker::~NDICAPITracker()
 //----------------------------------------------------------------------------
 std::string NDICAPITracker::GetSdkVersion()
 {
-  std::ostringstream version; 
-  version << "NDICAPI-" << NDICAPI_MAJOR_VERSION << "." << NDICAPI_MINOR_VERSION; 
-  return version.str(); 
+  std::ostringstream version;
+  version << "NDICAPI-" << NDICAPI_MAJOR_VERSION << "." << NDICAPI_MINOR_VERSION;
+  return version.str();
 }
 
 //----------------------------------------------------------------------------
@@ -345,7 +348,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::Probe()
     return PLUS_SUCCESS;
   }
   int errnum = NDI_OPEN_ERROR;
-  char *devicename = NULL;  
+  char *devicename = NULL;
   if (this->SerialPort > 0)
   {
     devicename = ndiDeviceName(this->SerialPort-1);
@@ -387,7 +390,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::Probe()
     this->Device = 0;
   }
   return PLUS_SUCCESS;
-} 
+}
 
 //----------------------------------------------------------------------------
 // Send a raw command to the tracking unit.
@@ -409,7 +412,7 @@ char *NDICAPITracker::Command(const char *command)
   {
     char *devicename = ndiDeviceName(this->SerialPort-1);
     this->Device = ndiOpen(devicename);
-    if (this->Device == 0) 
+    if (this->Device == 0)
     {
       std::cerr << ndiErrorString(NDI_OPEN_ERROR) << std::endl;
     }
@@ -428,15 +431,15 @@ char *NDICAPITracker::Command(const char *command)
 
 //----------------------------------------------------------------------------
 NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
-{ 
+{
   int baud = NDI_9600;
   switch (this->BaudRate)
   {
-  case 9600: baud = NDI_9600; break; 
-  case 14400: baud = NDI_14400; break; 
-  case 19200: baud = NDI_19200; break; 
-  case 38400: baud = NDI_38400; break; 
-  case 57600: baud = NDI_57600; break; 
+  case 9600: baud = NDI_9600; break;
+  case 14400: baud = NDI_14400; break;
+  case 19200: baud = NDI_19200; break;
+  case 38400: baud = NDI_38400; break;
+  case 57600: baud = NDI_57600; break;
   case 115200: baud = NDI_115200; break;
   case 921600: baud = NDI_921600; break;
   case 1228739: baud = NDI_1228739; break;
@@ -447,7 +450,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
 
   char *devicename = ndiDeviceName(this->SerialPort-1);
   this->Device = ndiOpen(devicename);
-  if (this->Device == 0) 
+  if (this->Device == 0)
   {
     std::cerr << "Failed to open port: " << (devicename == NULL ? "unknown" : devicename) << " - " << ndiErrorString(NDI_OPEN_ERROR) << std::endl;
     return PLUS_FAIL;
@@ -469,7 +472,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
     //ndiGetError(this->Device); // ignore the error
     ndiCommand(this->Device,"INIT:");
     errnum = ndiGetError(this->Device);
-    if (errnum) 
+    if (errnum)
     {
       std::cerr << ndiErrorString(errnum) << std::endl;
       ndiClose(this->Device);
@@ -482,7 +485,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
   // also: NOHANDSHAKE cuts down on CRC errs and timeouts
   ndiCommand(this->Device,"COMM:%d%03d%d",baud,NDI_8N1,NDI_NOHANDSHAKE);
   errnum = ndiGetError(this->Device);
-  if (errnum) 
+  if (errnum)
   {
     std::cerr << ndiErrorString(errnum) << std::endl;
     ndiClose(this->Device);
@@ -494,7 +497,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
   {
     const char* volumeSelectCommandReply=ndiCommand(this->Device,"VSEL:%d",this->MeasurementVolumeNumber);
     errnum = ndiGetError(this->Device);
-    if (errnum) 
+    if (errnum)
     {
       std::cerr << "Failed to set measurement volume "<< this->MeasurementVolumeNumber << ": " << ndiErrorString(errnum) << std::endl;
 
@@ -539,7 +542,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalConnect()
 
 //----------------------------------------------------------------------------
 NDICAPITracker::PlusStatus NDICAPITracker::InternalDisconnect()
-{ 
+{
   for (NdiToolDescriptorsType::iterator toolDescriptorIt=this->NdiToolDescriptors.begin(); toolDescriptorIt!=this->NdiToolDescriptors.end(); ++toolDescriptorIt)
   {
     this->ClearVirtualSromInTracker(toolDescriptorIt->second);
@@ -550,7 +553,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalDisconnect()
   // return to default comm settings
   ndiCommand(this->Device,"COMM:00000");
   int errnum = ndiGetError(this->Device);
-  if (errnum) 
+  if (errnum)
   {
     std::cerr << ndiErrorString(errnum) << std::endl;
   }
@@ -571,7 +574,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalStartRecording()
 
   ndiCommand(this->Device,"TSTART:");
   int errnum = ndiGetError(this->Device);
-  if (errnum) 
+  if (errnum)
   {
     std::cerr << "Failed TSTART: " << ndiErrorString(errnum) << std::endl;
     ndiClose(this->Device);
@@ -594,7 +597,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalStopRecording()
 
   ndiCommand(this->Device,"TSTOP:");
   int errnum = ndiGetError(this->Device);
-  if (errnum) 
+  if (errnum)
   {
     std::cerr << ndiErrorString(errnum) << std::endl;
   }
@@ -605,14 +608,24 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalStopRecording()
 
 //----------------------------------------------------------------------------
 NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
-{  
+{
   m_TrackerMatrices.clear();
 
   if (!this->IsDeviceTracking)
   {
-    std::cerr << "called Update() when NDI was not tracking" << std::endl;
+    if ( m_UpdateErrorRepeatCounter == m_SuppressUpateErrorsAfterNRepeats )
+    {
+      std::cerr << "called Update() when NDI was not tracking " << m_UpdateErrorRepeatCounter << " times, suppressing further errors." <<  std::endl;
+    }
+    if ( m_UpdateErrorRepeatCounter < m_SuppressUpateErrorsAfterNRepeats )
+    {
+      std::cerr << "called Update() when NDI was not tracking" << std::endl;
+    }
+    m_UpdateErrorRepeatCounter++;
     return PLUS_FAIL;
   }
+
+  m_UpdateErrorRepeatCounter = 0;
 
   int errnum=0;
 
@@ -658,7 +671,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
     if ((ndiPortStatus & ndiPortStatusValidFlags) != ndiPortStatusValidFlags
        || ndiToolAbsent
        || ndiPortStatus & NDI_OUT_OF_VOLUME
-       ) 
+       )
     {
       // missing. Log it?
     }
@@ -708,7 +721,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
 
     // convert status flags from NDI to Plus format
     const unsigned long ndiPortStatusValidFlags = NDI_TOOL_IN_PORT | NDI_INITIALIZED | NDI_ENABLED;
-    if ((ndiPortStatus & ndiPortStatusValidFlags) != ndiPortStatusValidFlags) 
+    if ((ndiPortStatus & ndiPortStatusValidFlags) != ndiPortStatusValidFlags)
     {
       toolFlags = TOOL_MISSING;
     }
@@ -732,10 +745,10 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
     toolToTrackerTransform->Transpose();
 
     // by default (if there is no camera frame number associated with
-    // the tool transformation) the most recent timestamp is used.    
+    // the tool transformation) the most recent timestamp is used.
     if (!ndiToolAbsent && ndiFrameIndex)
     {
-      // this will create a timestamp from the frame number      
+      // this will create a timestamp from the frame number
       toolFrameNumber = ndiFrameIndex;
       if (ndiFrameIndex>this->LastFrameNumber)
       {
@@ -750,7 +763,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
 
   // Update tool connections if a wired tool is plugged in
   if (ndiGetTXSystemStatus(this->Device) & NDI_PORT_OCCUPIED)
-  { 
+  {
     std::cerr << "A wired tool has been plugged into tracker " << std::endl; // NifTK commented out: (this->GetDeviceId()?this->GetDeviceId():"(unknown NDI tracker"));
     // Make the newly connected tools available
     this->EnableToolPorts();
@@ -799,10 +812,10 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
     ndiCommand(this->Device,"TSTOP:");
     int errnum = ndiGetError(this->Device);
     if (errnum)
-    { 
+    {
       std::cerr << ndiErrorString(errnum) << std::endl;
       status=PLUS_FAIL;
-    }    
+    }
   }
 
   // free ports that are waiting to be freed
@@ -815,7 +828,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
       ndiCommand(this->Device,"PHF:%02X",portHandle);
       int errnum = ndiGetError(this->Device);
       if (errnum)
-      { 
+      {
         std::cerr << ndiErrorString(errnum) << std::endl;
         status=PLUS_FAIL;
       }
@@ -828,7 +841,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
   for (NdiToolDescriptorsType::iterator toolDescriptorIt=this->NdiToolDescriptors.begin(); toolDescriptorIt!=this->NdiToolDescriptors.end(); ++toolDescriptorIt)
   {
     if (toolDescriptorIt->second.VirtualSROM != NULL) // wireless tool (or wired tool with virtual rom)
-	{  
+	{
       if (this->UpdatePortHandle(toolDescriptorIt->second)!=PLUS_SUCCESS)
       {
         std::cerr << "Failed to determine NDI port handle for tool " << toolDescriptorIt->first << std::endl;
@@ -846,7 +859,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
   {
     int errnum=0;
     int ntools=0;
-    do // repeat as necessary (in case multi-channel tools are used) 
+    do // repeat as necessary (in case multi-channel tools are used)
     {
       ndiCommand(this->Device,"PHSR:02");
       ntools = ndiGetPHSRNumberOfHandles(this->Device);
@@ -856,7 +869,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
         ndiCommand(this->Device,"PINIT:%02X",portHandle);
         errnum = ndiGetError(this->Device);
         if (errnum)
-        { 
+        {
           std::cerr << ndiErrorString(errnum) << std::endl;
           status=PLUS_FAIL;
         }
@@ -926,13 +939,13 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
     // NifTK commented out: {
     // NifTK commented out:   std::cerr << "Failed to get NDI tool: " << toolDescriptorIt->first << std::endl;
     // NifTK commented out:   status=PLUS_FAIL;
-    // NifTK commented out:   continue; 
+    // NifTK commented out:   continue;
     // NifTK commented out: }
 
     ndiCommand(this->Device,"PHINF:%02X0025",toolDescriptorIt->second.PortHandle);
     int errnum = ndiGetError(this->Device);
     if (errnum)
-    { 
+    {
       std::cerr << ndiErrorString(errnum) << std::endl;
       status=PLUS_FAIL;
       continue;
@@ -986,12 +999,12 @@ NDICAPITracker::PlusStatus NDICAPITracker::EnableToolPorts()
     ndiCommand(this->Device,"TSTART:");
     int errnum = ndiGetError(this->Device);
     if (errnum)
-    { 
+    {
       std::cerr << "Failed TSTART: " << ndiErrorString(errnum) << std::endl;
       status=PLUS_FAIL;
     }
   }
-  
+
   return status;
 }
 
@@ -1005,9 +1018,9 @@ void NDICAPITracker::DisableToolPorts()
     ndiCommand(this->Device,"TSTOP:");
     int errnum = ndiGetError(this->Device);
     if (errnum)
-    { 
+    {
       std::cerr << ndiErrorString(errnum) << std::endl;
-    }    
+    }
   }
 
   // disable all enabled tools
@@ -1019,9 +1032,9 @@ void NDICAPITracker::DisableToolPorts()
     ndiCommand(this->Device,"PDIS:%02X",portHandle);
     int errnum = ndiGetError(this->Device);
     if (errnum)
-    { 
+    {
       std::cerr << ndiErrorString(errnum) << std::endl;
-    }    
+    }
   }
 
   // disable the enabled ports
@@ -1036,7 +1049,7 @@ void NDICAPITracker::DisableToolPorts()
     ndiCommand(this->Device,"TSTART:");
     int errnum = ndiGetError(this->Device);
     if (errnum)
-    { 
+    {
       std::cerr << ndiErrorString(errnum) << std::endl;
     }
   }
@@ -1117,7 +1130,7 @@ NDICAPITracker::PlusStatus  NDICAPITracker::SetToolLED(const char* sourceId, int
 
 //----------------------------------------------------------------------------
 NDICAPITracker::PlusStatus NDICAPITracker::UpdatePortHandle(NdiToolDescriptor& toolDescriptor)
-{  
+{
   if (toolDescriptor.WiredPortNumber>=0) // wired tool
   {
     ndiCommand(this->Device, "PHSR:00");
@@ -1146,7 +1159,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::UpdatePortHandle(NdiToolDescriptor& t
     {
       std::cerr << "Active NDI tool not found in port " << toolDescriptor.WiredPortNumber <<". Make sure the tool is plugged in." << std::endl;
       return PLUS_FAIL;
-    }    
+    }
   }
   else // wireless tool
   {
@@ -1161,7 +1174,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::UpdatePortHandle(NdiToolDescriptor& t
     std::cerr << ndiErrorString(errnum) << std::endl;
     return PLUS_FAIL;
   }
-  
+
   return PLUS_SUCCESS;
 }
 
@@ -1185,7 +1198,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::SendSromToTracker(const NdiToolDescri
   }
 
   int errnum = ndiGetError(this->Device);
-  if (errnum) 
+  if (errnum)
   {
     std::cerr << "Failed to send SROM to NDI tracker" << std::endl;
     std::cerr << ndiErrorString(errnum) << std::endl;

@@ -31,6 +31,9 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
                                )
 : NDITracker(dataStorage, portName, deviceData, toolConfigFileName, preferredFramesPerSecond)
 {
+  m_SuppressUpateErrorsAfterNRepeats = 5;
+  m_UpdateErrorRepeatCounter = 0;
+
   // Baseclass will unpack the config file.
   // We must connect to tracker and start tracking.
   for (int i = 0; i < m_NavigationToolStorage->GetToolCount(); i++)
@@ -57,7 +60,7 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
       }
       catch (std::invalid_argument& e)
       {
-        mitkThrow() << "Caught '" << e.what() 
+        mitkThrow() << "Caught '" << e.what()
           << "', which probably means the Identifier field is not an integer"
           << " in the MITK IGTToolStorage file.";
       }
@@ -71,7 +74,7 @@ PLUSNDITracker::PLUSNDITracker(mitk::DataStorage::Pointer dataStorage,
         mitkThrow() << "Failed to read SROM from " << sromFileName;
       }
     }
-    m_Tracker.NdiToolDescriptors.insert(std::pair<std::string, 
+    m_Tracker.NdiToolDescriptors.insert(std::pair<std::string,
       niftk::NDICAPITracker::NdiToolDescriptor>(tool->GetToolName(), descriptor));
   }
 
@@ -100,13 +103,13 @@ PLUSNDITracker::~PLUSNDITracker()
   // Don't throw exceptions from destructor. Just log stuff.
   if (m_Tracker.InternalStopRecording() != niftk::NDICAPITracker::PLUS_SUCCESS)
   {
-    MITK_ERROR << "PLUSNDITracker::An error occured while stopping recording, check log file."; 
+    MITK_ERROR << "PLUSNDITracker::An error occured while stopping recording, check log file.";
     return;
   }
 
   if (m_Tracker.InternalDisconnect() != niftk::NDICAPITracker::PLUS_SUCCESS)
   {
-    MITK_ERROR << "PLUSNDITracker::An error occured while disconnecting, check log file."; 
+    MITK_ERROR << "PLUSNDITracker::An error occured while disconnecting, check log file.";
     return;
   }
 }
@@ -119,10 +122,19 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > PLUSNDITracker::GetTrackin
 
   if (m_Tracker.InternalUpdate() != niftk::NDICAPITracker::PLUS_SUCCESS)
   {
-    MITK_ERROR << "PLUSNDITracker::An error occured while retrieving matrices, check log file."; 
+    if ( m_UpdateErrorRepeatCounter == m_SuppressUpateErrorsAfterNRepeats )
+    {
+      MITK_ERROR << "PLUSNDITracker::An error occured while retrieving matrices, " <<  m_UpdateErrorRepeatCounter << " times, suppressing further messages";
+    }
+    if ( m_UpdateErrorRepeatCounter < m_SuppressUpateErrorsAfterNRepeats )
+    {
+      MITK_ERROR << "PLUSNDITracker::An error occured while retrieving matrices, check log file.";
+    }
+    m_UpdateErrorRepeatCounter++;
     return result;
   }
-  std::map<std::string, std::vector<double> > tmpMatrices = m_Tracker.GetTrackerMatrices(); // an empty result is not an error. 
+  m_UpdateErrorRepeatCounter = 0;
+  std::map<std::string, std::vector<double> > tmpMatrices = m_Tracker.GetTrackerMatrices(); // an empty result is not an error.
 
   // Convert the standard STL vector to a VTK matrix.
   std::map<std::string, std::vector<double> >::const_iterator iter;
