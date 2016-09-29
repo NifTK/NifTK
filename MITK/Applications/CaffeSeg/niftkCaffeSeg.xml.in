@@ -84,15 +84,6 @@
       <default>0</default>
     </boolean>
 
-    <float-vector>
-      <name>offset</name>
-      <longflag>offset</longflag>
-      <description>Value to add to input pixel.</description>
-      <label>offset</label>
-      <default>0,0,0</default>
-      <channel>input</channel>
-    </float-vector>
-
   </parameters>
 
 </executable>

@@ -69,7 +69,6 @@ int main(int argc, char* argv[])
 
     niftk::CaffeFCNSegmentor::Pointer manager
       = niftk::CaffeFCNSegmentor::New(model, weights, inputLayer, outputBlob);
-    manager->SetOffset(offset);
 
     std::vector<std::string> filesToProcess;
 

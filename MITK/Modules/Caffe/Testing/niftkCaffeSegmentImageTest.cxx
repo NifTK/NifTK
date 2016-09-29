@@ -21,7 +21,6 @@
 #include <mitkDataNode.h>
 #include <mitkIOUtil.h>
 #include <caffe/caffe.hpp>
-#include <boost/tokenizer.hpp>
 #include <highgui.h>
 #include <chrono>
 #include <ctime>
@@ -34,9 +33,9 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
   // Always start with this, with name of function.
   MITK_TEST_BEGIN("niftkCaffeSegmentImageTest");
 
-  if (argc != 11)
+  if (argc != 8)
   {
-    MITK_ERROR << "Usage: niftkCaffeSegmentImageTest network.prototxt weights.caffemodel inputLayerName outputBlobName paddingX paddingY meanRed,meanGreen,meanBlue inputImage.png expectedOutputImage.png actualOutputImage.png";
+    MITK_ERROR << "Usage: niftkCaffeSegmentImageTest network.prototxt weights.caffemodel inputLayerName outputBlobName inputImage.png expectedOutputImage.png actualOutputImage.png";
     return EXIT_FAILURE;
   }
 
@@ -44,22 +43,9 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
   std::string weightsFile = argv[2];
   std::string inputLayerName = argv[3];
   std::string outputBlobName = argv[4];
-  int paddingX = atoi(argv[5]);
-  int paddingY = atoi(argv[6]);
-  std::string offsetString = argv[7];
-  std::string inputImageFileName = argv[8];
-  std::string expectedOutputImageFileName = argv[9];
-  std::string actualOutputImageFileName = argv[10]; // written to, for debugging.
-
-  float offsets[3];
-  boost::char_separator<char> sep(",");
-  boost::tokenizer<boost::char_separator<char> > tokens(offsetString, sep);
-  int counter = 0;
-  for (const auto& t : tokens) {
-    offsets[counter] = atof(t.c_str());
-    counter++;
-  }
-  MITK_TEST_CONDITION_REQUIRED(counter == 3, "... Testing 3 comma separated values for mean RGB during training.");
+  std::string inputImageFileName = argv[5];
+  std::string expectedOutputImageFileName = argv[6];
+  std::string actualOutputImageFileName = argv[7]; // written to, for debugging.
 
   // Load input image, and create node.
   std::vector<std::string> imageFileNames;
@@ -82,17 +68,7 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
 
   const mitk::Image::Pointer outputImage = expectedOutputImage->Clone();
 
-  int dummyArgc = 3; // caffe command line parser doesn't like negative arguments.
-  caffe::GlobalInit(&dummyArgc, &argv);
-
-  std::vector<float> offset(3);
-  offset[0] = offsets[0];
-  offset[1] = offsets[1];
-  offset[2] = offsets[2];
-
-  mitk::Point2I padding;
-  padding[0] = paddingX;
-  padding[1] = paddingY;
+  caffe::GlobalInit(&argc, &argv);
 
   niftk::CaffeFCNSegmentor::Pointer manager =
     niftk::CaffeFCNSegmentor::New(networkFile,
@@ -100,7 +76,6 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
                                   inputLayerName,
                                   outputBlobName
                                  );
-  manager->SetOffset(offset);
 
   std::chrono::time_point<std::chrono::system_clock> start, end;
   start = std::chrono::system_clock::now();
