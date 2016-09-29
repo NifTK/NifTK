@@ -100,9 +100,9 @@ int TestMatchingPrefixAndExtension()
     return EXIT_FAILURE;
   }
 
-  if ( niftk::FilenameHasPrefixAndExtension("1.", "", "") )
+  if ( ! ( niftk::FilenameHasPrefixAndExtension("1.", "", "") ) )
   {
-    std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return false if the extension is not specified, even if this matches the filename." << std::endl;
+    std::cerr << "The method niftk::FilenameHasPrefixAndExtension should return true if the extension and prefix is not specified" << std::endl;
     return EXIT_FAILURE;
   }
 
