@@ -73,7 +73,7 @@ private slots:
 private:
 
   /// \brief The Caffe segmentor controller that realises the GUI logic behind the view.
-  CaffeSegController* m_CaffeSegController;
+  QScopedPointer<CaffeSegController> m_CaffeSegController;
 };
 
 } // end namespace

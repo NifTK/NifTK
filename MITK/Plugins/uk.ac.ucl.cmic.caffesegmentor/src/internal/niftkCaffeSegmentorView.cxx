@@ -51,10 +51,6 @@ CaffeSegmentorView::CaffeSegmentorView(const CaffeSegmentorView& other)
 //-----------------------------------------------------------------------------
 CaffeSegmentorView::~CaffeSegmentorView()
 {
-  if (m_CaffeSegController != nullptr)
-  {
-    delete m_CaffeSegController;
-  }
 }
 
 
@@ -77,7 +73,7 @@ void CaffeSegmentorView::CreateQtPartControl(QWidget* parent)
 {
   this->SetParent(parent);
 
-  m_CaffeSegController = new CaffeSegController(this);
+  m_CaffeSegController.reset(new CaffeSegController(this));
   m_CaffeSegController->SetupGUI(parent);
 
   // Retrieving preferences done in another method so we can call it on startup, and when prefs change.
