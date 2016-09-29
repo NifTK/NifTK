@@ -272,8 +272,9 @@ bool FilenameHasPrefixAndExtension(
   size_t extensionIndex = filename.rfind(extension);
   size_t extensionLength = extension.length();
   
-  if (prefixIndex == 0 &&
-      ( (extension.length() > 0 && extensionIndex == (filename.length() - extensionLength) ) || (extension.length() == 0)))
+  if ( prefixIndex == 0 &&
+      ( ( ( extension.length() > 0 ) && ( extensionIndex == (filename.length() - extensionLength) ) )
+        || (extension.length() == 0)))
   {
     result = true;
   }
