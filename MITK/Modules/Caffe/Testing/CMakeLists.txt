@@ -25,7 +25,7 @@ if(TARGET ${TESTDRIVER})
            data                           # input layer
            prediction                     # output blob
            5  5                           # padding
-           -127.34116,-189.179,-197.013   # additive offset for input pixels (RGB): (-128,-128,-128) + (0.65884,-61.179,-69.013)
+           -128.65884,-66.821,-58.987     # additive offset for input pixels (RGB): (-128,-128,-128) - (0.65884,-61.179,-69.013)
            ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/1449229588798812400_left.png
            ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/1449229588798812400_leftMask.png
            ${TEMP}/Caffe-Liver1-output.png
