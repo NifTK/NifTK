@@ -57,6 +57,7 @@ public:
 
   mitkClassMacroItkParent(CaffeFCNSegmentor, itk::Object)
   mitkNewMacro4Param(CaffeFCNSegmentor, const std::string&, const std::string&, const std::string&, const std::string&)
+  mitkNewMacro2Param(CaffeFCNSegmentor, const std::string&, const std::string&)
 
   /**
    * \brief Segments the inputImage, and writes to outputImage.
@@ -80,6 +81,10 @@ protected:
                     const std::string& inputLayerName,
                     const std::string& outputBlobName
                    );
+  CaffeFCNSegmentor(const std::string& networkDescriptionFileName,  // Purposefully hidden.
+                    const std::string& networkWeightsFileName
+                   );
+
   virtual ~CaffeFCNSegmentor();                                     // Purposefully hidden.
 
   CaffeFCNSegmentor(const CaffeFCNSegmentor&);                      // Purposefully not implemented.

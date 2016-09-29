@@ -253,6 +253,15 @@ CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileNa
 
 
 //-----------------------------------------------------------------------------
+CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileName,  // Purposefully hidden.
+                                     const std::string& networkWeightsFileName
+                                    )
+  : m_Impl(new CaffeFCNSegmentorPrivate(networkDescriptionFileName, networkWeightsFileName, "data", "prediction"))
+{
+}
+
+
+//-----------------------------------------------------------------------------
 CaffeFCNSegmentor::~CaffeFCNSegmentor()
 {
 }
