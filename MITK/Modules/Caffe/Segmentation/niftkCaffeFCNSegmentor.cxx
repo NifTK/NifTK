@@ -36,7 +36,7 @@ public:
                    );
   virtual ~CaffeFCNSegmentorPrivate();
 
-  void SetRGBOffset(const mitk::Vector3D& offset);
+  void SetOffset(const std::vector<float>& offset);
   void Segment(const mitk::Image::Pointer& inputImage, const mitk::Image::Pointer& outputImage);
 
 private:
@@ -49,7 +49,9 @@ private:
   std::unique_ptr<caffe::Net<float> >  m_Net;
   std::unique_ptr<caffe::Blob<float> > m_InputBlob;
   std::unique_ptr<caffe::Blob<float> > m_InputLabel;
-  mitk::Vector3D                       m_OffsetRGB;
+  std::vector<float>                   m_Offset;
+  int                                  m_NumberOfChannels;
+  int                                  m_FloatType;
   cv::Mat                              m_ResizedInputImage;
   cv::Mat                              m_OffsetValueImage;
   cv::Mat                              m_InputImageWithOffset;
@@ -90,13 +92,38 @@ CaffeFCNSegmentorPrivate::CaffeFCNSegmentorPrivate(const std::string& networkDes
                 << " in network:" << networkDescriptionFileName;
   }
 
-  m_OffsetRGB.Fill(0);
-  m_OffsetValueImage = cvCreateMat(memoryLayer->height(), memoryLayer->width(), CV_32FC3);
-  m_OffsetValueImage.setTo(cv::Vec3f(m_OffsetRGB[0], m_OffsetRGB[1], m_OffsetRGB[2]));
-  m_InputImageWithOffset = cvCreateMat(memoryLayer->height(), memoryLayer->width(), CV_32FC3);
-  m_InputBlob.reset(new caffe::Blob<float>(1, 3, memoryLayer->height(), memoryLayer->width()));
+  m_NumberOfChannels = memoryLayer->channels();
+  if (m_NumberOfChannels != 1 && m_NumberOfChannels != 3)
+  {
+    mitkThrow() << "Currently, only 1 or 3 channel RGB networks are supported.";
+  }
+
+  m_Offset.resize(m_NumberOfChannels);
+  for (int i = 0; i < m_Offset.size(); i++)
+  {
+    m_Offset[i] = 0;
+  }
+
+  if (m_NumberOfChannels == 1)
+  {
+    m_FloatType = CV_32FC1;
+    m_OffsetValueImage = cvCreateMat(memoryLayer->height(), memoryLayer->width(), m_FloatType);
+    m_OffsetValueImage.setTo(m_Offset[0]);
+  }
+  else
+  {
+    m_FloatType = CV_32FC3;
+    m_OffsetValueImage = cvCreateMat(memoryLayer->height(), memoryLayer->width(), m_FloatType);
+    m_OffsetValueImage.setTo(cv::Vec3f(m_Offset[0], m_Offset[1], m_Offset[2]));
+  }
+
+  m_InputImageWithOffset = cvCreateMat(memoryLayer->height(), memoryLayer->width(), m_FloatType);
+  m_InputBlob.reset(new caffe::Blob<float>(1, memoryLayer->channels(), memoryLayer->height(), memoryLayer->width()));
   m_InputLabel.reset(new caffe::Blob<float>(1, 1, 1, 1));
   m_InputLabel->mutable_cpu_data()[m_InputBlob->offset(0, 0, 0, 0)] = 1;
+
+  MITK_INFO << "CaffeFCNSegmentorPrivate: Running in " << m_NumberOfChannels
+            << " channel mode, with float type=" << m_FloatType;
 }
 
 
@@ -109,10 +136,30 @@ CaffeFCNSegmentorPrivate::~CaffeFCNSegmentorPrivate()
 
 
 //-----------------------------------------------------------------------------
-void CaffeFCNSegmentorPrivate::SetRGBOffset(const mitk::Vector3D& offset)
+void CaffeFCNSegmentorPrivate::SetOffset(const std::vector<float>& offset)
 {
-  m_OffsetRGB = offset;
-  m_OffsetValueImage.setTo(cv::Vec3f(m_OffsetRGB[0], m_OffsetRGB[1], m_OffsetRGB[2]));
+  if (offset.size() != 1 && offset.size() != 3)
+  {
+    mitkThrow() << "Only 1 or 3 channels are supported.";
+  }
+  if (offset.size() != m_NumberOfChannels)
+  {
+    mitkThrow() << "Programming bug: offset size=" << offset.size()
+                << ", channels=" << m_NumberOfChannels;
+  }
+
+  m_Offset = offset;
+  if (m_NumberOfChannels == 1)
+  {
+    m_OffsetValueImage.setTo(m_Offset[0]);
+    MITK_INFO << "CaffeFCNSegmentorPrivate: offset=" << m_Offset[0];
+  }
+  else
+  {
+    m_OffsetValueImage.setTo(cv::Vec3f(m_Offset[0], m_Offset[1], m_Offset[2]));
+    MITK_INFO << "CaffeFCNSegmentorPrivate: offset=" <<
+                 m_Offset[0] << ", " << m_Offset[1] << ", " << m_Offset[2];
+  }
 }
 
 
@@ -173,17 +220,31 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
 
   cv::Mat wrappedImage = niftk::MitkImageToOpenCVMat(inputImage);
   cv::resize(wrappedImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
-  cv::add(m_ResizedInputImage, m_OffsetValueImage, m_InputImageWithOffset, cv::noArray(), CV_32FC3);
+  cv::add(m_ResizedInputImage, m_OffsetValueImage, m_InputImageWithOffset, cv::noArray(), m_FloatType);
 
   // Copy data to Caffe blob.
-  for (int c = 0; c < 3; ++c)
+  if (m_NumberOfChannels == 1)
   {
     for (int h = 0; h < m_InputImageWithOffset.rows; ++h)
     {
       for (int w = 0; w < m_InputImageWithOffset.cols; ++w)
       {
-        m_InputBlob->mutable_cpu_data()[m_InputBlob->offset(0, c, h, w)]
-          = m_InputImageWithOffset.at<cv::Vec3f>(h, w)[c];
+        m_InputBlob->mutable_cpu_data()[m_InputBlob->offset(0, 0, h, w)]
+          = m_InputImageWithOffset.at<unsigned char>(h, w);
+      }
+    }
+  }
+  else
+  {
+    for (int c = 0; c < m_NumberOfChannels; ++c)
+    {
+      for (int h = 0; h < m_InputImageWithOffset.rows; ++h)
+      {
+        for (int w = 0; w < m_InputImageWithOffset.cols; ++w)
+        {
+          m_InputBlob->mutable_cpu_data()[m_InputBlob->offset(0, c, h, w)]
+            = m_InputImageWithOffset.at<cv::Vec3f>(h, w)[c];
+        }
       }
     }
   }
@@ -223,10 +284,8 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
       }
     }
   }
-
   cv::resize(m_DownSampledFloatImage, m_UpSampledFloatImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
 
-  // We want the output directly (float, 2 channel), so we can scale up, which interpolates.
   if (   m_ClassifiedImage.rows != memoryLayer->height()
       || m_ClassifiedImage.cols != memoryLayer->width()
       || m_ClassifiedImage.channels() != 1
@@ -292,9 +351,9 @@ CaffeFCNSegmentor::~CaffeFCNSegmentor()
 
 
 //-----------------------------------------------------------------------------
-void CaffeFCNSegmentor::SetRGBOffset(const mitk::Vector3D& offset)
+void CaffeFCNSegmentor::SetOffset(const std::vector<float>& offset)
 {
-  m_Impl->SetRGBOffset(offset);
+  m_Impl->SetOffset(offset);
 }
 
 

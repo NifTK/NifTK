@@ -58,7 +58,7 @@ public:
   mitkClassMacroItkParent(CaffeFCNSegmentor, itk::Object)
   mitkNewMacro4Param(CaffeFCNSegmentor, const std::string&, const std::string&, const std::string&, const std::string&)
 
-  void SetRGBOffset(const mitk::Vector3D& offset);
+  void SetOffset(const std::vector<float>& offset);
 
   /**
    * \brief Segments the inputImage, and writes to outputImage.

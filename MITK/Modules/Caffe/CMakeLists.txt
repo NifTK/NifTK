@@ -19,6 +19,7 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
 endif()
 
 MITK_CREATE_MODULE(
+  INCLUDE_DIRS Segmentation
   DEPENDS ${_modules}
   PACKAGE_DEPENDS Caffe OpenCV
 )

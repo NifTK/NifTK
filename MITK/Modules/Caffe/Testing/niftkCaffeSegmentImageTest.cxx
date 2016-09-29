@@ -85,7 +85,7 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
   int dummyArgc = 3; // caffe command line parser doesn't like negative arguments.
   caffe::GlobalInit(&dummyArgc, &argv);
 
-  mitk::Vector3D offset;
+  std::vector<float> offset(3);
   offset[0] = offsets[0];
   offset[1] = offsets[1];
   offset[2] = offsets[2];
@@ -100,7 +100,7 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
                                   inputLayerName,
                                   outputBlobName
                                  );
-  manager->SetRGBOffset(offset);
+  manager->SetOffset(offset);
 
   std::chrono::time_point<std::chrono::system_clock> start, end;
   start = std::chrono::system_clock::now();

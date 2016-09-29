@@ -12,6 +12,10 @@
 #
 #============================================================================*/
 
+find_package(Caffe)
+include_directories(${Caffe_INCLUDE_DIRS})
+add_definitions(${Caffe_DEFINITIONS})
+
 NIFTK_CREATE_COMMAND_LINE_APPLICATION(
   NAME niftkCaffeSeg
   BUILD_SLICER
@@ -19,4 +23,5 @@ NIFTK_CREATE_COMMAND_LINE_APPLICATION(
   TARGET_LIBRARIES
     niftkCore
     niftkCaffe
+    ${Caffe_LIBRARIES}
 )

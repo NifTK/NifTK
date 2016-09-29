@@ -13,13 +13,17 @@
 =============================================================================*/
 
 #include <niftkCaffeSegCLP.h>
+#include <niftkCaffeFCNSegmentor.h>
 #include <mitkException.h>
 #include <mitkVector.h>
 #include <mitkDataNode.h>
-
+#include <mitkBaseData.h>
+#include <mitkImage.h>
+#include <mitkIOUtil.h>
 #include <cstdlib>
 #include <limits>
 #include <stdexcept>
+#include <caffe/caffe.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -28,7 +32,6 @@ int main(int argc, char* argv[])
 
   try
   {
-
     if (model.empty() || weights.empty())
     {
       commandLine.getOutput()->usage(commandLine);
@@ -41,17 +44,30 @@ int main(int argc, char* argv[])
       return returnStatus;
     }
 
-    // Load input image, and create node.
-    mitk::DataNode::ConstPointer inputImage;
-    mitk::DataNode::Pointer outputImage = mitk::DataNode::New();
+    if (!outputImage.empty() && !inputDir.empty())
+    {
+      MITK_ERROR << "You should not specify both --outputImage and --inputDir. Its one or the other." << std::endl;
+      return returnStatus;
+    }
 
-//    niftk::CaffeFCNSegmentor::Pointer manager = niftk::CaffeManager::New(model, weights);
+    std::vector<mitk::BaseData::Pointer> images = mitk::IOUtil::Load(inputImage);
+    mitk::Image::Pointer ipImage = dynamic_cast<mitk::Image*>(images[0].GetPointer());
 
-    // ToDo: Create an mitk::DataStorage like we do in unit tests 
-    // manager->Segment(dataStorage, inputImage);
+    mitk::Image::Pointer opImage = mitk::Image::New();
+    mitk::PixelType pt = mitk::MakeScalarPixelType<unsigned char>();
+    unsigned int dim[] = { ipImage->GetDimension(0), ipImage->GetDimension(1)};
+    opImage->Initialize( pt, 2, dim);
 
-    // ToDo: Write output image
-    //
+    int dummyArgc = 1;
+    caffe::GlobalInit(&dummyArgc, &argv);
+
+    niftk::CaffeFCNSegmentor::Pointer manager
+      = niftk::CaffeFCNSegmentor::New(model, weights, inputLayer, outputBlob);
+    manager->SetOffset(offset);
+    manager->Segment(ipImage, opImage);
+
+    mitk::IOUtil::Save(opImage, outputImage);
+
     returnStatus = EXIT_SUCCESS;
   }
   catch (mitk::Exception& e)

@@ -76,10 +76,10 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
         add_subdirectory(SURF)
       endif()
 
-    endif()
+      if(BUILD_CAFFE)
+        add_subdirectory(CaffeSeg)
+      endif()
 
-    if(BUILD_CAFFE)
-      add_subdirectory(CaffeSeg)
     endif()
 
   endif()

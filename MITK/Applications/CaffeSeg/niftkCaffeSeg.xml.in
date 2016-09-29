@@ -2,12 +2,13 @@
 <executable>
   <category>Laparoscopic Demo</category>
   <title>Caffe Segmentation</title>
-  <description><![CDATA[Segments an image using a Caffe Deeply Learnt Network.]]></description>
+  <description><![CDATA[Segments an image into foreground/background using a Caffe.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
   <contributor>Matt Clarkson</contributor>
   <acknowledgements><![CDATA[]]></acknowledgements>
+
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
@@ -28,6 +29,13 @@
       <channel>input</channel>
     </file>
 
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Optional Parameters]]></description>
+
+
     <file fileExtensions=".png,.bmp">
       <name>inputImage</name>
       <longflag>inputImage</longflag>
@@ -35,7 +43,7 @@
       <label>Input Image</label>
       <channel>input</channel>
     </file>
- 
+
     <file fileExtensions=".png">
       <name>outputImage</name>
       <longflag>outputImage</longflag>
@@ -44,19 +52,29 @@
       <channel>output</channel>
     </file>
 
-  </parameters>
+    <directory>
+      <name>inputDir</name>
+      <longflag>inputDir</longflag>
+      <description>A directory containing many images.</description>
+      <label>Input Directory</label>
+      <channel>input</channel>
+    </directory>
 
-  <parameters>
-    <label>Optional Parameters</label>
-    <description><![CDATA[Optional Parameters]]></description>
+    <string>
+      <name>inputLayer</name>
+      <longflag>inputLayer</longflag>
+      <description>Name of the MemoryData layer in Caffe architecture.</description>
+      <label>Input Layer</label>
+      <default>data</default>
+    </string>
 
-    <integer>
-      <name>iterations</name>
-      <longflag>iterations</longflag>
-      <description>Iterations</description>
-      <label>Iterations</label>
-      <default>1</default>
-    </integer>
+    <string>
+      <name>outputBlob</name>
+      <longflag>outputBlob</longflag>
+      <description>Name of the output predication blob in Caffe architecture.</description>
+      <label>Output blob</label>
+      <default>prediction</default>
+    </string>
 
     <boolean>
       <name>gpu</name>
@@ -66,13 +84,14 @@
       <default>0</default>
     </boolean>
 
-    <directory>
-      <name>inputDir</name>
-      <longflag>inputDir</longflag>
-      <description>A directory containing many images.</description>
-      <label>Input Directory</label>
+    <float-vector>
+      <name>offset</name>
+      <longflag>offset</longflag>
+      <description>Value to add to input pixel.</description>
+      <label>offset</label>
+      <default>0,0,0</default>
       <channel>input</channel>
-    </directory>
+    </float-vector>
 
   </parameters>
 
