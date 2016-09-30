@@ -34,7 +34,7 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
 {
   Ui_IGIDataSourceManagerWidget::setupUi(parent);
 
-  m_PlaybackWidget = new IGIDataSourcePlaybackWidget ( dataStorage, m_Lock, m_Manager, groupBox_2 );
+  m_PlaybackWidget = new IGIDataSourcePlaybackWidget ( dataStorage, m_Manager, groupBox_2 );
   QList<QString> namesOfFactories = m_Manager->GetAllFactoryNames();
   foreach (QString factory, namesOfFactories)
   {
@@ -131,32 +131,24 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::SetDirectoryPrefix(const QString& directoryPrefix)
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->SetDirectoryPrefix(directoryPrefix);
 }
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::SetFramesPerSecond(const int& framesPerSecond)
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->SetFramesPerSecond(framesPerSecond);
 }
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::PauseUpdate()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->StopUpdateTimer();
 }
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::RestartUpdate()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->StartUpdateTimer();
 }
 
