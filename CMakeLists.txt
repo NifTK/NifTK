@@ -1832,7 +1832,7 @@ endif()
 if(BUILD_CAFFE)
 
   if(WIN32)
-    set(_library_sub_dir "\bin")
+    set(_library_sub_dir "/bin")
   else()
     set(_library_sub_dir "/lib")
   endif()
