@@ -25,7 +25,7 @@ if(TARGET ${TESTDRIVER})
            data                           # input layer
            prediction                     # output blob
            ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/1449229588798812400_left.png
-           ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/1449229588798812400_leftMask.png
+           ${NIFTK_DATA_DIR}/Input/Caffe/Liver-2016-09-27/1449229588798812400_leftMask_niftk.png
            ${TEMP}/Caffe-Liver1-output.png
            )
 
@@ -36,7 +36,7 @@ if(TARGET ${TESTDRIVER})
            data                           # input layer
            prediction                     # name of output node
            ${NIFTK_DATA_DIR}/Input/Caffe/Phantom-2016-09-27/1386775970515321200_left.png
-           ${NIFTK_DATA_DIR}/Input/Caffe/Phantom-2016-09-27/1386775970515321200_leftMask.png
+           ${NIFTK_DATA_DIR}/Input/Caffe/Phantom-2016-09-27/1386775970515321200_leftMask_niftk.png
            ${TEMP}/Caffe-Phantom1-output.png
            )
 endif()
