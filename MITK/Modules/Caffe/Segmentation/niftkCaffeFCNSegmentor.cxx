@@ -46,10 +46,12 @@ private:
   std::string                          m_InputLayerName;
   std::string                          m_OutputBlobName;
   std::unique_ptr<caffe::Net<float> >  m_Net;
+  cv::Mat                              m_TransposedInputImage;
   cv::Mat                              m_ResizedInputImage;
   cv::Mat                              m_DownSampledFloatImage;
   cv::Mat                              m_UpSampledFloatImage;
   cv::Mat                              m_ClassifiedImage;
+  cv::Mat                              m_TransposedOutputImage;
   cv::Mat                              m_ResizedOutputImage;
 };
 
@@ -148,7 +150,8 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
       boost::dynamic_pointer_cast <caffe::MemoryDataLayer<float> >(m_Net->layer_by_name(m_InputLayerName));
 
   cv::Mat wrappedImage = niftk::MitkImageToOpenCVMat(inputImage);
-  cv::resize(wrappedImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
+  cv::transpose(wrappedImage, m_TransposedInputImage);
+  cv::resize(m_TransposedInputImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
 
   std::vector<cv::Mat> dv;
   dv.push_back(m_ResizedInputImage);
@@ -192,15 +195,16 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
       }
     }
   }
-  cv::resize(m_DownSampledFloatImage, m_UpSampledFloatImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
 
-  if (   m_ClassifiedImage.rows != memoryLayer->height()
-      || m_ClassifiedImage.cols != memoryLayer->width()
+  cv::resize(m_DownSampledFloatImage, m_UpSampledFloatImage, cv::Size(memoryLayer->width(), memoryLayer->height()), 0, 0, CV_INTER_CUBIC);
+
+  if (   m_ClassifiedImage.rows != m_UpSampledFloatImage.rows
+      || m_ClassifiedImage.cols != m_UpSampledFloatImage.cols
       || m_ClassifiedImage.channels() != 1
       || m_ClassifiedImage.type() != CV_8UC1
       )
   {
-    m_ClassifiedImage = cvCreateMat(memoryLayer->height(), memoryLayer->width(), CV_8UC1);
+    m_ClassifiedImage = cvCreateMat(m_UpSampledFloatImage.rows, m_UpSampledFloatImage.cols, CV_8UC1);
   }
 
   // Now copy data out.
@@ -227,8 +231,9 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
     m_ResizedOutputImage = cvCreateMat(wrappedImage.rows, wrappedImage.cols, CV_8UC1);
   }
 
-  // Should not keep re-allocating if m_ResizedOutputImage the right size.
-  cv::resize(m_ClassifiedImage, m_ResizedOutputImage, cv::Size(wrappedImage.cols, wrappedImage.rows), 0, 0, CV_INTER_NN);
+  // Should not keep re-allocating if m_TransposedOutputImage or m_ResizedOutputImage the right size.
+  cv::transpose(m_ClassifiedImage, m_TransposedOutputImage);
+  cv::resize(m_TransposedOutputImage, m_ResizedOutputImage, cv::Size(wrappedImage.cols, wrappedImage.rows), 0, 0, CV_INTER_NN);
 
   // Copy to output. This relies on the fact that output is always 1 channel, 8 bit, uchar.
   mitk::ImageWriteAccessor writeAccess(outputImage);
