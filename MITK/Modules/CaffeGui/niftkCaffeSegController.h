@@ -78,7 +78,7 @@ private:
   void ClearNode(const int& i);
   void SelectionChanged(const mitk::DataNode* node, const int& i);
   void InternalUpdate();
-  void InternalUpdate(const int& i);
+  void InternalUpdateBackground();
 };
 
 } // end namespace

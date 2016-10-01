@@ -15,8 +15,11 @@
 #include "niftkCaffeSegController.h"
 #include <niftkCaffeFCNSegmentor.h>
 #include <Internal/niftkCaffeSegGUI.h>
+#include <mitkRenderingManager.h>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QFuture>
+#include <QtConcurrentRun>
 
 namespace niftk
 {
@@ -36,6 +39,7 @@ public:
   std::string                       m_NetworkWeightsFileName;
   bool                              m_IsUpdatingManually;
   QMutex                            m_Lock;
+  QFuture<void>                     m_BackgroundProcess;
 
   niftk::CaffeFCNSegmentor::Pointer m_Segmentors[2];
   mitk::DataNode*                   m_DataNodes[2];
@@ -279,29 +283,35 @@ void CaffeSegController::InternalUpdate()
   Q_D(CaffeSegController);
   QMutexLocker locker(&d->m_Lock);
 
-  for (int i = 0; i < 2; i++)
+  if (!d->m_BackgroundProcess.isRunning())
   {
+    d->m_BackgroundProcess = QtConcurrent::run(this, &niftk::CaffeSegController::InternalUpdateBackground);
   }
 }
 
 
-void CaffeSegController::InternalUpdate(const int& i)
+//-----------------------------------------------------------------------------
+void CaffeSegController::InternalUpdateBackground()
 {
   Q_D(CaffeSegController);
   QMutexLocker locker(&d->m_Lock);
 
-  if (   d->m_Segmentors[i].IsNotNull()
-      && d->m_DataNodes[i] != nullptr)
+  for (int i = 0; i < 2; i++)
   {
-    mitk::Image::Pointer im1 = dynamic_cast<mitk::Image*>(d->m_DataNodes[i]->GetData());
-    mitk::Image::Pointer im2 = dynamic_cast<mitk::Image*>(d->m_SegmentedNodes[i]->GetData());
-
-    if (im1.IsNotNull() && im2.IsNotNull())
+    if (   d->m_Segmentors[i].IsNotNull()
+        && d->m_DataNodes[i] != nullptr)
     {
-      d->m_Segmentors[i]->Segment(im1, im2);
-      d->m_SegmentedNodes[i]->Modified();
+      mitk::Image::Pointer im1 = dynamic_cast<mitk::Image*>(d->m_DataNodes[i]->GetData());
+      mitk::Image::Pointer im2 = dynamic_cast<mitk::Image*>(d->m_SegmentedNodes[i]->GetData());
+
+      if (im1.IsNotNull() && im2.IsNotNull())
+      {
+        d->m_Segmentors[i]->Segment(im1, im2);
+        d->m_SegmentedNodes[i]->Modified();
+      }
     }
   }
+  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 } // end namespace
