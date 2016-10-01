@@ -16,7 +16,6 @@
 #include <mitkImageWriteAccessor.h>
 #include <mitkIOUtil.h>
 #include <niftkOpenCVImageConversion.h>
-#include <highgui.h>
 #include <cv.h>
 #include <caffe/caffe.hpp>
 #include <caffe/layers/memory_data_layer.hpp>
@@ -262,7 +261,7 @@ CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileNa
 CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileName,  // Purposefully hidden.
                                      const std::string& networkWeightsFileName
                                     )
-  : m_Impl(new CaffeFCNSegmentorPrivate(networkDescriptionFileName, networkWeightsFileName, "data", "prediction"))
+: m_Impl(new CaffeFCNSegmentorPrivate(networkDescriptionFileName, networkWeightsFileName, "data", "prediction"))
 {
 }
 

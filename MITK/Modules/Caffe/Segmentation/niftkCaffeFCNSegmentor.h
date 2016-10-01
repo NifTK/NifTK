@@ -62,7 +62,7 @@ public:
   /**
    * \brief Segments the inputImage, and writes to outputImage.
    * \param inputImage RGB or RGBA vector image, or grey scale (single channel) scalar image
-   * \param outputImage grey scale (single channel), 8 bit, unsigned char image, with 2 values, 0 = background, 1 = foreground.
+   * \param outputImage grey scale (single channel), 8 bit, unsigned char image, with 2 values, 0 = background, 255 = foreground.
    */
   void Segment(const mitk::Image::Pointer& inputImage,
                const mitk::Image::Pointer& outputImage);
