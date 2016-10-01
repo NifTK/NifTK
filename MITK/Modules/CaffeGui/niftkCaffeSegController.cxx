@@ -15,7 +15,8 @@
 #include "niftkCaffeSegController.h"
 #include <niftkCaffeFCNSegmentor.h>
 #include <Internal/niftkCaffeSegGUI.h>
-#include <itkFastMutexLock.h>
+#include <QMutex>
+#include <QMutexLocker>
 
 namespace niftk
 {
@@ -34,7 +35,7 @@ public:
   std::string                       m_NetworkDescriptionFileName;
   std::string                       m_NetworkWeightsFileName;
   bool                              m_IsUpdatingManually;
-  itk::FastMutexLock::Pointer       m_Mutex;
+  QMutex                            m_Lock;
 
   niftk::CaffeFCNSegmentor::Pointer m_Segmentors[2];
   mitk::DataNode*                   m_DataNodes[2];
@@ -46,7 +47,7 @@ public:
 CaffeSegControllerPrivate::CaffeSegControllerPrivate(CaffeSegController* caffeSegController)
 : q_ptr(caffeSegController)
 , m_IsUpdatingManually(false)
-, m_Mutex(itk::FastMutexLock::New())
+, m_Lock(QMutex::Recursive)
 {
   Q_Q(CaffeSegController);
   for (int i = 0; i < 2; i++)
@@ -76,6 +77,8 @@ CaffeSegController::CaffeSegController(IBaseView* view)
 CaffeSegController::~CaffeSegController()
 {
   Q_D(CaffeSegController);
+  QMutexLocker locker(&d->m_Lock);
+
   for (int i = 0; i < 2; i++)
   {
     if (d->m_SegmentedNodes[i].IsNotNull())
@@ -112,7 +115,7 @@ void CaffeSegController::SetupGUI(QWidget* parent)
 void CaffeSegController::SetNetworkDescriptionFileName(const std::string& description)
 {
   Q_D(CaffeSegController);
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
+  QMutexLocker locker(&d->m_Lock);
 
   d->m_NetworkDescriptionFileName = description;
 }
@@ -122,7 +125,7 @@ void CaffeSegController::SetNetworkDescriptionFileName(const std::string& descri
 void CaffeSegController::SetNetworkWeightsFileName(const std::string& weights)
 {
   Q_D(CaffeSegController);
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
+  QMutexLocker locker(&d->m_Lock);
 
   d->m_NetworkWeightsFileName = weights;
 }
@@ -132,7 +135,7 @@ void CaffeSegController::SetNetworkWeightsFileName(const std::string& weights)
 void CaffeSegController::OnManualUpdateClicked(bool isChecked)
 {
   Q_D(CaffeSegController);
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
+  QMutexLocker locker(&d->m_Lock);
 
   d->m_IsUpdatingManually = isChecked;
 }
@@ -142,7 +145,7 @@ void CaffeSegController::OnManualUpdateClicked(bool isChecked)
 void CaffeSegController::OnAutomaticUpdateClicked(bool isChecked)
 {
   Q_D(CaffeSegController);
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
+  QMutexLocker locker(&d->m_Lock);
 
   d->m_IsUpdatingManually = !isChecked;
 }
@@ -152,7 +155,7 @@ void CaffeSegController::OnAutomaticUpdateClicked(bool isChecked)
 void CaffeSegController::OnDoItNowPressed()
 {
   Q_D(CaffeSegController);
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
+  QMutexLocker locker(&d->m_Lock);
 
   if (d->m_IsUpdatingManually)
   {
@@ -165,7 +168,7 @@ void CaffeSegController::OnDoItNowPressed()
 void CaffeSegController::Update()
 {
   Q_D(CaffeSegController);
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
+  QMutexLocker locker(&d->m_Lock);
 
   if (!d->m_IsUpdatingManually)
   {
@@ -178,10 +181,11 @@ void CaffeSegController::Update()
 void CaffeSegController::ClearNode(const int& i)
 {
   Q_D(CaffeSegController);
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
+  QMutexLocker locker(&d->m_Lock);
 
   d->m_Segmentors[i] = nullptr;
   d->m_DataNodes[i] = nullptr;
+
   if (this->GetDataStorage()->Exists(d->m_SegmentedNodes[i]))
   {
     this->GetDataStorage()->Remove(d->m_SegmentedNodes[i]);
@@ -194,7 +198,7 @@ void CaffeSegController::ClearNode(const int& i)
 void CaffeSegController::OnNodeRemoved(const mitk::DataNode* node)
 {
   Q_D(CaffeSegController);
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
+  QMutexLocker locker(&d->m_Lock);
 
   for (int i = 0; i < 2; i++)
   {
@@ -210,7 +214,7 @@ void CaffeSegController::OnNodeRemoved(const mitk::DataNode* node)
 void CaffeSegController::SelectionChanged(const mitk::DataNode* node, const int& i)
 {
   Q_D(CaffeSegController);
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
+  QMutexLocker locker(&d->m_Lock);
 
   if (node == nullptr)
   {
@@ -273,21 +277,29 @@ void CaffeSegController::OnRightSelectionChanged(const mitk::DataNode* node)
 void CaffeSegController::InternalUpdate()
 {
   Q_D(CaffeSegController);
-  itk::MutexLockHolder<itk::FastMutexLock> lock(*(d->m_Mutex));
+  QMutexLocker locker(&d->m_Lock);
 
   for (int i = 0; i < 2; i++)
   {
-    if (   d->m_Segmentors[i].IsNotNull()
-        && d->m_DataNodes[i] != nullptr)
-    {
-      mitk::Image::Pointer im1 = dynamic_cast<mitk::Image*>(d->m_DataNodes[i]->GetData());
-      mitk::Image::Pointer im2 = dynamic_cast<mitk::Image*>(d->m_SegmentedNodes[i]->GetData());
+  }
+}
 
-      if (im1.IsNotNull() && im2.IsNotNull())
-      {
-        d->m_Segmentors[i]->Segment(im1, im2);
-        d->m_SegmentedNodes[i]->Modified();
-      }
+
+void CaffeSegController::InternalUpdate(const int& i)
+{
+  Q_D(CaffeSegController);
+  QMutexLocker locker(&d->m_Lock);
+
+  if (   d->m_Segmentors[i].IsNotNull()
+      && d->m_DataNodes[i] != nullptr)
+  {
+    mitk::Image::Pointer im1 = dynamic_cast<mitk::Image*>(d->m_DataNodes[i]->GetData());
+    mitk::Image::Pointer im2 = dynamic_cast<mitk::Image*>(d->m_SegmentedNodes[i]->GetData());
+
+    if (im1.IsNotNull() && im2.IsNotNull())
+    {
+      d->m_Segmentors[i]->Segment(im1, im2);
+      d->m_SegmentedNodes[i]->Modified();
     }
   }
 }

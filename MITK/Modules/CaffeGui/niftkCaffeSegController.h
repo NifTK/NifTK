@@ -75,9 +75,10 @@ private:
   QScopedPointer<CaffeSegControllerPrivate> d_ptr;
   Q_DECLARE_PRIVATE(CaffeSegController);
 
-  void InternalUpdate();
-  void SelectionChanged(const mitk::DataNode* node, const int& i);
   void ClearNode(const int& i);
+  void SelectionChanged(const mitk::DataNode* node, const int& i);
+  void InternalUpdate();
+  void InternalUpdate(const int& i);
 };
 
 } // end namespace
