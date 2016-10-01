@@ -22,18 +22,15 @@
 #include <QTextStream>
 #include <QList>
 #include <QPainter>
-#include <QMutexLocker>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
 IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Pointer dataStorage,
-    QMutex& lock, IGIDataSourceManager* manager,
+    IGIDataSourceManager* manager,
     QWidget *parent)
-: m_Manager(new IGIDataSourceManager(dataStorage, parent))
 {
-//  m_Lock = lock;
   m_Manager = manager;
   Ui_IGIDataSourcePlaybackWidget::setupUi(parent);
 
@@ -88,8 +85,6 @@ IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Poin
 //-----------------------------------------------------------------------------
 IGIDataSourcePlaybackWidget::~IGIDataSourcePlaybackWidget()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (m_Manager->IsPlayingBack())
   {
     m_Manager->StopPlayback();
@@ -148,8 +143,6 @@ void IGIDataSourcePlaybackWidget::StopRecording()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::PauseUpdate()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->StopUpdateTimer();
 }
 
@@ -157,8 +150,6 @@ void IGIDataSourcePlaybackWidget::PauseUpdate()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::RestartUpdate()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->StartUpdateTimer();
 }
 
@@ -166,8 +157,6 @@ void IGIDataSourcePlaybackWidget::RestartUpdate()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnPlayStart()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (m_PlayPushButton->isChecked())
   {
     QString playbackpath = m_DirectoryChooser->currentPath();
@@ -263,8 +252,6 @@ void IGIDataSourcePlaybackWidget::OnPlayStart()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnRecordStart()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (!m_RecordPushButton->isEnabled())
   {
     // shortcut in case we are already recording.
@@ -299,8 +286,6 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnStop()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (m_PlayPushButton->isChecked())
   {
     m_Manager->SetIsPlayingBackAutomatically(false);
@@ -321,8 +306,6 @@ void IGIDataSourcePlaybackWidget::OnStop()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnPlaybackTimestampEditFinished()
 {
-  QMutexLocker locker(&m_Lock);
-
   int result = m_Manager->ComputePlaybackTimeSliderValue(m_TimeStampEdit->text());
   if (result != -1)
   {
@@ -334,8 +317,6 @@ void IGIDataSourcePlaybackWidget::OnPlaybackTimestampEditFinished()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnPlaybackTimeAdvanced(int newSliderValue)
 {
-  QMutexLocker locker(&m_Lock);
-
   if (newSliderValue != -1)
   {
     m_PlaybackSlider->blockSignals(true);
@@ -348,8 +329,6 @@ void IGIDataSourcePlaybackWidget::OnPlaybackTimeAdvanced(int newSliderValue)
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnTimerUpdated(QString rawString, QString humanReadableString)
 {
-  QMutexLocker locker(&m_Lock);
-
   // Only update text if user is not editing
   if (!m_TimeStampEdit->hasFocus())
   {
@@ -371,8 +350,6 @@ void IGIDataSourcePlaybackWidget::OnTimerUpdated(QString rawString, QString huma
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnPlayingPushButtonClicked(bool isChecked)
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Manager->SetIsPlayingBackAutomatically(isChecked);
 }
 
@@ -396,8 +373,6 @@ void IGIDataSourcePlaybackWidget::OnStartPushButtonClicked(bool /*isChecked*/)
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnSliderReleased()
 {
-  QMutexLocker locker(&m_Lock);
-
   IGIDataType::IGITimeType time = m_Manager->ComputeTimeFromSlider(m_PlaybackSlider->value());
   m_Manager->SetPlaybackTime(time);
 }
@@ -405,8 +380,6 @@ void IGIDataSourcePlaybackWidget::OnSliderReleased()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnGrabScreen(bool isChecked)
 {
-  QMutexLocker locker(&m_Lock);
-
   QString directoryName = this->m_DirectoryChooser->currentPath();
   if (directoryName.length() == 0)
   {

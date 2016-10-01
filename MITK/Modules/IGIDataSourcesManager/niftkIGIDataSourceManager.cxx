@@ -200,6 +200,8 @@ QString IGIDataSourceManager::GetDefaultPath()
 //-----------------------------------------------------------------------------
 QString IGIDataSourceManager::GetDirectoryName()
 {
+  QMutexLocker locker(&m_Lock);
+
   QString baseDirectory = m_DirectoryPrefix;
 
   m_TimeStampGenerator->GetTime();
@@ -267,6 +269,7 @@ void IGIDataSourceManager::RetrieveAllDataSourceFactories()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetDirectoryPrefix(const QString& directoryPrefix)
 {
+  QMutexLocker locker(&m_Lock);
   m_DirectoryPrefix = directoryPrefix;
 }
 
@@ -274,6 +277,7 @@ void IGIDataSourceManager::SetDirectoryPrefix(const QString& directoryPrefix)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetFramesPerSecond(const int& framesPerSecond)
 {
+  QMutexLocker locker(&m_Lock);
   if (m_GuiUpdateTimer != NULL)
   {
     int milliseconds = 1000 / framesPerSecond; // Rounding error, but Qt is only very approximate anyway.
@@ -543,6 +547,8 @@ void IGIDataSourceManager::RemoveAllSources()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartRecording(QString absolutePath)
 {
+  QMutexLocker locker(&m_Lock);
+
   QString directoryName = absolutePath;
   QDir directory(directoryName);
   QDir().mkpath(directoryName);
@@ -566,6 +572,8 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StopRecording()
 {
+  QMutexLocker locker(&m_Lock);
+
   for (int i = 0; i < m_Sources.size(); i++)
   {
     m_Sources[i]->StopRecording();
@@ -617,6 +625,7 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
                                          int& sliderValue
                                          )
 {
+
   if (m_Sources.size() == 0)
   {
     mitkThrow() << "Please create sources first.";
@@ -730,6 +739,8 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StopPlayback()
 {
+  QMutexLocker locker(&m_Lock);
+
   for (int i = 0; i < m_Sources.size(); i++)
   {
     m_Sources[i]->StopPlayback();
@@ -792,6 +803,8 @@ int IGIDataSourceManager::ComputePlaybackTimeSliderValue(QString textEditField) 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetPlaybackTime(const IGIDataType::IGITimeType& time)
 {
+  QMutexLocker locker(&m_Lock);
+
   m_CurrentTime = time;
   m_PlaybackSliderValue = (time - m_PlaybackSliderBase) / m_PlaybackSliderFactor;
 }
@@ -807,6 +820,8 @@ void IGIDataSourceManager::SetIsPlayingBack(bool isPlayingBack)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetIsPlayingBackAutomatically(bool isPlayingBackAutomatically)
 {
+  QMutexLocker locker(&m_Lock);
+
   m_IsPlayingBackAutomatically = isPlayingBackAutomatically;
 }
 
@@ -839,6 +854,8 @@ void IGIDataSourceManager::AdvancePlaybackTimer()
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::SetIsGrabbingScreen(QString directoryName, bool isGrabbing)
 {
+  QMutexLocker locker(&m_Lock);
+
   m_IsGrabbingScreen = isGrabbing;
   m_ScreenGrabDir = directoryName;
 }
