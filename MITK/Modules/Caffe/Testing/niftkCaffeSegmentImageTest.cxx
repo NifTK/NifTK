@@ -21,7 +21,6 @@
 #include <mitkDataNode.h>
 #include <mitkIOUtil.h>
 #include <caffe/caffe.hpp>
-#include <highgui.h>
 #include <chrono>
 #include <ctime>
 
