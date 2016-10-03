@@ -83,14 +83,15 @@ void Usage(char *exec)
     std::cout << "  5" << std::endl;
     std::cout << "      none" << std::endl;
     std::cout << "  6" << std::endl;
-    std::cout << "      none" << std::endl;
+    std::cout << "      -fv <int>    1            foreground value" << std::endl;
     std::cout << "  7" << std::endl;
     std::cout << "      -xs <int>    9            x-size of chessboard" << std::endl;
     std::cout << "      -ys <int>    6            y-size of chessboard" << std::endl;
-    
+    std::cout << "      -fv <int>    1            foreground value" << std::endl;
+
     std::cout << "  8" << std::endl;
     std::cout << "      -ns <int>    4           number of stripes" << std::endl;
-    std::cout << "      -fv <int>    255         foreground value" << std::endl;
+    std::cout << "      -fv <int>    1           foreground value" << std::endl;
   }
 
 /**
@@ -456,7 +457,7 @@ int main(int argc, char** argv)
   }
   else if (mode == 6 || mode == 7)
   {
-    testImage->FillBuffer(255);
+    testImage->FillBuffer(backgroundValue);
 
     // First make chessboard
     for (int z = 0; z < nz; z++)
@@ -470,11 +471,9 @@ int main(int argc, char** argv)
                 index[1] = y;
                 index[2] = z;
 
-
-                if ( (x%2 == 0 && y%2 == 0)
-                     || (x%2 == 1 && y%2 == 1))
+                if (x%2 ^ y%2)
                 {
-                  testImage->SetPixel(index, 0);
+                  testImage->SetPixel(index, foregroundValue);
                 }
               }
           }
@@ -515,11 +514,7 @@ int main(int argc, char** argv)
                     || (x >= startX && x <= endX && y >= startY && y <= endY)
                     )
                 {
-                  // leave alone
-                }
-                else
-                {
-                  testImage->SetPixel(index, 255);
+                  testImage->SetPixel(index, foregroundValue);
                 }
               }
           }
