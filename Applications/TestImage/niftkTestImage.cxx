@@ -25,74 +25,74 @@
  * \page niftkTestImage
  * \section niftkTestImageSummary Generates a 3D test image, either a binary cuboid, binary ellipsoid, grid, or test card type pattern.
  */
-void Usage(char *exec)
-  {
-    niftk::LogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Generates a 3D test image, either a binary cuboid, binary ellipsoid, grid, or test card type pattern." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " <mandatory> [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -nx  <int>   128          Number of voxels in x dimension" << std::endl;
-    std::cout << "    -ny  <int>   128          Number of voxels in y dimension" << std::endl;
-    std::cout << "    -nz  <int>   128          Number of voxels in z dimension" << std::endl;
-    std::cout << "    -vx  <float> 1.0          Size of voxels in x dimension" << std::endl;
-    std::cout << "    -vy  <float> 1.0          Size of voxels in y dimension" << std::endl;
-    std::cout << "    -vz  <float> 1.0          Size of voxels in z dimension" << std::endl;
-    std::cout << "    -ox  <float> 0.0          X origin" << std::endl;
-    std::cout << "    -oy  <float> 0.0          Y origin" << std::endl;
-    std::cout << "    -oz  <float> 0.0          Z origin" << std::endl;
-    std::cout << "    -o   <filename>           Output filename" << std::endl;
-    std::cout << "    -bv  <int>   0            Background value" << std::endl;
-    std::cout << "    -mode [int]  0            Selects the mode of operation. See further parameters below." << std::endl;
-    std::cout << "                              0 = generate cuboid" << std::endl;
-    std::cout << "                              1 = generate ellipse" << std::endl;
-    std::cout << "                              2 = generate grid" << std::endl;
-    std::cout << "                              3 = generate testcard image" << std::endl;
-    std::cout << "                              4 - generate distance from centre image" << std::endl;
-    std::cout << "                              5 - generate increasing voxel number as intensity value" << std::endl;
-    std::cout << "                              6 - make calibration chessboard" << std::endl;
-    std::cout << "                              7 - make calibration chessboard with distant corner points" << std::endl;
-    std::cout << "                              8 - make stripes of different values" << std::endl;
-
-    std::cout << "  " << std::endl;
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -dir a b c d e f g h i    Direction matrix" << std::endl;
-    std::cout << "" << std::endl;
-    std::cout << "For mode:" << std::endl;
-    std::cout << "  0" << std::endl;
-    std::cout << "      -xr  <float> 20.0         Distance from centre of cuboid to edge on x axis" << std::endl;
-    std::cout << "      -yr  <float> 20.0         Distance from centre of cuboid to edge on y axis" << std::endl;
-    std::cout << "      -zr  <float> 20.0         Distance from centre of cuboid to edge on z axis" << std::endl;
-    std::cout << "      -fv  <int>   1            Foreground value" << std::endl;
-    std::cout << "  1" << std::endl;
-    std::cout << "      -xr  <float> 20.0         X radius" << std::endl;
-    std::cout << "      -yr  <float> 20.0         Y radius" << std::endl;
-    std::cout << "      -zr  <float> 20.0         Z radius" << std::endl;
-    std::cout << "      -fv  <int>   1            Foreground value" << std::endl;
-    std::cout << "  2" << std::endl;
-    std::cout << "      -xs <int>    2            X step size in pixels" << std::endl;
-    std::cout << "      -ys <int>    2            Y step size in pixels" << std::endl;
-    std::cout << "      -zs <int>    2            Z step size in pixels" << std::endl;
-    std::cout << "      -fv <int>    1            Foreground value" << std::endl;
-    std::cout << "  3" << std::endl;
-    std::cout << "      none" << std::endl;
-    std::cout << "  4" << std::endl;
-    std::cout << "      none" << std::endl;
-    std::cout << "  5" << std::endl;
-    std::cout << "      none" << std::endl;
-    std::cout << "  6" << std::endl;
-    std::cout << "      -fv <int>    1            foreground value" << std::endl;
-    std::cout << "  7" << std::endl;
-    std::cout << "      -xs <int>    9            x-size of chessboard" << std::endl;
-    std::cout << "      -ys <int>    6            y-size of chessboard" << std::endl;
-    std::cout << "      -fv <int>    1            foreground value" << std::endl;
-
-    std::cout << "  8" << std::endl;
-    std::cout << "      -ns <int>    4           number of stripes" << std::endl;
-    std::cout << "      -fv <int>    1           foreground value" << std::endl;
-  }
+void Usage(const char* exec)
+{
+  niftk::LogHelper::PrintCommandLineHeader(std::cout);
+  std::cout << "  " << std::endl;
+  std::cout << "  Generates a 3D test image, either a binary cuboid, binary ellipsoid, grid, or test card type pattern." << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "  " << exec << " <mandatory> [options]" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [mandatory] ***" << std::endl;
+  std::cout << std::endl;
+  std::cout << "    -nx  <int>   128          Number of voxels in x dimension" << std::endl;
+  std::cout << "    -ny  <int>   128          Number of voxels in y dimension" << std::endl;
+  std::cout << "    -nz  <int>   128          Number of voxels in z dimension" << std::endl;
+  std::cout << "    -vx  <float> 1.0          Size of voxels in x dimension" << std::endl;
+  std::cout << "    -vy  <float> 1.0          Size of voxels in y dimension" << std::endl;
+  std::cout << "    -vz  <float> 1.0          Size of voxels in z dimension" << std::endl;
+  std::cout << "    -ox  <float> 0.0          X origin" << std::endl;
+  std::cout << "    -oy  <float> 0.0          Y origin" << std::endl;
+  std::cout << "    -oz  <float> 0.0          Z origin" << std::endl;
+  std::cout << "    -o   <filename>           Output filename" << std::endl;
+  std::cout << "    -bv  <int>   0            Background value" << std::endl;
+  std::cout << "    -mode [int]  0            Selects the mode of operation. See further parameters below." << std::endl;
+  std::cout << "                              0 = generate cuboid" << std::endl;
+  std::cout << "                              1 = generate ellipse" << std::endl;
+  std::cout << "                              2 = generate grid" << std::endl;
+  std::cout << "                              3 = generate testcard image" << std::endl;
+  std::cout << "                              4 - generate distance from centre image" << std::endl;
+  std::cout << "                              5 - generate increasing voxel number as intensity value" << std::endl;
+  std::cout << "                              6 - make calibration chessboard" << std::endl;
+  std::cout << "                              7 - make calibration chessboard with distant corner points" << std::endl;
+  std::cout << "                              8 - make stripes of different values" << std::endl;
+  std::cout << "  " << std::endl;
+  std::cout << "*** [options]   ***" << std::endl;
+  std::cout << std::endl;
+  std::cout << "    -dir a b c d e f g h i    Direction matrix" << std::endl;
+  std::cout << "" << std::endl;
+  std::cout << "For mode:" << std::endl;
+  std::cout << "  0" << std::endl;
+  std::cout << "      -xr  <float> 20.0       Distance from centre of cuboid to edge on x axis" << std::endl;
+  std::cout << "      -yr  <float> 20.0       Distance from centre of cuboid to edge on y axis" << std::endl;
+  std::cout << "      -zr  <float> 20.0       Distance from centre of cuboid to edge on z axis" << std::endl;
+  std::cout << "      -fv  <int>   1          Foreground value" << std::endl;
+  std::cout << "  1" << std::endl;
+  std::cout << "      -xr  <float> 20.0       X radius" << std::endl;
+  std::cout << "      -yr  <float> 20.0       Y radius" << std::endl;
+  std::cout << "      -zr  <float> 20.0       Z radius" << std::endl;
+  std::cout << "      -fv  <int>   1          Foreground value" << std::endl;
+  std::cout << "  2" << std::endl;
+  std::cout << "      -xs <int>    2          X step size in pixels" << std::endl;
+  std::cout << "      -ys <int>    2          Y step size in pixels" << std::endl;
+  std::cout << "      -zs <int>    2          Z step size in pixels" << std::endl;
+  std::cout << "      -fv <int>    1          Foreground value" << std::endl;
+  std::cout << "  3" << std::endl;
+  std::cout << "      none" << std::endl;
+  std::cout << "  4" << std::endl;
+  std::cout << "      none" << std::endl;
+  std::cout << "  5" << std::endl;
+  std::cout << "      none" << std::endl;
+  std::cout << "  6" << std::endl;
+  std::cout << "      -fv <int>    1          foreground value" << std::endl;
+  std::cout << "  7" << std::endl;
+  std::cout << "      -xs <int>    9          x-size of chessboard" << std::endl;
+  std::cout << "      -ys <int>    6          y-size of chessboard" << std::endl;
+  std::cout << "      -fv <int>    1          foreground value" << std::endl;
+  std::cout << "  8" << std::endl;
+  std::cout << "      -ns <int>    4          number of stripes" << std::endl;
+  std::cout << "      -fv <int>    1          foreground value" << std::endl;
+}
 
 /**
  * \brief Creates a test image, either ellipse or cuboid.
@@ -130,92 +130,115 @@ int main(int argc, char** argv)
 
 
   // Parse command line args
-  for(int i=1; i < argc; i++){
-    if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
+  for(int i=1; i < argc; i++)
+  {
+    if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0)
+    {
       Usage(argv[0]);
       return -1;
     }
-    else if(strcmp(argv[i], "-o") == 0){
+    else if(strcmp(argv[i], "-o") == 0)
+    {
       outputImage=argv[++i];
       std::cout << "Set -o=" << outputImage << std::endl;
     }
-    else if(strcmp(argv[i], "-nx") == 0){
+    else if(strcmp(argv[i], "-nx") == 0)
+    {
       nx=atoi(argv[++i]);
-      if (nx <= 0){
+      if (nx <= 0)
+      {
         std::cerr << "Error: nx must be an integer value above 0" << std::endl;
         return EXIT_FAILURE;
       }
       std::cout << "Set -nx=" << niftk::ConvertToString(nx) << std::endl;
     }
-    else if(strcmp(argv[i], "-ny") == 0){
+    else if(strcmp(argv[i], "-ny") == 0)
+    {
       ny=atoi(argv[++i]);
-      if (ny <= 0){
+      if (ny <= 0)
+      {
         std::cerr << "Error: ny must be an integer value above 0" << std::endl;
         return EXIT_FAILURE;
       }
       std::cout << "Set -ny=" << niftk::ConvertToString(ny) << std::endl;
     }
-    else if(strcmp(argv[i], "-nz") == 0){
+    else if(strcmp(argv[i], "-nz") == 0)
+    {
       nz=atoi(argv[++i]);
-      if (nz <= 0){
+      if (nz <= 0)
+      {
         std::cerr << "Error: nz must be an integer value above 0" << std::endl;
         return EXIT_FAILURE;
       }
       std::cout << "Set -nz=" << niftk::ConvertToString(nz) << std::endl;
     }
-    else if(strcmp(argv[i], "-ns") == 0){
+    else if(strcmp(argv[i], "-ns") == 0)
+    {
       ns=atoi(argv[++i]);
-      if (ns <= 0){
+      if (ns <= 0)
+      {
         std::cerr << "Error: ns must be an integer value above 0" << std::endl;
         return EXIT_FAILURE;
       }
       std::cout << "Set -ns=" << niftk::ConvertToString(ns) << std::endl;
     }
-    else if(strcmp(argv[i], "-bv") == 0){
+    else if(strcmp(argv[i], "-bv") == 0)
+    {
       backgroundValue=atoi(argv[++i]);
       std::cout << "Set -bv=" << niftk::ConvertToString(backgroundValue) << std::endl;
     }
-    else if(strcmp(argv[i], "-fv") == 0){
+    else if(strcmp(argv[i], "-fv") == 0)
+    {
       foregroundValue=atoi(argv[++i]);
       std::cout << "Set -fv=" << niftk::ConvertToString(foregroundValue) << std::endl;
     }
-    else if(strcmp(argv[i], "-vx") == 0){
+    else if(strcmp(argv[i], "-vx") == 0)
+    {
       xdim=atof(argv[++i]);
       std::cout << "Set -vx=" << niftk::ConvertToString(xdim) << std::endl;
     }
-    else if(strcmp(argv[i], "-vy") == 0){
+    else if(strcmp(argv[i], "-vy") == 0)
+    {
       ydim=atof(argv[++i]);
       std::cout << "Set -vy=" << niftk::ConvertToString(ydim) << std::endl;
     }
-    else if(strcmp(argv[i], "-vz") == 0){
+    else if(strcmp(argv[i], "-vz") == 0)
+    {
       zdim=atof(argv[++i]);
       std::cout << "Set -vz=" << niftk::ConvertToString(zdim) << std::endl;
     }
-    else if(strcmp(argv[i], "-ox") == 0){
+    else if(strcmp(argv[i], "-ox") == 0)
+    {
       xorigin=atof(argv[++i]);
       std::cout << "Set -ox=" << niftk::ConvertToString(xorigin) << std::endl;
     }
-    else if(strcmp(argv[i], "-oy") == 0){
+    else if(strcmp(argv[i], "-oy") == 0)
+    {
       yorigin=atof(argv[++i]);
       std::cout << "Set -oy=" << niftk::ConvertToString(yorigin) << std::endl;
     }
-    else if(strcmp(argv[i], "-oz") == 0){
+    else if(strcmp(argv[i], "-oz") == 0)
+    {
       zorigin=atof(argv[++i]);
       std::cout << "Set -oz=" << niftk::ConvertToString(zorigin) << std::endl;
     }
-    else if(strcmp(argv[i], "-xr") == 0){
+    else if(strcmp(argv[i], "-xr") == 0)
+    {
       xradius=atof(argv[++i]);
       std::cout << "Set -xr=" << niftk::ConvertToString(xradius) << std::endl;
     }
-    else if(strcmp(argv[i], "-yr") == 0){
+    else if(strcmp(argv[i], "-yr") == 0)
+    {
       yradius=atof(argv[++i]);
       std::cout << "Set -yr=" << niftk::ConvertToString(yradius) << std::endl;
     }
-    else if(strcmp(argv[i], "-zr") == 0){
+    else if(strcmp(argv[i], "-zr") == 0)
+    {
       zradius=atof(argv[++i]);
       std::cout << "Set -zr=" << niftk::ConvertToString(zradius) << std::endl;
     }
-    else if (strcmp(argv[i], "-dir") == 0){
+    else if (strcmp(argv[i], "-dir") == 0)
+    {
       for (unsigned int j = 0; j < Dimension*Dimension; j++)
       {
         direction[j] = atof(argv[++i]);
@@ -223,24 +246,28 @@ int main(int argc, char** argv)
       }
       userSuppliedDirection=true;
     }
-    else if(strcmp(argv[i], "-xs") == 0){
+    else if(strcmp(argv[i], "-xs") == 0)
+    {
       xstep=atoi(argv[++i]);
       std::cout << "Set -xs=" << niftk::ConvertToString(xstep) << std::endl;
     }
-    else if(strcmp(argv[i], "-ys") == 0){
+    else if(strcmp(argv[i], "-ys") == 0)
+    {
       ystep=atoi(argv[++i]);
       std::cout << "Set -ys=" << niftk::ConvertToString(ystep) << std::endl;
     }
-    else if(strcmp(argv[i], "-zs") == 0){
+    else if(strcmp(argv[i], "-zs") == 0)
+    {
       zstep=atoi(argv[++i]);
       std::cout << "Set -zs=" << niftk::ConvertToString(zstep) << std::endl;
     }
-    else if(strcmp(argv[i], "-mode") == 0){
+    else if(strcmp(argv[i], "-mode") == 0)
+    {
       mode=atoi(argv[++i]);
       std::cout << "Set -mode=" << niftk::ConvertToString(mode) << std::endl;
     }
-
-    else {
+    else
+    {
       std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
       return -1;
     }
@@ -254,10 +281,10 @@ int main(int argc, char** argv)
 
  // Validate command line args
   if (outputImage.length() == 0)
-    {
-      Usage(argv[0]);
-      return EXIT_FAILURE;
-    }
+  {
+    Usage(argv[0]);
+    return EXIT_FAILURE;
+  }
 
   typedef itk::Image<ScalarType, Dimension> ImageType;
   typedef itk::ImageRegion<Dimension>       ImageRegionType;
@@ -331,65 +358,64 @@ int main(int argc, char** argv)
     double zdist;
 
     for (int x = 0; x < nx; x++)
+    {
+      index[0] = x;
+      for (int y = 0; y < ny; y++)
       {
-        for (int y = 0; y < ny; y++)
+        index[1] = y;
+        for (int z = 0; z < nz; z++)
+        {
+          index[2] = z;
+
+          xdist = (x - middleOfImage[0]) * xdim;
+          ydist = (y - middleOfImage[1]) * ydim;
+          zdist = (z - middleOfImage[2]) * zdim;
+
+          if (mode == 0)
           {
-            for (int z = 0; z < nz; z++)
-              {
-                index[0] = x;
-                index[1] = y;
-                index[2] = z;
+            if (fabs(xdist) < radius[0] && fabs(ydist) < radius[1] && fabs(zdist) < radius[2])
+            {
+              testImage->SetPixel(index, foregroundValue);
+            }
+            else
+            {
+              testImage->SetPixel(index, backgroundValue);
+            }
 
-                xdist = (x - middleOfImage[0])*xdim;
-                ydist = (y - middleOfImage[1])*ydim;
-                zdist = (z - middleOfImage[2])*zdim;
-
-                if (mode == 0)
-                  {
-                    if (fabs(xdist) < radius[0] && fabs(ydist) < radius[1] && fabs(zdist) < radius[2])
-                      {
-                        testImage->SetPixel(index, foregroundValue);
-                      }
-                    else
-                      {
-                        testImage->SetPixel(index, backgroundValue);
-                      }
-
-                  }
-                else
-                  {
-                    if (  (xdist*xdist)/(radius[0]*radius[0])
-                        + (ydist*ydist)/(radius[1]*radius[1])
-                        + (zdist*zdist)/(radius[2]*radius[2])  < 1)
-                      {
-                        testImage->SetPixel(index, foregroundValue);
-                      }
-                    else
-                      {
-                        testImage->SetPixel(index, backgroundValue);
-                      }
-                  }
-              }
           }
+          else
+          {
+            if (  (xdist*xdist)/(radius[0]*radius[0])
+                + (ydist*ydist)/(radius[1]*radius[1])
+                + (zdist*zdist)/(radius[2]*radius[2])  < 1)
+            {
+              testImage->SetPixel(index, foregroundValue);
+            }
+            else
+            {
+              testImage->SetPixel(index, backgroundValue);
+            }
+          }
+        }
       }
+    }
   }
   else if (mode == 2)
   {
     for (int x = 0; x < nx; x += xstep)
+    {
+      index[0] = x;
+      for (int y = 0; y < ny; y += ystep)
       {
-        for (int y = 0; y < ny; y += ystep)
-          {
-            for (int z = 0; z < nz; z += zstep)
-              {
+        index[1] = y;
+        for (int z = 0; z < nz; z += zstep)
+        {
+          index[2] = z;
 
-                index[0] = x;
-                index[1] = y;
-                index[2] = z;
-
-                testImage->SetPixel(index, foregroundValue);
-              }
-          }
+          testImage->SetPixel(index, foregroundValue);
+        }
       }
+    }
   }
   else if (mode == 3 || mode == 4)
   {
@@ -400,60 +426,59 @@ int main(int argc, char** argv)
     testImage->TransformContinuousIndexToPhysicalPoint(middleOfImage, middleOfImageInMillimetres);
 
     for (int x = 0; x < nx; x++)
+    {
+      index[0] = x;
+      for (int y = 0; y < ny; y++)
       {
-        for (int y = 0; y < ny; y++)
-          {
-            for (int z = 0; z < nz; z++)
-              {
-                index[0] = x;
-                index[1] = y;
-                index[2] = z;
+        index[1] = y;
+        for (int z = 0; z < nz; z++)
+        {
+          index[2] = z;
 
-                if (mode == 3)
-                {
-                  if (x == 0 || y == 0 || z == 0 || x == nx-1 || y == ny -1 || z == nz-1)
-                  {
-                    testImage->SetPixel(index, nx*ny*nz);
-                  }
-                  else if (x == 1|| y == 1 || z == 1 || x == nx-2 || y == ny -2 || z == nz-2)
-                  {
-                    testImage->SetPixel(index, backgroundValue);
-                  }
-                  else
-                  {
-                    testImage->SetPixel(index, x*y*z);
-                  }
-                }
-                else
-                {
-                  testImage->TransformIndexToPhysicalPoint(index, voxelLocationInMillimetres);
-                  distance = voxelLocationInMillimetres.EuclideanDistanceTo(middleOfImageInMillimetres);
-                  testImage->SetPixel(index, distance);
-                }
-              }
+          if (mode == 3)
+          {
+            if (x == 0 || y == 0 || z == 0 || x == nx-1 || y == ny -1 || z == nz-1)
+            {
+              testImage->SetPixel(index, nx*ny*nz);
+            }
+            else if (x == 1|| y == 1 || z == 1 || x == nx-2 || y == ny -2 || z == nz-2)
+            {
+              testImage->SetPixel(index, backgroundValue);
+            }
+            else
+            {
+              testImage->SetPixel(index, x*y*z);
+            }
           }
+          else
+          {
+            testImage->TransformIndexToPhysicalPoint(index, voxelLocationInMillimetres);
+            distance = voxelLocationInMillimetres.EuclideanDistanceTo(middleOfImageInMillimetres);
+            testImage->SetPixel(index, distance);
+          }
+        }
       }
+    }
   }
   else if (mode == 5)
   {
     unsigned long int voxelCounter = 0;
 
     for (int z = 0; z < nz; z++)
+    {
+      index[2] = z;
+      for (int y = 0; y < ny; y++)
       {
-        for (int y = 0; y < ny; y++)
-          {
-            for (int x = 0; x < nx; x++)
-              {
+        index[1] = y;
+        for (int x = 0; x < nx; x++)
+        {
+          index[0] = x;
 
-                index[0] = x;
-                index[1] = y;
-                index[2] = z;
-
-                testImage->SetPixel(index, voxelCounter);
-                voxelCounter++;
-              }
-          }
+          testImage->SetPixel(index, voxelCounter);
+          voxelCounter++;
+        }
       }
+    }
   }
   else if (mode == 6 || mode == 7)
   {
@@ -461,67 +486,66 @@ int main(int argc, char** argv)
 
     // First make chessboard
     for (int z = 0; z < nz; z++)
+    {
+      index[2] = z;
+      for (int y = 0; y < ny; y++)
       {
-        for (int y = 0; y < ny; y++)
+        index[1] = y;
+        for (int x = 0; x < nx; x++)
+        {
+          index[0] = x;
+
+          if (x%2 ^ y%2)
           {
-            for (int x = 0; x < nx; x++)
-              {
-
-                index[0] = x;
-                index[1] = y;
-                index[2] = z;
-
-                if (x%2 ^ y%2)
-                {
-                  testImage->SetPixel(index, foregroundValue);
-                }
-              }
+            testImage->SetPixel(index, foregroundValue);
           }
+        }
       }
+    }
 
     if( mode == 7)
     {
-    // For mode 7, we blank (set to white=255) everything except
-    // the 2x2 square at each corner, and the specified size of chessboard in the middle.
-    float middleX = (nx-1)/2.0;
-    float middleY = (ny-1)/2.0;
-    int startX = middleX - (xstep/2.0) + 0.5;
-    int startY = middleY - (ystep/2.0) + 0.5;
-    int endX = startX + xstep - 1;
-    int endY = startY + ystep - 1;
+      // For mode 7, we blank (set to white=255) everything except
+      // the 2x2 square at each corner, and the specified size of chessboard in the middle.
+      float middleX = (nx-1)/2.0;
+      float middleY = (ny-1)/2.0;
+      int startX = middleX - (xstep/2.0) + 0.5;
+      int startY = middleY - (ystep/2.0) + 0.5;
+      int endX = startX + xstep - 1;
+      int endY = startY + ystep - 1;
 
-    std::cerr << "Matt, middleX=" << middleX << std::endl;
-    std::cerr << "Matt, middleY=" << middleY << std::endl;
-    std::cerr << "Matt, xstep=" << xstep << std::endl;
-    std::cerr << "Matt, ystep=" << ystep << std::endl;
+      std::cerr << "Matt, middleX=" << middleX << std::endl;
+      std::cerr << "Matt, middleY=" << middleY << std::endl;
+      std::cerr << "Matt, xstep=" << xstep << std::endl;
+      std::cerr << "Matt, ystep=" << ystep << std::endl;
 
-    std::cerr << "Blanking out all except corners and (" << startX << ", " << startY << ") to (" << endX << ", " << endY << ")" << std::endl;
+      std::cerr << "Blanking out all except corners and (" << startX << ", " << startY << ") to (" << endX << ", " << endY << ")" << std::endl;
 
-    for (int z = 0; z < nz; z++)
+      for (int z = 0; z < nz; z++)
       {
+        index[2] = z;
         for (int y = 0; y < ny; y++)
+        {
+          index[1] = y;
+          for (int x = 0; x < nx; x++)
           {
-            for (int x = 0; x < nx; x++)
-              {
-                index[0] = x;
-                index[1] = y;
-                index[2] = z;
+            index[0] = x;
 
-                if (   (x < 2 && y < 2)
-                    || (x < 2 && y >= (ny-2))
-                    || (y < 2 && x >= (nx-2))
-                    || (x >= (nx-2) && y >= (ny-2))
-                    || (x >= startX && x <= endX && y >= startY && y <= endY)
-                    )
-                {
-                  testImage->SetPixel(index, foregroundValue);
-                }
-              }
+            if (   (x < 2 && y < 2)
+                || (x < 2 && y >= (ny-2))
+                || (y < 2 && x >= (nx-2))
+                || (x >= (nx-2) && y >= (ny-2))
+                || (x >= startX && x <= endX && y >= startY && y <= endY)
+                )
+            {
+              testImage->SetPixel(index, foregroundValue);
+            }
           }
+        }
       }
     }
   }
-  if( mode == 8)
+  else if( mode == 8)
   {
     int stripeSize = ceil(nx/ns);
     int valueStep = ( (foregroundValue+1)-backgroundValue )/ns -1;
@@ -532,17 +556,16 @@ int main(int argc, char** argv)
       for (int x = 0; x < stripeSize; x++)
       {
         for (int y = 0; y < ny; y++)
+        {
+          for (int z = 0; z < nz; z++)
           {
-            for (int z = 0; z < nz; z++)
-              {
-                index[0] = x +stripe*stripeSize;
-                index[1] = y;
-                index[2] = z;
+            index[0] = x +stripe*stripeSize;
+            index[1] = y;
+            index[2] = z;
 
-
-                testImage->SetPixel(index, value);
-              }
+            testImage->SetPixel(index, value);
           }
+        }
       }
     }
   }
