@@ -60,6 +60,7 @@ void Usage(const char* exec)
   std::cout << "*** [options]   ***" << std::endl;
   std::cout << std::endl;
   std::cout << "    -dir a b c d e f g h i    Direction matrix" << std::endl;
+  std::cout << "    -collapse <int>           Collapse given axis to make a 2D image" << std::endl;
   std::cout << "" << std::endl;
   std::cout << "For mode:" << std::endl;
   std::cout << "  0" << std::endl;
@@ -123,6 +124,7 @@ int main(int argc, char** argv)
   double zradius=20;
   float direction[9];
   bool userSuppliedDirection=false;
+  int collapseAxis=-1;
   int mode=0;
   int xstep=2;
   int ystep=2;
@@ -265,6 +267,11 @@ int main(int argc, char** argv)
     {
       mode=atoi(argv[++i]);
       std::cout << "Set -mode=" << niftk::ConvertToString(mode) << std::endl;
+    }
+    else if(strcmp(argv[i], "-collapse") == 0)
+    {
+      collapseAxis=atoi(argv[++i]);
+      std::cout << "Set -collapse=" << niftk::ConvertToString(collapseAxis) << std::endl;
     }
     else
     {
@@ -485,17 +492,17 @@ int main(int argc, char** argv)
     testImage->FillBuffer(backgroundValue);
 
     // First make chessboard
-    for (int z = 0; z < nz; z++)
+    for (int x = 0; x < nx; x++)
     {
-      index[2] = z;
+      index[0] = x;
       for (int y = 0; y < ny; y++)
       {
         index[1] = y;
-        for (int x = 0; x < nx; x++)
+        for (int z = 0; z < nz; z++)
         {
-          index[0] = x;
+          index[2] = z;
 
-          if (x%2 ^ y%2)
+          if (x%2 ^ y%2 ^ z%2)
           {
             testImage->SetPixel(index, foregroundValue);
           }
@@ -505,38 +512,48 @@ int main(int argc, char** argv)
 
     if( mode == 7)
     {
-      // For mode 7, we blank (set to white=255) everything except
-      // the 2x2 square at each corner, and the specified size of chessboard in the middle.
+      // For mode 7, we paint (set to foreground) everything except
+      // the 2x2x2 square at each corner, and the specified size of chessboard in the middle.
       float middleX = (nx-1)/2.0;
       float middleY = (ny-1)/2.0;
+      float middleZ = (nz-1)/2.0;
       int startX = middleX - (xstep/2.0) + 0.5;
       int startY = middleY - (ystep/2.0) + 0.5;
+      int startZ = middleZ - (zstep/2.0) + 0.5;
       int endX = startX + xstep - 1;
       int endY = startY + ystep - 1;
+      int endZ = startZ + zstep - 1;
 
-      std::cerr << "Matt, middleX=" << middleX << std::endl;
-      std::cerr << "Matt, middleY=" << middleY << std::endl;
-      std::cerr << "Matt, xstep=" << xstep << std::endl;
-      std::cerr << "Matt, ystep=" << ystep << std::endl;
+      std::cerr << "middle x = " << middleX << std::endl;
+      std::cerr << "middle y = " << middleY << std::endl;
+      std::cerr << "middle z = " << middleZ << std::endl;
+      std::cerr << "x step = " << xstep << std::endl;
+      std::cerr << "y step = " << ystep << std::endl;
+      std::cerr << "z step = " << zstep << std::endl;
 
-      std::cerr << "Blanking out all except corners and (" << startX << ", " << startY << ") to (" << endX << ", " << endY << ")" << std::endl;
+      std::cerr << "Painting in everything except corners and ("
+                << startX << ", " << startY << ", " << startZ << ") to ("
+                << endX << ", " << endY << ", " << endZ << ")" << std::endl;
 
-      for (int z = 0; z < nz; z++)
+      for (int x = 0; x < nx; x++)
       {
-        index[2] = z;
+        index[0] = x;
         for (int y = 0; y < ny; y++)
         {
           index[1] = y;
-          for (int x = 0; x < nx; x++)
+          for (int z = 0; z < nz; z++)
           {
-            index[0] = x;
+            index[2] = z;
 
-            if (   (x < 2 && y < 2)
-                || (x < 2 && y >= (ny-2))
-                || (y < 2 && x >= (nx-2))
-                || (x >= (nx-2) && y >= (ny-2))
-                || (x >= startX && x <= endX && y >= startY && y <= endY)
-                )
+            bool onSideX = x < 2 || x >= nx - 2;
+            bool onSideY = y < 2 || y >= ny - 2;
+            bool onSideZ = z < 2 || z >= nz - 2;
+            bool inCorner = onSideX && onSideY && onSideZ;
+            bool inChessBoard =
+                x >= startX && x <= endX
+                && y >= startY && y <= endY
+                && z >= startZ && z <= endZ;
+            if (!inCorner && !inChessBoard)
             {
               testImage->SetPixel(index, foregroundValue);
             }
@@ -559,7 +576,7 @@ int main(int argc, char** argv)
         {
           for (int z = 0; z < nz; z++)
           {
-            index[0] = x +stripe*stripeSize;
+            index[0] = x + stripe*stripeSize;
             index[1] = y;
             index[2] = z;
 
@@ -570,27 +587,14 @@ int main(int argc, char** argv)
     }
   }
 
-  if (mode != 6 && mode != 7)
-  {
-    typedef itk::ImageFileWriter< ImageType  > ImageWriterType;
-    ImageWriterType::Pointer writer = ImageWriterType::New();
-    writer->SetFileName(outputImage);
-    writer->SetInput(testImage);
-    writer->Update();
-  }
-  else
+  if (collapseAxis != -1)
   {
     typedef itk::Image<ScalarType, 2> OutputImageType;
     typedef itk::ExtractImageFilter<ImageType, OutputImageType> ExtractImageFilterType;
     typedef itk::ImageFileWriter< OutputImageType  > OutputImageWriterType;
 
-    ImageType::SizeType outputSize;
-    ImageType::RegionType outputRegion;
-
-    outputRegion = testImage->GetLargestPossibleRegion();
-    outputSize = outputRegion.GetSize();
-    outputSize[2] = 0;
-    outputRegion.SetSize(outputSize);
+    ImageType::RegionType outputRegion = testImage->GetLargestPossibleRegion();
+    outputRegion.SetSize(collapseAxis, 0);
 
     ExtractImageFilterType::Pointer filter = ExtractImageFilterType::New();
     filter->SetInput(testImage);
@@ -601,6 +605,14 @@ int main(int argc, char** argv)
     imageWriter->SetFileName(outputImage);
     imageWriter->SetInput(filter->GetOutput());
     imageWriter->Update();
+  }
+  else
+  {
+    typedef itk::ImageFileWriter<ImageType> ImageWriterType;
+    ImageWriterType::Pointer writer = ImageWriterType::New();
+    writer->SetFileName(outputImage);
+    writer->SetInput(testImage);
+    writer->Update();
   }
 
 
