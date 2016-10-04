@@ -92,12 +92,13 @@ NIFTKCOMMON_WINEXPORT int FileSize(const std::string& fileName);
 
 
 /**
-* This method is used to find the plugin config files.
+* Compares files prefix and suffixes.
 * So you look for stuff with a given prefix (usually blank)
 * and the correct filename extension. ie. *.plg
+* There are no restrictions on use of full stops, i.e. thing.something.anotherthing.txt is fine
 * @param a filename
-* @param normally blank
-* @param extension for example ".plg"
+* @param blank will match to anything
+* @param extension for example ".plg", blank will also match to anything
 * @return true for a match and false otherwise
 */
 NIFTKCOMMON_WINEXPORT bool FilenameHasPrefixAndExtension(
