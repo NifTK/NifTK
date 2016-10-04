@@ -61,6 +61,9 @@ protected:
 private:
   niftk::NDICAPITracker m_Tracker;
 
+  unsigned int m_SuppressUpateErrorsAfterNRepeats;  //to stop repeated calls to internal update flooding the console
+  unsigned int m_UpdateErrorRepeatCounter;          //to stop repeated calls to internal update flooding the console
+
 }; // end class
 
 } // end namespace

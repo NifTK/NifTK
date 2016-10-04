@@ -233,7 +233,7 @@ conditions are met:
 1) Redistribution of the source code, in verbatim or modified
    form, must retain the above copyright notice, this license,
    the following disclaimer, and any notices that refer to this
-   license and/or the following disclaimer.  
+   license and/or the following disclaimer.
 
 2) Redistribution in binary form must include the above copyright
    notice, a copy of this license and the following disclaimer
@@ -337,7 +337,7 @@ public:
     TR_LED_ON    = 1,
     TR_LED_FLASH = 2
   };
- 
+
   virtual bool IsTracker() const { return true; }
 
   /*! Hardware device SDK version. */
@@ -500,7 +500,7 @@ public:
   char *Version;
   char *SerialDevice;
 
-  int SerialPort; 
+  int SerialPort;
   int BaudRate;
   int IsDeviceTracking;
 
@@ -519,6 +519,9 @@ private:
   void operator=(const NDICAPITracker&); /* Purposefully not implemented. */
 
   std::map<std::string, std::vector<double> > m_TrackerMatrices;
+
+  unsigned int m_SuppressUpateErrorsAfterNRepeats;  //to stop repeated calls to internal update flooding the console
+  unsigned int m_UpdateErrorRepeatCounter;          //to stop repeated calls to internal update flooding the console
 };
 
 } // end namespace
