@@ -1846,7 +1846,7 @@ if(BUILD_CAFFE)
 
   if (NOT APPLE)
     find_package(OpenBLAS REQUIRED)
-    list(APPEND _additional_search_paths ${OpenBLAS_DIR}${_library_sub_dir})
+    list(APPEND _additional_search_paths "${OpenBLAS_DIR}/lib") # On windows, this is also lib.
   endif()
 
   find_package(Caffe REQUIRED)
