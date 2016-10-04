@@ -64,9 +64,9 @@ int main(int argc, char** argv)
 
     for (unsigned long int i = 0; i < files.size(); i++)
     {
-      if (   niftk::FilenameHasPrefixAndExtension(files[i], "", "txt")
-          || niftk::FilenameHasPrefixAndExtension(files[i], "", "mat")
-          || niftk::FilenameHasPrefixAndExtension(files[i], "", "4x4"))
+      if (   niftk::FilenameHasPrefixAndExtension(files[i], "", ".txt")
+          || niftk::FilenameHasPrefixAndExtension(files[i], "", ".mat")
+          || niftk::FilenameHasPrefixAndExtension(files[i], "", ".4x4"))
       {
         bool isSuccessfullyRead = mitk::ReadTrackerMatrix(files[i], trackingMatrix);
         if (isSuccessfullyRead)

@@ -234,7 +234,7 @@ int main(int argc, char** argv)
         std::numeric_limits<int>::max());
 
     // Write out
-    if (niftk::FilenameHasPrefixAndExtension(outputPoints, "", "mps"))
+    if (niftk::FilenameHasPrefixAndExtension(outputPoints, "", ".mps"))
     {
       mitk::PointSet::Pointer pointSet = mitk::PointSet::New();
       for (unsigned int i = 0; i < pointsIn3D.size(); i++)
