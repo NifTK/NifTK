@@ -136,7 +136,7 @@ void CaffeFCNSegmentorPrivate::ValidateInputs(const mitk::Image::Pointer& inputI
      )
   {
     mitkThrow() << "The input image should be an RGB or RGBA vector image, or greyscale unsigned char.";
-  }
+  }  
 }
 
 

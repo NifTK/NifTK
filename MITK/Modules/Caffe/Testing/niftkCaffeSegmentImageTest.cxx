@@ -73,7 +73,8 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
     niftk::CaffeFCNSegmentor::New(networkFile,
                                   weightsFile,
                                   inputLayerName,
-                                  outputBlobName
+                                  outputBlobName,
+                                  -1 // no gpu
                                  );
 
   std::chrono::time_point<std::chrono::system_clock> start, end;

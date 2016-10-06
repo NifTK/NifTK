@@ -3,6 +3,50 @@
 
 \section CaffeSegIntro Introduction
 
+The aim of this plugin, is to run pixel-wise (dense) semantic segmentation using the
+Caffe deep learning framework. See Figure 1.
+
+\image html Example.png "Figure 1: Here, the liver has been identified using Caffe."
+
+\section CaffeSegPreferences Preferences
+
+The first thing to do is set preferences. The preferences enable you to specify the
+Caffe model, and the network weights determined during your training process. We assume
+that most researchers will perform Caffe-based research, outside of NifTK, and will
+simply provide these two files.
+
+\image html Preferences.png "Figure 2: First, specify the network, and weights as plugin preferences."
+
+Note the following two conditions:
+\li The input is created using a MemoryData layer. The name of this node must be 'data'.
+\li The output is extracted from a blob called 'prediction', which is assumed to be a 2 channel
+image of probabilities. Channel 0 must be probability of background, Channel 1 must be the probability
+of foreground.
+
+The MemoryData layer specifies the size and number of channels of the input. This must match the images
+you are using. The MemoryData layer specification can also define scaling and offsets to apply to the
+data. The plugin resizes the image to match the network, then copies data into the Caffe input MemoryData layer.
+So, Caffe does do the scaling and offsets, but on the resized image.
+
+The output from the Caffe network will vary in size depending on your network topology. The output
+data is copied to a 2 channel image of floats, and resized using linear interpolation to match
+the size of the input memory data layer. It is then classified into 0=background, 255=foreground.
+It is then resized again, up to the same size as the original input image.
+
+The command line app niftkCaffeSeg gives the option to specify the name of these network nodes.
+If your binary was compiled using CUDA, niftkCaffeSeg also enables the user to request a specific GPU device.
+In future, we could add the ability to specify these items in the GUI as well.
+
+\section CaffeSegControls Controls
+
+See Figure 3 for the main controls. The original aim was to segment stereo video in real-time.
+The controls enable you to select a left and/or right image.
+
+\image html Controls.png "Figure 3: The main controls enable you to select an image, and either manually or automatically update the segmentation."
+
+\li In manual mode, the segmentation is updated when you hit the "do it now" button.
+\li In automatic mode, the segmentation is updated when the Data Sources plugin sends out the IGIUPDATE message on the event bus, so, you must have a data source running.
 \section CaffeSegReferences References
 
+\li [1] Shelhamer et al. Fully Convolutional Networks for Semantic Segmentation
 */
