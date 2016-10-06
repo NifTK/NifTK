@@ -56,7 +56,7 @@ class NIFTKCAFFE_EXPORT CaffeFCNSegmentor : public itk::Object
 public:
 
   mitkClassMacroItkParent(CaffeFCNSegmentor, itk::Object)
-  mitkNewMacro4Param(CaffeFCNSegmentor, const std::string&, const std::string&, const std::string&, const std::string&)
+  mitkNewMacro5Param(CaffeFCNSegmentor, const std::string&, const std::string&, const std::string&, const std::string&, const int&)
   mitkNewMacro2Param(CaffeFCNSegmentor, const std::string&, const std::string&)
 
   /**
@@ -79,7 +79,8 @@ protected:
   CaffeFCNSegmentor(const std::string& networkDescriptionFileName,  // Purposefully hidden.
                     const std::string& networkWeightsFileName,
                     const std::string& inputLayerName,
-                    const std::string& outputBlobName
+                    const std::string& outputBlobName,
+                    const int& gpuDevice
                    );
   CaffeFCNSegmentor(const std::string& networkDescriptionFileName,  // Purposefully hidden.
                     const std::string& networkWeightsFileName

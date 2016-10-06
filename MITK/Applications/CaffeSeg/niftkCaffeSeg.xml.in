@@ -16,7 +16,7 @@
     <file fileExtensions=".prototxt">
       <name>model</name>
       <longflag>model</longflag>
-      <description>Network model</description>
+      <description>Network model (.prototxt)</description>
       <label>Network Model</label>
       <channel>input</channel>
     </file>
@@ -24,7 +24,7 @@
     <file fileExtensions=".caffemodel">
       <name>weights</name>
       <longflag>weights</longflag>
-      <description>Network weights</description>
+      <description>Network weights (.caffemodel)</description>
       <label>Network Weights</label>
       <channel>input</channel>
     </file>
@@ -55,7 +55,7 @@
     <directory>
       <name>inputDir</name>
       <longflag>inputDir</longflag>
-      <description>A directory containing many images.</description>
+      <description>A directory containing many images</description>
       <label>Input Directory</label>
       <channel>input</channel>
     </directory>
@@ -76,13 +76,13 @@
       <default>prediction</default>
     </string>
 
-    <boolean>
+    <integer>
       <name>gpu</name>
       <longflag>gpu</longflag>
-      <description>Use GPU if available</description>
-      <label>Use GPU</label>
-      <default>0</default>
-    </boolean>
+      <description>GPU device (if compiled with CUDA)</description>
+      <label>GPU device</label>
+      <default>-1</default>
+    </integer>
 
   </parameters>
 

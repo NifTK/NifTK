@@ -64,11 +64,11 @@ int main(int argc, char* argv[])
       return returnStatus + 5;
     }
 
-    int dummyArgc = 1;
+    int dummyArgc = 1; // Caffe doesn't like arguments with - in.
     caffe::GlobalInit(&dummyArgc, &argv);
 
     niftk::CaffeFCNSegmentor::Pointer manager
-      = niftk::CaffeFCNSegmentor::New(model, weights, inputLayer, outputBlob);
+      = niftk::CaffeFCNSegmentor::New(model, weights, inputLayer, outputBlob, gpu /* only works if compiled in */);
 
     std::vector<std::string> filesToProcess;
 

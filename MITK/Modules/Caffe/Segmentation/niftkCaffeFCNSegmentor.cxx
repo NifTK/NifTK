@@ -31,7 +31,8 @@ public:
   CaffeFCNSegmentorPrivate(const std::string& networkDescriptionFileName,
                     const std::string& networkWeightsFileName,
                     const std::string& inputLayerName,
-                    const std::string& outputBlobName
+                    const std::string& outputBlobName,
+                    const int& gpuDevice
                    );
   virtual ~CaffeFCNSegmentorPrivate();
 
@@ -58,7 +59,8 @@ private:
 CaffeFCNSegmentorPrivate::CaffeFCNSegmentorPrivate(const std::string& networkDescriptionFileName,
                                                    const std::string& networkWeightsFileName,
                                                    const std::string& inputLayerName,
-                                                   const std::string& outputBlobName
+                                                   const std::string& outputBlobName,
+                                                   const int& gpuDevice
                                                   )
 : m_InputLayerName(inputLayerName)
 , m_OutputBlobName(outputBlobName)
@@ -246,12 +248,14 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
 CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileName,
                                      const std::string& networkWeightsFileName,
                                      const std::string& inputLayerName,
-                                     const std::string& outputBlobName
+                                     const std::string& outputBlobName,
+                                     const int& gpuDevice
                                     )
 : m_Impl(new CaffeFCNSegmentorPrivate(networkDescriptionFileName,
                                       networkWeightsFileName,
                                       inputLayerName,
-                                      outputBlobName
+                                      outputBlobName,
+                                      gpuDevice
                                       ))
 {
 }
@@ -261,7 +265,8 @@ CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileNa
 CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileName,  // Purposefully hidden.
                                      const std::string& networkWeightsFileName
                                     )
-: m_Impl(new CaffeFCNSegmentorPrivate(networkDescriptionFileName, networkWeightsFileName, "data", "prediction"))
+: m_Impl(new CaffeFCNSegmentorPrivate(networkDescriptionFileName, networkWeightsFileName,
+                                      "data", "prediction", 0)) // only uses GPU if CUDA compiled in.
 {
 }
 
