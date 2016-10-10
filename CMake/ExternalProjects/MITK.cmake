@@ -167,13 +167,20 @@ if(NOT DEFINED MITK_DIR)
     if(NIFTK_Apps/NiftyMIDAS)
 
       list(APPEND _enabled_modules
+        DicomUI                 # needed by org.mitk.gui.qt.dicom
         SegmentationUI          # needed by niftkMIDASGui
       )
 
-      list(APPEND _enabled_plugins
-        org.mitk.gui.qt.cmdlinemodules
-        org.mitk.gui.qt.measurementtoolbox
-      )
+      if(MITK_USE_BLUEBERRY)
+
+        list(APPEND _enabled_plugins
+          org.mitk.gui.qt.cmdlinemodules
+          org.mitk.gui.qt.dicom
+          org.mitk.gui.qt.measurementtoolbox
+        )
+
+      endif()
+
     endif()
 
     if(BUILD_VL)
