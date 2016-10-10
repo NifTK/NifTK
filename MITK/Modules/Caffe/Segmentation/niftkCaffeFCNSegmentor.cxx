@@ -17,8 +17,12 @@
 #include <mitkIOUtil.h>
 #include <niftkOpenCVImageConversion.h>
 #include <cv.h>
+#define GLOG_NO_ABBREVIATED_SEVERITIES
+#pragma push_macro("STRICT")
+#undef STRICT
 #include <caffe/caffe.hpp>
 #include <caffe/layers/memory_data_layer.hpp>
+#pragma pop_macro("STRICT")
 
 namespace niftk
 {

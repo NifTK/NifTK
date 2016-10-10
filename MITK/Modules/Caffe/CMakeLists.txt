@@ -18,8 +18,10 @@ if(CUDA_FOUND AND NIFTK_USE_CUDA)
   list(APPEND _modules niftkCUDA)
 endif()
 
+add_definitions(-DPROTOBUF_USE_DLLS)
+
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Segmentation
+  INCLUDE_DIRS Segmentation F:/NifTK/Caffe/install/include
   DEPENDS ${_modules}
   PACKAGE_DEPENDS OpenCV Caffe
 )
