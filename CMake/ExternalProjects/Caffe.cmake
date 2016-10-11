@@ -22,23 +22,8 @@ if(DEFINED Caffe_DIR AND NOT EXISTS ${Caffe_DIR})
   message(FATAL_ERROR "Caffe_DIR variable is defined but corresponds to non-existing directory \"${Caffe_ROOT}\".")
 endif()
 
-# Caffe only (minor CMake mods)
-#set(version "rc3-NifTK")
-
-# Caffe with Eli Gibson's minimal set of mods
-#set(version "rc3-EliGibson-NifTK")
-
-# Eli's clone of Caffe with more mods
-#set(version "7c17be7-EliGibson-NifTK")
-
-# NifTK Caffe rc3 clone with NifTK relevant mods from Eli
-# https://cmiclab.cs.ucl.ac.uk/CMIC/CaffeNifTK
-#set(version "bba1c6f")
-
-# Microsoft Caffe Windows branch https://github.com/BVLC/caffe/tree/windows
-#set(version "5db3074")
-
-# Microsoft Caffe Windows branch with CaffeNifTK master commits copied over
+# Microsoft Caffe Windows branch, forked from https://github.com/BVLC/caffe,
+# with Eli's mods (SPIE 2017) merged in, and fixes to get working on Windows, Linux and Mac.
 set(version "7c758f5630")
 
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
