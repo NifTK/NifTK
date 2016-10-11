@@ -2296,7 +2296,6 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
     if (shouldBeVisible)
     {
       std::stringstream stream;
-      stream.precision(3);
       stream.imbue(std::locale::classic());
 
       mitk::Point3D selectedPositionInVx;
@@ -2311,7 +2310,7 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
       }
 
       stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << m_OrientationString << ")" << std::endl;
-      stream << m_SelectedPosition[0] << ", " << m_SelectedPosition[1] << ", " << m_SelectedPosition[2] << " mm";
+      stream << std::fixed << std::setprecision(1) << m_SelectedPosition[0] << ", " << m_SelectedPosition[1] << ", " << m_SelectedPosition[2] << " mm";
 
       if (m_TimeGeometry->CountTimeSteps() > 1)
       {
