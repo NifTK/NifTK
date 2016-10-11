@@ -39,7 +39,7 @@ endif()
 #set(version "5db3074")
 
 # Microsoft Caffe Windows branch with CaffeNifTK master commits copied over
-set(version "9f932ed5dd")
+set(version "7c758f5630")
 
 set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 
@@ -134,6 +134,7 @@ if(NOT DEFINED Caffe_DIR)
   )
 
   set(Caffe_DIR ${proj_INSTALL})
+  set(Caffe_SOURCE_DIR ${proj_SOURCE})
   set(NifTK_PREFIX_PATH ${proj_INSTALL}^^${NifTK_PREFIX_PATH})
   mitkFunctionInstallExternalCMakeProject(${proj})
 

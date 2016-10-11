@@ -20,8 +20,13 @@ endif()
 
 add_definitions(-DPROTOBUF_USE_DLLS)
 
+set(_include_dirs Segmentation)
+if(WIN32)
+  list(APPEND _include_dirs ${Caffe_SOURCE_DIR}/include)
+endif()
+
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Segmentation F:/NifTK/Caffe/install/include
+  INCLUDE_DIRS ${_include_dirs}
   DEPENDS ${_modules}
   PACKAGE_DEPENDS OpenCV Caffe
 )

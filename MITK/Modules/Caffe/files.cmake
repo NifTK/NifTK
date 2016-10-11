@@ -14,7 +14,9 @@
 
 set(CPP_FILES
   Segmentation/niftkCaffeFCNSegmentor.cxx
-  F:/NifTK/Caffe/src/src/caffe/util/force_link.cxx
-  F:/NifTK/Caffe/src/src/caffe/layer_factory.cpp
 )
+if(WIN32)
+  list(APPEND CPP_FILES ${Caffe_SOURCE_DIR}/src/caffe/util/force_link.cxx)
+endif()
+
 
