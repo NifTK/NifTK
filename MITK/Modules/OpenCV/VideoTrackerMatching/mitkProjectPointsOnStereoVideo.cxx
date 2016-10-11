@@ -946,11 +946,11 @@ void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (mitk::VideoTrack
   mitk::PointSet::Pointer triangulatedPoints = mitk::PointSet::New();
   std::vector < bool > pointIDTriangulated;
   std::vector < bool > lineIDTriangulated;
-  for ( unsigned int i = 0 ; i < m_MaxGoldStandardPointIndex ; i ++ )
+  for ( int i = 0 ; i <= m_MaxGoldStandardPointIndex ; i ++ )
   {
      pointIDTriangulated.push_back(false);
   }
-  for ( unsigned int i = 0 ; i < m_MaxGoldStandardLineIndex ; i ++ )
+  for ( int i = 0 ; i <= m_MaxGoldStandardLineIndex ; i ++ )
   {
      lineIDTriangulated.push_back(false);
   }
