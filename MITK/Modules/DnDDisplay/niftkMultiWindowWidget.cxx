@@ -2347,6 +2347,15 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
 
       mitk::Point3D selectedPositionInVx;
       m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
+
+      if (!m_Geometry->GetImageGeometry())
+      {
+        for (int i = 0; i < 3; ++i)
+        {
+          selectedPositionInVx[i] -= 0.5;
+        }
+      }
+
       stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << m_OrientationString << ")" << std::endl;
       stream << m_SelectedPosition[0] << ", " << m_SelectedPosition[1] << ", " << m_SelectedPosition[2] << " mm";
 
