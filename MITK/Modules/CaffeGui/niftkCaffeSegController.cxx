@@ -296,6 +296,7 @@ void CaffeSegController::InternalUpdateBackground()
   Q_D(CaffeSegController);
   QMutexLocker locker(&d->m_Lock);
 
+#pragma omp for schedule(static,1)
   for (int i = 0; i < 2; i++)
   {
     if (   d->m_Segmentors[i].IsNotNull()
