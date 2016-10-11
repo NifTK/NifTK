@@ -337,7 +337,7 @@ int main(int argc, char** argv)
       if ( outputTriangulatedPoints.length() != 0 )
       {
         projector->SetAllowablePointMatchingRatio(pointMatchingRatio);
-        projector->TriangulateGoldStandardPoints(outputTriangulatedPoints, matcher);
+        projector->TriangulateGoldStandardPoints(matcher);
       }
     }
 

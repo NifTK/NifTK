@@ -164,7 +164,7 @@ public:
   /**
    * \brief Triangulates any stereo matched gold standard objects to world coordinates
    */
-  void TriangulateGoldStandardPoints (std::string outPrefix, mitk::VideoTrackerMatching::Pointer trackerMatcher);
+  void TriangulateGoldStandardPoints (mitk::VideoTrackerMatching::Pointer trackerMatcher);
 
   /**
    * \brief Set the projector screen buffer

@@ -922,7 +922,7 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (std::string outPrefix, mitk::VideoTrackerMatching::Pointer trackerMatcher )
+void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (mitk::VideoTrackerMatching::Pointer trackerMatcher )
 {
 
   if ( ! m_GoldStandardPointsClassifiedOK )
