@@ -33,11 +33,11 @@ void LoadTimeStampedPointsTest(std::string dir)
   std::string matrixdir = dir + "Aurora_2/1";
 
   std::vector < std::pair<unsigned long long, cv::Point3d> > timeStampedPoints = mitk::LoadTimeStampedPoints(pointdir);
-  
+
   MITK_TEST_CONDITION ( timeStampedPoints.size() == 102 , "Testing 102 points were loaded. " << timeStampedPoints.size() );
   MITK_TEST_CONDITION ( timeStampedPoints[0].first == 1429793163701888600 , "Testing first time stamp " <<  timeStampedPoints[0].first);
   MITK_TEST_CONDITION ( timeStampedPoints[101].first == 1429793858654637600 , "Testing last time stamp " <<  timeStampedPoints[101].first);
-  
+
   MITK_TEST_CONDITION ( mitk::NearlyEqual (timeStampedPoints[0].second,cv::Point3d (317,191.0,0.0),1e-6), "Testing first point value " <<  timeStampedPoints[0].second);
   MITK_TEST_CONDITION ( mitk::NearlyEqual (timeStampedPoints[101].second, cv::Point3d (345.0, 162.0, 0.0),1e-6), "Testing last time stamp " <<  timeStampedPoints[87].second);
 
@@ -51,7 +51,7 @@ void TestLoadPickedObject ( char * filename )
   stream.open(filename);
   if ( stream )
   {
-    LoadPickedObjects ( p1, stream ); 
+    LoadPickedObjects ( p1, stream );
   }
   else
   {
@@ -74,6 +74,21 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
   mitk::PickedPointList::Pointer ppl = mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( directory  );
 
   MITK_TEST_CONDITION ( ppl->GetListSize() == 9 , "Testing that there are 9 picked objects in the list : " << ppl->GetListSize() );
+
+  //the base directory contains point lists in MITK's legacy format. Lets check that we get the same result with MITK's new format
+  mitk::PickedPointList::Pointer ppl_v2 = mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( directory + niftk::GetFileSeparator() + "v2" );
+
+  //and what happens when we move it
+  mitk::PickedPointList::Pointer ppl_v2_moved = mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( directory + niftk::GetFileSeparator() + "v2_moved" );
+
+}
+
+void TestLoadMPSAndConvertToOpenCVVector ( char * directory )
+{
+//in here we load point list using above files, then we test the lists
+//IOUtilsLoadPointList
+//PointListToVector
+
 }
 
 int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
