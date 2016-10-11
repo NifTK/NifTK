@@ -1281,9 +1281,9 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           bottomDV[0] = permutedSpacing[0] * permutedMatrix[0][2];
           bottomDV[1] = permutedSpacing[1] * permutedMatrix[1][2];
           bottomDV[2] = permutedSpacing[2] * permutedMatrix[2][2];
-          normal[0] = permutedMatrix[0][0];
-          normal[1] = permutedMatrix[1][0];
-          normal[2] = permutedMatrix[2][0];
+          normal[0] = permutedSpacing[0] * permutedMatrix[0][0];
+          normal[1] = permutedSpacing[1] * permutedMatrix[1][0];
+          normal[2] = permutedSpacing[2] * permutedMatrix[2][0];
           break;
         /// Coronal:
         case mitk::SliceNavigationController::Frontal:
@@ -1301,9 +1301,9 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           bottomDV[0] = permutedSpacing[0] * permutedMatrix[0][2];
           bottomDV[1] = permutedSpacing[1] * permutedMatrix[1][2];
           bottomDV[2] = permutedSpacing[2] * permutedMatrix[2][2];
-          normal[0] = permutedMatrix[0][1];
-          normal[1] = permutedMatrix[1][1];
-          normal[2] = permutedMatrix[2][1];
+          normal[0] = permutedSpacing[0] * permutedMatrix[0][1];
+          normal[1] = permutedSpacing[1] * permutedMatrix[1][1];
+          normal[2] = permutedSpacing[2] * permutedMatrix[2][1];
           break;
         /// Axial:
         default:
@@ -1314,7 +1314,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           isFlipped = true;
           originOfSlice[0] = worldBottomLeftBackCorner[0];
           originOfSlice[1] = worldBottomLeftBackCorner[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
-          originOfSlice[2] = worldBottomLeftBackCorner[2] + permutedBoundingBox[2] * permutedSpacing[2] * permutedMatrix[2][2] - 0.5 * permutedSpacing[2];
           originOfSlice[2] = worldBottomLeftBackCorner[2] + 0.5 * permutedSpacing[2];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
@@ -1322,9 +1321,9 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           bottomDV[0] = -1.0 * permutedSpacing[0] * permutedMatrix[0][1];
           bottomDV[1] = -1.0 * permutedSpacing[1] * permutedMatrix[1][1];
           bottomDV[2] = -1.0 * permutedSpacing[2] * permutedMatrix[2][1];
-          normal[0] = permutedMatrix[0][2];
-          normal[1] = permutedMatrix[1][2];
-          normal[2] = permutedMatrix[2][2];
+          normal[0] = permutedSpacing[0] * permutedMatrix[0][2];
+          normal[1] = permutedSpacing[1] * permutedMatrix[1][2];
+          normal[2] = permutedSpacing[2] * permutedMatrix[2][2];
           break;
         }
 
