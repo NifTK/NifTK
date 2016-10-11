@@ -20,11 +20,15 @@
 #include <mitkStandaloneDataStorage.h>
 #include <mitkDataNode.h>
 #include <mitkIOUtil.h>
+#ifdef _WIN32
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 #pragma push_macro("STRICT")
 #undef STRICT
 #include <caffe/caffe.hpp>
 #pragma pop_macro("STRICT")
+#else
+#include <caffe/caffe.hpp>
+#endif
 #include <chrono>
 #include <ctime>
 
