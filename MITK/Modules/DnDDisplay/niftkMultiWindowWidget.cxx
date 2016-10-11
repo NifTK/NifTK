@@ -1203,31 +1203,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     m_OrientationString[dominantAxisRL] = signRL > 0 ? 'R' : 'L';
     m_OrientationString[dominantAxisAP] = signAP > 0 ? 'A' : 'P';
 
-//    MITK_INFO << "Matt, image geometry=" << m_Geometry->GetImageGeometry();
-//    MITK_INFO << "Matt, origin=" << m_Geometry->GetOrigin();
-//    MITK_INFO << "Matt, centre=" << m_Geometry->GetCenter();
-//    MITK_INFO << "Matt, extent=" << m_Geometry->GetExtent(0) << ", " << m_Geometry->GetExtent(1) << ", " << m_Geometry->GetExtent(2);
-//    MITK_INFO << "Matt, domRL=" << dominantAxisRL << ", signRL=" << signRL << ", domAP=" << dominantAxisAP << ", signAP=" << signAP << ", dominantAxisSI=" << dominantAxisSI << ", signSI=" << signSI;
-//    MITK_INFO << "Matt, permutedBoundingBox=" << permutedBoundingBox[0] << ", " << permutedBoundingBox[1] << ", " << permutedBoundingBox[2];
-//    MITK_INFO << "Matt, permutedAxes=" << permutedAxes[0] << ", " << permutedAxes[1] << ", " << permutedAxes[2];
-//    MITK_INFO << "Matt, permutedSpacing=" << permutedSpacing[0] << ", " << permutedSpacing[1] << ", " << permutedSpacing[2];
-//    MITK_INFO << "Matt, flippedAxes=" << flippedAxes[0] << ", " << flippedAxes[1] << ", " << flippedAxes[2];
-//    MITK_INFO << "Matt, input normalised matrix=";
-//    for (unsigned int i=0; i < 3; i++)
-//    {
-//      MITK_INFO << affineTransformMatrix[i][0] << " " << affineTransformMatrix[i][1] << " " << affineTransformMatrix[i][2];
-//    }
-//    MITK_INFO << "Matt, inverse normalised matrix=";
-//    for (unsigned int i=0; i < 3; i++)
-//    {
-//      MITK_INFO << inverseTransformMatrix[i][0] << " " << inverseTransformMatrix[i][1] << " " << inverseTransformMatrix[i][2];
-//    }
-//    MITK_INFO << "Matt, permuted matrix=";
-//    for (unsigned int i=0; i < 3; i++)
-//    {
-//      MITK_INFO << permutedMatrix[i][0] << " " << permutedMatrix[i][1] << " " << permutedMatrix[i][2];
-//    }
-
     mitk::Point3D worldBottomLeftBackCorner = m_Geometry->GetOrigin();
 
     if (m_Geometry->GetImageGeometry())
@@ -1262,7 +1237,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     {
       assert(false);
     }
-//    MITK_INFO << "Matt, bottom left corner: " << worldBottomLeftBackCorner;
 
     std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
     for (unsigned int i = 0; i < renderWindows.size(); i++)
@@ -1354,17 +1328,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           break;
         }
 
-//        MITK_INFO << "Matt, image=" << m_Geometry->GetImageGeometry();
-//        MITK_INFO << "Matt, width=" << width;
-//        MITK_INFO << "Matt, height=" << height;
-//        MITK_INFO << "Matt, originOfSlice=" << originOfSlice;
-//        MITK_INFO << "Matt, rightDV=" << rightDV;
-//        MITK_INFO << "Matt, bottomDV=" << bottomDV;
-//        MITK_INFO << "Matt, normal=" << normal;
-//        MITK_INFO << "Matt, viewSpacing=" << viewSpacing;
-//        MITK_INFO << "Matt, slices=" << slices;
-//        MITK_INFO << "Matt, isFlipped=" << isFlipped;
-
         mitk::TimeStepType numberOfTimeSteps = timeGeometry->CountTimeSteps();
 
         mitk::ProportionalTimeGeometry::Pointer createdTimeGeometry = mitk::ProportionalTimeGeometry::New();
@@ -1414,14 +1377,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           createdTimeGeometry->SetTimeStepGeometry(slicedGeometry, timeStep);
         }
         createdTimeGeometry->Update();
-
-//        MITK_INFO << "Matt - final geometry=" << createdTimeGeometry;
-//        MITK_INFO << "Matt - final geometry origin=" << createdTimeGeometry->GetGeometryForTimeStep(0)->GetOrigin();
-//        MITK_INFO << "Matt - final geometry center=" << createdTimeGeometry->GetGeometryForTimeStep(0)->GetCenter();
-//        for (int j = 0; j < 8; j++)
-//        {
-//          MITK_INFO << "Matt - final geometry j=" << j << ", p=" << createdTimeGeometry->GetGeometryForTimeStep(0)->GetCornerPoint(j);
-//        }
 
         sliceNavigationController->SetInputWorldTimeGeometry(createdTimeGeometry);
         sliceNavigationController->Update(mitk::SliceNavigationController::Original, true, true, false);
