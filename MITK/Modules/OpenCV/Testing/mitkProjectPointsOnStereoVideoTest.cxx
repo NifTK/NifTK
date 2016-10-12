@@ -13,8 +13,12 @@
 =============================================================================*/
 
 #include "mitkProjectPointsOnStereoVideo.h"
+#include <niftkFileHelper.h>
+#include <mitkOpenCVMaths.h>
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
+#include <mitkPointSet.h>
+#include <mitkIOUtil.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/core_c.h>
 
@@ -197,6 +201,8 @@ bool CheckReProjectionErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projecto
     return false;
   }
 }
+
+//-----------------------------------------------------------------------------
 bool CheckTriangulationErrors (mitk::ProjectPointsOnStereoVideo::Pointer Projector)
 {
 
@@ -231,6 +237,55 @@ bool CheckTriangulationErrors (mitk::ProjectPointsOnStereoVideo::Pointer Project
     return false;
   }
 }
+
+//-----------------------------------------------------------------------------
+bool CheckTriangulateGoldStandardPoints (mitk::ProjectPointsOnStereoVideo::Pointer Projector, mitk::VideoTrackerMatching::Pointer matcher)
+{
+
+  std::string tempFile = niftk::CreateUniqueTempFileName ( "triangulationTest" , ".mps" );
+  Projector->SetTriangulatedPointsOutName(tempFile);
+  Projector->TriangulateGoldStandardPoints (matcher);
+
+  mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( tempFile );
+
+  //check there are four points
+  if ( pointSet->GetSize() != 4 )
+  {
+    MITK_ERROR << "Wrong number of triangulated points, " << pointSet->GetSize() << " ne 4.";
+    return false;
+  }
+
+  std::vector < cv::Point3d > triangulatedPointsVector = mitk::PointSetToVector ( pointSet );
+
+  double error = 0;
+
+  error += fabs ( triangulatedPointsVector[0].x - ( -826.2 ) ) ;
+  error += fabs ( triangulatedPointsVector[0].y - ( -207.2 ) ) ;
+  error += fabs ( triangulatedPointsVector[0].z - ( -2010.6 ) ) ;
+
+  error += fabs ( triangulatedPointsVector[1].x - (-820.3  ) ) ;
+  error += fabs ( triangulatedPointsVector[1].y - ( -205.0 ) ) ;
+  error += fabs ( triangulatedPointsVector[1].z - (-2036.9  ) ) ;
+
+  error += fabs ( triangulatedPointsVector[2].x - ( -820.8 ) ) ;
+  error += fabs ( triangulatedPointsVector[2].y - ( -166.1 ) ) ;
+  error += fabs ( triangulatedPointsVector[2].z - ( -2033.7 ) ) ;
+
+  error += fabs ( triangulatedPointsVector[3].x - ( -826.8 ) ) ;
+  error += fabs ( triangulatedPointsVector[3].y - ( -168.4 ) ) ;
+  error += fabs ( triangulatedPointsVector[3].z - ( -2007.0 ) ) ;
+
+  if ( error < 2e-2 )
+  {
+    return true;
+  }
+  else
+  {
+    MITK_ERROR << "Absolute error for TriangulateGoldStandardPoints = " << error << ": too high for projected point vector, failing.";
+    return false;
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
@@ -380,7 +435,7 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   MITK_TEST_CONDITION(CheckProjectionErrors(Projector), "Testing projection Errors");
   MITK_TEST_CONDITION(CheckReProjectionErrors(Projector), "Testing re-projection Errors");
   MITK_TEST_CONDITION(CheckTriangulationErrors(Projector), "Testing triangulation Errors");
-
+  MITK_TEST_CONDITION(CheckTriangulateGoldStandardPoints(Projector, matcher), "Testing whether triangulation of gold standard points works");
   //now we're going to repeat this test using more grid points, and a model to world transform
   Projector->ClearWorldPoints();
   Projector->SetModelToWorldTransform(modelToWorldTransform);
