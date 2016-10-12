@@ -111,9 +111,9 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
 
   //the base directory contains point lists in MITK's legacy format. Lets check that we get the same result with MITK's new format
   mitk::PickedPointList::Pointer ppl_v2 = mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( directory + niftk::GetFileSeparator() + "v2" );
-  MITK_TEST_CONDITION ( ppl_v2->GetListSize() == 5 , "Testing that there are 5 picked objects in the new formatt list : " << ppl_v2->GetListSize() );
+  MITK_TEST_CONDITION ( ppl_v2->GetListSize() == 6 , "Testing that there are 6 picked objects in the new formatt list : " << ppl_v2->GetListSize() );
   MITK_TEST_CONDITION ( ppl_v2->GetNumberOfPoints() == 5, "Testing that there are 5 picked points in the list : " << ppl_v2->GetNumberOfPoints() );
-  MITK_TEST_CONDITION ( ppl_v2->GetNumberOfLines() == 0, "Testing that there are 0 picked lines in the list : " << ppl_v2->GetNumberOfLines() );
+  MITK_TEST_CONDITION ( ppl_v2->GetNumberOfLines() == 1, "Testing that there are 1 picked lines in the list : " << ppl_v2->GetNumberOfLines() );
 
 
   pickedObjects = ppl_v2->GetPickedObjects();
@@ -146,13 +146,13 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
   MITK_TEST_CONDITION ( point_0_found , "Testing that point 0 was found" );
   MITK_TEST_CONDITION ( ! point_3_found , "Testing that point 3 was not found" );
   MITK_TEST_CONDITION ( point_5_found , "Testing that point 5 was found" );
-  MITK_TEST_CONDITION ( ! line_4_found , "Testing that line 4 was not found" );
+  MITK_TEST_CONDITION ( line_4_found , "Testing that line 4 was found" );
 
   //and what happens when we move it
   mitk::PickedPointList::Pointer ppl_v2_moved = mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( directory + niftk::GetFileSeparator() + "v2_moved" );
-  MITK_TEST_CONDITION ( ppl_v2_moved->GetListSize() == 5 , "Testing that there are 5 picked objects in the new formatt list : " << ppl_v2_moved->GetListSize() );
+  MITK_TEST_CONDITION ( ppl_v2_moved->GetListSize() == 6 , "Testing that there are 6 picked objects in the new formatt list : " << ppl_v2_moved->GetListSize() );
   MITK_TEST_CONDITION ( ppl_v2_moved->GetNumberOfPoints() == 5, "Testing that there are 5 picked points in the list : " << ppl_v2_moved->GetNumberOfPoints() );
-  MITK_TEST_CONDITION ( ppl_v2_moved->GetNumberOfLines() == 0, "Testing that there are 0 picked lines in the list : " << ppl_v2_moved->GetNumberOfLines() );
+  MITK_TEST_CONDITION ( ppl_v2_moved->GetNumberOfLines() == 1, "Testing that there are 1 picked lines in the list : " << ppl_v2_moved->GetNumberOfLines() );
 
   pickedObjects = ppl_v2_moved->GetPickedObjects();
 
@@ -184,7 +184,7 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
   MITK_TEST_CONDITION ( point_0_found , "Testing that point 0 was found" );
   MITK_TEST_CONDITION ( ! point_3_found , "Testing that point 3 was not found" );
   MITK_TEST_CONDITION ( point_5_found , "Testing that point 5 was found" );
-  MITK_TEST_CONDITION ( ! line_4_found , "Testing that line 4 was not found" );
+  MITK_TEST_CONDITION ( line_4_found , "Testing that line 4 was found" );
 
 }
 
