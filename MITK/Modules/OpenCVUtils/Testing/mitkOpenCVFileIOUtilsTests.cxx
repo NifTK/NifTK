@@ -21,6 +21,7 @@
 #include <mitkLogMacros.h>
 #include <mitkOpenCVFileIOUtils.h>
 #include <mitkOpenCVMaths.h>
+#include <mitkIOUtil.h>
 #include <cmath>
 
 /**
@@ -115,7 +116,6 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
   MITK_TEST_CONDITION ( ppl_v2->GetNumberOfPoints() == 5, "Testing that there are 5 picked points in the list : " << ppl_v2->GetNumberOfPoints() );
   MITK_TEST_CONDITION ( ppl_v2->GetNumberOfLines() == 1, "Testing that there are 1 picked lines in the list : " << ppl_v2->GetNumberOfLines() );
 
-
   pickedObjects = ppl_v2->GetPickedObjects();
 
   point_0_found = false;
@@ -190,9 +190,45 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
 
 void TestLoadMPSAndConvertToOpenCVVector ( char * directory )
 {
-//in here we load point list using above files, then we test the lists
-//IOUtilsLoadPointList
-//PointListToVector
+  mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( directory + niftk::GetFileSeparator() + "points.mps");
+
+  std::vector < cv::Point3d > pointVector = mitk::PointSetToVector ( pointSet );
+
+  MITK_TEST_CONDITION ( pointVector.size() == pointSet->GetSize() , "Testing that point vector size == point set size " <<
+      pointVector.size() << " == " << pointSet->GetSize() );
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[0], cv::Point3d(-108.62, -35.3123, 1484.7), 1e-6) ,
+          "Testing Value of point 0 = " << pointVector[0] );
+
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[4], cv::Point3d(-2.38586, -82.0263, 1509.76), 1e-6) ,
+          "Testing Value of point 4 = " << pointVector[4] );
+
+  //with new format
+  pointSet = mitk::IOUtil::LoadPointSet ( directory + niftk::GetFileSeparator() +
+      "v2" + niftk::GetFileSeparator() + "points.mps");
+
+  pointVector = mitk::PointSetToVector ( pointSet );
+
+  MITK_TEST_CONDITION ( pointVector.size() == pointSet->GetSize() , "Testing that point vector size == point set size " <<
+      pointVector.size() << " == " << pointSet->GetSize() );
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[0], cv::Point3d(-108.62, -35.3123, 1484.7), 1e-6) ,
+          "Testing Value of point 0 = " << pointVector[0] );
+
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[4], cv::Point3d(-2.38586, -82.0263, 1509.76), 1e-6) ,
+          "Testing Value of point 4 = " << pointVector[4] );
+
+  //with new format after move
+  pointSet = mitk::IOUtil::LoadPointSet ( directory + niftk::GetFileSeparator() +
+      "v2_moved" + niftk::GetFileSeparator() + "points.mps");
+
+  pointVector = mitk::PointSetToVector ( pointSet );
+
+  MITK_TEST_CONDITION ( pointVector.size() == pointSet->GetSize() , "Testing that point vector size == point set size " <<
+      pointVector.size() << " == " << pointSet->GetSize() );
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[0], cv::Point3d(17.6141, 663.8431, 1448.5037), 1e-3) ,
+          "Testing Value of point 0 = " << pointVector[0] );
+
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[4], cv::Point3d(19.7294, 661.3448, 1450.2810), 1e-3) ,
+          "Testing Value of point 4 = " << pointVector[4] );
 
 }
 
@@ -204,6 +240,7 @@ int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
   LoadTimeStampedPointsTest(argv[1]);
   TestLoadPickedObject(argv[2]);
   TestLoadPickedPointListFromDirectoryOfMPSFiles(argv[3]);
+  TestLoadMPSAndConvertToOpenCVVector ( argv[3] );
   MITK_TEST_END();
 }
 
