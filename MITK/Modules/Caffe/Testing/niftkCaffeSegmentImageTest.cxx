@@ -82,7 +82,7 @@ int niftkCaffeSegmentImageTest(int argc, char * argv[])
                                   weightsFile,
                                   inputLayerName,
                                   outputBlobName,
-                                  -1 // no gpu
+                                  0 // first available, if compiled in.
                                  );
 
   std::chrono::time_point<std::chrono::system_clock> start, end;

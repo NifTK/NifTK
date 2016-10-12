@@ -84,7 +84,21 @@ CaffeFCNSegmentorPrivate::CaffeFCNSegmentorPrivate(const std::string& networkDes
     mitkThrow() << "Caffe network weights filename (.caffemodel) is empty.";
   }
 
+#ifdef _USE_CUDA
+  int count = 0;
+  CUDA_CHECK(cudaGetDeviceCount(&count));
+  if (gpuDevice >= 0 && count > gpuDevice)
+  {
+	caffe::Caffe::SetDevice(gpuDevice); // we are only allowing for 1 device at the moment.
+	caffe::Caffe::set_mode(caffe::Caffe::GPU);
+  }
+  else
+  {
+    caffe::Caffe::set_mode(caffe::Caffe::CPU);
+  }
+#else
   caffe::Caffe::set_mode(caffe::Caffe::CPU);
+#endif
   m_Net.reset(new caffe::Net<float>(networkDescriptionFileName, caffe::TEST));
   m_Net->CopyTrainedLayersFrom(networkWeightsFileName);
 
