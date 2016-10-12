@@ -875,8 +875,8 @@ mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (const
 
           for (pIt = points->Begin(); pIt != points->End(); ++pIt)
           {
-            point = pIt->Value();
             iD = pIt->Index();
+            point = pointSet->GetPoint(iD);
             cv::Point3d cvPoint;
 
             cvPoint.x = point[0];
@@ -908,7 +908,8 @@ mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (const
 
           for (pIt = points->Begin(); pIt != points->End(); ++pIt)
           {
-            point = pIt->Value();
+            iD = pIt->Index();
+            point = pointSet->GetPoint(iD);
             cv::Point3d cvPoint;
 
             cvPoint.x = point[0];
