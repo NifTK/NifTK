@@ -33,7 +33,7 @@ namespace niftk
 
 class BaseControllerPrivate
 {
-  Q_DECLARE_PUBLIC(BaseController);
+  Q_DECLARE_PUBLIC(BaseController)
 
   BaseController* const q_ptr;
 
@@ -44,6 +44,9 @@ class BaseControllerPrivate
   class DataStorageListener : public niftk::DataStorageListener
   {
   public:
+    mitkClassMacro(DataStorageListener, niftk::DataStorageListener)
+    mitkNewMacro2Param(DataStorageListener, BaseControllerPrivate*, mitk::DataStorage*)
+
     DataStorageListener(BaseControllerPrivate* d, mitk::DataStorage* dataStorage)
       : niftk::DataStorageListener(dataStorage),
         m_D(d)
@@ -76,6 +79,9 @@ class BaseControllerPrivate
   class VisibilityListener : public niftk::DataNodePropertyListener
   {
   public:
+    mitkClassMacro(VisibilityListener, niftk::DataStorageListener)
+    mitkNewMacro2Param(VisibilityListener, BaseControllerPrivate*, mitk::DataStorage*)
+
     VisibilityListener(BaseControllerPrivate* d, mitk::DataStorage* dataStorage)
       : niftk::DataNodePropertyListener(dataStorage, "visible"),
         m_D(d)
@@ -131,9 +137,9 @@ private:
   /// \brief Observer to get notified of the deletion of the focused renderer.
   unsigned long m_FocusedRendererDeletionObserverTag;
 
-  DataStorageListener* m_DataStorageListener;
+  DataStorageListener::Pointer m_DataStorageListener;
 
-  VisibilityListener* m_VisibilityListener;
+  VisibilityListener::Pointer m_VisibilityListener;
 
 };
 
@@ -148,8 +154,8 @@ BaseControllerPrivate::BaseControllerPrivate(BaseController* baseController, IBa
     m_FocusedRendererDeletionObserverTag(0ul),
     m_SliceNavigationController(nullptr),
     m_SliceChangeObserverTag(0ul),
-    m_DataStorageListener(new DataStorageListener(this, view->GetDataStorage())),
-    m_VisibilityListener(new VisibilityListener(this, view->GetDataStorage()))
+    m_DataStorageListener(DataStorageListener::New(this, view->GetDataStorage())),
+    m_VisibilityListener(VisibilityListener::New(this, view->GetDataStorage()))
 {
 }
 
@@ -163,9 +169,6 @@ BaseControllerPrivate::~BaseControllerPrivate()
   assert(focusManager);
 
   focusManager->RemoveObserver(m_FocusChangeObserverTag);
-
-  delete m_DataStorageListener;
-  delete m_VisibilityListener;
 }
 
 

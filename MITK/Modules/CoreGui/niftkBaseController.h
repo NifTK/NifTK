@@ -164,7 +164,7 @@ private:
 
   QScopedPointer<BaseControllerPrivate> d_ptr;
 
-  Q_DECLARE_PRIVATE(BaseController);
+  Q_DECLARE_PRIVATE(BaseController)
 
 };
 
