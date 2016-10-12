@@ -20,6 +20,7 @@
 #include <QMutexLocker>
 #include <QFuture>
 #include <QtConcurrentRun>
+#include <QMessageBox>
 
 namespace niftk
 {
@@ -220,18 +221,22 @@ void CaffeSegController::SelectionChanged(const mitk::DataNode* node, const int&
   Q_D(CaffeSegController);
   QMutexLocker locker(&d->m_Lock);
 
+  if (d->m_NetworkDescriptionFileName.empty() || d->m_NetworkWeightsFileName.empty())
+  {
+    QMessageBox::warning(NULL,"Preferences Not Set","Have you set the preferences to specify the network model and weights?");
+    return;
+  }
+
   if (node == nullptr)
   {
     this->ClearNode(i);
   }
-  else if (node != d->m_DataNodes[i]
-           && !(d->m_NetworkDescriptionFileName.empty())
-           && !(d->m_NetworkWeightsFileName.empty())
-          )
+  else if (node != d->m_DataNodes[i])
   {
     mitk::Image::Pointer im = dynamic_cast<mitk::Image*>(node->GetData());
     if (im.IsNotNull())
     {
+
       d->m_DataNodes[i] = const_cast<mitk::DataNode*>(node);
 
       d->m_Segmentors[i] = niftk::CaffeFCNSegmentor::New(d->m_NetworkDescriptionFileName,

@@ -75,6 +75,15 @@ CaffeFCNSegmentorPrivate::CaffeFCNSegmentorPrivate(const std::string& networkDes
 , m_OutputBlobName(outputBlobName)
 , m_Net(nullptr)
 {
+  if (m_InputLayerName.empty())
+  {
+    mitkThrow() << "Caffe network description filename (.prototxt) is empty.";
+  }
+  if (m_OutputBlobName.empty())
+  {
+    mitkThrow() << "Caffe network weights filename (.caffemodel) is empty.";
+  }
+
   caffe::Caffe::set_mode(caffe::Caffe::CPU);
   m_Net.reset(new caffe::Net<float>(networkDescriptionFileName, caffe::TEST));
   m_Net->CopyTrainedLayersFrom(networkWeightsFileName);
