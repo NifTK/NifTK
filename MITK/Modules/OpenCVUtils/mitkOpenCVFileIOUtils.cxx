@@ -868,7 +868,6 @@ mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (const
         mitk::PointSet::PointType point;
         mitk::PointSet::PointIdentifier iD;
 
-
         if ( boost::regex_match( filename.c_str(), what, pointFilter) )
         {
           MITK_INFO << "found point file " << filename;
