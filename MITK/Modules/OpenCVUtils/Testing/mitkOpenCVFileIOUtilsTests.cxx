@@ -74,12 +74,47 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
   mitk::PickedPointList::Pointer ppl = mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( directory  );
 
   MITK_TEST_CONDITION ( ppl->GetListSize() == 9 , "Testing that there are 9 picked objects in the list : " << ppl->GetListSize() );
+  MITK_TEST_CONDITION ( ppl->GetNumberOfPoints() == 5, "Testing that there are 5 picked points in the list : " << ppl->GetNumberOfPoints() );
+  MITK_TEST_CONDITION ( ppl->GetNumberOfLines() == 4, "Testing that there are 4 picked lines in the list : " << ppl->GetNumberOfLines() );
+
+  std::vector <mitk::PickedObject> pickedObjects = ppl->GetPickedObjects();
+
+  bool point_0_found = false;
+  bool point_3_found = false;
+  bool point_5_found = false;
+  for ( std::vector<mitk::PickedObject>::const_iterator it = pickedObjects.begin() ; it < pickedObjects.end() ; ++it )
+  {
+    if ( ( it->m_IsLine == false ) && ( it->m_Id == 0 ) )
+    {
+      point_0_found = true;
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(-108.62, -35.3123, 1484.7), 1e-6) ,
+          "Testing Value of point 0 = " << it->m_Points[0] );
+    }
+    if ( ( it->m_IsLine == false ) && ( it->m_Id == 5 ) )
+    {
+      point_5_found = true;
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(-2.38586, -82.0263, 1509.76), 1e-6) ,
+          "Testing Value of point 5 = " << it->m_Points[0] );
+    }
+  }
+  MITK_TEST_CONDITION ( point_0_found , "Testing that point 0 was found" );
+  MITK_TEST_CONDITION ( ! point_3_found , "Testing that point 3 was not found" );
+  MITK_TEST_CONDITION ( point_5_found , "Testing that point 5 was found" );
+
+  std::vector <cv::Point3d> points = pickedObjects[0].m_Points;
 
   //the base directory contains point lists in MITK's legacy format. Lets check that we get the same result with MITK's new format
   mitk::PickedPointList::Pointer ppl_v2 = mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( directory + niftk::GetFileSeparator() + "v2" );
+  MITK_TEST_CONDITION ( ppl_v2->GetListSize() == 5 , "Testing that there are 5 picked objects in the new formatt list : " << ppl_v2->GetListSize() );
+  MITK_TEST_CONDITION ( ppl_v2->GetNumberOfPoints() == 5, "Testing that there are 5 picked points in the list : " << ppl_v2->GetNumberOfPoints() );
+  MITK_TEST_CONDITION ( ppl_v2->GetNumberOfLines() == 0, "Testing that there are 0 picked lines in the list : " << ppl_v2->GetNumberOfLines() );
+
 
   //and what happens when we move it
   mitk::PickedPointList::Pointer ppl_v2_moved = mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( directory + niftk::GetFileSeparator() + "v2_moved" );
+  MITK_TEST_CONDITION ( ppl_v2_moved->GetListSize() == 5 , "Testing that there are 5 picked objects in the new formatt list : " << ppl_v2_moved->GetListSize() );
+  MITK_TEST_CONDITION ( ppl_v2_moved->GetNumberOfPoints() == 5, "Testing that there are 5 picked points in the list : " << ppl_v2_moved->GetNumberOfPoints() );
+  MITK_TEST_CONDITION ( ppl_v2_moved->GetNumberOfLines() == 0, "Testing that there are 0 picked lines in the list : " << ppl_v2_moved->GetNumberOfLines() );
 
 }
 
