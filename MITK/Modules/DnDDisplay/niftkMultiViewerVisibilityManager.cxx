@@ -486,12 +486,12 @@ WindowLayout MultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk::Dat
       }
       catch (const mitk::AccessByItkException &e)
       {
-        MITK_ERROR << "MultiViewerVisibilityManager::OnNodesDropped failed to work out 'As Acquired' orientation." << e.what() << std::endl;
+        MITK_ERROR << "MultiViewerVisibilityManager::GetWindowLayout() failed to work out 'As Acquired' orientation." << e.what() << std::endl;
       }
     }
     else
     {
-      MITK_ERROR << "MultiViewerVisibilityManager::OnNodesDropped failed to find an image to work out 'As Acquired' orientation." << std::endl;
+      MITK_ERROR << "MultiViewerVisibilityManager::GetWindowLayout() failed to find an image to work out 'As Acquired' orientation." << std::endl;
     }
 
     if (orientation == WINDOW_ORIENTATION_AXIAL)
@@ -508,7 +508,7 @@ WindowLayout MultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk::Dat
     }
     else
     {
-      MITK_ERROR << "MultiViewerVisibilityManager::OnNodesDropped defaulting to window layout " << windowLayout << std::endl;
+      MITK_ERROR << "MultiViewerVisibilityManager::GetWindowLayout() defaulting to window layout " << windowLayout << std::endl;
     }
   }
   return windowLayout;
