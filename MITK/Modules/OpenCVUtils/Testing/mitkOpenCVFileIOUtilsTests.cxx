@@ -82,6 +82,7 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
   bool point_0_found = false;
   bool point_3_found = false;
   bool point_5_found = false;
+  bool line_4_found = false;
   for ( std::vector<mitk::PickedObject>::const_iterator it = pickedObjects.begin() ; it < pickedObjects.end() ; ++it )
   {
     if ( ( it->m_IsLine == false ) && ( it->m_Id == 0 ) )
@@ -96,12 +97,17 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
       MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(-2.38586, -82.0263, 1509.76), 1e-6) ,
           "Testing Value of point 5 = " << it->m_Points[0] );
     }
+    if ( ( it->m_IsLine == true ) && ( it->m_Id == 4 ) )
+    {
+      line_4_found = true;
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(-0.270583, -85.0786, 1510.05), 1e-6) ,
+          "Testing Value of point 0 in line 4 = " << it->m_Points[0] );
+    }
   }
   MITK_TEST_CONDITION ( point_0_found , "Testing that point 0 was found" );
   MITK_TEST_CONDITION ( ! point_3_found , "Testing that point 3 was not found" );
   MITK_TEST_CONDITION ( point_5_found , "Testing that point 5 was found" );
-
-  std::vector <cv::Point3d> points = pickedObjects[0].m_Points;
+  MITK_TEST_CONDITION ( line_4_found , "Testing that line 4 was found" );
 
   //the base directory contains point lists in MITK's legacy format. Lets check that we get the same result with MITK's new format
   mitk::PickedPointList::Pointer ppl_v2 = mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( directory + niftk::GetFileSeparator() + "v2" );
@@ -110,11 +116,75 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
   MITK_TEST_CONDITION ( ppl_v2->GetNumberOfLines() == 0, "Testing that there are 0 picked lines in the list : " << ppl_v2->GetNumberOfLines() );
 
 
+  pickedObjects = ppl_v2->GetPickedObjects();
+
+  point_0_found = false;
+  point_3_found = false;
+  point_5_found = false;
+  line_4_found = false;
+  for ( std::vector<mitk::PickedObject>::const_iterator it = pickedObjects.begin() ; it < pickedObjects.end() ; ++it )
+  {
+    if ( ( it->m_IsLine == false ) && ( it->m_Id == 0 ) )
+    {
+      point_0_found = true;
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(-108.62, -35.3123, 1484.7), 1e-6) ,
+          "Testing Value of point 0 = " << it->m_Points[0] );
+    }
+    if ( ( it->m_IsLine == false ) && ( it->m_Id == 5 ) )
+    {
+      point_5_found = true;
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(-2.38586, -82.0263, 1509.76), 1e-6) ,
+          "Testing Value of point 5 = " << it->m_Points[0] );
+    }
+    if ( ( it->m_IsLine == true ) && ( it->m_Id == 4 ) )
+    {
+      line_4_found = true;
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(-0.270583, -85.0786, 1510.05), 1e-6) ,
+          "Testing Value of point 0 in line 4 = " << it->m_Points[0] );
+    }
+  }
+  MITK_TEST_CONDITION ( point_0_found , "Testing that point 0 was found" );
+  MITK_TEST_CONDITION ( ! point_3_found , "Testing that point 3 was not found" );
+  MITK_TEST_CONDITION ( point_5_found , "Testing that point 5 was found" );
+  MITK_TEST_CONDITION ( ! line_4_found , "Testing that line 4 was not found" );
+
   //and what happens when we move it
   mitk::PickedPointList::Pointer ppl_v2_moved = mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( directory + niftk::GetFileSeparator() + "v2_moved" );
   MITK_TEST_CONDITION ( ppl_v2_moved->GetListSize() == 5 , "Testing that there are 5 picked objects in the new formatt list : " << ppl_v2_moved->GetListSize() );
   MITK_TEST_CONDITION ( ppl_v2_moved->GetNumberOfPoints() == 5, "Testing that there are 5 picked points in the list : " << ppl_v2_moved->GetNumberOfPoints() );
   MITK_TEST_CONDITION ( ppl_v2_moved->GetNumberOfLines() == 0, "Testing that there are 0 picked lines in the list : " << ppl_v2_moved->GetNumberOfLines() );
+
+  pickedObjects = ppl_v2_moved->GetPickedObjects();
+
+  point_0_found = false;
+  point_3_found = false;
+  point_5_found = false;
+  line_4_found = false;
+  for ( std::vector<mitk::PickedObject>::const_iterator it = pickedObjects.begin() ; it < pickedObjects.end() ; ++it )
+  {
+    if ( ( it->m_IsLine == false ) && ( it->m_Id == 0 ) )
+    {
+      point_0_found = true;
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d( -88.6200, 691.7687, 1403.4441 ), 1e-6) ,
+          "Testing Value of point 0 = " << it->m_Points[0] );
+    }
+    if ( ( it->m_IsLine == false ) && ( it->m_Id == 5 ) )
+    {
+      point_5_found = true;
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(17.6141, 663.8431, 1448.5037), 1e-6) ,
+          "Testing Value of point 5 = " << it->m_Points[0] );
+    }
+    if ( ( it->m_IsLine == true ) && ( it->m_Id == 4 ) )
+    {
+      line_4_found = true;
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(19.7294, 661.3448, 1450.2810), 1e-6) ,
+          "Testing Value of point 0 in line 4 = " << it->m_Points[0] );
+    }
+  }
+  MITK_TEST_CONDITION ( point_0_found , "Testing that point 0 was found" );
+  MITK_TEST_CONDITION ( ! point_3_found , "Testing that point 3 was not found" );
+  MITK_TEST_CONDITION ( point_5_found , "Testing that point 5 was found" );
+  MITK_TEST_CONDITION ( ! line_4_found , "Testing that line 4 was not found" );
 
 }
 
