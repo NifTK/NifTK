@@ -18,7 +18,6 @@
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVPointTypes.h>
 #include <mitkOpenCVFileIOUtils.h>
-#include <mitkPointSetWriter.h>
 #include <cv.h>
 #include <highgui.h>
 #include <niftkFileHelper.h>
