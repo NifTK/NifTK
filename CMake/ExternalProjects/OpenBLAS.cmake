@@ -22,7 +22,7 @@ if(DEFINED OpenBLAS_DIR AND NOT EXISTS ${OpenBLAS_DIR})
   message(FATAL_ERROR "OpenBLAS_DIR variable is defined but corresponds to non-existing directory \"${OpenBLAS_ROOT}\".")
 endif()
 
-if(NOT APPLE)
+if(MITK_USE_OpenBLAS AND NOT APPLE)
 
   #set(version "0.2.18")
   set(version "7daf34e")
@@ -84,6 +84,7 @@ if(NOT APPLE)
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")
 
   endif(NOT DEFINED OpenBLAS_DIR)
+
 endif()
 
 
