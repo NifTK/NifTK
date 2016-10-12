@@ -34,7 +34,7 @@ bool CheckIfDirectoryContainsTrackingMatrices(const std::string& directory)
 {
   boost::regex timeStampFilter ( "([0-9]{19})(.txt)");
   boost::filesystem::directory_iterator endItr;
-  
+
   for ( boost::filesystem::directory_iterator it(directory); it != endItr ; ++it)
   {
     if ( boost::filesystem::is_regular_file (it->status()) )
@@ -56,7 +56,7 @@ std::vector<std::string> FindTrackingMatrixDirectories(const std::string& direct
 {
   std::vector<std::string> directories;
   boost::filesystem::recursive_directory_iterator endItr;
-  
+
   for ( boost::filesystem::recursive_directory_iterator it(directory); it != endItr ; ++it)
   {
     if ( boost::filesystem::is_directory (it->status()) )
@@ -78,7 +78,7 @@ mitk::TimeStampsContainer FindTrackingTimeStamps(std::string directory)
   boost::filesystem::directory_iterator endItr;
   boost::regex timeStampFilter ( "([0-9]{19})(.txt)");
   TimeStampsContainer returnStamps;
-  
+
   for ( boost::filesystem::directory_iterator it(directory);it != endItr ; ++it)
   {
     if ( boost::filesystem::is_regular_file (it->status()) )
@@ -154,7 +154,7 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix)
 {
   bool isSuccessful = false;
   std::ifstream fin(filename.c_str());
-  
+
   fin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
   if ( !fin )
@@ -248,7 +248,7 @@ cv::VideoCapture* InitialiseVideoCapture ( std::string filename , bool ignoreErr
   {
     mitkThrow() << "Failed to open " << filename << " for video capture" << std::endl;
   }
-  //try and get some information about the capture, if these calls fail it may be that 
+  //try and get some information about the capture, if these calls fail it may be that
   //the capture may still work but will exhibit undesirable behaviour, see trac 3718
   int m_VideoWidth = capture->get(CV_CAP_PROP_FRAME_WIDTH);
   int m_VideoHeight = capture->get(CV_CAP_PROP_FRAME_HEIGHT);
@@ -259,7 +259,7 @@ cv::VideoCapture* InitialiseVideoCapture ( std::string filename , bool ignoreErr
     {
       mitkThrow() << "Problem opening video file for capture. You may want to try rebuilding openCV with ffmpeg support or if available and you're feeling brave over riding video read errors with an ignoreVideoErrors parameter.";
     }
-    else 
+    else
     {
       MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding but persevering any way as ignoreErrors is set true";
     }
@@ -338,7 +338,7 @@ std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(
 
 
 //---------------------------------------------------------------------------
-void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3d> >& points, 
+void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3d> >& points,
     std::vector <mitk::ProjectedPointPair>& screenPoints, const std::string& fileName)
 {
   if (fileName.length() == 0)
@@ -371,7 +371,7 @@ void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3
       myfile >> ly;
       myfile >> rx;
       myfile >> ry;
-     
+
 
       if (timeStamp > 0 && !boost::math::isnan(x) && !boost::math::isnan(y) && !boost::math::isnan(z)) // any other validation?
       {
@@ -379,12 +379,12 @@ void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3
         point.y = y;
         point.z = z;
         points.push_back(std::pair<unsigned long long, cv::Point3d>(timeStamp, point));
-        
+
         mitk::ProjectedPointPair  pointPair( cv::Point2d(lx,ly), cv::Point2d (rx,ry));
         pointPair.SetTimeStamp(timeStamp);
         screenPoints.push_back ( pointPair );
       }
-     
+
     }
     while (!myfile.bad() && !myfile.eof() && !myfile.fail());
 
@@ -396,7 +396,7 @@ void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3
   }
 }
 //---------------------------------------------------------------------------
-void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point2d> >& points, 
+void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point2d> >& points,
      const std::string& fileName)
 {
   if (fileName.length() == 0)
@@ -425,7 +425,7 @@ void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point2
         point.y = y;
         points.push_back(std::pair<unsigned long long, cv::Point2d>(timeStamp, point));
       }
-     
+
     }
     while (!myfile.bad() && !myfile.eof() && !myfile.fail());
     myfile.close();
@@ -481,7 +481,7 @@ void SavePickedObjects ( const std::vector < mitk::PickedObject > & points, std:
       {
         boost::property_tree::ptree& coordinate = points.add("coordinate", "");
         std::ostringstream xyzstream;
-        xyzstream << it->m_Points[i].x << " " << it->m_Points[i].y << " " << it->m_Points[i].z; 
+        xyzstream << it->m_Points[i].x << " " << it->m_Points[i].y << " " << it->m_Points[i].z;
         coordinate.put("<xmlattr>.xyz", xyzstream.str());
       }
       if ( it->m_IsLine )
@@ -566,7 +566,7 @@ void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istr
   catch(const std::runtime_error& e)
   {
     MITK_ERROR << "Caught " << e.what();
-  }             
+  }
 }
 
 
@@ -843,21 +843,21 @@ void LoadHandeyeFromPlainText (const std::string& filename,
 
 //-----------------------------------------------------------------------------
 mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (const std::string& directory,
-    unsigned int frameNumber, unsigned long long timestamp, std::string channel, 
+    unsigned int frameNumber, unsigned long long timestamp, std::string channel,
     cv::Scalar scalar )
 {
   boost::regex pointFilter ( "(points.mps)");
   boost::regex lineFilter ( "(line_)([0-9]{2})(.mps)");
   boost::filesystem::directory_iterator endItr;
 
-  std::vector < mitk::PickedObject > pickedObjects; 
+  std::vector < mitk::PickedObject > pickedObjects;
   for ( boost::filesystem::directory_iterator it(directory); it != endItr ; ++it)
   {
     if ( boost::filesystem::is_regular_file (it->status()) )
     {
       boost::cmatch what;
       std::string filename = it->path().filename().string();
-     
+
       if (  boost::regex_match( filename.c_str(), what, pointFilter) ||  boost::regex_match( filename.c_str(), what, lineFilter) )
       {
         mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( it->path().string() );
@@ -867,12 +867,12 @@ mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (const
         mitk::PointSet::PointsIterator pIt;
         mitk::PointSet::PointType point;
         mitk::PointSet::PointIdentifier iD;
-     
+
 
         if ( boost::regex_match( filename.c_str(), what, pointFilter) )
-        { 
+        {
           MITK_INFO << "found point file " << filename;
-      
+
           for (pIt = points->Begin(); pIt != points->End(); ++pIt)
           {
             point = pIt->Value();
@@ -882,7 +882,7 @@ mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (const
             cvPoint.x = point[0];
             cvPoint.y = point[1];
             cvPoint.z = point[2];
-            
+
             mitk::PickedObject pickedObject ( channel, frameNumber, timestamp, scalar );
             pickedObject.m_IsLine = false;
             pickedObject.m_Id = iD;
@@ -894,14 +894,14 @@ mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (const
         if ( boost::regex_match( filename.c_str(), what, lineFilter) )
         {
           std::string::const_iterator i_char = filename.begin();
-       
+
           char number[2];
           number[0] = *(i_char + 5);
           number[1] = *(i_char + 6);
           unsigned int lineID = boost::lexical_cast<unsigned int>(number[0]) * 10 + boost::lexical_cast<unsigned int>(number[1]);
           MITK_INFO << "found line file file " << filename << " , with ID " << number[0] << number [1] << " , "  << lineID;
           mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( it->path().string() );
-  
+
           mitk::PickedObject pickedObject ( channel, frameNumber, timestamp, scalar );
           pickedObject.m_IsLine = true;
           pickedObject.m_Id = lineID;
@@ -914,7 +914,7 @@ mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (const
             cvPoint.x = point[0];
             cvPoint.y = point[1];
             cvPoint.z = point[2];
-            
+
             pickedObject.m_Points.push_back ( cvPoint );
 
           }
