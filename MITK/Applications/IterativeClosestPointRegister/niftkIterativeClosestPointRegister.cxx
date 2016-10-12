@@ -70,8 +70,10 @@ int main(int argc, char** argv)
   if ( (perturbTrans > 0.0) || (perturbRot > 0.0) )
   {
     vtkSmartPointer<vtkTransform> randomTrans = vtkSmartPointer<vtkTransform>::New();
+    vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+    Uni_Rand->SetSeed(time(NULL));
     niftk::RandomTransform ( randomTrans , perturbTrans, perturbTrans ,perturbTrans, 
-        perturbRot, perturbRot, perturbRot);
+        perturbRot, perturbRot, perturbRot, Uni_Rand);
     randomMatrix = randomTrans->GetMatrix();
     niftk::ComposeTransformWithNode(*randomMatrix, movingnode);
   }
