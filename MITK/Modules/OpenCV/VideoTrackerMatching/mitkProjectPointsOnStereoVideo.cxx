@@ -17,7 +17,7 @@
 #include <mitkOpenCVMaths.h>
 #include <mitkOpenCVPointTypes.h>
 #include <mitkOpenCVFileIOUtils.h>
-#include <mitkPointSetWriter.h>
+#include <mitkIOUtil.h>
 #include <cv.h>
 #include <highgui.h>
 #include <niftkFileHelper.h>
@@ -994,10 +994,7 @@ void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (mitk::VideoTrack
   }
   if ( m_TriangulatedPointsOutName != "" )
   {
-    mitk::PointSetWriter::Pointer tpWriter = mitk::PointSetWriter::New();
-    tpWriter->SetFileName(m_TriangulatedPointsOutName);
-    tpWriter->SetInput( triangulatedPoints );
-    tpWriter->Update();
+    mitk::IOUtil::Save ( triangulatedPoints, m_TriangulatedPointsOutName);
   }
 
 }
