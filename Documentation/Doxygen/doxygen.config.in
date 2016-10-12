@@ -306,6 +306,12 @@ EXAMPLE_PATH     = @CMAKE_BINARY_DIR@/LICENSE.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_Qt.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_VTK.txt \
                    @CMAKE_BINARY_DIR@/LICENSE_RTK.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_GLog.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_GFlags.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_HDF5.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_ProtoBuf.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_OpenBLAS.txt \
+                   @CMAKE_BINARY_DIR@/LICENSE_Caffe.txt \
                    @CMAKE_BINARY_DIR@/ExternalLicenses/OpenIGTLink.txt \
                    @CMAKE_BINARY_DIR@/ExternalLicenses/QsLog.txt
 

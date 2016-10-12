@@ -113,6 +113,12 @@
 #define NIFTK_VERSION_FLANN "@NIFTK_VERSION_FLANN@"
 #define NIFTK_VERSION_PCL "@NIFTK_VERSION_PCL@"
 #define NIFTK_VERSION_OPENCV "@NIFTK_VERSION_OpenCV@"
+#define NIFTK_VERSION_glog "@NIFTK_VERSION_glog@"
+#define NIFTK_VERSION_gflags "@NIFTK_VERSION_gflags@"
+#define NIFTK_VERSION_HDF5 "@NIFTK_VERSION_HDF5@"
+#define NIFTK_VERSION_ProtoBuf "@NIFTK_VERSION_ProtoBuf@"
+#define NIFTK_VERSION_OpenBLAS "@NIFTK_VERSION_OpenBLAS@"
+#define NIFTK_VERSION_Caffe "@NIFTK_VERSION_Caffe@"
 
 /* Important software location information - see Help About Dialog. */
 #define NIFTK_BOOST_LOCATION "@NIFTK_LOCATION_Boost@"
@@ -133,6 +139,12 @@
 #define NIFTK_LOCATION_FLANN "@NIFTK_LOCATION_FLANN@"
 #define NIFTK_LOCATION_PCL "@NIFTK_LOCATION_PCL@"
 #define NIFTK_LOCATION_OPENCV "@NIFTK_LOCATION_OpenCV@"
+#define NIFTK_LOCATION_glog "@NIFTK_LOCATION_glog@"
+#define NIFTK_LOCATION_gflags "@NIFTK_LOCATION_gflags@"
+#define NIFTK_LOCATION_HDF5 "@NIFTK_LOCATION_HDF5@"
+#define NIFTK_LOCATION_ProtoBuf "@NIFTK_LOCATION_ProtoBuf@"
+#define NIFTK_LOCATION_OpenBLAS "@NIFTK_LOCATION_OpenBLAS@"
+#define NIFTK_LOCATION_Caffe "@NIFTK_LOCATION_Caffe@"
 
 /* MITK build directory location is needed to compute the preload library path on
    Mac when running NiftyView from the NifTK build folder. */
