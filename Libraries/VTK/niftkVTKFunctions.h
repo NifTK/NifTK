@@ -20,7 +20,6 @@
 #include <vtkPolyData.h>
 #include <vtkTransform.h>
 #include <vtkRandomSequence.h>
-#include <vtkMinimalStandardRandomSequence.h>
 #include <vtkCellLocator.h>
 #include <vtkCamera.h>
 #include <vtkSmartPointer.h>
@@ -118,16 +117,6 @@ extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
   (vtkTransform  * transform,
   double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
   vtkRandomSequence * rng);
-
-/**
- * \brief Creates a randomly determined vtktransform, using it's own random number generator
- * \param transform the transform to hold the result
- * \param xtrans,ytrans,ztrans,xrot,yrot,zrot the multipliers in each of the 6 degrees of freedom
- * \return void
- * */
-extern "C++" NIFTKVTK_WINEXPORT void RandomTransform
-  (vtkTransform  * transform,
-  double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot);
 
 /**
  * \brief Normalises the values returned by a vtk random sequence to be centred on zero

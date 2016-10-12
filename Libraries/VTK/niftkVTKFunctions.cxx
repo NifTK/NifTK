@@ -200,9 +200,27 @@ void RandomTransform ( vtkTransform * transform,
     double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
     vtkRandomSequence* rng)
 {
+  //could we implement this slightly differently so
+  //we can set desired SD of sphere, then set up an
+  //command line application to generate these
+  // so actual d = sqrt ( (x / sdx)^2  + (y / sdy)^2  +  ).
+  // we have a target D.
+  // factor d/D
+  // x = x * d/D
+  // imaging it in two 2D with sd = 1
+  // d = sqrt ( x^2 + y ^ 2 )
+  // d = sqrt ( (x * D/d) ^ 2 + ( y * D/d ) ^ 2 )
+  // d = sqrt ( x^2 * (D/d)^2 + y^2 + D/d ^ 2 )
+  // d = sqrt ( D/d^2 ( x^2 + y^2 ) )
+  // d = D/d  * sqrt ( ( x^2 + y^ 2 )
+  //
+  // Also as Eddie pointed out, if this is going to work we need to
+  // define the desired centre of the model. and possibly its extent,
+  // so  that the rotations are properly scaled around that point
   double x;
   double y;
   double z;
+  //transform->translate( to centroid )
   x=xtrans * NormalisedRNG ( rng ) ;
   rng->Next();
   y=ytrans * NormalisedRNG ( rng );
@@ -220,6 +238,7 @@ void RandomTransform ( vtkTransform * transform,
   rot=zrot * NormalisedRNG(rng);
   rng->Next();
   transform->RotateZ(rot);
+  //transform->translate( back_to_origin )
 }
 
 
@@ -318,17 +337,6 @@ void PerturbPolyData(vtkPolyData* polydata,
    Gauss_Rand->SetUniformSequence(Uni_Rand);
    PerturbPolyData(polydata,xerr, yerr,zerr, Gauss_Rand);
 }
-
-
-//-----------------------------------------------------------------------------
-void RandomTransform ( vtkTransform * transform,
-    double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot)
-{
-   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
-   Uni_Rand->SetSeed(time(NULL));
-   RandomTransform(transform,xtrans,ytrans,ztrans,xrot,yrot,zrot,Uni_Rand);
-}
-
 
 //-----------------------------------------------------------------------------
 double NormalisedRNG (vtkRandomSequence* rng)
@@ -582,7 +590,7 @@ void SetCameraParallelTo2DImage(
     const double *clippingRange,
     const bool& flipYAxis,
     vtkCamera& camera,
-    const double& distanceToFocalPoint 
+    const double& distanceToFocalPoint
     )
 {
   double focalPoint[3] = {0, 0, 1};
@@ -596,7 +604,7 @@ void SetCameraParallelTo2DImage(
   double vectorAlongX[3] = {1, 0, 0};
   double vectorAlongY[3] = {0, 1, 0};
   double vectorAlongZ[3] = {0, 0, 1};
-  
+
   double viewUpScaleFactor = 1.0e9;
   if ( flipYAxis )
   {
