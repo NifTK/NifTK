@@ -224,10 +224,10 @@ void TestLoadMPSAndConvertToOpenCVVector ( char * directory )
 
   MITK_TEST_CONDITION ( pointVector.size() == pointSet->GetSize() , "Testing that point vector size == point set size " <<
       pointVector.size() << " == " << pointSet->GetSize() );
-  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[0], cv::Point3d(17.6141, 663.8431, 1448.5037), 1e-3) ,
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[0], cv::Point3d( -88.6200, 691.7687, 1403.4441 ), 1e-3) ,
           "Testing Value of point 0 = " << pointVector[0] );
 
-  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[4], cv::Point3d(19.7294, 661.3448, 1450.2810), 1e-3) ,
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[4], cv::Point3d(17.6141, 663.8431, 1448.5037), 1e-3) ,
           "Testing Value of point 4 = " << pointVector[4] );
 
 }
