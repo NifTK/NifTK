@@ -165,19 +165,19 @@ void TestLoadPickedPointListFromDirectoryOfMPSFiles ( char * directory )
     if ( ( it->m_IsLine == false ) && ( it->m_Id == 0 ) )
     {
       point_0_found = true;
-      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d( -88.6200, 691.7687, 1403.4441 ), 1e-6) ,
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d( -88.6200, 691.7687, 1403.4441 ), 1e-3) ,
           "Testing Value of point 0 = " << it->m_Points[0] );
     }
     if ( ( it->m_IsLine == false ) && ( it->m_Id == 5 ) )
     {
       point_5_found = true;
-      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(17.6141, 663.8431, 1448.5037), 1e-6) ,
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(17.6141, 663.8431, 1448.5037), 1e-3) ,
           "Testing Value of point 5 = " << it->m_Points[0] );
     }
     if ( ( it->m_IsLine == true ) && ( it->m_Id == 4 ) )
     {
       line_4_found = true;
-      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(19.7294, 661.3448, 1450.2810), 1e-6) ,
+      MITK_TEST_CONDITION (mitk::NearlyEqual(it->m_Points[0], cv::Point3d(19.7294, 661.3448, 1450.2810), 1e-3) ,
           "Testing Value of point 0 in line 4 = " << it->m_Points[0] );
     }
   }
