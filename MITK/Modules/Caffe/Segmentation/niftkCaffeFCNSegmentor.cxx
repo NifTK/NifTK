@@ -75,11 +75,11 @@ CaffeFCNSegmentorPrivate::CaffeFCNSegmentorPrivate(const std::string& networkDes
 , m_OutputBlobName(outputBlobName)
 , m_Net(nullptr)
 {
-  if (m_InputLayerName.empty())
+  if (networkDescriptionFileName.empty())
   {
     mitkThrow() << "Caffe network description filename (.prototxt) is empty.";
   }
-  if (m_OutputBlobName.empty())
+  if (networkWeightsFileName.empty())
   {
     mitkThrow() << "Caffe network weights filename (.caffemodel) is empty.";
   }
