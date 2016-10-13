@@ -151,7 +151,8 @@ int niftkICPBasedRegistrationTest(int argc, char* argv[])
   vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
 
   // Second test, moving non id fixed ID
-  niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
+  double scaleSD = -1.0;
+  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand, scaleSD);
 
   StartTrans->GetInverse(movingMatrix);
   movingMatrix->Invert();
@@ -171,7 +172,7 @@ int niftkICPBasedRegistrationTest(int argc, char* argv[])
   }
 
   // Third test, fixed non id moving ID
-  niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
+  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand, scaleSD);
 
   StartTrans->GetInverse(fixedMatrix);
   fixedMatrix->Invert();
@@ -191,12 +192,12 @@ int niftkICPBasedRegistrationTest(int argc, char* argv[])
   }
 
   // Forth test, both non id.
-  niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
+  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand, scaleSD );
 
   StartTrans->GetInverse(fixedMatrix);
   fixedMatrix->Invert();
 
-  niftk::RandomTransform ( StartTrans, 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand);
+  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand, scaleSD );
 
   StartTrans->GetInverse(movingMatrix);
   movingMatrix->Invert();

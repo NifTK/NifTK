@@ -52,13 +52,14 @@ int main(int argc, char** argv)
   movingnode->SetData(movingPoints);
 
   vtkSmartPointer<vtkMatrix4x4> randomMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  double scaleSD = -1.0;
   if ( (perturbTrans > 0.0) || (perturbRot > 0.0) )
   {
     vtkSmartPointer<vtkTransform> randomTrans = vtkSmartPointer<vtkTransform>::New();
     vtkSmartPointer<vtkMinimalStandardRandomSequence> uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
     uni_Rand->SetSeed(time(NULL));
-    niftk::RandomTransform ( randomTrans , perturbTrans, perturbTrans ,perturbTrans, 
-        perturbRot, perturbRot, perturbRot, uni_Rand);
+    randomTrans = niftk::RandomTransform ( perturbTrans, perturbTrans ,perturbTrans,
+        perturbRot, perturbRot, perturbRot, uni_Rand, scaleSD );
     randomMatrix = randomTrans->GetMatrix();
     niftk::ComposeTransformWithNode(*randomMatrix, movingnode);
   }
