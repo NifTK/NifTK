@@ -24,4 +24,5 @@ void RegisterTests()
 {
   REGISTER_TEST(niftkConversionUtilsTest);
   REGISTER_TEST(niftkDeliberateMemoryLeakTest);
+  REGISTER_TEST(niftkMathsUtilsTest);
 }
