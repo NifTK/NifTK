@@ -37,25 +37,6 @@ class SingleViewerWidget;
 class SingleViewerWidgetTestClassPrivate;
 
 
-/// When a sliced 3D geometry is initialised from an image geometry, the origin of the
-/// sliced 3D geometry and the world geometry will be the same point, and it will be
-/// the same point as the origin of the first slice. This is because the origin is at
-/// voxel centre for image geometries. However, if the sliced 3D geometry is initialised
-/// from a non-image geometry, the origin of the new 3D geometry will be the same as the
-/// origin of the first slice, just like with image geometries, but the origin is on
-/// the corner of the 2D voxel, not on the corner of the 3D volume. That means, the origin
-/// of the sliced 3D geometry will be on the edge of its corner 3D voxel, not at the
-/// corner of the corner 3D voxel.
-/// The renderers have non-image geometries. If a renderer gets initialised from the world
-/// geometry of another renderer, its geometry will be shifted with jet another half voxel.
-/// Moreover, depending on whether the input geometry comes from an axial, sagittal or
-/// coronal renderer, the shift is can be in different directions.
-/// We have a patch on our MITK fork for this. However, the patch messes up the MITK Display,
-/// therefore it is not applied for NifTK. The following variable tells if the patch has
-/// been applied to MITK or not, because we should run different set of unit tests with
-/// and without the patch.
-const bool HALF_VOXEL_SHIFT_PATCH_APPLIED = true;
-
 class SingleViewerWidgetTestClass: public QObject
 {
   Q_OBJECT
