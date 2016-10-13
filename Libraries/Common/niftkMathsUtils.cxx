@@ -162,4 +162,38 @@ double SafeSQRT(double value)
   return sqrt(value);
 }
 
+//-----------------------------------------------------------------------------
+double MahalanobisDistance ( const std::vector < double >& v1 , const std::vector < double >& v2,
+            const std::vector < double >& covariance )
+{
+  if ( ( v1.size() != v2.size() ) || ( v1.size() != covariance.size() ) )
+  {
+    throw std::logic_error("Unequal vector lengths in niftk::MahalanobisDistance");
+  }
+
+  double distance = 0;
+  std::vector<double>::const_iterator it1 = v1.begin();
+  std::vector<double>::const_iterator it2 = v2.begin();
+  std::vector<double>::const_iterator itCovariance = covariance.begin();
+  while ( it1 < v1.end() )
+  {
+    distance += ( *it1 - *it2 ) * ( *it1 - *it2 ) / *itCovariance;
+    ++it1;
+    ++it2;
+    ++itCovariance;
+  }
+  return sqrt (distance);
+}
+
+//-----------------------------------------------------------------------------
+void CheckDoublesEquals(double expected, double actual, double tol)
+{
+  if (fabs(expected - actual) > tol)
+  {
+    std::string error =  "Failed:Expected=" + std::to_string(expected) + ", actual=" +
+      std::to_string( actual )  + ", tolerance=" + std::to_string (tol);
+    throw std::logic_error(error);
+  }
+}
+
 } // end namespace
