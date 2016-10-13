@@ -115,12 +115,25 @@ extern "C++" NIFTKVTK_WINEXPORT void TranslatePolyData
  * \param scaleSD if greater than zero the resulting transform is scaled to have this magnitude
  * \return void
  * */
-extern "C++" NIFTKVTK_WINEXPORT vtkSmartPointer<vtkTransform> RandomTransform
-  (
-  const double& xtrans, const double& ytrans, const double& ztrans,
+extern "C++" NIFTKVTK_WINEXPORT vtkSmartPointer<vtkTransform> RandomTransformAboutRemoteCentre
+  ( const double& xtrans, const double& ytrans, const double& ztrans,
   const double& xrot, const double& yrot, const double& zrot,
   vtkRandomSequence& rng,
-  const vtkTransform& toCentre,
+  vtkSmartPointer<vtkTransform> toCentre,
+  const double& scaleSD);
+
+/**
+ * \brief Creates a randomly determined vtkTransform, using existing random number geneterator
+ * \return transform the transform to hold the result
+ * \param xtrans,ytrans,ztrans,xrot,yrot,zrot the multipliers in each of the 6 degrees of freedom
+ * \param rng the random number generator
+ * \param scaleSD if greater than zero the resulting transform is scaled to have this magnitude
+ * \return void
+ * */
+extern "C++" NIFTKVTK_WINEXPORT vtkSmartPointer<vtkTransform> RandomTransform
+  ( const double& xtrans, const double& ytrans, const double& ztrans,
+  const double& xrot, const double& yrot, const double& zrot,
+  vtkRandomSequence& rng,
   const double& scaleSD);
 
 /**

@@ -15,6 +15,7 @@
 #include <math.h>
 #include <iostream>
 #include <niftkConversionUtils.h>
+#include <niftkMathsUtils.h>
 #include "niftkVTKFunctions.h"
 #include <vtkSmartPointer.h>
 #include <vtkTransformPolyDataFilter.h>
@@ -196,11 +197,35 @@ void CopyDoubleVector(int n, const double *a, double *b)
 
 
 //-----------------------------------------------------------------------------
+vtkSmartPointer<vtkTransform> RandomTransformAboutRemoteCentre (
+    const double& xtrans, const double& ytrans, const double& ztrans,
+    const double& xrot, const double& yrot, const double& zrot,
+    vtkRandomSequence& rng,
+    vtkSmartPointer<vtkTransform> toCentre,
+    const double& scaleSD)
+{
+  vtkSmartPointer < vtkTransform > transform = vtkSmartPointer<vtkTransform>::New();
+  transform->Identity();
+
+  vtkSmartPointer < vtkTransform > randomTransform = niftk::RandomTransform (
+      xtrans, ytrans, ztrans, xrot, yrot, zrot, rng, scaleSD );
+  vtkSmartPointer < vtkTransform > toOrigin = vtkSmartPointer<vtkTransform>::New();
+  toOrigin->DeepCopy (toCentre);
+  toOrigin->Inverse();
+
+  transform->PostMultiply();
+  transform->Concatenate(toOrigin);
+  transform->Concatenate(randomTransform);
+  transform->Concatenate(toCentre);
+
+  return transform;
+}
+
+//-----------------------------------------------------------------------------
 vtkSmartPointer<vtkTransform> RandomTransform (
     const double& xtrans, const double& ytrans, const double& ztrans,
     const double& xrot, const double& yrot, const double& zrot,
     vtkRandomSequence& rng,
-    const vtkTransform& toCentre,
     const double& scaleSD)
 {
   vtkSmartPointer < vtkTransform > transform = vtkSmartPointer<vtkTransform>::New();
@@ -247,6 +272,7 @@ vtkSmartPointer<vtkTransform> RandomTransform (
   //transform->translate( back_to_origin )
   return transform;
 }
+
 
 
 //-----------------------------------------------------------------------------
