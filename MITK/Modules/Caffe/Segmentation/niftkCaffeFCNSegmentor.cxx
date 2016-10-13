@@ -47,11 +47,21 @@ public:
 
   void Segment(const mitk::Image::Pointer& inputImage, const mitk::Image::Pointer& outputImage);
 
+  void SetTransposingMode(const bool& doTranspose)
+  {
+    m_IsTransposing = doTranspose;
+  }
+  bool GetTransposingMode() const
+  {
+    return m_IsTransposing;
+  }
+
 private:
 
   void ValidateInputs(const mitk::Image::Pointer& inputImage,
                       const mitk::Image::Pointer& outputImage);
 
+  bool                                 m_IsTransposing;
   std::string                          m_InputLayerName;
   std::string                          m_OutputBlobName;
   std::unique_ptr<caffe::Net<float> >  m_Net;
@@ -71,7 +81,8 @@ CaffeFCNSegmentorPrivate::CaffeFCNSegmentorPrivate(const std::string& networkDes
                                                    const std::string& outputBlobName,
                                                    const int& gpuDevice
                                                   )
-: m_InputLayerName(inputLayerName)
+: m_IsTransposing(true)
+, m_InputLayerName(inputLayerName)
 , m_OutputBlobName(outputBlobName)
 , m_Net(nullptr)
 {
@@ -198,8 +209,16 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
       boost::dynamic_pointer_cast <caffe::MemoryDataLayer<float> >(m_Net->layer_by_name(m_InputLayerName));
 
   cv::Mat wrappedImage = niftk::MitkImageToOpenCVMat(inputImage);
-  cv::transpose(wrappedImage, m_TransposedInputImage);
-  cv::resize(m_TransposedInputImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
+
+  if (m_IsTransposing)
+  {
+    cv::transpose(wrappedImage, m_TransposedInputImage);
+    cv::resize(m_TransposedInputImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
+  }
+  else
+  {
+    cv::resize(wrappedImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
+  }
 
   std::vector<cv::Mat> dv;
   dv.push_back(m_ResizedInputImage);
@@ -279,9 +298,15 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
     m_ResizedOutputImage = cvCreateMat(wrappedImage.rows, wrappedImage.cols, CV_8UC1);
   }
 
-  // Should not keep re-allocating if m_TransposedOutputImage or m_ResizedOutputImage the right size.
-  cv::transpose(m_ClassifiedImage, m_TransposedOutputImage);
-  cv::resize(m_TransposedOutputImage, m_ResizedOutputImage, cv::Size(wrappedImage.cols, wrappedImage.rows), 0, 0, CV_INTER_NN);
+  if (m_IsTransposing)
+  {
+    cv::transpose(m_ClassifiedImage, m_TransposedOutputImage);
+    cv::resize(m_TransposedOutputImage, m_ResizedOutputImage, cv::Size(wrappedImage.cols, wrappedImage.rows), 0, 0, CV_INTER_NN);
+  }
+  else
+  {
+    cv::resize(m_ClassifiedImage, m_ResizedOutputImage, cv::Size(wrappedImage.cols, wrappedImage.rows), 0, 0, CV_INTER_NN);
+  }
 
   // Copy to output. This relies on the fact that output is always 1 channel, 8 bit, uchar.
   mitk::ImageWriteAccessor writeAccess(outputImage);
@@ -313,7 +338,7 @@ CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileNa
                                      const std::string& networkWeightsFileName
                                     )
 : m_Impl(new CaffeFCNSegmentorPrivate(networkDescriptionFileName, networkWeightsFileName,
-                                      "data", "prediction", 0)) // only uses GPU if CUDA compiled in.
+                                      "data", "prediction", 0)) // only uses GPU device 0 if CUDA compiled in.
 {
 }
 
@@ -329,6 +354,20 @@ void CaffeFCNSegmentor::Segment(const mitk::Image::Pointer& inputImage,
                                 const mitk::Image::Pointer& outputImage)
 {
   m_Impl->Segment(inputImage, outputImage);
+}
+
+
+//-----------------------------------------------------------------------------
+void CaffeFCNSegmentor::SetTransposingMode(const bool& doTranspose)
+{
+  m_Impl->SetTransposingMode(doTranspose);
+}
+
+
+//-----------------------------------------------------------------------------
+bool CaffeFCNSegmentor::GetTransposingMode() const
+{
+  return m_Impl->GetTransposingMode();
 }
 
 } // end namespace

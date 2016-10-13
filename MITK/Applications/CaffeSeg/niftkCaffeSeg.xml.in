@@ -84,6 +84,14 @@
       <default>-1</default>
     </integer>
 
+    <boolean>
+      <name>transpose</name>
+      <longflag>transpose</longflag>
+      <description>Transpose input/output images.</description>
+      <label>Transpose images</label>
+      <default>0</default>
+    </boolean>
+
   </parameters>
 
 </executable>

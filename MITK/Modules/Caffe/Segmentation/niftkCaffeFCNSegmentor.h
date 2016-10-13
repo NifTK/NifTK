@@ -67,6 +67,14 @@ public:
   void Segment(const mitk::Image::Pointer& inputImage,
                const mitk::Image::Pointer& outputImage);
 
+  /**
+   * \brief Transpose input/output images.
+   *
+   * Note: This defaults to on, as the first test cases needed it.
+   */
+  void SetTransposingMode(const bool& doTranspose);
+  bool GetTransposingMode() const;
+
 protected:
 
   /**
@@ -82,6 +90,7 @@ protected:
                     const std::string& outputBlobName,
                     const int& gpuDevice
                    );
+
   CaffeFCNSegmentor(const std::string& networkDescriptionFileName,  // Purposefully hidden.
                     const std::string& networkWeightsFileName
                    );

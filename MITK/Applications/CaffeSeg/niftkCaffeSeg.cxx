@@ -77,6 +77,9 @@ int main(int argc, char* argv[])
 
     niftk::CaffeFCNSegmentor::Pointer manager
       = niftk::CaffeFCNSegmentor::New(model, weights, inputLayer, outputBlob, gpu /* only works if compiled in */);
+    manager->SetTransposingMode(transpose);
+
+    MITK_INFO << "Transposing mode:" << manager->GetTransposingMode();
 
     std::vector<std::string> filesToProcess;
 
