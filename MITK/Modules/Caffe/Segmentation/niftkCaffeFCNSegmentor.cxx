@@ -84,21 +84,36 @@ CaffeFCNSegmentorPrivate::CaffeFCNSegmentorPrivate(const std::string& networkDes
     mitkThrow() << "Caffe network weights filename (.caffemodel) is empty.";
   }
 
+  caffe::Caffe::set_mode(caffe::Caffe::CPU);
+
+#ifndef _USE_CUDA
+  if (gpuDevice >= 0)
+  {
+    MITK_INFO << "GPU device " << gpuDevice << " is requested, but ignored, as CUDA is not compiled in.";
+  }
+#endif
+
 #ifdef _USE_CUDA
+
   int count = 0;
   CUDA_CHECK(cudaGetDeviceCount(&count));
-  if (gpuDevice >= 0 && count > gpuDevice)
+
+  if (gpuDevice < 0)
   {
-	caffe::Caffe::SetDevice(gpuDevice); // we are only allowing for 1 device at the moment.
-	caffe::Caffe::set_mode(caffe::Caffe::GPU);
+    MITK_WARN << "Requested GPU device number is negative, so switching to CPU mode.";
+  }
+  else if (gpuDevice >= count)
+  {
+    MITK_WARN << "Requested GPU device number (" << gpuDevice
+              << ") is too high, given the number of GPU devices (" << count << ")";
   }
   else
   {
-    caffe::Caffe::set_mode(caffe::Caffe::CPU);
+    caffe::Caffe::SetDevice(gpuDevice); // we are only allowing for 1 device at the moment.
+    caffe::Caffe::set_mode(caffe::Caffe::GPU);
   }
-#else
-  caffe::Caffe::set_mode(caffe::Caffe::CPU);
 #endif
+
   m_Net.reset(new caffe::Net<float>(networkDescriptionFileName, caffe::TEST));
   m_Net->CopyTrainedLayersFrom(networkWeightsFileName);
 
