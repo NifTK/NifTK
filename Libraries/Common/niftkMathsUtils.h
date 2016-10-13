@@ -69,6 +69,25 @@ extern "C++" NIFTKCOMMON_WINEXPORT double ModifiedSignum(double value);
 */
 extern "C++" NIFTKCOMMON_WINEXPORT double SafeSQRT(double value);
 
+/**
+ * \brief Calculates the Mahalanobis distance between two vectors. For this implementation the
+ * \brief vector elements must be independent so that the covariance matrix is diagonal and can
+ * \brief be expressed as vector of the diagonal elements. This is done here to avoid dependencies
+ * \brief on a matrix library. For a more general Mahalanobis distance use ITK/VNL.
+ * \brief Throws a logic error if vectors are not equal length.
+ * \params v1, v2 two vectors to measure the distance between.
+ * \params cov the diagonal elements of the covariance matrix
+ * \return the Mahalanobis distance between the two vectors
+ * */
+extern "C++" NIFTKCOMMON_WINEXPORT double MahalanobisDistance (
+    const std::vector < double >& v1 , const std::vector < double >& v2,
+    const std::vector < double >& covariance );
+
+/**
+ * \brief Checks whether first two parameters are equal within tolerance. Throws and exception if not.
+ */
+extern "C++" NIFTKCOMMON_WINEXPORT void CheckDoublesEquals(double expected, double actual, double tol);
+
 } // end namespace
 
 #endif
