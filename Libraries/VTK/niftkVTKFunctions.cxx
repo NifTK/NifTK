@@ -223,53 +223,53 @@ vtkSmartPointer<vtkTransform> RandomTransformAboutRemoteCentre (
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkTransform> RandomTransform (
-    const double& xtrans, const double& ytrans, const double& ztrans,
-    const double& xrot, const double& yrot, const double& zrot,
+    const double& xtransSD, const double& ytransSD, const double& ztransSD,
+    const double& xrotSD, const double& yrotSD, const double& zrotSD,
     vtkRandomSequence& rng,
     const double& scaleSD)
 {
   vtkSmartPointer < vtkTransform > transform = vtkSmartPointer<vtkTransform>::New();
 
   transform->Identity();
-  //could we implement this slightly differently so
-  //we can set desired SD of sphere, then set up an
-  //command line application to generate these
-  // so actual d = sqrt ( (x / sdx)^2  + (y / sdy)^2  +  ).
-  // we have a target D.
-  // factor d/D
-  // x = x * d/D
-  // imaging it in two 2D with sd = 1
-  // d = sqrt ( x^2 + y ^ 2 )
-  // d = sqrt ( (x * D/d) ^ 2 + ( y * D/d ) ^ 2 )
-  // d = sqrt ( x^2 * (D/d)^2 + y^2 + D/d ^ 2 )
-  // d = sqrt ( D/d^2 ( x^2 + y^2 ) )
-  // d = D/d  * sqrt ( ( x^2 + y^ 2 )
-  //
-  // Also as Eddie pointed out, if this is going to work we need to
-  // define the desired centre of the model. and possibly its extent,
-  // so  that the rotations are properly scaled around that point
-  double x;
-  double y;
-  double z;
-  //transform->translate( to centroid )
-  x=xtrans * NormalisedRNG ( &rng ) ;
-  rng.Next();
-  y=ytrans * NormalisedRNG ( &rng );
-  rng.Next();
-  z=ztrans * NormalisedRNG ( &rng );
-  rng.Next();
-  transform->Translate(x,y,z);
-  double rot;
-  rot=xrot * NormalisedRNG ( &rng);
-  rng.Next();
-  transform->RotateX(rot);
-  rot=yrot * NormalisedRNG( &rng );
-  rng.Next();
-  transform->RotateY(rot);
-  rot=zrot * NormalisedRNG( &rng );
-  rng.Next();
-  transform->RotateZ(rot);
-  //transform->translate( back_to_origin )
+
+  //create covariance vector
+  std::vector < double > stddev;
+  std::vector < double > covariance;
+  std::vector < double > zeros;
+  std::vector < double > randomTransform;
+  stddev.push_back ( xtransSD );
+  stddev.push_back ( ytransSD );
+  stddev.push_back ( ztransSD );
+  stddev.push_back ( xrotSD );
+  stddev.push_back ( yrotSD );
+  stddev.push_back ( zrotSD );
+
+  for ( std::vector<double>::iterator it = stddev.begin() ; it < stddev.end() ; ++ it )
+  {
+    randomTransform.push_back ( (*it) * NormalisedRNG ( &rng ));
+    rng.Next();
+    zeros.push_back(0.0);
+    covariance.push_back ( (*it) * (*it) );
+  }
+
+  double currentDistance = niftk::MahalanobisDistance ( zeros, randomTransform, covariance );
+  std::cout << "Initial Normalised euclidean distance = " << currentDistance << std::endl;
+  double scaleFactor = scaleSD / currentDistance;
+
+  if ( scaleSD > 0 )
+  {
+    for ( std::vector<double>::iterator it = randomTransform.begin() ; it < randomTransform.end() ; ++ it )
+    {
+      *it *= scaleFactor ;
+    }
+    double correctedDistance = niftk::MahalanobisDistance ( zeros, randomTransform, covariance );
+    std::cout << "Corrected Normalised euclidean distance = " << correctedDistance << std::endl;
+  }
+
+  transform->Translate(randomTransform [0],randomTransform [1],randomTransform [2]);
+  transform->RotateX(randomTransform [3]);
+  transform->RotateY(randomTransform [4]);
+  transform->RotateZ(randomTransform [5]);
   return transform;
 }
 
