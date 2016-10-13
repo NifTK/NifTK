@@ -196,10 +196,16 @@ void CopyDoubleVector(int n, const double *a, double *b)
 
 
 //-----------------------------------------------------------------------------
-void RandomTransform ( vtkTransform * transform,
-    double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
-    vtkRandomSequence* rng)
+vtkSmartPointer<vtkTransform> RandomTransform (
+    const double& xtrans, const double& ytrans, const double& ztrans,
+    const double& xrot, const double& yrot, const double& zrot,
+    vtkRandomSequence& rng,
+    const vtkTransform& toCentre,
+    const double& scaleSD)
 {
+  vtkSmartPointer < vtkTransform > transform = vtkSmartPointer<vtkTransform>::New();
+
+  transform->Identity();
   //could we implement this slightly differently so
   //we can set desired SD of sphere, then set up an
   //command line application to generate these
@@ -221,24 +227,25 @@ void RandomTransform ( vtkTransform * transform,
   double y;
   double z;
   //transform->translate( to centroid )
-  x=xtrans * NormalisedRNG ( rng ) ;
-  rng->Next();
-  y=ytrans * NormalisedRNG ( rng );
-  rng->Next();
-  z=ztrans * NormalisedRNG ( rng );
-  rng->Next();
+  x=xtrans * NormalisedRNG ( &rng ) ;
+  rng.Next();
+  y=ytrans * NormalisedRNG ( &rng );
+  rng.Next();
+  z=ztrans * NormalisedRNG ( &rng );
+  rng.Next();
   transform->Translate(x,y,z);
   double rot;
-  rot=xrot * NormalisedRNG ( rng);
-  rng->Next();
+  rot=xrot * NormalisedRNG ( &rng);
+  rng.Next();
   transform->RotateX(rot);
-  rot=yrot * NormalisedRNG(rng);
-  rng->Next();
+  rot=yrot * NormalisedRNG( &rng );
+  rng.Next();
   transform->RotateY(rot);
-  rot=zrot * NormalisedRNG(rng);
-  rng->Next();
+  rot=zrot * NormalisedRNG( &rng );
+  rng.Next();
   transform->RotateZ(rot);
   //transform->translate( back_to_origin )
+  return transform;
 }
 
 
