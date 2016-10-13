@@ -94,7 +94,8 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "at UCL and UCLH grant 168 and TSB grant M1638A. "
       "The principal investigator is <a href=\"http://cmictig.cs.ucl.ac.uk/people/academic-staff/1-sourselin\">"
       "Sebastien Ourselin</a> "
-      "and team leader is <a href=\"http://cmictig.cs.ucl.ac.uk/people/academic-staff/84-matt-clarkson\">Matt Clarkson</a>."
+      "and team leader is <a href=\"http://cmictig.cs.ucl.ac.uk/people/academic-staff/84-matt-clarkson\">"
+      "Matt Clarkson</a>."
       "</p>"
       ).arg(applicationName).arg(originURL).arg(originLongText).arg(originShortText).arg(platformName);
 
@@ -339,7 +340,8 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<tr>"
       "<td><a href=\"https://support.hdfgroup.org/HDF5/\">HDF5</a></td>"
       "<td>%1</td>"
-      "<td><a href=\"https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0/src/unpacked/COPYING\">BSD</a></td>"
+      "<td><a href=\"https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0/src/unpacked/COPYING\">"
+      "BSD</a></td>"
       "<td><a href=\"%2\">from here</a></td>"
       "</tr>"
       ).arg(hdf5Version).arg(hdf5Location);
