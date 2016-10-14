@@ -893,22 +893,6 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
   mitk::Point3D expectedSagittalBottomLeftBackCorner = worldBottomLeftBackCorner;
   mitk::Point3D expectedCoronalBottomLeftBackCorner = worldBottomLeftBackCorner;
 
-  if (!HALF_VOXEL_SHIFT_PATCH_APPLIED)
-  {
-    /// Note:
-    /// The renderer geometries are half voxel shifted along the renderer axis.
-
-    expectedAxialOrigin[2] += 0.5 * d->WorldSpacings[2];
-    expectedSagittalOrigin[0] += 0.5 * d->WorldSpacings[0];
-    expectedCoronalOrigin[1] += 0.5 * d->WorldSpacings[1];
-    expectedAxialCentre[2] += 0.5 * d->WorldSpacings[2];
-    expectedSagittalCentre[0] += 0.5 * d->WorldSpacings[0];
-    expectedCoronalCentre[1] += 0.5 * d->WorldSpacings[1];
-    expectedAxialBottomLeftBackCorner[2] += 0.5 * d->WorldSpacings[2];
-    expectedSagittalBottomLeftBackCorner[0] += 0.5 * d->WorldSpacings[0];
-    expectedCoronalBottomLeftBackCorner[1] += 0.5 * d->WorldSpacings[1];
-  }
-
   mitk::Point3D expectedAxialFirstPlaneOrigin = worldBottomLeftBackCorner;
   /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
   expectedAxialFirstPlaneOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
@@ -1374,16 +1358,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
   mitk::Point3D expectedSagittalOrigin = worldBottomLeftBackCorner;
   mitk::Point3D expectedCoronalOrigin = worldBottomLeftBackCorner;
 
-  if (!HALF_VOXEL_SHIFT_PATCH_APPLIED)
-  {
-    /// Note:
-    /// The renderer geometries are half voxel shifted along the renderer axis.
-
-    expectedAxialOrigin[2] += 0.5 * d->WorldSpacings[2];
-    expectedSagittalOrigin[0] += 0.5 * d->WorldSpacings[0];
-    expectedCoronalOrigin[1] += 0.5 * d->WorldSpacings[1];
-  }
-
   mitk::Point3D expectedAxialCentre = worldCentre;
   mitk::Point3D expectedSagittalCentre = worldCentre;
   mitk::Point3D expectedCoronalCentre = worldCentre;
@@ -1452,11 +1426,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 //  MITK_INFO << "expected axial second plane centre: " << expectedAxialSecondPlaneCentre;
 //  MITK_INFO << "expected sagittal second plane centre: " << expectedSagittalSecondPlaneCentre;
 //  MITK_INFO << "expected coronal second plane centre: " << expectedCoronalSecondPlaneCentre;
-
-  if (!HALF_VOXEL_SHIFT_PATCH_APPLIED)
-  {
-    return;
-  }
 
   /// -------------------------------------------------------------------------
   /// Viewer initialised with the world geometry of an axial renderer

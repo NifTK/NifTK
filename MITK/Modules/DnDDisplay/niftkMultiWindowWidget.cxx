@@ -1208,22 +1208,32 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     if (m_Geometry->GetImageGeometry())
     {
       m_GeometryType = ImageGeometry;
+
       for (int i = 0; i < 3; ++i)
       {
         if (m_UpDirections[i] > 0)
         {
-          worldBottomLeftBackCorner[i] -= 0.5 * permutedSpacing[i];
+          worldBottomLeftBackCorner[i] -= 0.5 * (
+                permutedSpacing[0] * permutedMatrix[i][0]
+              + permutedSpacing[1] * permutedMatrix[i][1]
+              + permutedSpacing[2] * permutedMatrix[i][2]);
         }
         else
         {
-          worldBottomLeftBackCorner[i] -= permutedBoundingBox[i] * permutedSpacing[i] * permutedMatrix[i][i] - 0.5 * permutedSpacing[i];
+          worldBottomLeftBackCorner[i] -= (permutedBoundingBox[i] - 0.5) * (
+                permutedSpacing[0] * permutedMatrix[i][0]
+              + permutedSpacing[1] * permutedMatrix[i][1]
+              + permutedSpacing[2] * permutedMatrix[i][2]);
         }
       }
     }
     else if (permutedAxes[0] == 0 && permutedAxes[1] == 1 && permutedAxes[2] == 2) // Axial
     {
       m_GeometryType = AxialGeometry;
+      /// In the axial render window the origin is in the bottom left front corner, not in the bottom left back.
+      worldBottomLeftBackCorner[0] -= permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[0][1];
       worldBottomLeftBackCorner[1] -= permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
+      worldBottomLeftBackCorner[2] -= permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[2][1];
     }
     else if (permutedAxes[0] == 2 && permutedAxes[1] == 0 && permutedAxes[2] == 1) // Sagittal
     {
@@ -1272,18 +1282,18 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[0];
           viewSpacing = permutedSpacing[0];
           isFlipped = false;
-          originOfSlice[0] = worldBottomLeftBackCorner[0] + 0.5 * permutedSpacing[0];
-          originOfSlice[1] = worldBottomLeftBackCorner[1];
-          originOfSlice[2] = worldBottomLeftBackCorner[2];
-          rightDV[0] = permutedSpacing[0] * permutedMatrix[0][1];
+          originOfSlice[0] = worldBottomLeftBackCorner[0] + 0.5 * permutedSpacing[0] * permutedMatrix[0][0];
+          originOfSlice[1] = worldBottomLeftBackCorner[1] + 0.5 * permutedSpacing[0] * permutedMatrix[1][0];
+          originOfSlice[2] = worldBottomLeftBackCorner[2] + 0.5 * permutedSpacing[0] * permutedMatrix[2][0];
+          rightDV[0] = permutedSpacing[1] * permutedMatrix[0][1];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][1];
-          rightDV[2] = permutedSpacing[2] * permutedMatrix[2][1];
-          bottomDV[0] = permutedSpacing[0] * permutedMatrix[0][2];
-          bottomDV[1] = permutedSpacing[1] * permutedMatrix[1][2];
+          rightDV[2] = permutedSpacing[1] * permutedMatrix[2][1];
+          bottomDV[0] = permutedSpacing[2] * permutedMatrix[0][2];
+          bottomDV[1] = permutedSpacing[2] * permutedMatrix[1][2];
           bottomDV[2] = permutedSpacing[2] * permutedMatrix[2][2];
           normal[0] = permutedSpacing[0] * permutedMatrix[0][0];
-          normal[1] = permutedSpacing[1] * permutedMatrix[1][0];
-          normal[2] = permutedSpacing[2] * permutedMatrix[2][0];
+          normal[1] = permutedSpacing[0] * permutedMatrix[1][0];
+          normal[2] = permutedSpacing[0] * permutedMatrix[2][0];
           break;
         /// Coronal:
         case mitk::SliceNavigationController::Frontal:
@@ -1292,18 +1302,18 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[1];
           viewSpacing = permutedSpacing[1];
           isFlipped = true;
-          originOfSlice[0] = worldBottomLeftBackCorner[0];
-          originOfSlice[1] = worldBottomLeftBackCorner[1] + 0.5 * permutedSpacing[1];
-          originOfSlice[2] = worldBottomLeftBackCorner[2];
+          originOfSlice[0] = worldBottomLeftBackCorner[0] + 0.5 * permutedSpacing[1] * permutedMatrix[0][1];
+          originOfSlice[1] = worldBottomLeftBackCorner[1] + 0.5 * permutedSpacing[1] * permutedMatrix[1][1];
+          originOfSlice[2] = worldBottomLeftBackCorner[2] + 0.5 * permutedSpacing[1] * permutedMatrix[2][1];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
-          rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
-          rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
-          bottomDV[0] = permutedSpacing[0] * permutedMatrix[0][2];
-          bottomDV[1] = permutedSpacing[1] * permutedMatrix[1][2];
+          rightDV[1] = permutedSpacing[0] * permutedMatrix[1][0];
+          rightDV[2] = permutedSpacing[0] * permutedMatrix[2][0];
+          bottomDV[0] = permutedSpacing[2] * permutedMatrix[0][2];
+          bottomDV[1] = permutedSpacing[2] * permutedMatrix[1][2];
           bottomDV[2] = permutedSpacing[2] * permutedMatrix[2][2];
-          normal[0] = permutedSpacing[0] * permutedMatrix[0][1];
+          normal[0] = permutedSpacing[1] * permutedMatrix[0][1];
           normal[1] = permutedSpacing[1] * permutedMatrix[1][1];
-          normal[2] = permutedSpacing[2] * permutedMatrix[2][1];
+          normal[2] = permutedSpacing[1] * permutedMatrix[2][1];
           break;
         /// Axial:
         default:
@@ -1312,17 +1322,21 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[2];
           viewSpacing = permutedSpacing[2];
           isFlipped = true;
-          originOfSlice[0] = worldBottomLeftBackCorner[0];
-          originOfSlice[1] = worldBottomLeftBackCorner[1] + permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
-          originOfSlice[2] = worldBottomLeftBackCorner[2] + 0.5 * permutedSpacing[2];
+          mitk::Point3D worldBottomLeftFrontCorner = worldBottomLeftBackCorner;
+          worldBottomLeftFrontCorner[0] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[0][1];
+          worldBottomLeftFrontCorner[1] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
+          worldBottomLeftFrontCorner[2] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[2][1];
+          originOfSlice[0] = worldBottomLeftFrontCorner[0] + 0.5 * permutedSpacing[2] * permutedMatrix[0][2];
+          originOfSlice[1] = worldBottomLeftFrontCorner[1] + 0.5 * permutedSpacing[2] * permutedMatrix[1][2];
+          originOfSlice[2] = worldBottomLeftFrontCorner[2] + 0.5 * permutedSpacing[2] * permutedMatrix[2][2];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
-          rightDV[1] = permutedSpacing[1] * permutedMatrix[1][0];
-          rightDV[2] = permutedSpacing[2] * permutedMatrix[2][0];
-          bottomDV[0] = -1.0 * permutedSpacing[0] * permutedMatrix[0][1];
+          rightDV[1] = permutedSpacing[0] * permutedMatrix[1][0];
+          rightDV[2] = permutedSpacing[0] * permutedMatrix[2][0];
+          bottomDV[0] = -1.0 * permutedSpacing[1] * permutedMatrix[0][1];
           bottomDV[1] = -1.0 * permutedSpacing[1] * permutedMatrix[1][1];
-          bottomDV[2] = -1.0 * permutedSpacing[2] * permutedMatrix[2][1];
-          normal[0] = permutedSpacing[0] * permutedMatrix[0][2];
-          normal[1] = permutedSpacing[1] * permutedMatrix[1][2];
+          bottomDV[2] = -1.0 * permutedSpacing[1] * permutedMatrix[2][1];
+          normal[0] = permutedSpacing[2] * permutedMatrix[0][2];
+          normal[1] = permutedSpacing[2] * permutedMatrix[1][2];
           normal[2] = permutedSpacing[2] * permutedMatrix[2][2];
           break;
         }
