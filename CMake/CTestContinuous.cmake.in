@@ -148,6 +148,10 @@ if (APPLE)
   endif()
 endif()
 
+if (APPLE)
+  set(tests_to_exclude "${tests_to_exclude}|DnDDisplay")
+endif()
+
 ctest_start(Continuous TRACK ${group_name})
 ctest_test(EXCLUDE "${tests_to_exclude}" RETURN_VALUE exitCode)
 ctest_submit()
