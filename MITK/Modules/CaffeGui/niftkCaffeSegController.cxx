@@ -38,6 +38,10 @@ public:
   CaffeSegGUI*                      m_GUI;
   std::string                       m_NetworkDescriptionFileName;
   std::string                       m_NetworkWeightsFileName;
+  bool                              m_DoTranspose;
+  std::string                       m_InputLayerName;
+  std::string                       m_OutputBlobName;
+  int                               m_GPUDevice;
   bool                              m_IsUpdatingManually;
   QMutex                            m_Lock;
   QFuture<void>                     m_BackgroundProcess;
@@ -117,22 +121,62 @@ void CaffeSegController::SetupGUI(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void CaffeSegController::SetNetworkDescriptionFileName(const std::string& description)
+void CaffeSegController::SetNetworkDescriptionFileName(const QString& description)
 {
   Q_D(CaffeSegController);
   QMutexLocker locker(&d->m_Lock);
 
-  d->m_NetworkDescriptionFileName = description;
+  d->m_NetworkDescriptionFileName = description.toStdString();
 }
 
 
 //-----------------------------------------------------------------------------
-void CaffeSegController::SetNetworkWeightsFileName(const std::string& weights)
+void CaffeSegController::SetNetworkWeightsFileName(const QString& weights)
 {
   Q_D(CaffeSegController);
   QMutexLocker locker(&d->m_Lock);
 
-  d->m_NetworkWeightsFileName = weights;
+  d->m_NetworkWeightsFileName = weights.toStdString();
+}
+
+
+//-----------------------------------------------------------------------------
+void CaffeSegController::SetDoTranspose(const bool& doTranspose)
+{
+  Q_D(CaffeSegController);
+  QMutexLocker locker(&d->m_Lock);
+
+  d->m_DoTranspose = doTranspose;
+}
+
+
+//-----------------------------------------------------------------------------
+void CaffeSegController::SetInputLayerName(const QString& inputLayer)
+{
+  Q_D(CaffeSegController);
+  QMutexLocker locker(&d->m_Lock);
+
+  d->m_InputLayerName = inputLayer.toStdString();
+}
+
+
+//-----------------------------------------------------------------------------
+void CaffeSegController::SetOutputBlobName(const QString& outputBlob)
+{
+  Q_D(CaffeSegController);
+  QMutexLocker locker(&d->m_Lock);
+
+  d->m_OutputBlobName = outputBlob.toStdString();
+}
+
+
+//-----------------------------------------------------------------------------
+void CaffeSegController::SetGPUDevice(const int& deviceId)
+{
+  Q_D(CaffeSegController);
+  QMutexLocker locker(&d->m_Lock);
+
+  d->m_GPUDevice = deviceId;
 }
 
 
@@ -240,8 +284,12 @@ void CaffeSegController::SelectionChanged(const mitk::DataNode* node, const int&
       d->m_DataNodes[i] = const_cast<mitk::DataNode*>(node);
 
       d->m_Segmentors[i] = niftk::CaffeFCNSegmentor::New(d->m_NetworkDescriptionFileName,
-                                                         d->m_NetworkWeightsFileName
+                                                         d->m_NetworkWeightsFileName,
+                                                         d->m_InputLayerName,
+                                                         d->m_OutputBlobName,
+                                                         d->m_GPUDevice
                                                         );
+      d->m_Segmentors[i]->SetTransposingMode(d->m_DoTranspose);
 
       if (d->m_SegmentedNodes[i].IsNotNull())
       {

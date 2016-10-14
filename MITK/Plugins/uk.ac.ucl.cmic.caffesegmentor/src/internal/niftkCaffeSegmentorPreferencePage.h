@@ -21,6 +21,9 @@
 class QWidget;
 class QPushButton;
 class ctkPathLineEdit;
+class QCheckBox;
+class QLineEdit;
+class QSpinBox;
 
 namespace niftk
 {
@@ -47,6 +50,26 @@ public:
    * \brief Stores the name of the preference node that contains the name of the network weights file.
    */
   static const QString NETWORK_WEIGHTS_FILE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains whether to transpose data.
+   */
+  static const QString DO_TRANSPOSE_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains the name of the input MemoryData layer.
+   */
+  static const QString INPUT_LAYER_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains the name of the output blob.
+   */
+  static const QString OUTPUT_BLOB_NAME;
+
+  /**
+   * \brief Stores the name of the preference node that contains the integer ID of the GPU device.
+   */
+  static const QString GPU_DEVICE_NAME;
 
   CaffeSegmentorPreferencePage();
   CaffeSegmentorPreferencePage(const CaffeSegmentorPreferencePage& other);
@@ -80,6 +103,10 @@ protected:
   QWidget*         m_MainControl;
   ctkPathLineEdit* m_NetworkDescriptionFileName;
   ctkPathLineEdit* m_NetworkWeightsFileName;
+  QCheckBox*       m_DoTranspose;
+  QLineEdit*       m_NameMemoryLayer;
+  QLineEdit*       m_NameOutputBlob;
+  QSpinBox*        m_GPUDevice;
   bool             m_Initializing;
 
   berry::IPreferences::Pointer m_CaffeSegmentorPreferencesNode;
