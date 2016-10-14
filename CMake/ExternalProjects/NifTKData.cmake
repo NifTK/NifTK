@@ -35,7 +35,7 @@ if (BUILD_TESTING)
   # So that this can work, you must specify the SHA1 commit hash in its whole
   # length, 40 digits, below.
 
-  set(version_sha1 "55c3054c8901d1e46ce564d3b0b6a7ce9511dfc9")
+  set(version_sha1 "32165298eddfbc0bbaf79f28754c395b11fd0a5d")
   string(SUBSTRING ${version_sha1} 0 10 version)
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTKData.git")
 

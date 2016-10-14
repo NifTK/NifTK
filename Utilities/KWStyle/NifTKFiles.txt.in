@@ -6,7 +6,8 @@
 @CMAKE_SOURCE_DIR@/Libraries/Common/niftkFixedLengthFile*
 @CMAKE_SOURCE_DIR@/Libraries/Common/niftkMathsUtils*
 @CMAKE_SOURCE_DIR@/Libraries/CUDAKernels/niftk*.h
-@CMAKE_SOURCE_DIR@/MITK/Modules/CoreGui/Rendering/niftk
+@CMAKE_SOURCE_DIR@/MITK/Modules/Caffe/niftk*
+@CMAKE_SOURCE_DIR@/MITK/Modules/CoreGui/Rendering/niftk*
 @CMAKE_SOURCE_DIR@/MITK/Modules/CoreGui/Widgets/niftk*.h
 @CMAKE_SOURCE_DIR@/MITK/Modules/CoreGui/Widgets/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/CoreGui/Events/niftk*

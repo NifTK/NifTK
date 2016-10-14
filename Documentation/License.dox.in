@@ -20,6 +20,12 @@
 \li \ref LicenseFLANN
 \li \ref LicensePCL
 \li \ref LicenseRTK
+\li \ref LicenseGLog
+\li \ref LicenseGFlags
+\li \ref LicenseHDF5
+\li \ref LicenseProtoBuf
+\li \ref LicenseOpenBLAS
+\li \ref LicenseCaffe
 \li \ref LicenseOpenIGTLink
 \li \ref LicenseQsLog
 
@@ -98,6 +104,30 @@
 \section LicenseRTK The RTK License
 
 \include LICENSE_RTK.txt
+
+\section LicenseGLog The GLog License
+
+\include LICENSE_GLog.txt
+
+\section LicenseGFlags The GFlags License
+
+\include LICENSE_GFlags.txt
+
+\section LicenseHDF5 The HDF5 License
+
+\include LICENSE_HDF5.txt
+
+\section LicenseProtoBuf The ProtoBuf License
+
+\include LICENSE_ProtoBuf.txt
+
+\section LicenseOpenBLAS The OpenBLAS License
+
+\include LICENSE_OpenBLAS.txt
+
+\section LicenseCaffe The Caffe License
+
+\include LICENSE_Caffe.txt
 
 \section LicenseOpenIGTLink The OpenIGTLink License
 

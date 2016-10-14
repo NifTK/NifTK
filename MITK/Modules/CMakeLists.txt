@@ -87,6 +87,15 @@ if(BUILD_IGI)
     QtCameraVideoDataSourceService
     BKMedicalDataSourceService
   )
+
+  if(BUILD_CAFFE)
+    set(MODULE_DIRS
+      ${MODULE_DIRS}
+      Caffe
+      CaffeGui
+    )
+  endif()
+
 endif()
 
 if(BUILD_VL)

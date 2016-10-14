@@ -92,14 +92,13 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<p>"
       "%1 was developed with funding from the NIHR and the Comprehensive Biomedical Research Centre "
       "at UCL and UCLH grant 168 and TSB grant M1638A. "
-      "The principal investigator is <a href=\"http://cmic.cs.ucl.ac.uk/staff/sebastien_ourselin/\">"
+      "The principal investigator is <a href=\"http://cmictig.cs.ucl.ac.uk/people/academic-staff/1-sourselin\">"
       "Sebastien Ourselin</a> "
-      "and team leader is <a href=\"http://cmic.cs.ucl.ac.uk/staff/matt_clarkson/\">Matt Clarkson</a>."
+      "and team leader is <a href=\"http://cmictig.cs.ucl.ac.uk/people/academic-staff/84-matt-clarkson\">"
+      "Matt Clarkson</a>."
       "</p>"
       ).arg(applicationName).arg(originURL).arg(originLongText).arg(originShortText).arg(platformName);
 
-  // Over time, insert more collaborators, as we conquer the world!!
-  // (mwah ha ha ha .. evil laughter).
   QString collaborators = QObject::tr(
       "<p>"
       "%1 is grateful for the continued support of our clinical and research collaborators including:"
@@ -108,6 +107,7 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<li>the <a href=\"http://www.ucl.ac.uk/ion/departments/neuroinflammation/\">UCL Department "
       "of Neuroinflammation</a>.</li>"
       "<li>the <a href=\"http://www.ucl.ac.uk/cabi/\">UCL Centre for Advanced Biomedical Imaging</a>.</li>"
+      "<li>the <a href=\"http://www.ucl.ac.uk/surgery\">UCL Division Of Surgery And Interventional Science</a>.</li>"
       "</ul>"
       "In addition, the software development team would like to acknowledge the kind support "
       "of the open-source software community "
@@ -311,6 +311,76 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       ).arg(pclVersion).arg(pclLocation);
   #endif
 
+  #ifdef BUILD_CAFFE
+    QString glogVersion(NIFTK_VERSION_glog);
+    QString glogLocation(NIFTK_LOCATION_glog);
+    QString glogText = QObject::tr(
+      "<tr>"
+      "<td><a href=\"https://github.com/google/glog\">glog</a></td>"
+      "<td>%1</td>"
+      "<td><a href=\"https://github.com/google/glog/blob/master/COPYING\">BSD</a></td>"
+      "<td><a href=\"%2\">from here</a></td>"
+      "</tr>"
+      ).arg(glogVersion).arg(glogLocation);
+    
+    QString gflagsVersion(NIFTK_VERSION_gflags);
+    QString gflagsLocation(NIFTK_LOCATION_gflags);
+    QString gflagsText = QObject::tr(
+      "<tr>"
+      "<td><a href=\"https://github.com/gflags/gflags/\">gflags</a></td>"
+      "<td>%1</td>"
+      "<td><a href=\"https://github.com/gflags/gflags/blob/master/COPYING.txt\">BSD</a></td>"
+      "<td><a href=\"%2\">from here</a></td>"
+      "</tr>"
+      ).arg(gflagsVersion).arg(gflagsLocation);
+
+    QString hdf5Version(NIFTK_VERSION_HDF5);
+    QString hdf5Location(NIFTK_LOCATION_HDF5);
+    QString hdf5Text = QObject::tr(
+      "<tr>"
+      "<td><a href=\"https://support.hdfgroup.org/HDF5/\">HDF5</a></td>"
+      "<td>%1</td>"
+      "<td><a href=\"https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.0/src/unpacked/COPYING\">"
+      "BSD</a></td>"
+      "<td><a href=\"%2\">from here</a></td>"
+      "</tr>"
+      ).arg(hdf5Version).arg(hdf5Location);
+
+    QString protoBufVersion(NIFTK_VERSION_ProtoBuf);
+    QString protoBufLocation(NIFTK_LOCATION_ProtoBuf);
+    QString protoBufText = QObject::tr(
+      "<tr>"
+      "<td><a href=\"https://github.com/google/protobuf\">ProtoBuf</a></td>"
+      "<td>%1</td>"
+      "<td><a href=\"https://github.com/google/protobuf/blob/master/LICENSE\">BSD</a></td>"
+      "<td><a href=\"%2\">from here</a></td>"
+      "</tr>"
+      ).arg(protoBufVersion).arg(protoBufLocation);
+
+    QString openBLASBufVersion(NIFTK_VERSION_OpenBLAS);
+    QString openBLASLocation(NIFTK_LOCATION_OpenBLAS);
+    QString openBLASBufText = QObject::tr(
+      "<tr>"
+      "<td><a href=\"http://www.openblas.net/\">OpenBLAS</a></td>"
+      "<td>%1</td>"
+      "<td><a href=\"https://github.com/xianyi/OpenBLAS/blob/develop/LICENSE\">BSD</a></td>"
+      "<td><a href=\"%2\">from here</a></td>"
+      "</tr>"
+      ).arg(openBLASBufVersion).arg(openBLASLocation);
+
+    QString caffeVersion(NIFTK_VERSION_Caffe);
+    QString caffeLocation(NIFTK_LOCATION_Caffe);
+    QString caffeText = QObject::tr(
+      "<tr>"
+      "<td><a href=\"http://caffe.berkeleyvision.org/\">Caffe</a></td>"
+      "<td>%1</td>"
+      "<td><a href=\"https://github.com/BVLC/caffe/blob/master/LICENSE\">BSD</a></td>"
+      "<td><a href=\"%2\">from here</a></td>"
+      "</tr>"
+      ).arg(caffeVersion).arg(caffeLocation);
+
+  #endif
+
   QString versionsEnd = QObject::tr(
       "</table></p>"
       );
@@ -350,6 +420,16 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
 #ifdef BUILD_PCL
       .append(flannText)
       .append(pclText)
+#endif
+#ifdef BUILD_CAFFE
+      .append(glogText)
+      .append(gflagsText)
+      .append(hdf5Text)
+      .append(protoBufText)
+#ifndef __APPLE__
+      .append(openBLASBufText)
+#endif
+      .append(caffeText)
 #endif
       .append(versionsEnd)
       ;

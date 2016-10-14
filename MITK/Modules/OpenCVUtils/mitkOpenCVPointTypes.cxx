@@ -377,16 +377,16 @@ VideoFrame::VideoFrame(cv::VideoCapture* capture , std::ifstream* frameMapLogFil
 
 
 //-----------------------------------------------------------------------------
-bool VideoFrame::WriteToFile ( std::string prefix )
+bool VideoFrame::WriteToFile (const std::string& prefix, const std::string& fileExtension)
 {
   std::string filename;
   if ( m_Left )
   {
-    filename = prefix + boost::lexical_cast<std::string>(m_TimeStamp) + "_left.bmp";
+    filename = prefix + boost::lexical_cast<std::string>(m_TimeStamp) + "_left." + fileExtension;
   }
   else
   {
-    filename = prefix + boost::lexical_cast<std::string>(m_TimeStamp) + "_right.bmp";
+    filename = prefix + boost::lexical_cast<std::string>(m_TimeStamp) + "_right." + fileExtension;
   }
   return cv::imwrite( filename, m_VideoData);
 }

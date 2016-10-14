@@ -42,6 +42,17 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT unsigned int ApplyMask (
 
 } // end namespace
 
+namespace niftk
+{
+/**
+ * \brief Takes an image of the liver phantom, assumed to be against a plain black
+ * or white or both background, and produces a very basic segmentation.
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT void SegmentLiverPhantom(const std::string& inputFileName,
+                                                              const std::string& outputFileName
+                                                             );
+} // end niftk namespace
+
 #endif
 
 

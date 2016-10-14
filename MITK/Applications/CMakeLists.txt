@@ -53,6 +53,7 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
       add_subdirectory(Project3DPointsToStereoPair)
       add_subdirectory(ProjectTrackedPointsOnStereoVideo)
       add_subdirectory(ReviewVideoData)
+      add_subdirectory(SegmentLiverPhantom)
       add_subdirectory(CalculateReProjectionErrors)
       add_subdirectory(SplitVideo)
       add_subdirectory(Triangulate2DPointPairsTo3D)
@@ -73,6 +74,10 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
 
       if(OPENCV_WITH_NONFREE)
         add_subdirectory(SURF)
+      endif()
+
+      if(BUILD_CAFFE)
+        add_subdirectory(CaffeSeg)
       endif()
 
     endif()

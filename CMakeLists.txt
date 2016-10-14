@@ -163,6 +163,8 @@ endif()
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
+option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
+option(BUILD_CAFFE "Build Caffe." OFF)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 # the console window is normally shown only for debug builds. but can be explicitly enabled.
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -584,6 +586,7 @@ mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 
 mitkFunctionAddExternalProject(NAME DCMTK     ON  ADVANCED)
 mitkFunctionAddExternalProject(NAME GDCM      ON  ADVANCED)
+mitkFunctionAddExternalProject(NAME HDF5      OFF ADVANCED NO_PACKAGE) # Needs to be built prior to ITK (used by Caffe)
 mitkFunctionAddExternalProject(NAME ITK       ON  ADVANCED NO_CACHE DEPENDS GDCM)
 mitkFunctionAddExternalProject(NAME SimpleITK OFF ADVANCED DEPENDS ITK GDCM SWIG)
 mitkFunctionAddExternalProject(NAME VTK       ON  ADVANCED NO_CACHE)
@@ -593,7 +596,20 @@ mitkFunctionAddExternalProject(NAME MITK      ON  ADVANCED NO_CACHE DEPENDS ITK 
 
 mitkFunctionAddExternalProject(NAME SlicerExecutionModel ON ADVANCED DEPENDS ITK)
 mitkFunctionAddExternalProject(NAME RTK                  OFF ADVANCED DEPENDS ITK GDCM)
+
 mitkFunctionAddExternalProject(NAME NiftyCal  OFF ADVANCED DEPENDS OpenCV AprilTags Eigen ITK)
+
+mitkFunctionAddExternalProject(NAME OpenBLAS       OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME ProtoBuf       OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME ProtoBuf-CMake OFF ADVANCED NO_PACKAGE ProtoBuf)
+mitkFunctionAddExternalProject(NAME gflags         OFF ADVANCED NO_PACKAGE)
+mitkFunctionAddExternalProject(NAME glog           OFF ADVANCED NO_PACKAGE gflags)
+
+set(_caffe_depends Boost ProtoBuf-CMake ProtoBuf glog gflags HDF5 ZLIB)
+if(NOT APPLE)
+  list(APPEND _caffe_depends OpenBLAS)
+endif()
+mitkFunctionAddExternalProject(NAME Caffe    OFF ADVANCED NO_PACKAGE DEPENDS ${_caffe_depends})
 
 # -----------------------------------------
 # Other MITK_USE_* options not related to external projects build via the NifTK superbuild
@@ -606,12 +622,14 @@ if (BUILD_IGI)
   set(MITK_USE_NiftyLink ON CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyCal ON CACHE BOOL "" FORCE)
   set(MITK_USE_OpenCV ON CACHE BOOL "" FORCE)
+  set(MITK_USE_HDF5 ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_AprilTags OFF CACHE BOOL "" FORCE)
   set(MITK_USE_ArUco OFF CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyLink OFF CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyCal OFF CACHE BOOL "" FORCE)
   set(MITK_USE_OpenCV OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_HDF5 OFF CACHE BOOL "" FORCE)
 endif()
 
 if (BUILD_PCL)
@@ -654,6 +672,28 @@ if (BUILD_RTK)
   set(MITK_USE_RTK ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_RTK OFF CACHE BOOL "" FORCE)
+endif()
+
+if (BUILD_CAFFE)
+  set(MITK_USE_Caffe          ON CACHE BOOL "" FORCE)
+  if (NOT APPLE)
+    set(MITK_USE_OpenBLAS     ON CACHE BOOL "" FORCE)
+  endif()
+  set(MITK_USE_ProtoBuf       ON CACHE BOOL "" FORCE) 
+  set(MITK_USE_ProtoBuf-CMake ON CACHE BOOL "" FORCE)
+  set(MITK_USE_glog           ON CACHE BOOL "" FORCE)
+  set(MITK_USE_gflags         ON CACHE BOOL "" FORCE)
+  set(MITK_USE_HDF5           ON CACHE BOOL "" FORCE)
+else()
+  set(MITK_USE_Caffe          OFF CACHE BOOL "" FORCE)
+  if (NOT APPLE)
+    set(MITK_USE_OpenBLAS       OFF CACHE BOOL "" FORCE)
+  endif()
+  set(MITK_USE_ProtoBuf       OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_ProtoBuf-CMake OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_glog           OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_gflags         OFF CACHE BOOL "" FORCE)
+  set(MITK_USE_HDF5           OFF CACHE BOOL "" FORCE)
 endif()
 
 ######################################################################
@@ -972,6 +1012,7 @@ set(CMAKE_MODULE_PATH
 # So, the variables NIFTK_BOOSTINSTALL etc.
 # should be passed in on cmake command line, or set up using ccmake.
 ######################################################################
+
 find_package(aruco)
 if(aruco_FOUND)
   configure_file(${CMAKE_SOURCE_DIR}/CMake/FindArUco.cmake ${CMAKE_BINARY_DIR}/FindArUco.cmake @ONLY)
@@ -983,6 +1024,11 @@ configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindAprilTags.cmake ${CMAKE_BINARY_DIR}/FindAprilTags.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindOpenBLAS.cmake ${CMAKE_BINARY_DIR}/FindOpenBLAS.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindProtoBuf.cmake ${CMAKE_BINARY_DIR}/FindProtoBuf.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/FindHDF5.cmake ${CMAKE_BINARY_DIR}/FindHDF5.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/Findglog.cmake ${CMAKE_BINARY_DIR}/Findglog.cmake @ONLY)
+configure_file(${CMAKE_SOURCE_DIR}/CMake/Findgflags.cmake ${CMAKE_BINARY_DIR}/Findgflags.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetGccVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetGccVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkFunctionGetVersion.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkFunctionGetVersion.cmake COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/mitkMacroEmptyExternalProject.cmake ${CMAKE_BINARY_DIR}/CMakeMacros/mitkMacroEmptyExternalProject.cmake COPYONLY)
@@ -1078,6 +1124,9 @@ if(BUILD_IGI)
 endif()
 if(BUILD_PCL)
   add_definitions(-DBUILD_PCL)
+endif()
+if(BUILD_CAFFE)
+  add_definitions(-DBUILD_CAFFE)
 endif()
 
 ######################################################################
@@ -1209,7 +1258,6 @@ if(BUILD_IGI)
   endif()
 
 endif(BUILD_IGI)
-
 
 ######################################################################
 # Find MITK. Even though MITK can be built without Qt, CTK can't.
@@ -1626,6 +1674,14 @@ if(BUILD_IGI)
   configure_file(${NiftyLink_OIGT_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt @ONLY)
   configure_file(${NiftyLink_QSLOG_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/QsLog.txt @ONLY)
 endif()
+if(BUILD_CAFFE)
+  configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/GLog.txt ${CMAKE_BINARY_DIR}/LICENSE_GLog.txt)
+  configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/GFlags.txt ${CMAKE_BINARY_DIR}/LICENSE_GFlags.txt)
+  configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/HDF5.txt ${CMAKE_BINARY_DIR}/LICENSE_HDF5.txt)
+  configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/ProtoBuf.txt ${CMAKE_BINARY_DIR}/LICENSE_ProtoBuf.txt)
+  configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/OpenBLAS.txt ${CMAKE_BINARY_DIR}/LICENSE_OpenBLAS.txt)
+  configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/Caffe.txt ${CMAKE_BINARY_DIR}/LICENSE_Caffe.txt)
+endif()
 
 #############################################################################################
 # These represent the libraries that the apps, libraries and unit tests actually link against
@@ -1664,6 +1720,14 @@ if(BUILD_IGI)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/NiftyLink.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/QsLog.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+endif()
+if(BUILD_CAFFE)
+  install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/GLog.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+  install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/GFlags.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+  install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/HDF5.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+  install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/ProtoBuf.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+  install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/OpenBLAS.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
+  install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/Caffe.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)  
 endif()
 install(PROGRAMS ${CMAKE_BINARY_DIR}/LICENSE.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
 install(PROGRAMS ${CMAKE_BINARY_DIR}/README.txt DESTINATION ${NIFTK_INSTALL_BASE_DIR} COMPONENT applications)
@@ -1779,6 +1843,39 @@ if(OPENCV_WITH_FFMPEG)
       set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
     endif()
   endif()
+endif()
+
+######################################################################
+# Caffe packaging hacks.
+######################################################################
+if(BUILD_CAFFE)
+
+  if(WIN32)
+    set(_library_sub_dir "/bin")
+  else()
+    set(_library_sub_dir "/lib")
+  endif()
+
+  get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+
+  foreach(lib gflags glog HDF5 ProtoBuf)
+    find_package(${lib} REQUIRED)
+    list(APPEND _additional_search_paths ${${lib}_DIR}${_library_sub_dir})
+  endforeach()
+
+  if (NOT APPLE)
+    find_package(OpenBLAS REQUIRED)
+    list(APPEND _additional_search_paths "${OpenBLAS_DIR}/lib") # On windows, this is also lib.
+  endif()
+
+  find_package(Caffe REQUIRED)
+  get_filename_component(_up_dir ${Caffe_CMAKE_DIR} PATH)
+  get_filename_component(_up_dir2 ${_up_dir} PATH)
+  list(APPEND _additional_search_paths ${_up_dir2}${_library_sub_dir})
+
+  set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
+
+  message("Caffe MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS=${_additional_search_paths}")
 endif()
 
 ######################################################################

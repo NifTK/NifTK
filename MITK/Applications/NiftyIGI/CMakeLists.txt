@@ -90,6 +90,13 @@ else()
   )
 endif()
 
+if (BUILD_CAFFE)
+  set(_include_plugins
+    ${_include_plugins}
+    uk.ac.ucl.cmic.caffesegmentor
+  )
+endif()
+
 NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyIGI
   INCLUDE_PLUGINS ${_include_plugins}

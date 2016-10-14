@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.caffesegmentor"
+          name="Caffe Segmentor"
+          class="niftk::CaffeSegmentorView"
+          icon="resources/niftkCaffeSegmentor.png" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.caffesegmentor.preferencepage"
+          name="Caffe Segmentor"
+          class="niftk::CaffeSegmentorPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.caffesegmentor.keywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>

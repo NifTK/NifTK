@@ -121,7 +121,7 @@ int main(int argc, char** argv)
           )
       {
         MITK_INFO << "Writing frame " << framecount << ", timestamp=" << frame.GetTimeStamp() << std::endl;
-        frame.WriteToFile(outputPrefix);
+        frame.WriteToFile(outputPrefix, outputExtension);
       }
       framecount ++;
     }
