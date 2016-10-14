@@ -338,7 +338,7 @@ CaffeFCNSegmentor::CaffeFCNSegmentor(const std::string& networkDescriptionFileNa
                                      const std::string& networkWeightsFileName
                                     )
 : m_Impl(new CaffeFCNSegmentorPrivate(networkDescriptionFileName, networkWeightsFileName,
-                                      "data", "prediction", 0)) // only uses GPU device 0 if CUDA compiled in.
+                                      "data", "prediction", -1))
 {
 }
 

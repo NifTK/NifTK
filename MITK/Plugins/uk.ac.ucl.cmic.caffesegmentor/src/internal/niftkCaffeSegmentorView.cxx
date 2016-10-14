@@ -108,11 +108,23 @@ void CaffeSegmentorView::RetrievePreferenceValues()
         .Cast<berry::IBerryPreferences>();
   assert( prefs );
 
-  std::string networkDescription = prefs->Get(CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME, "").toStdString();
+  QString networkDescription = prefs->Get(CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME, "");
   m_CaffeSegController->SetNetworkDescriptionFileName(networkDescription);
 
-  std::string networkWeights = prefs->Get(CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME, "").toStdString();
+  QString networkWeights = prefs->Get(CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME, "");
   m_CaffeSegController->SetNetworkWeightsFileName(networkWeights);
+
+  bool doTranspose = prefs->GetBool(CaffeSegmentorPreferencePage::DO_TRANSPOSE_NAME, true);
+  m_CaffeSegController->SetDoTranspose(doTranspose);
+
+  QString inputLayerName = prefs->Get(CaffeSegmentorPreferencePage::INPUT_LAYER_NAME, "data");
+  m_CaffeSegController->SetInputLayerName(inputLayerName);
+
+  QString outputBlobName = prefs->Get(CaffeSegmentorPreferencePage::OUTPUT_BLOB_NAME, "prediction");
+  m_CaffeSegController->SetOutputBlobName(outputBlobName);
+
+  int gpuDeviceNumber = prefs->GetInt(CaffeSegmentorPreferencePage::GPU_DEVICE_NAME, -1);
+  m_CaffeSegController->SetGPUDevice(gpuDeviceNumber);
 }
 
 

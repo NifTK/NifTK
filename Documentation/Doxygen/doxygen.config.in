@@ -329,9 +329,11 @@ EXAMPLE_PATTERNS      =
 IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Documentation/Images \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/it.unito.cim.intensityprofile/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.affinetransform/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.caffesegmentor/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.niftyview/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.niftyigi/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.niftymidas/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igicameracal/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igidatasources/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igioverlayeditor/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igipointreg/documentation/UserManual \
@@ -342,6 +344,9 @@ IMAGE_PATH            = @CMAKE_SOURCE_DIR@/Documentation/Images \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igitrackedimage/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igitrackedpointer/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igiundistort/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igiultrasoundoverlayeditor/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igivideooverlayeditor/documentation/UserManual \
+                        @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.igivlvideooverlayeditor/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.imagelookuptables/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.imagestatistics/documentation/UserManual \
                         @CMAKE_SOURCE_DIR@/MITK/Plugins/uk.ac.ucl.cmic.dnddisplay/documentation/UserManual \

@@ -43,10 +43,15 @@ public:
   virtual void SetupGUI(QWidget* parent) override;
 
   /// \brief Sets the Caffe network description (.prototxt) file.
-  void SetNetworkDescriptionFileName(const std::string& description);
+  void SetNetworkDescriptionFileName(const QString& description);
 
   /// \brief Sets the Caffe network weights (.caffemodel) file.
-  void SetNetworkWeightsFileName(const std::string& weights);
+  void SetNetworkWeightsFileName(const QString& weights);
+
+  void SetDoTranspose(const bool& doTranspose);
+  void SetInputLayerName(const QString& inputLayer);
+  void SetOutputBlobName(const QString& outputBlob);
+  void SetGPUDevice(const int& deviceId);
 
   /// \brief Called from GUI by IGIUPDATE trigger.
   void Update();
