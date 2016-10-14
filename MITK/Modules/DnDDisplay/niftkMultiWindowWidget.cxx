@@ -1211,10 +1211,20 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 
       for (int i = 0; i < 3; ++i)
       {
-        worldBottomLeftBackCorner[i] -= 0.5 * (
-              permutedSpacing[0] * permutedMatrix[i][0]
-            + permutedSpacing[1] * permutedMatrix[i][1]
-            + permutedSpacing[2] * permutedMatrix[i][2]);
+        if (m_UpDirections[i] > 0)
+        {
+          worldBottomLeftBackCorner[i] -= 0.5 * (
+                permutedSpacing[0] * permutedMatrix[i][0]
+              + permutedSpacing[1] * permutedMatrix[i][1]
+              + permutedSpacing[2] * permutedMatrix[i][2]);
+        }
+        else
+        {
+          worldBottomLeftBackCorner[i] -= (permutedBoundingBox[i] - 0.5) * (
+                permutedSpacing[0] * permutedMatrix[i][0]
+              + permutedSpacing[1] * permutedMatrix[i][1]
+              + permutedSpacing[2] * permutedMatrix[i][2]);
+        }
       }
     }
     else if (permutedAxes[0] == 0 && permutedAxes[1] == 1 && permutedAxes[2] == 2) // Axial
