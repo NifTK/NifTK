@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkCaffeSegmentorPreferencePage.h"
-
+#include "niftkCaffeSegmentorView.h"
 #include <QFormLayout>
 #include <QCheckBox>
 #include <QLineEdit>
@@ -28,7 +28,6 @@
 namespace niftk
 {
 
-const QString CaffeSegmentorPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_caffesegmentor");
 const QString CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME("network description");
 const QString CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME("network weights");
 const QString CaffeSegmentorPreferencePage::DO_TRANSPOSE_NAME("do transpose");
@@ -79,7 +78,7 @@ void CaffeSegmentorPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = true;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  m_CaffeSegmentorPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  m_CaffeSegmentorPreferencesNode = prefService->GetSystemPreferences()->Node(niftk::CaffeSegmentorView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
 
