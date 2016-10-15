@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "PointRegViewPreferencePage.h"
+#include "PointRegView.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -25,7 +26,6 @@
 #include <berryPlatform.h>
 #include <niftkPointBasedRegistration.h>
 
-const QString PointRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igipointreg");
 const QString PointRegViewPreferencePage::USE_ICP_INITIALISATION("use ICP initialisation");
 const QString PointRegViewPreferencePage::USE_POINT_ID_FOR_MATCHING("use point ID for matching");
 
@@ -68,8 +68,7 @@ void PointRegViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = true;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
-  m_PointRegViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  m_PointRegViewPreferencesNode = prefService->GetSystemPreferences()->Node(PointRegView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;

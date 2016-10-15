@@ -41,7 +41,8 @@ public:
   explicit XnatBrowserView();
   virtual ~XnatBrowserView();
 
-  /// \brief Each view for a plugin has its own globally unique ID.
+  /// \brief Each View for a plugin has its own globally unique ID, this one is
+  /// "uk.ac.ucl.cmic.xnat.browser" and the .cxx file and plugin.xml should match.
   static const QString VIEW_ID;
 
 protected:

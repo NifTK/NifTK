@@ -46,10 +46,10 @@ public:
 
   /// \brief Each View for a plugin has its own globally unique ID, this one is
   /// "uk.ac.ucl.cmic.midasgeneralsegmentor" and the .cxx file and plugin.xml should match.
-  static const std::string VIEW_ID;
+  static const QString VIEW_ID;
 
   /// \brief Returns the VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor".
-  virtual std::string GetViewID() const;
+  virtual QString GetViewID() const;
 
 protected:
 

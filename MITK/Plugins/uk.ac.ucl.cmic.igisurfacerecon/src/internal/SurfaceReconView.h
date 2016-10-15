@@ -36,19 +36,14 @@ class SurfaceReconView : public niftk::BaseView, public Ui::SurfaceReconViewWidg
 
 public:
 
+  /**
+   * \brief Each View for a plugin has its own globally unique ID, this one is
+   * "uk.ac.ucl.cmic.igisurfacerecon" and the .cxx file and plugin.xml should match.
+   */
+  static const QString VIEW_ID;
+
   SurfaceReconView();
   virtual ~SurfaceReconView();
-
-  /**
-   * \brief Static view ID = uk.ac.ucl.cmic.igisurfacerecon
-   */
-  static const char* VIEW_ID;
-
-  /**
-   * \brief Returns the view ID.
-   */
-
-  virtual std::string GetViewID() const;
 
 protected:
 

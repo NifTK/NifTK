@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "SurfaceRegViewPreferencePage.h"
+#include "SurfaceRegView.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -26,7 +27,6 @@
 #include <berryPlatform.h>
 #include <niftkICPBasedRegistration.h>
 
-const QString SurfaceRegViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igisurfacereg");
 const QString SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_ITERATIONS("maximum iterations");
 const QString SurfaceRegViewPreferencePage::MAXIMUM_NUMBER_OF_POINTS("maximum number of points");
 const QString SurfaceRegViewPreferencePage::TLS_ITERATIONS("Trimmed Least Squares iterations (zero is OFF)");
@@ -73,8 +73,7 @@ void SurfaceRegViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = true;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
-  m_SurfaceRegViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  m_SurfaceRegViewPreferencesNode = prefService->GetSystemPreferences()->Node(SurfaceRegView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;

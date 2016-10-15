@@ -55,11 +55,9 @@ public:
   ThumbnailView();
   virtual ~ThumbnailView();
 
-  /// \brief Static view ID = uk.ac.ucl.cmic.thumbnailview
-  static const std::string VIEW_ID;
-
-  /// \brief Returns the view ID.
-  virtual std::string GetViewID() const;
+  /// \brief Each View for a plugin has its own globally unique ID, this one is
+  /// "uk.ac.ucl.cmic.thumbnailview" and the .cxx file and plugin.xml should match.
+  static const QString VIEW_ID;
 
   /// \brief Called when preferences are updated.
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);

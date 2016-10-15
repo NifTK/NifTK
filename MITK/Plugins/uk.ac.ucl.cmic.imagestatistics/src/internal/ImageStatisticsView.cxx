@@ -119,7 +119,6 @@ void ImageStatisticsView::OnPreferencesChanged(const berry::IBerryPreferences*)
 void ImageStatisticsView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
   berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(VIEW_ID);
   assert( prefs );
 

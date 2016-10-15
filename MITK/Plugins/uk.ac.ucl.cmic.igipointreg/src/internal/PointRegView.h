@@ -41,19 +41,14 @@ class PointRegView : public niftk::BaseView
 
 public:
 
+  /**
+   * \brief Each View for a plugin has its own globally unique ID, this one is
+   * "uk.ac.ucl.cmic.igipointreg" and the .cxx file and plugin.xml should match.
+   */
+  static const QString VIEW_ID;
+
   PointRegView();
   virtual ~PointRegView();
-
-  /**
-   * \brief Static view ID = uk.ac.ucl.cmic.igipointreg
-   */
-  static const std::string VIEW_ID;
-
-  /**
-   * \brief Returns the view ID.
-   */
-
-  virtual std::string GetViewID() const;
 
 protected:
 

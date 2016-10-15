@@ -45,7 +45,11 @@ class PointSetConverterView : public QmitkAbstractView
 
     virtual ~PointSetConverterView();
 
-    static const std::string VIEW_ID;
+    /**
+     * \brief Each View for a plugin has its own globally unique ID, this one is
+     * "org.mitk.views.pointsetconverter" and the .cxx file and plugin.xml should match.
+     */
+    static const QString VIEW_ID;
 
   protected slots:
 

@@ -40,7 +40,7 @@
 #include <niftkFileIOUtils.h>
 #include <niftkPointUtils.h>
 
-const std::string PointerCalibView::VIEW_ID = "uk.ac.ucl.cmic.igipointercalib";
+const QString PointerCalibView::VIEW_ID = "uk.ac.ucl.cmic.igipointercalib";
 
 //-----------------------------------------------------------------------------
 PointerCalibView::PointerCalibView()
@@ -89,13 +89,6 @@ PointerCalibView::~PointerCalibView()
   {
     delete m_Controls;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-std::string PointerCalibView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 

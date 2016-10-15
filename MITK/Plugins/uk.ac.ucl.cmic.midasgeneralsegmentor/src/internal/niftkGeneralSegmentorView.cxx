@@ -21,7 +21,7 @@
 namespace niftk
 {
 
-const std::string GeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
+const QString GeneralSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasgeneralsegmentor";
 
 
 //-----------------------------------------------------------------------------
@@ -57,12 +57,12 @@ BaseSegmentorController* GeneralSegmentorView::CreateSegmentorController()
 //-----------------------------------------------------------------------------
 QString GeneralSegmentorView::GetPreferencesNodeName()
 {
-  return GeneralSegmentorPreferencePage::PREFERENCES_NODE_NAME;
+  return this->GetViewID();
 }
 
 
 //-----------------------------------------------------------------------------
-std::string GeneralSegmentorView::GetViewID() const
+QString GeneralSegmentorView::GetViewID() const
 {
   return VIEW_ID;
 }

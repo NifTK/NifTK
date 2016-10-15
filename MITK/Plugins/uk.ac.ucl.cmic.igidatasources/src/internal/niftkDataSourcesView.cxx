@@ -24,7 +24,7 @@
 namespace niftk
 {
 
-const std::string DataSourcesView::VIEW_ID = "uk.ac.ucl.cmic.igidatasources";
+const QString DataSourcesView::VIEW_ID = "uk.ac.ucl.cmic.igidatasources";
 
 //-----------------------------------------------------------------------------
 DataSourcesView::DataSourcesView()
@@ -83,13 +83,6 @@ void DataSourcesView::OnUpdateShouldRestart(const ctkEvent& event)
 void DataSourcesView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
   this->RetrievePreferenceValues();
-}
-
-
-//-----------------------------------------------------------------------------
-std::string DataSourcesView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 

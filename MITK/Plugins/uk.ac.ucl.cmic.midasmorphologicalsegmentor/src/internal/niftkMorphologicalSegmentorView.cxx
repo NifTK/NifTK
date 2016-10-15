@@ -21,7 +21,7 @@
 namespace niftk
 {
 
-const std::string MorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
+const QString MorphologicalSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.midasmorphologicalsegmentor";
 
 
 //-----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ MorphologicalSegmentorView::~MorphologicalSegmentorView()
 
 
 //-----------------------------------------------------------------------------
-std::string MorphologicalSegmentorView::GetViewID() const
+QString MorphologicalSegmentorView::GetViewID() const
 {
   return VIEW_ID;
 }
@@ -69,7 +69,7 @@ void MorphologicalSegmentorView::SetFocus()
 //-----------------------------------------------------------------------------
 QString MorphologicalSegmentorView::GetPreferencesNodeName()
 {
-  return MorphologicalSegmentorPreferencePage::PREFERENCES_NODE_NAME;
+  return this->GetViewID();
 }
 
 }

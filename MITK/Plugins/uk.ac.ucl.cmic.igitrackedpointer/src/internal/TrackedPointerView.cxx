@@ -40,7 +40,7 @@
 #include <niftkCoordinateAxesData.h>
 #include <niftkFileIOUtils.h>
 
-const std::string TrackedPointerView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedpointer";
+const QString TrackedPointerView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedpointer";
 
 //-----------------------------------------------------------------------------
 TrackedPointerView::TrackedPointerView()
@@ -60,13 +60,6 @@ TrackedPointerView::~TrackedPointerView()
   {
     delete m_Controls;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-std::string TrackedPointerView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 

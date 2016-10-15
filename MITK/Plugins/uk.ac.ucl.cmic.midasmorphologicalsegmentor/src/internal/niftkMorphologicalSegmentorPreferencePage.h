@@ -34,9 +34,6 @@ class MorphologicalSegmentorPreferencePage : public QObject, public berry::IQtPr
 
 public:
 
-  /// \brief Stores the name of the preferences node.
-  static const QString PREFERENCES_NODE_NAME;
-
   MorphologicalSegmentorPreferencePage();
   MorphologicalSegmentorPreferencePage(const MorphologicalSegmentorPreferencePage& other);
   ~MorphologicalSegmentorPreferencePage();

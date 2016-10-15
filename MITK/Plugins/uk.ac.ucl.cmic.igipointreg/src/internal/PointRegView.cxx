@@ -25,7 +25,7 @@
 #include <QFileDialog>
 #include <limits>
 
-const std::string PointRegView::VIEW_ID = "uk.ac.ucl.cmic.igipointreg";
+const QString PointRegView::VIEW_ID = "uk.ac.ucl.cmic.igipointreg";
 
 //-----------------------------------------------------------------------------
 PointRegView::PointRegView()
@@ -46,13 +46,6 @@ PointRegView::~PointRegView()
   {
     delete m_Controls;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-std::string PointRegView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 

@@ -39,11 +39,6 @@ class DataSourcesViewPreferencePage : public QObject, public berry::IQtPreferenc
 
 public:
 
-  /**
-  * \brief Stores the name of the preferences node.
-  */
-  static const QString PREFERENCES_NODE_NAME;
-
   DataSourcesViewPreferencePage();
   DataSourcesViewPreferencePage(const DataSourcesViewPreferencePage& other);
   ~DataSourcesViewPreferencePage();

@@ -37,7 +37,7 @@
 #include <vtkPNGWriter.h>
 #include <vtkJPEGWriter.h>
 
-const std::string SnapshotView::VIEW_ID = "uk.ac.ucl.cmic.snapshot";
+const QString SnapshotView::VIEW_ID = "uk.ac.ucl.cmic.snapshot";
 
 SnapshotView::SnapshotView()
 : m_Controls(NULL)
@@ -47,11 +47,6 @@ SnapshotView::SnapshotView()
 
 SnapshotView::~SnapshotView()
 {
-}
-
-std::string SnapshotView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 void SnapshotView::CreateQtPartControl( QWidget *parent )

@@ -35,7 +35,7 @@
 #include <cctype>
 
 
-const char* SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
+const QString SurfaceReconView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacerecon";
 
 
 //-----------------------------------------------------------------------------
@@ -81,13 +81,6 @@ SurfaceReconView::~SurfaceReconView()
   ok = disconnect(&m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
   assert(ok);
   m_BackgroundProcessWatcher.waitForFinished();
-}
-
-
-//-----------------------------------------------------------------------------
-std::string SurfaceReconView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 
@@ -150,7 +143,7 @@ void SurfaceReconView::OnPreferencesChanged(const berry::IBerryPreferences*)
 void SurfaceReconView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(SurfaceReconViewPreferencePage::s_PrefsNodeName);
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(VIEW_ID);
   assert(prefs);
 
   m_MaxTriangulationErrorThresholdSpinBox->setValue(prefs->GetFloat(SurfaceReconViewPreferencePage::s_DefaultTriangulationErrorPrefsName, 0.1f));

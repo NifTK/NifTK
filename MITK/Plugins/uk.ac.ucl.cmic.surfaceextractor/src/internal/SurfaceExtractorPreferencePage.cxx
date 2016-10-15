@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "SurfaceExtractorPreferencePage.h"
+#include "SurfaceExtractorView.h"
 
 #include <QFormLayout>
 #include <QLabel>
@@ -67,8 +68,7 @@ SurfaceExtractorPreferencePage::SurfaceExtractorPreferencePage()
   d->initializing = false;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
-  d->preferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.SurfaceExtractor");
+  d->preferencesNode = prefService->GetSystemPreferences()->Node(SurfaceExtractorView::VIEW_ID);
 }
 
 SurfaceExtractorPreferencePage::~SurfaceExtractorPreferencePage()

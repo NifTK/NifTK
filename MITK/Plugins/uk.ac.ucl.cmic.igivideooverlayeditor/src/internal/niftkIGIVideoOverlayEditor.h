@@ -39,7 +39,7 @@ class IGIVideoOverlayEditor
 
 public:
 
-  static const char* EDITOR_ID;
+  static const QString EDITOR_ID;
 
   berryObjectMacro(IGIVideoOverlayEditor)
 

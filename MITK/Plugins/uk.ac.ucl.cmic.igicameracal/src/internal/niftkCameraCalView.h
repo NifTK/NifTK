@@ -41,19 +41,14 @@ class CameraCalView : public BaseView
 
 public:
 
+  /**
+   * \brief Each View for a plugin has its own globally unique ID, this one is
+   * "uk.ac.ucl.cmic.igicameracal" and the .cxx file and plugin.xml should match.
+   */
+  static const QString VIEW_ID;
+
   CameraCalView();
   virtual ~CameraCalView();
-
-  /**
-   * \brief Static view ID = uk.ac.ucl.cmic.igicameracal
-   */
-  static const std::string VIEW_ID;
-
-  /**
-   * \brief Returns the view ID.
-   */
-
-  virtual std::string GetViewID() const;
 
 protected:
 

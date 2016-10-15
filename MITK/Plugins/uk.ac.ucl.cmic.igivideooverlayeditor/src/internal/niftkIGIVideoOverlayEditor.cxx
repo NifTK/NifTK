@@ -45,7 +45,7 @@
 namespace niftk
 {
 
-const char* IGIVideoOverlayEditor::EDITOR_ID = "org.mitk.editors.igivideooverlayeditor";
+const QString IGIVideoOverlayEditor::EDITOR_ID = "org.mitk.editors.igivideooverlayeditor";
 
 /**
  * \class IGIVideoOverlayEditorPrivate

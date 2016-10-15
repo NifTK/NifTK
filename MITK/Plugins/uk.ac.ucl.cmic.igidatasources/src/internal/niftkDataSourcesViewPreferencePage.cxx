@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkDataSourcesViewPreferencePage.h"
+#include "niftkDataSourcesView.h"
 #include <niftkIGIDataSourceManager.h>
 
 #include <QFormLayout>
@@ -27,8 +28,6 @@
 
 namespace niftk
 {
-
-const QString DataSourcesViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igidatasources");
 
 //-----------------------------------------------------------------------------
 DataSourcesViewPreferencePage::DataSourcesViewPreferencePage()
@@ -69,7 +68,7 @@ void DataSourcesViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = true;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  m_DataSourcesViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  m_DataSourcesViewPreferencesNode = prefService->GetSystemPreferences()->Node(niftk::DataSourcesView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;

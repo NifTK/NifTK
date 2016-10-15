@@ -44,7 +44,6 @@ class CameraCalViewPreferencePage : public QObject, public berry::IQtPreferenceP
 public:
 
   /** Stores the name of the node, not the value of the parameters. */
-  static const QString PREFERENCES_NODE_NAME;
   static const QString DO_ITERATIVE_NODE_NAME;
   static const QString DO_3D_OPTIMISATION_NODE_NAME;
   static const QString MINIMUM_VIEWS_NODE_NAME;

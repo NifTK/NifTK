@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "ImageStatisticsViewPreferencesPage.h"
+#include "ImageStatisticsView.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -69,8 +70,7 @@ void ImageStatisticsViewPreferencesPage::Init(berry::IWorkbench::Pointer )
 void ImageStatisticsViewPreferencesPage::CreateQtControl(QWidget* parent)
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
-  m_ImageStatisticsPreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.imagestatistics");
+  m_ImageStatisticsPreferencesNode = prefService->GetSystemPreferences()->Node(ImageStatisticsView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
 

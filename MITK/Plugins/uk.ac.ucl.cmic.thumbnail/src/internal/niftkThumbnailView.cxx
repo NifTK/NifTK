@@ -31,8 +31,7 @@
 namespace niftk
 {
 
-const std::string ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
-
+const QString ThumbnailView::VIEW_ID = "uk.ac.ucl.cmic.thumbnail";
 
 class EditorLifeCycleListener : public berry::IPartListener
 {
@@ -144,13 +143,6 @@ ThumbnailView::~ThumbnailView()
     m_ThumbnailWindow->Deactivated();
     delete m_ThumbnailWindow;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-std::string ThumbnailView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 

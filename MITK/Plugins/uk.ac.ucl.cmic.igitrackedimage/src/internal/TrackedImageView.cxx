@@ -40,7 +40,7 @@
 
 #include "TrackedImageViewActivator.h"
 
-const std::string TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
+const QString TrackedImageView::VIEW_ID = "uk.ac.ucl.cmic.igitrackedimage";
 
 //-----------------------------------------------------------------------------
 TrackedImageView::TrackedImageView()
@@ -59,13 +59,6 @@ TrackedImageView::~TrackedImageView()
   {
     delete m_Controls;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-std::string TrackedImageView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 
