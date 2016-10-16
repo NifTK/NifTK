@@ -21,6 +21,8 @@
 
 #include <mitkDataStorage.h>
 #include <QWidget>
+#include <QTimer>
+#include <QTime>
 
 namespace niftk
 {
@@ -135,6 +137,12 @@ private slots:
 private:
   
   IGIDataSourceManager* m_Manager;
+
+  /**
+  * \brief A timer if a fixed reording period specified.
+  */
+  QTimer*               m_FixedRecordTimer;
+  QTime                 m_FixedRecordTime;
 
 }; // end class;
 

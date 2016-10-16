@@ -568,21 +568,6 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
   QDir directory(directoryName);
   QDir().mkpath(directoryName);
 
-  // If a fixed recording time has been set then start a timer
-  if ( m_FixedRecordTime.hour()   ||
-       m_FixedRecordTime.minute() ||
-       m_FixedRecordTime.second() ||
-       m_FixedRecordTime.msec() )
-  {
-    int msecFixedRecordTime =
-      m_FixedRecordTime.msec() +
-      1000*( m_FixedRecordTime.second() +
-      60*( m_FixedRecordTime.minute() +
-      60*m_FixedRecordTime.hour() ) );
-
-    m_FixedRecordTimer->start( msecFixedRecordTime );
-  }
-
   for (int i = 0; i < m_Sources.size(); i++)
   {
     m_Sources[i]->SetRecordingLocation(directory.absolutePath());
