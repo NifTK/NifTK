@@ -36,7 +36,6 @@
 #include <QString>
 #include <QObject>
 #include <QMutex>
-#include <QTime>
 
 namespace niftk
 {

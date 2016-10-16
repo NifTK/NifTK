@@ -76,9 +76,8 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
   m_GuiUpdateTimer = new QTimer(this);
   m_GuiUpdateTimer->setInterval(1000/(int)(DEFAULT_FRAME_RATE));
 
-  bool okGuiUpdateTime = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()),
-                                          this, SLOT(OnUpdateGui()));
-  assert(okGuiUpdateTime);
+  bool ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
+  assert(ok);
 }
 
 
