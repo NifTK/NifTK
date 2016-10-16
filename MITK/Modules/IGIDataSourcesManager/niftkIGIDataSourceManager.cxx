@@ -60,8 +60,6 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
 , m_PlaybackSliderFactor(0)
 , m_IsGrabbingScreen(false)
 , m_ScreenGrabDir("")
-, m_FixedRecordTime(0, 0, 0, 0)
-, m_FixedRecordTimer(nullptr)
 {
   if (m_DataStorage.IsNull())
   {
@@ -74,11 +72,6 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
   m_TimeStampGenerator = igtl::TimeStamp::New();
   m_TimeStampGenerator->GetTime();
   m_CurrentTime = m_TimeStampGenerator->GetTimeStampInNanoseconds();
-
-  m_FixedRecordTimer = new QTimer(this);
-  bool okFixedRecordTime = QObject::connect( m_FixedRecordTimer, SIGNAL( timeout() ),
-                                             this, SLOT( OnStopRecording() ) );
-  assert(okFixedRecordTime);
 
   m_GuiUpdateTimer = new QTimer(this);
   m_GuiUpdateTimer->setInterval(1000/(int)(DEFAULT_FRAME_RATE));
@@ -553,13 +546,6 @@ void IGIDataSourceManager::RemoveAllSources()
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceManager::SetFixedRecordTime(QTime fixedRecordTime)
-{
-  m_FixedRecordTime = fixedRecordTime;
-}
-
-
-//-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartRecording(QString absolutePath)
 {
   QMutexLocker locker(&m_Lock);
@@ -581,14 +567,6 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
   emit RecordingStarted(absolutePath);
 
   this->WriteDescriptorFile(absolutePath);
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIDataSourceManager::OnStopRecording()
-{
-  m_FixedRecordTimer->stop();
-  m_FixedRecordTimer->setInterval( 0 );
 }
 
 
