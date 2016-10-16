@@ -49,7 +49,7 @@ const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIAB
 IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent)
 : QObject(parent)
 , m_DataStorage(dataStorage)
-, m_GuiUpdateTimer(NULL)
+, m_GuiUpdateTimer(nullptr)
 , m_FrameRate(DEFAULT_FRAME_RATE)
 , m_IsPlayingBack(false)
 , m_IsPlayingBackAutomatically(false)
@@ -60,6 +60,8 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
 , m_PlaybackSliderFactor(0)
 , m_IsGrabbingScreen(false)
 , m_ScreenGrabDir("")
+, m_FixedRecordTime(0, 0, 0, 0)
+, m_FixedRecordTimer(nullptr)
 {
   if (m_DataStorage.IsNull())
   {
@@ -73,11 +75,17 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
   m_TimeStampGenerator->GetTime();
   m_CurrentTime = m_TimeStampGenerator->GetTimeStampInNanoseconds();
 
+  m_FixedRecordTimer = new QTimer(this);
+  bool okFixedRecordTime = QObject::connect( m_FixedRecordTimer, SIGNAL( timeout() ),
+                                             this, SLOT( OnStopRecording() ) );
+  assert(okFixedRecordTime);
+
   m_GuiUpdateTimer = new QTimer(this);
   m_GuiUpdateTimer->setInterval(1000/(int)(DEFAULT_FRAME_RATE));
 
-  bool ok = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateGui()));
-  assert(ok);
+  bool okGuiUpdateTime = QObject::connect(m_GuiUpdateTimer, SIGNAL(timeout()),
+                                          this, SLOT(OnUpdateGui()));
+  assert(okGuiUpdateTime);
 }
 
 
@@ -545,6 +553,13 @@ void IGIDataSourceManager::RemoveAllSources()
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourceManager::SetFixedRecordTime(QTime fixedRecordTime)
+{
+  m_FixedRecordTime = fixedRecordTime;
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartRecording(QString absolutePath)
 {
   QMutexLocker locker(&m_Lock);
@@ -552,6 +567,21 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
   QString directoryName = absolutePath;
   QDir directory(directoryName);
   QDir().mkpath(directoryName);
+
+  // If a fixed recording time has been set then start a timer
+  if ( m_FixedRecordTime.hour()   ||
+       m_FixedRecordTime.minute() ||
+       m_FixedRecordTime.second() ||
+       m_FixedRecordTime.msec() )
+  {
+    int msecFixedRecordTime =
+      m_FixedRecordTime.msec() +
+      1000*( m_FixedRecordTime.second() +
+      60*( m_FixedRecordTime.minute() +
+      60*m_FixedRecordTime.hour() ) );
+
+    m_FixedRecordTimer->start( msecFixedRecordTime );
+  }
 
   for (int i = 0; i < m_Sources.size(); i++)
   {
@@ -566,6 +596,14 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
   emit RecordingStarted(absolutePath);
 
   this->WriteDescriptorFile(absolutePath);
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManager::OnStopRecording()
+{
+  m_FixedRecordTimer->stop();
+  m_FixedRecordTimer->setInterval( 0 );
 }
 
 

@@ -36,6 +36,7 @@
 #include <QString>
 #include <QObject>
 #include <QMutex>
+#include <QTime>
 
 namespace niftk
 {
@@ -164,6 +165,11 @@ public:
   * is that the timer should be off.
   */
   void RemoveAllSources();
+
+  /**
+  * \brief Set the fixed recording time interval.
+  */
+  void SetFixedRecordTime(QTime fixedRecordTime);
 
   /**
   * \brief Starts a new recording session, writing to the folder given by the absolutePath.
@@ -314,6 +320,11 @@ private slots:
   */
   void OnUpdateGui();
 
+  /**
+  * \brief Triggered by QTimer, stoprs the recording process.
+  */
+  void OnStopRecording();
+
 private:
 
   /**
@@ -381,6 +392,9 @@ private:
 
   bool                                                             m_IsGrabbingScreen;
   QString                                                          m_ScreenGrabDir;
+
+  QTime                                                            m_FixedRecordTime;
+  QTimer                                                          *m_FixedRecordTimer;
 
 }; // end class;
 

@@ -270,6 +270,7 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
 
   try
   {
+    m_Manager->SetFixedRecordTime(m_FixedRecordTimeInterval->time());
     m_Manager->StartRecording(directory.absolutePath());
   }
   catch (mitk::Exception& e)
