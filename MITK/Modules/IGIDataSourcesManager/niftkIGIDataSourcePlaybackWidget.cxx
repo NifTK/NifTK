@@ -90,7 +90,7 @@ IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Poin
   assert(ok);
 
   m_UpdateRecordTimeDisplayTimer = new QTimer(this);
-  m_UpdateRecordTimeDisplayTimer->setInterval(1000);
+  m_UpdateRecordTimeDisplayTimer->setInterval(173);
   ok = QObject::connect(m_UpdateRecordTimeDisplayTimer, SIGNAL( timeout() ),
                         this, SLOT( OnUpdateRecordTimeDisplay() ) );
   assert(ok);
@@ -318,6 +318,7 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
     m_CountingDownRecordTime = false;
   }
   m_RecordTime.start();
+  m_FixedRecordTimeInterval->setEnabled(false);
   m_UpdateRecordTimeDisplayTimer->start();
 
   try
@@ -373,6 +374,8 @@ void IGIDataSourcePlaybackWidget::OnStop()
 
   m_FixedRecordTimer->stop();
   m_FixedRecordTimeInterval->setTime(m_FixedRecordTime);
+  m_FixedRecordTimeInterval->setEnabled(true);
+
   m_UpdateRecordTimeDisplayTimer->stop();
 }
 
