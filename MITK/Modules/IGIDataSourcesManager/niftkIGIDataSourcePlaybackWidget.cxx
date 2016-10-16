@@ -129,6 +129,12 @@ IGIDataSourcePlaybackWidget::~IGIDataSourcePlaybackWidget()
   ok = QObject::disconnect(m_GrabScreenCheckbox, SIGNAL(clicked(bool)),
                         this, SLOT(OnGrabScreen(bool)));
   assert(ok);
+
+  m_FixedRecordTimer->stop();
+  ok = QObject::disconnect(m_FixedRecordTimer, SIGNAL(timeout()),
+                           this, SLOT(OnStop()) );
+  assert(ok);
+
   // m_Manager belongs to the calling widget
 }
 
