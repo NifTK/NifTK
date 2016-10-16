@@ -146,12 +146,10 @@ private:
   /**
   * \brief A timer if a fixed reording period specified.
   */
-  QTimer*               m_FixedRecordTimer;
-  QTime                 m_FixedRecordTime;
-  int                   m_MSecFixedRecordTime;
-  QTimer*               m_UpdateRecordTimeDisplayTimer;
-  QTime                 m_RecordTime;
-  bool                  m_CountingDownRecordTime;
+  QTimer*               m_FixedRecordTimer;             // Timer that triggers the recording to stop.
+  QTime                 m_FixedRecordTime;              // To hold the amount of time the user specified.
+  int                   m_MSecFixedRecordTime;          // Same time in milliseconds.
+  QTime                 m_RecordTime;                   // Total amount of time of current recording.
 
 }; // end class;
 
