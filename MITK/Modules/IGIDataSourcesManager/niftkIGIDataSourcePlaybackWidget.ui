@@ -54,7 +54,7 @@
      <item>
       <widget class="QTimeEdit" name="m_FixedRecordTimeInterval">
        <property name="toolTip">
-        <string>Set fixed record time in hours:mins:secs:millisecs. Ignored if all zero.</string>
+        <string>Set fixed record time in hours:mins:secs:millisecs or monitor the elapsed time.</string>
        </property>
        <property name="displayFormat">
         <string>HH:mm:ss:zzz</string>
