@@ -31,6 +31,9 @@ IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Poin
     IGIDataSourceManager* manager,
     QWidget *parent)
 : m_FixedRecordTime(0,0,0,0)
+, m_RecordTime(0,0,0,0)
+, m_CountingDownRecordTime(false)
+, m_MSecFixedRecordTime(0)
 {
   m_Manager = manager;
   Ui_IGIDataSourcePlaybackWidget::setupUi(parent);
@@ -85,6 +88,12 @@ IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Poin
   ok = QObject::connect( m_FixedRecordTimer, SIGNAL( timeout() ),
                          this, SLOT( OnStop() ) );
   assert(ok);
+
+  m_UpdateRecordTimeDisplayTimer = new QTimer(this);
+  m_UpdateRecordTimeDisplayTimer->setInterval(1000);
+  ok = QObject::connect(m_UpdateRecordTimeDisplayTimer, SIGNAL( timeout() ),
+                        this, SLOT( OnUpdateRecordTimeDisplay() ) );
+  assert(ok);
 }
 
 
@@ -133,6 +142,11 @@ IGIDataSourcePlaybackWidget::~IGIDataSourcePlaybackWidget()
   m_FixedRecordTimer->stop();
   ok = QObject::disconnect(m_FixedRecordTimer, SIGNAL(timeout()),
                            this, SLOT(OnStop()) );
+  assert(ok);
+
+  m_UpdateRecordTimeDisplayTimer->stop();
+  ok = QObject::disconnect(m_UpdateRecordTimeDisplayTimer, SIGNAL(timeout()),
+                           this, SLOT(OnUpdateRecordTimeDisplay()) );
   assert(ok);
 
   // m_Manager belongs to the calling widget
@@ -281,7 +295,7 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
   m_DirectoryChooser->setEnabled(false);
 
   // If a fixed recording time has been set then initiate the timer
-  m_FixedRecordTime = m_FixedRecordTimeInterval->time();
+  m_RecordTime.start();
 
   // If a fixed recording time has been set then start a timer
   if ( m_FixedRecordTime.hour()   ||
@@ -289,15 +303,21 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
        m_FixedRecordTime.second() ||
        m_FixedRecordTime.msec() )
   {
-    int msecFixedRecordTime =
+    int m_MSecFixedRecordTime =
       m_FixedRecordTime.msec() +
       1000*( m_FixedRecordTime.second() +
       60*( m_FixedRecordTime.minute() +
       60*m_FixedRecordTime.hour() ) );
 
-    m_FixedRecordTimer->start( msecFixedRecordTime );
-  }
+    m_FixedRecordTimer->start( m_MSecFixedRecordTime );
 
+    m_CountingDownRecordTime = true;
+  }
+  else
+  {
+    m_CountingDownRecordTime = false;
+  }
+  m_UpdateRecordTimeDisplayTimer->start();
 
   try
   {
@@ -313,6 +333,23 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
   }
 }
 
+
+//-----------------------------------------------------------------------------
+void IGIDataSourcePlaybackWidget::OnUpdateRecordTimeDisplay()
+{
+  QTime t( 0, 0, 0, 0 );
+
+  if ( m_CountingDownRecordTime )
+  {
+    t.addMSecs( m_MSecFixedRecordTime - m_RecordTime.elapsed() );
+  }
+  else
+  {
+    t.addMSecs( m_RecordTime.elapsed() );
+  }
+
+  m_FixedRecordTimeInterval->setTime( t );
+}
 
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnStop()
@@ -335,6 +372,7 @@ void IGIDataSourcePlaybackWidget::OnStop()
 
   m_FixedRecordTimer->stop();
   m_FixedRecordTimeInterval->setTime(m_FixedRecordTime);
+  m_UpdateRecordTimeDisplayTimer->stop();
 }
 
 //-----------------------------------------------------------------------------

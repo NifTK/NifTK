@@ -134,6 +134,11 @@ private slots:
   */
   void OnGrabScreen(bool isChecked);
 
+  /**
+  * \brief Update the recording time widget.
+  */
+  void OnUpdateRecordTimeDisplay();
+
 private:
   
   IGIDataSourceManager* m_Manager;
@@ -143,6 +148,10 @@ private:
   */
   QTimer*               m_FixedRecordTimer;
   QTime                 m_FixedRecordTime;
+  int                   m_MSecFixedRecordTime;
+  QTimer*               m_UpdateRecordTimeDisplayTimer;
+  QTime                 m_RecordTime;
+  bool                  m_CountingDownRecordTime;
 
 }; // end class;
 
