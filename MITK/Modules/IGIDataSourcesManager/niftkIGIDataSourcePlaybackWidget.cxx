@@ -295,7 +295,7 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
   m_DirectoryChooser->setEnabled(false);
 
   // If a fixed recording time has been set then initiate the timer
-  m_RecordTime.start();
+  m_FixedRecordTime = m_FixedRecordTimeInterval->time();
 
   // If a fixed recording time has been set then start a timer
   if ( m_FixedRecordTime.hour()   ||
@@ -317,6 +317,7 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
   {
     m_CountingDownRecordTime = false;
   }
+  m_RecordTime.start();
   m_UpdateRecordTimeDisplayTimer->start();
 
   try
@@ -341,11 +342,11 @@ void IGIDataSourcePlaybackWidget::OnUpdateRecordTimeDisplay()
 
   if ( m_CountingDownRecordTime )
   {
-    t.addMSecs( m_MSecFixedRecordTime - m_RecordTime.elapsed() );
+    t = t.addMSecs( m_MSecFixedRecordTime - m_RecordTime.elapsed() );
   }
   else
   {
-    t.addMSecs( m_RecordTime.elapsed() );
+    t = t.addMSecs( m_RecordTime.elapsed() );
   }
 
   m_FixedRecordTimeInterval->setTime( t );
