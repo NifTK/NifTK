@@ -239,10 +239,10 @@ bool CheckTriangulationErrors (mitk::ProjectPointsOnStereoVideo::Pointer Project
 }
 
 //-----------------------------------------------------------------------------
-bool CheckTriangulateGoldStandardPoints (mitk::ProjectPointsOnStereoVideo::Pointer Projector, mitk::VideoTrackerMatching::Pointer matcher)
+bool CheckTriangulateGoldStandardPoints (mitk::ProjectPointsOnStereoVideo::Pointer Projector, mitk::VideoTrackerMatching::Pointer matcher, const std::string& outputDir)
 {
 
-  std::string tempFile = niftk::CreateUniqueTempFileName ( "triangulationTest" , ".mps" );
+  std::string tempFile = outputDir + niftk::GetFileSeparator() + "triangulationTest.mps";
   Projector->SetTriangulatedPointsOutName(tempFile);
   Projector->TriangulateGoldStandardPoints (matcher);
 
@@ -435,7 +435,7 @@ int mitkProjectPointsOnStereoVideoTest(int argc, char * argv[])
   MITK_TEST_CONDITION(CheckProjectionErrors(Projector), "Testing projection Errors");
   MITK_TEST_CONDITION(CheckReProjectionErrors(Projector), "Testing re-projection Errors");
   MITK_TEST_CONDITION(CheckTriangulationErrors(Projector), "Testing triangulation Errors");
-  MITK_TEST_CONDITION(CheckTriangulateGoldStandardPoints(Projector, matcher), "Testing whether triangulation of gold standard points works");
+  MITK_TEST_CONDITION(CheckTriangulateGoldStandardPoints(Projector, matcher, argv[3]), "Testing whether triangulation of gold standard points works");
   //now we're going to repeat this test using more grid points, and a model to world transform
   Projector->ClearWorldPoints();
   Projector->SetModelToWorldTransform(modelToWorldTransform);

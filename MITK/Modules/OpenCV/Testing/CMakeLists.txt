@@ -42,7 +42,7 @@ mitkAddCustomModuleTest(UndistortionLoop-Test mitkUndistortionLoopTest --calibra
 
 mitkAddCustomModuleTest(IdealCalibration-Test mitkIdealStereoCalibrationTest --calibration ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration --tracking ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration/TrackerMatrices0 --gridToWorldTransform ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration/calib.left.gridtoworld.txt --maxTrackingMatricesToUse 6)
 
-mitkAddCustomModuleTest(Stereo-Point-Projection mitkProjectPointsOnStereoVideoTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration)
+mitkAddCustomModuleTest(Stereo-Point-Projection mitkProjectPointsOnStereoVideoTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration ${TEMP})
 
 #Trac 2669 turning off the following tests as they are not very good unit tests, they take a long time to run and open up additional windows.
 if(OPENCV_WITH_FFMPEG)

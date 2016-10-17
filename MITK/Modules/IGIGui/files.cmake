@@ -23,7 +23,6 @@ set(CPP_FILES
   Common/QmitkCalibratedModelRenderingPipeline.cxx
   Common/QmitkVideoTestClient.cxx
   Common/QmitkVideoPreviewWidget.cxx
-  DataSources/TrackerControlsWidget.cxx
 )
 
 set(MOC_H_FILES
@@ -36,7 +35,6 @@ set(MOC_H_FILES
   Common/QmitkCalibratedModelRenderingPipeline.h
   Common/QmitkVideoTestClient.h
   Common/QmitkVideoPreviewWidget.h
-  DataSources/TrackerControlsWidget.h
 )
 
 set(UI_FILES
@@ -45,7 +43,6 @@ set(UI_FILES
   Common/QmitkRMSErrorWidget.ui
   Common/QmitkImageAndTransformSenderWidget.ui
   Common/QmitkMatrixWidget.ui
-  DataSources/TrackerControlsWidget.ui
 )
 
 set(QRC_FILES
