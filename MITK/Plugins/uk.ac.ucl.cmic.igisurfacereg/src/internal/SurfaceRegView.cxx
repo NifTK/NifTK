@@ -35,7 +35,7 @@
 #include "SurfaceRegViewPreferencePage.h"
 
 
-const std::string SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
+const QString SurfaceRegView::VIEW_ID = "uk.ac.ucl.cmic.igisurfacereg";
 
 //-----------------------------------------------------------------------------
 SurfaceRegView::SurfaceRegView()
@@ -66,13 +66,6 @@ SurfaceRegView::~SurfaceRegView()
   {
     delete m_Controls;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-std::string SurfaceRegView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 

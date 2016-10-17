@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "UndistortViewPreferencesPage.h"
+#include "UndistortView.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -27,7 +28,6 @@
 
 
 //-----------------------------------------------------------------------------
-QString UndistortViewPreferencesPage::s_PrefsNodeName                         = "/uk.ac.ucl.cmic.igiundistort";
 QString UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName   = "default calib file path";
 
 
@@ -79,7 +79,7 @@ void UndistortViewPreferencesPage::CreateQtControl(QWidget* parent)
   connect(m_DefaultFilePathBrowseButton, SIGNAL(clicked()), this, SLOT(OnDefaultPathBrowseButtonClicked()));
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  m_UndistortPreferencesNode = prefService->GetSystemPreferences()->Node(s_PrefsNodeName);
+  m_UndistortPreferencesNode = prefService->GetSystemPreferences()->Node(UndistortView::VIEW_ID);
 
   // read prefs and stuff it into controls
   Update();

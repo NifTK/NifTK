@@ -37,11 +37,6 @@ class PointerCalibViewPreferencePage : public QObject, public berry::IQtPreferen
 
 public:
 
-  /**
-   * \brief Stores the name of the preferences node.
-   */
-  static const std::string PREFERENCES_NODE_NAME;
-
   PointerCalibViewPreferencePage();
   PointerCalibViewPreferencePage(const PointerCalibViewPreferencePage& other);
   ~PointerCalibViewPreferencePage();

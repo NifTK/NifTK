@@ -37,19 +37,14 @@ class TrackedPointerView : public niftk::BaseView
 
 public:
 
+  /**
+   * \brief Each View for a plugin has its own globally unique ID, this one is
+   * "uk.ac.ucl.cmic.igitrackedpointer" and the .cxx file and plugin.xml should match.
+   */
+  static const QString VIEW_ID;
+
   TrackedPointerView();
   virtual ~TrackedPointerView();
-
-  /**
-   * \brief Static view ID = uk.ac.ucl.cmic.igitrackedpointer
-   */
-  static const std::string VIEW_ID;
-
-  /**
-   * \brief Returns the view ID.
-   */
-
-  virtual std::string GetViewID() const;
 
 protected:
 

@@ -36,14 +36,10 @@ public:
   virtual ~RMSErrorView();
 
   /**
-   * \brief Static view ID = uk.ac.ucl.cmic.igirmserror
+   * \brief Each View for a plugin has its own globally unique ID, this one is
+   * "uk.ac.ucl.cmic.igirmserror" and the .cxx file and plugin.xml should match.
    */
-  static const std::string VIEW_ID;
-
-  /**
-   * \brief Returns the view ID.
-   */
-  virtual std::string GetViewID() const;
+  static const QString VIEW_ID;
 
 protected:
 

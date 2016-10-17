@@ -42,11 +42,14 @@ class SurfaceExtractorView : public niftk::BaseView
 
 public:
 
+  /**
+   * \brief Each View for a plugin has its own globally unique ID, this one is
+   * "uk.ac.ucl.cmic.surfaceextractor" and the .cxx file and plugin.xml should match.
+   */
+  static const QString VIEW_ID;
+
   explicit SurfaceExtractorView();
   virtual ~SurfaceExtractorView();
-
-  /// \brief Each view for a plugin has its own globally unique ID.
-  static const std::string VIEW_ID;
 
 protected:
 

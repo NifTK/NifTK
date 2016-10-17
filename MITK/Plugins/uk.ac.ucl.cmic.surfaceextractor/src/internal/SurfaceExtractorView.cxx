@@ -198,7 +198,7 @@ SurfaceExtractorViewPrivate::SurfaceExtractorViewPrivate()
   this->has3dOr4dSurfaceImage = hasSurfaceImage;
 }
 
-const std::string SurfaceExtractorView::VIEW_ID = "uk.ac.ucl.cmic.SurfaceExtractor";
+const QString SurfaceExtractorView::VIEW_ID = "uk.ac.ucl.cmic.surfaceextractor";
 
 SurfaceExtractorView::SurfaceExtractorView()
 : m_Controls(0)

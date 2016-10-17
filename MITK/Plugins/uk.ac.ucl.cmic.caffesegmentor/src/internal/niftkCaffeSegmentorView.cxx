@@ -31,7 +31,7 @@
 namespace niftk
 {
 
-const std::string CaffeSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.caffesegmentor";
+const QString CaffeSegmentorView::VIEW_ID = "uk.ac.ucl.cmic.caffesegmentor";
 
 //-----------------------------------------------------------------------------
 CaffeSegmentorView::CaffeSegmentorView()
@@ -51,13 +51,6 @@ CaffeSegmentorView::CaffeSegmentorView(const CaffeSegmentorView& other)
 //-----------------------------------------------------------------------------
 CaffeSegmentorView::~CaffeSegmentorView()
 {
-}
-
-
-//-----------------------------------------------------------------------------
-std::string CaffeSegmentorView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 
@@ -104,7 +97,7 @@ void CaffeSegmentorView::RetrievePreferenceValues()
   assert( prefService );
 
   berry::IBerryPreferences::Pointer prefs
-      = (prefService->GetSystemPreferences()->Node(CaffeSegmentorPreferencePage::PREFERENCES_NODE_NAME))
+      = (prefService->GetSystemPreferences()->Node(VIEW_ID))
         .Cast<berry::IBerryPreferences>();
   assert( prefs );
 

@@ -27,7 +27,7 @@
 //mitk image
 #include <mitkImage.h>
 
-const std::string PointSetConverterView::VIEW_ID = "org.mitk.views.pointsetconverter";
+const QString PointSetConverterView::VIEW_ID = "org.mitk.views.pointsetconverter";
 
 
 PointSetConverterView::PointSetConverterView()

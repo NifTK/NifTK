@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "TrackedImageViewPreferencePage.h"
+#include "TrackedImageView.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -27,7 +28,6 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-const QString TrackedImageViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedimage");
 const QString TrackedImageViewPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
 const QString TrackedImageViewPreferencePage::SCALE_FILE_NAME("scale file name");
 const QString TrackedImageViewPreferencePage::EMTOWORLDCALIBRATION_FILE_NAME("Em to optical calibration file name");
@@ -78,8 +78,7 @@ void TrackedImageViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = true;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
-  m_TrackedImageViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  m_TrackedImageViewPreferencesNode = prefService->GetSystemPreferences()->Node(TrackedImageView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;

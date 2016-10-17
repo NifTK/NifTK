@@ -41,7 +41,7 @@
 
 
 //-----------------------------------------------------------------------------
-const char* PivotCalibrationView::VIEW_ID = "uk.ac.ucl.cmic.igipivotcalibration";
+const QString PivotCalibrationView::VIEW_ID = "uk.ac.ucl.cmic.igipivotcalibration";
 
 //-----------------------------------------------------------------------------
 PivotCalibrationView::PivotCalibrationView()
@@ -163,11 +163,3 @@ void PivotCalibrationView::SetFocus()
 {
   m_Controls->m_MatrixDirectoryChooser->setFocus();
 }
-
-
-//-----------------------------------------------------------------------------
-std::string PivotCalibrationView::GetViewID() const
-{
-  return VIEW_ID;
-}
-

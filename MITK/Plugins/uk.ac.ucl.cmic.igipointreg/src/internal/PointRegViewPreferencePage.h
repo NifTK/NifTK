@@ -36,11 +36,6 @@ class PointRegViewPreferencePage : public QObject, public berry::IQtPreferencePa
 public:
 
   /**
-   * \brief Stores the name of the preferences node.
-   */
-  static const QString PREFERENCES_NODE_NAME;
-
-  /**
    * \brief Stores the name of the preference node that contains the value of the Use ICP preference.
    */
   static const QString USE_ICP_INITIALISATION;

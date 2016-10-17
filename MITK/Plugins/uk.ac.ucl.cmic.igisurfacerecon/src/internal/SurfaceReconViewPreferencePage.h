@@ -36,8 +36,6 @@ class SurfaceReconViewPreferencePage : public QObject, public berry::IQtPreferen
 
 public:
 
-  /// \brief Stores the name of the preferences node.
-  static const char*      s_PrefsNodeName;
   static const char*      s_DefaultCalibrationFilePathPrefsName;
   static const char*      s_UseUndistortionDefaultPathPrefsName;
   static const char*      s_DefaultTriangulationErrorPrefsName;

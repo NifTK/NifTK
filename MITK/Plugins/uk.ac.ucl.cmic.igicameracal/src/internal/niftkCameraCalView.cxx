@@ -32,7 +32,7 @@
 namespace niftk
 {
 
-const std::string CameraCalView::VIEW_ID = "uk.ac.ucl.cmic.igicameracal";
+const QString CameraCalView::VIEW_ID = "uk.ac.ucl.cmic.igicameracal";
 
 //-----------------------------------------------------------------------------
 CameraCalView::CameraCalView()
@@ -71,13 +71,6 @@ CameraCalView::~CameraCalView()
 
     delete m_Controls;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-std::string CameraCalView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 

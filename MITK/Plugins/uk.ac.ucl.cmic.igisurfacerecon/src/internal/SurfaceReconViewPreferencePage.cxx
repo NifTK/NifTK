@@ -13,6 +13,8 @@
 =============================================================================*/
 
 #include "SurfaceReconViewPreferencePage.h"
+#include "SurfaceReconView.h"
+
 #include <cassert>
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -25,7 +27,6 @@
 #include <berryPlatform.h>
 
 //-----------------------------------------------------------------------------
-const char* SurfaceReconViewPreferencePage::s_PrefsNodeName                         = "/uk.ac.ucl.cmic.igisurfacerecon";
 const char* SurfaceReconViewPreferencePage::s_DefaultCalibrationFilePathPrefsName   = "default calib file path";
 const char* SurfaceReconViewPreferencePage::s_UseUndistortionDefaultPathPrefsName   = "use undistort default path";
 const char* SurfaceReconViewPreferencePage::s_DefaultTriangulationErrorPrefsName    = "default triangulation error";
@@ -115,7 +116,7 @@ void SurfaceReconViewPreferencePage::CreateQtControl(QWidget* parent)
   assert(ok);
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  m_SurfaceReconViewPreferencesNode = prefService->GetSystemPreferences()->Node(s_PrefsNodeName);
+  m_SurfaceReconViewPreferencesNode = prefService->GetSystemPreferences()->Node(SurfaceReconView::VIEW_ID);
 
   Update();
 }

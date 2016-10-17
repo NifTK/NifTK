@@ -54,7 +54,6 @@ void IGIUltrasoundOverlayEditorPreferencePage::Init(berry::IWorkbench::Pointer )
 void IGIUltrasoundOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
   m_IGIUltrasoundOverlayEditorPreferencesNode = prefService->GetSystemPreferences()->Node(IGIUltrasoundOverlayEditor::EDITOR_ID);
 
   m_MainControl = new QWidget(parent);

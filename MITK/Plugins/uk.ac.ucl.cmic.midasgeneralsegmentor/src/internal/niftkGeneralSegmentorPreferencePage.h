@@ -34,9 +34,6 @@ class GeneralSegmentorPreferencePage : public QObject, public berry::IQtPreferen
 
 public:
 
-  /// \brief Stores the name of the preferences node.
-  static const QString PREFERENCES_NODE_NAME;
-
   GeneralSegmentorPreferencePage();
   GeneralSegmentorPreferencePage(const GeneralSegmentorPreferencePage& other);
   ~GeneralSegmentorPreferencePage();

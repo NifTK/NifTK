@@ -34,6 +34,10 @@ class CaffeSegmentorView : public BaseView
 
 public:
 
+  /// \brief Each View for a plugin has its own globally unique ID, this one is
+  /// "uk.ac.ucl.cmic.caffesegmentor" and the .cxx file and plugin.xml should match.
+  static const QString VIEW_ID;
+
   /// \brief Constructor.
   CaffeSegmentorView();
 
@@ -42,13 +46,6 @@ public:
 
   /// \brief Destructor.
   virtual ~CaffeSegmentorView();
-
-  /// \brief Each View for a plugin has its own globally unique ID, this one is
-  /// "uk.ac.ucl.cmic.caffesegmentor" and the .cxx file and plugin.xml should match.
-  static const std::string VIEW_ID;
-
-  /// \brief Returns the VIEW_ID = "uk.ac.ucl.cmic.caffesegmentor".
-  virtual std::string GetViewID() const;
 
 protected:
 
@@ -59,9 +56,6 @@ protected:
   /// but we currently do nothing.
   virtual void SetFocus() override;
 
-  /// \brief Called when preferences are updated.
-  virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;
-
   /// \brief Retrieve's the pref values from preference service, and store locally.
   virtual void RetrievePreferenceValues();
 
@@ -71,6 +65,9 @@ private slots:
   void OnUpdate(const ctkEvent& event);
 
 private:
+
+  /// \brief Called when preferences are updated.
+  virtual void OnPreferencesChanged(const berry::IBerryPreferences*) override;
 
   /// \brief The Caffe segmentor controller that realises the GUI logic behind the view.
   QScopedPointer<CaffeSegController> m_CaffeSegController;

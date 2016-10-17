@@ -35,9 +35,6 @@ class SurfaceRegViewPreferencePage : public QObject, public berry::IQtPreference
 
 public:
 
-  /// \brief Stores the name of the preferences node.
-  static const QString PREFERENCES_NODE_NAME;
-
   /**
    * \brief Stores the name of the preference node that contains the maximum iterations preference
    */

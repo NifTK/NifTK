@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkGeneralSegmentorPreferencePage.h"
+#include "niftkGeneralSegmentorView.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -29,8 +30,6 @@
 
 namespace niftk
 {
-
-const QString GeneralSegmentorPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasgeneralsegmentor");
 
 //-----------------------------------------------------------------------------
 GeneralSegmentorPreferencePage::GeneralSegmentorPreferencePage()
@@ -68,9 +67,9 @@ void GeneralSegmentorPreferencePage::Init(berry::IWorkbench::Pointer )
 void GeneralSegmentorPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
-  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
-  m_GeneralSegmentorPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
+  m_GeneralSegmentorPreferencesNode = prefService->GetSystemPreferences()->Node(niftk::GeneralSegmentorView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
 

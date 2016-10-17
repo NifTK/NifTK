@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "TrackedPointerViewPreferencePage.h"
+#include "TrackedPointerView.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -27,7 +28,6 @@
 #include <berryPlatform.h>
 #include <mitkTrackedPointer.h>
 
-const QString TrackedPointerViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igitrackedpointer");
 const QString TrackedPointerViewPreferencePage::CALIBRATION_FILE_NAME("calibration file name");
 const QString TrackedPointerViewPreferencePage::UPDATE_VIEW_COORDINATE_NAME("update view coordinate");
 const QString TrackedPointerViewPreferencePage::NUMBER_OF_SAMPLES_TO_AVERAGE("number of samples to average");
@@ -72,8 +72,7 @@ void TrackedPointerViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = true;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
-  m_TrackedPointerViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  m_TrackedPointerViewPreferencesNode = prefService->GetSystemPreferences()->Node(TrackedPointerView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;

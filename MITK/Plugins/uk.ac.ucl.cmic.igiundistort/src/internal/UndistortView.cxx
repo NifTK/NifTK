@@ -34,8 +34,7 @@
 #include <mitkLogMacros.h>
 
 
-const char* UndistortView::VIEW_ID = "uk.ac.ucl.cmic.igiundistort";
-
+const QString UndistortView::VIEW_ID = "uk.ac.ucl.cmic.igiundistort";
 
 //-----------------------------------------------------------------------------
 UndistortView::UndistortView()
@@ -686,7 +685,7 @@ void UndistortView::OnPreferencesChanged(const berry::IBerryPreferences*)
 void UndistortView::RetrievePreferenceValues()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(UndistortViewPreferencesPage::s_PrefsNodeName);
+  berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(VIEW_ID);
   assert(prefs);
 
   m_LastFile = prefs->Get(UndistortViewPreferencesPage::s_DefaultCalibrationFilePathPrefsName, "");

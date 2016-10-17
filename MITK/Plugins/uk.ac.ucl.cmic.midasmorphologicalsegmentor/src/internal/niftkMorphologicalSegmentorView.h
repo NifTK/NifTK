@@ -52,10 +52,10 @@ public:
   virtual ~MorphologicalSegmentorView();
 
   /// \brief Each View for a plugin has its own globally unique ID.
-  static const std::string VIEW_ID;
+  static const QString VIEW_ID;
 
   /// \brief Returns VIEW_ID = uk.ac.ucl.cmic.midasmorphologicalsegmentor.
-  virtual std::string GetViewID() const;
+  virtual QString GetViewID() const;
 
 protected:
 

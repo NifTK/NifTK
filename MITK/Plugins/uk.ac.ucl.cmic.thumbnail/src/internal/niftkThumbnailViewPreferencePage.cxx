@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkThumbnailViewPreferencePage.h"
+#include "niftkThumbnailView.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -75,8 +76,7 @@ void ThumbnailViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = true;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
-  m_ThumbnailPreferencesNode = prefService->GetSystemPreferences()->Node("/uk.ac.ucl.cmic.thumbnail");
+  m_ThumbnailPreferencesNode = prefService->GetSystemPreferences()->Node(ThumbnailView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
 

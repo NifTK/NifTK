@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkCameraCalViewPreferencePage.h"
+#include "niftkCameraCalView.h"
 #include "ui_niftkCameraCalViewPreferencePage.h"
 
 #include <berryIPreferencesService.h>
@@ -25,8 +26,6 @@
 
 namespace niftk
 {
-
-const QString CameraCalViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igicameracal");
 const QString CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME("iterative");
 const QString CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME("optimise in 3D");
 const QString CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME("minimum number of views");
@@ -85,7 +84,7 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->setupUi(m_Control);
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  m_CameraCalViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  m_CameraCalViewPreferencesNode = prefService->GetSystemPreferences()->Node(niftk::CameraCalView::VIEW_ID);
 
   m_Ui->m_FeaturesComboBox->addItem("OpenCV chess board", QVariant(niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD));
   m_Ui->m_FeaturesComboBox->addItem("OpenCV asymmetric circle grid", QVariant(niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID));

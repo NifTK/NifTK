@@ -56,10 +56,7 @@ void XnatPluginPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
-  QString browserViewPreferencesName = "/";
-  browserViewPreferencesName += XnatBrowserView::VIEW_ID;
-  m_XnatBrowserViewPreferences = prefService->GetSystemPreferences()->Node(browserViewPreferencesName);
+  m_XnatBrowserViewPreferences = prefService->GetSystemPreferences()->Node(XnatBrowserView::VIEW_ID);
 
   if (!m_Controls)
   {

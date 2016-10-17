@@ -38,11 +38,6 @@ class TrackedPointerViewPreferencePage : public QObject, public berry::IQtPrefer
 public:
 
   /**
-   * \brief Stores the name of the preferences node.
-   */
-  static const QString PREFERENCES_NODE_NAME;
-
-  /**
    * \brief Stores the name of the preference node that contains the name of the calibration file.
    */
   static const QString CALIBRATION_FILE_NAME;

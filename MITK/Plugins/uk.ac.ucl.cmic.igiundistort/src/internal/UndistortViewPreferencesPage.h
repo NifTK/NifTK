@@ -35,9 +35,7 @@ public:
   UndistortViewPreferencesPage(const UndistortViewPreferencesPage& other);
   ~UndistortViewPreferencesPage();
 
-  static QString      s_PrefsNodeName;
   static QString      s_DefaultCalibrationFilePathPrefsName;
-
 
   void Init(berry::IWorkbench::Pointer workbench) override;
 

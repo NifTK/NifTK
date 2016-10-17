@@ -51,6 +51,10 @@ public:
   ImageStatisticsView();
   virtual ~ImageStatisticsView();
 
+  /**
+   * \brief Each View for a plugin has its own globally unique ID, this one is
+   * "uk.ac.ucl.cmic.imagestatistics" and the .cxx file and plugin.xml should match.
+   */
   static const QString VIEW_ID;
 
   virtual void CreateQtPartControl(QWidget *parent) override;

@@ -54,7 +54,6 @@ void IGIVideoOverlayEditorPreferencePage::Init(berry::IWorkbench::Pointer )
 void IGIVideoOverlayEditorPreferencePage::CreateQtControl(QWidget* parent)
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-
   m_IGIVideoOverlayEditorPreferencesNode = prefService->GetSystemPreferences()->Node(IGIVideoOverlayEditor::EDITOR_ID);
 
   m_MainControl = new QWidget(parent);

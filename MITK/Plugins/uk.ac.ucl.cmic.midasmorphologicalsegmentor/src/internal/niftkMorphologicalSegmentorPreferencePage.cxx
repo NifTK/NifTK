@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkMorphologicalSegmentorPreferencePage.h"
+#include "niftkMorphologicalSegmentorView.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -29,9 +30,6 @@
 
 namespace niftk
 {
-
-const QString MorphologicalSegmentorPreferencePage::PREFERENCES_NODE_NAME("/uk_ac_ucl_cmic_midasmorphologicalsegmentor");
-
 
 //-----------------------------------------------------------------------------
 MorphologicalSegmentorPreferencePage::MorphologicalSegmentorPreferencePage()
@@ -69,9 +67,9 @@ void MorphologicalSegmentorPreferencePage::Init(berry::IWorkbench::Pointer )
 void MorphologicalSegmentorPreferencePage::CreateQtControl(QWidget* parent)
 {
   m_Initializing = true;
-  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
 
-  m_niftkMorphologicalSegmentationViewPreferencesNode = prefService->GetSystemPreferences()->Node(PREFERENCES_NODE_NAME);
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
+  m_niftkMorphologicalSegmentationViewPreferencesNode = prefService->GetSystemPreferences()->Node(niftk::MorphologicalSegmentorView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
 

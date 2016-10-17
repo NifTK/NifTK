@@ -21,7 +21,7 @@
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
 
-const std::string RMSErrorView::VIEW_ID = "uk.ac.ucl.cmic.igirmserror";
+const QString RMSErrorView::VIEW_ID = "uk.ac.ucl.cmic.igirmserror";
 
 //-----------------------------------------------------------------------------
 RMSErrorView::RMSErrorView()
@@ -37,13 +37,6 @@ RMSErrorView::~RMSErrorView()
   {
     delete m_Controls;
   }
-}
-
-
-//-----------------------------------------------------------------------------
-std::string RMSErrorView::GetViewID() const
-{
-  return VIEW_ID;
 }
 
 

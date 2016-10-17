@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "PointerCalibViewPreferencePage.h"
+#include "PointerCalibView.h"
 
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -25,8 +26,6 @@
 
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
-
-const std::string PointerCalibViewPreferencePage::PREFERENCES_NODE_NAME("/uk.ac.ucl.cmic.igiPointerCalib");
 
 //-----------------------------------------------------------------------------
 PointerCalibViewPreferencePage::PointerCalibViewPreferencePage()
@@ -65,7 +64,7 @@ void PointerCalibViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Initializing = true;
 
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  m_PointerCalibViewPreferencesNode = prefService->GetSystemPreferences()->Node(QString::fromStdString(PREFERENCES_NODE_NAME));
+  m_PointerCalibViewPreferencesNode = prefService->GetSystemPreferences()->Node(PointerCalibView::VIEW_ID);
 
   m_MainControl = new QWidget(parent);
   QFormLayout *formLayout = new QFormLayout;
