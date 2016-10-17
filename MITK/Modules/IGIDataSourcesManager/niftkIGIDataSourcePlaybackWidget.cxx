@@ -30,6 +30,9 @@ namespace niftk
 IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Pointer dataStorage,
     IGIDataSourceManager* manager,
     QWidget *parent)
+: m_FixedRecordTime(0,0,0,0)
+, m_RecordTime(0,0,0,0)
+, m_MSecFixedRecordTime(0)
 {
   m_Manager = manager;
   Ui_IGIDataSourcePlaybackWidget::setupUi(parent);
@@ -79,6 +82,15 @@ IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Poin
   ok = QObject::connect(m_GrabScreenCheckbox, SIGNAL(clicked(bool)),
                         this, SLOT(OnGrabScreen(bool)));
   assert(ok);
+
+  m_FixedRecordTimer = new QTimer(this);
+  ok = QObject::connect( m_FixedRecordTimer, SIGNAL( timeout() ),
+                         this, SLOT( OnStop() ) );
+  assert(ok);
+
+  ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedRendering()),
+                        this, SLOT(OnUpdateRecordTimeDisplay()));
+  assert(ok);
 }
 
 
@@ -123,6 +135,16 @@ IGIDataSourcePlaybackWidget::~IGIDataSourcePlaybackWidget()
   ok = QObject::disconnect(m_GrabScreenCheckbox, SIGNAL(clicked(bool)),
                         this, SLOT(OnGrabScreen(bool)));
   assert(ok);
+
+  m_FixedRecordTimer->stop();
+  ok = QObject::disconnect(m_FixedRecordTimer, SIGNAL(timeout()),
+                           this, SLOT(OnStop()) );
+  assert(ok);
+
+  ok = QObject::disconnect(m_Manager, SIGNAL(UpdateFinishedRendering()),
+                           this, SLOT(OnUpdateRecordTimeDisplay()));
+  assert(ok);
+
   // m_Manager belongs to the calling widget
 }
 
@@ -200,6 +222,7 @@ void IGIDataSourcePlaybackWidget::OnPlayStart()
         // For now, cannot start recording directly from playback mode.
         // could be possible: leave this enabled and simply stop all playback when user clicks on record.
         m_RecordPushButton->setEnabled(false);
+        m_FixedRecordTimeInterval->setEnabled(false);
         m_TimeStampEdit->setReadOnly(false);
         m_PlaybackSlider->setEnabled(true);
         m_PlaybackSlider->setValue(sliderValue);
@@ -242,6 +265,7 @@ void IGIDataSourcePlaybackWidget::OnPlayStart()
     m_Manager->StopPlayback();
     m_StopPushButton->setEnabled(false);
     m_RecordPushButton->setEnabled(true);
+    m_FixedRecordTimeInterval->setEnabled(true);
     m_TimeStampEdit->setReadOnly(true);
     m_PlaybackSlider->setEnabled(false);
     m_PlaybackSlider->setValue(0);
@@ -259,6 +283,7 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
   }
 
   m_RecordPushButton->setEnabled(false);
+  m_FixedRecordTimeInterval->setEnabled(false);
   m_StopPushButton->setEnabled(true);
   assert(!m_PlayPushButton->isChecked());
   m_PlayPushButton->setEnabled(false);
@@ -267,6 +292,30 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
   QDir directory(directoryName);
   m_DirectoryChooser->setCurrentPath(directory.absolutePath());
   m_DirectoryChooser->setEnabled(false);
+
+  // If a fixed recording time has been set then initiate the timer
+  m_FixedRecordTime = m_FixedRecordTimeInterval->time();
+
+  // If a fixed recording time has been set then start a timer
+  if ( m_FixedRecordTime.hour()   ||
+       m_FixedRecordTime.minute() ||
+       m_FixedRecordTime.second() ||
+       m_FixedRecordTime.msec() )
+  {
+    m_MSecFixedRecordTime =
+      m_FixedRecordTime.msec() +
+      1000*( m_FixedRecordTime.second() +
+      60*( m_FixedRecordTime.minute() +
+      60*m_FixedRecordTime.hour() ) );
+
+    m_FixedRecordTimer->start( m_MSecFixedRecordTime );
+    MITK_INFO << "Starting countdown timer:" << m_MSecFixedRecordTime << " (ms).";
+  }
+  else
+  {
+    m_MSecFixedRecordTime = 0;
+  }
+  m_RecordTime.start();
 
   try
   {
@@ -284,6 +333,26 @@ void IGIDataSourcePlaybackWidget::OnRecordStart()
 
 
 //-----------------------------------------------------------------------------
+void IGIDataSourcePlaybackWidget::OnUpdateRecordTimeDisplay()
+{
+  if (m_StopPushButton->isEnabled() && !m_Manager->IsPlayingBack())
+  {
+    QTime t( 0, 0, 0, 0 );
+
+    if ( m_FixedRecordTimer->isActive() )
+    {
+      t = t.addMSecs( m_MSecFixedRecordTime - m_RecordTime.elapsed() );
+    }
+    else
+    {
+      t = t.addMSecs( m_RecordTime.elapsed() );
+    }
+
+    m_FixedRecordTimeInterval->setTime( t );
+  }
+}
+
+//-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnStop()
 {
   if (m_PlayPushButton->isChecked())
@@ -298,9 +367,14 @@ void IGIDataSourcePlaybackWidget::OnStop()
     m_RecordPushButton->setChecked(false);
   }
   m_RecordPushButton->setEnabled(true);
+  m_FixedRecordTimeInterval->setEnabled(true);
   m_StopPushButton->setEnabled(false);
   m_PlayPushButton->setEnabled(true);
   m_DirectoryChooser->setEnabled(true);
+
+  m_FixedRecordTimer->stop();
+  m_FixedRecordTimeInterval->setTime(m_FixedRecordTime);
+  m_FixedRecordTimeInterval->setEnabled(true);
 }
 
 //-----------------------------------------------------------------------------

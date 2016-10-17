@@ -49,7 +49,7 @@ const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIAB
 IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent)
 : QObject(parent)
 , m_DataStorage(dataStorage)
-, m_GuiUpdateTimer(NULL)
+, m_GuiUpdateTimer(nullptr)
 , m_FrameRate(DEFAULT_FRAME_RATE)
 , m_IsPlayingBack(false)
 , m_IsPlayingBackAutomatically(false)

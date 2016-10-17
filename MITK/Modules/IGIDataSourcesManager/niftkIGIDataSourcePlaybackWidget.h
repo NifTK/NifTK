@@ -21,6 +21,8 @@
 
 #include <mitkDataStorage.h>
 #include <QWidget>
+#include <QTimer>
+#include <QTime>
 
 namespace niftk
 {
@@ -132,9 +134,22 @@ private slots:
   */
   void OnGrabScreen(bool isChecked);
 
+  /**
+  * \brief Update the recording time widget.
+  */
+  void OnUpdateRecordTimeDisplay();
+
 private:
   
   IGIDataSourceManager* m_Manager;
+
+  /**
+  * \brief A timer if a fixed reording period specified.
+  */
+  QTimer*               m_FixedRecordTimer;             // Timer that triggers the recording to stop.
+  QTime                 m_FixedRecordTime;              // To hold the amount of time the user specified.
+  int                   m_MSecFixedRecordTime;          // Same time in milliseconds.
+  QTime                 m_RecordTime;                   // Total amount of time of current recording.
 
 }; // end class;
 

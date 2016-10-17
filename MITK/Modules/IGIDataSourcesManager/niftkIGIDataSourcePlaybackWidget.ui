@@ -22,9 +22,9 @@
   <property name="toolTip">
    <string>Press to advance time automatically.</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="ctkPathLineEdit" name="m_DirectoryChooser" native="true"/>
      </item>
@@ -48,6 +48,16 @@
        </property>
        <property name="text">
         <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QTimeEdit" name="m_FixedRecordTimeInterval">
+       <property name="toolTip">
+        <string>Set fixed record time in hours:mins:secs:millisecs or monitor the elapsed time.</string>
+       </property>
+       <property name="displayFormat">
+        <string>HH:mm:ss:zzz</string>
        </property>
       </widget>
      </item>
