@@ -52,10 +52,12 @@ std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSe
   mitk::PointSet::PointsContainer* points = itkPointSet->GetPoints();
   mitk::PointSet::PointsIterator pIt;
   mitk::PointSet::PointType point;
+  mitk::PointSet::PointIdentifier iD;
 
   for (pIt = points->Begin(); pIt != points->End(); ++pIt)
   {
-    point = pIt->Value();
+    iD = pIt->Index();
+    point = pointSet->GetPoint ( iD );
     cv::Point3d cvPoint;
 
     cvPoint.x = point[0];
