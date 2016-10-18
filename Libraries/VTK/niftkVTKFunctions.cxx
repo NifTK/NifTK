@@ -266,14 +266,25 @@ vtkSmartPointer<vtkTransform> RandomTransform (
     std::cout << "Corrected Normalised euclidean distance = " << correctedDistance << std::endl;
   }
 
-  transform->Translate(randomTransform [0],randomTransform [1],randomTransform [2]);
-  transform->RotateX(randomTransform [3]);
-  transform->RotateY(randomTransform [4]);
-  transform->RotateZ(randomTransform [5]);
+  transform = niftk::RigidTransformFomrVector ( randomTransform );
   return transform;
 }
 
-
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkTransform> RigidTransformFromVector ( std::vector < double > transform )
+{
+  if ( transform.size() != 6 )
+  {
+    throw std::runtime_error ( "Vector to define rigid transform requires 6 values");
+  }
+  vtkSmartPointer <vtkTransform> transformOut = vtkSmartPoint<vtkTransform>::New();
+  transformOut->Translate(transform [0],transform [1],transform [2]);
+  transformOut->RotateX(transform [3]);
+  transformOut->RotateY(transform [4]);
+  transformOut->RotateZ(transform [5]);
+  return transformOut;
+  WRITE ME A UNIT TEST
+}
 
 //-----------------------------------------------------------------------------
 void TranslatePolyData(vtkPolyData* polydata, vtkTransform * transform)
