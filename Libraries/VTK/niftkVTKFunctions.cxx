@@ -29,6 +29,7 @@
 #include <vtkVersion.h>
 #include <vtkMath.h>
 #include <sstream>
+#include <stdexcept>
 #include <cstdlib>
 
 namespace niftk {
@@ -266,7 +267,7 @@ vtkSmartPointer<vtkTransform> RandomTransform (
     std::cout << "Corrected Normalised euclidean distance = " << correctedDistance << std::endl;
   }
 
-  transform = niftk::RigidTransformFomrVector ( randomTransform );
+  transform = niftk::RigidTransformFromVector ( randomTransform );
   return transform;
 }
 
@@ -277,13 +278,12 @@ vtkSmartPointer<vtkTransform> RigidTransformFromVector ( std::vector < double > 
   {
     throw std::runtime_error ( "Vector to define rigid transform requires 6 values");
   }
-  vtkSmartPointer <vtkTransform> transformOut = vtkSmartPoint<vtkTransform>::New();
+  vtkSmartPointer <vtkTransform> transformOut = vtkSmartPointer<vtkTransform>::New();
   transformOut->Translate(transform [0],transform [1],transform [2]);
   transformOut->RotateX(transform [3]);
   transformOut->RotateY(transform [4]);
   transformOut->RotateZ(transform [5]);
   return transformOut;
-  WRITE ME A UNIT TEST
 }
 
 //-----------------------------------------------------------------------------
