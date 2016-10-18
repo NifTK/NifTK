@@ -108,12 +108,11 @@ extern "C++" NIFTKVTK_WINEXPORT void TranslatePolyData
 
 /**
  * \brief Creates a randomly determined vtkTransform, using existing random number geneterator
- * \return transform the transform to hold the result
  * \param xtrans,ytrans,ztrans,xrot,yrot,zrot the multipliers in each of the 6 degrees of freedom
  * \param rng the random number generator
  * \param toCentre a transform defining the desired centre of rotation
  * \param scaleSD if greater than zero the resulting transform is scaled to have this magnitude
- * \return void
+ * \return the transform.
  * */
 extern "C++" NIFTKVTK_WINEXPORT vtkSmartPointer<vtkTransform> RandomTransformAboutRemoteCentre
   ( const double& xtrans, const double& ytrans, const double& ztrans,
@@ -123,18 +122,27 @@ extern "C++" NIFTKVTK_WINEXPORT vtkSmartPointer<vtkTransform> RandomTransformAbo
   const double& scaleSD);
 
 /**
- * \brief Creates a randomly determined vtkTransform, using existing random number geneterator
- * \return transform the transform to hold the result
+ * \brief Creates a randomly determined vtkTransform using existing random number geneterator
  * \param xtrans,ytrans,ztrans,xrot,yrot,zrot the multipliers in each of the 6 degrees of freedom
  * \param rng the random number generator
  * \param scaleSD if greater than zero the resulting transform is scaled to have this magnitude
- * \return void
+ * \return the transform.
  * */
 extern "C++" NIFTKVTK_WINEXPORT vtkSmartPointer<vtkTransform> RandomTransform
   ( const double& xtrans, const double& ytrans, const double& ztrans,
   const double& xrot, const double& yrot, const double& zrot,
   vtkRandomSequence& rng,
   const double& scaleSD);
+
+/**
+ * \brief Takes a vector of 6 parameters defining a rigid transform , and returns
+ * \brief a 4x4 matrix. Throws runtime_error if incorrect vector length
+ * \param A vector of 6 values , 3 translation (x,y,z) followed by 3 rotations (x,y,z)
+ * \return A vtkTransform
+ */
+
+extern "C++" NIFTKVTK_WINEXPORT vtkSmartPointer<vtkTransform> RigidTransformFromVector
+  ( const std::vector<double> transform );
 
 /**
  * \brief Normalises the values returned by a vtk random sequence to be centred on zero
