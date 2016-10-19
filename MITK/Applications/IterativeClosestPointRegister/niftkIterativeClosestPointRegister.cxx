@@ -74,7 +74,7 @@ int main(int argc, char** argv)
     vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
     Uni_Rand->SetSeed(time(NULL));
     randomTrans = niftk::RandomTransform ( perturbTrans, perturbTrans ,perturbTrans,
-        perturbRot, perturbRot, perturbRot, Uni_Rand, scaleSD );
+        perturbRot, perturbRot, perturbRot, *Uni_Rand, scaleSD );
     randomMatrix = randomTrans->GetMatrix();
     niftk::ComposeTransformWithNode(*randomMatrix, movingnode);
   }

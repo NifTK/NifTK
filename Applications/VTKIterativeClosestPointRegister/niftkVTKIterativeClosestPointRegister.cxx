@@ -207,7 +207,7 @@ int main(int argc, char** argv)
     vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
     Uni_Rand->SetSeed(time(NULL));
     double scaleSD = -1.0;
-    StartTrans = niftk::RandomTransform ( 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0, Uni_Rand, scaleSD);
+    StartTrans = niftk::RandomTransform ( 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0, *Uni_Rand, scaleSD);
     niftk::TranslatePolyData ( source , StartTrans);
   }
   if ( args.perturbTarget )
