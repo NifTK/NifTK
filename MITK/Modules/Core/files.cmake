@@ -30,6 +30,7 @@ set(CPP_FILES
   Common/niftkImageOrientationUtils.cxx
   Common/niftkPointUtils.cxx
   Common/niftkMergePointClouds.cxx
+  Common/niftkBinaryMaskUtils.cxx
   DataManagement/niftkAffineTransformParametersDataNodeProperty.cxx
   DataManagement/niftkAffineTransformDataNodeProperty.cxx
   DataManagement/niftkBasicMesh.cxx
