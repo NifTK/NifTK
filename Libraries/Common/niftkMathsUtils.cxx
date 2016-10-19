@@ -97,6 +97,33 @@ double Mean(const std::vector<double>& input)
 
 
 //-----------------------------------------------------------------------------
+double Median(std::vector<double> input)
+{
+  if (input.size() == 0)
+  {
+    return 0;
+  }
+  else if (input.size() == 1)
+  {
+    return input[0];
+  }
+  else
+  {
+    std::sort(input.begin(), input.end());
+
+    if (input.size() % 2 == 1)
+    {
+      return input[(input.size() - 1)/2];
+    }
+    else
+    {
+      return (input[input.size()/2 - 1] + input[input.size()/2])/2.0;
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 double StdDev(const std::vector<double>& input)
 {
   if (input.size() < 2)

@@ -19,10 +19,16 @@
 #include <string>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
+#include <mitkImage.h>
+#include <mitkDataNode.h>
 #include <mitkCommon.h>
+#include <mitkCameraIntrinsics.h>
+#include <memory>
 
 namespace niftk
 {
+
+class DistanceFromCameraPrivate;
 
 /**
  * \class DistanceFromCamera
@@ -37,7 +43,16 @@ public:
   mitkClassMacroItkParent(DistanceFromCamera, itk::Object)
   itkNewMacro(DistanceFromCamera)
 
-  double GetDistance();
+  double GetDistance(const mitk::DataNode::Pointer& leftImage,
+                     const mitk::DataNode::Pointer& rightImage
+                    );
+
+  double GetDistance(const mitk::Image::Pointer& leftImage,
+                     const mitk::Image::Pointer& rightImage,
+                     const mitk::CameraIntrinsics::Pointer& leftIntrinsic,
+                     const mitk::CameraIntrinsics::Pointer& rightIntrinsic,
+                     const itk::Matrix<float, 4, 4>& stereoExtrinsics
+                    );
 
 protected:
 
@@ -48,6 +63,8 @@ protected:
   DistanceFromCamera& operator=(const DistanceFromCamera&); // Purposefully not implemented.
 
 private:
+
+  std::unique_ptr<DistanceFromCameraPrivate> m_Impl;
 
 }; // end class
 

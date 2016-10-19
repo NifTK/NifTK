@@ -45,6 +45,10 @@ extern "C++" NIFTKCOMMON_WINEXPORT std::pair < double, double > FindMinimumValue
 */
 extern "C++" NIFTKCOMMON_WINEXPORT double Mean(const std::vector<double>& input);
 
+/**
+* \brief To return the median of a vector.
+*/
+extern "C++" NIFTKCOMMON_WINEXPORT double Median(std::vector<double> input);
 
 /**
 * \brief To return the sample standard deviation of a vector.

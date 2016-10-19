@@ -30,4 +30,12 @@ set(MODULE_CUSTOM_TESTS
   mitkPivotCalibrationRegressionTest.cxx
   mitkIdealStereoCalibrationTest.cxx
   mitkUndistortionLoopTest.cxx
+  niftkDistanceFromCameraTest.cxx
 )
+
+if(OPENCV_WITH_NONFREE)
+  list(APPEND MODULE_CUSTOM_TESTS
+    niftkDistanceFromCameraTest.cxx
+  )
+endif()
+
