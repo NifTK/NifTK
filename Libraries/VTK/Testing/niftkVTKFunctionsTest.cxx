@@ -24,9 +24,9 @@
 #include <vtkSmartPointer.h>
 
 
-int RigidTransformsFromVectorTest ()
+bool RigidTransformsFromVectorTest ()
 {
-  int returnValue = EXIT_FAILURE;
+  bool returnValue = true;
   std::vector < double > v1;
 
   v1.push_back ( 100 );
@@ -41,44 +41,57 @@ int RigidTransformsFromVectorTest ()
   vtkSmartPointer < vtkMatrix4x4> m1 = t1->GetMatrix();
   vtkSmartPointer < vtkMatrix4x4> m2 = vtkSmartPointer < vtkMatrix4x4 >::New();
 
-  /* we compare the outputs with the result of openCV's rodrigues function, which
-   * is used throughout the opencv modules. Run something like the following
-   * to get the reference matrices.
-   * #! /usr/bin/python2.7
+  /* we compare the results with a matrix multiplication, as per
+   * so
+   * #! /usr/bin/python
    *
-   * import sys
-   * sys.path.append ('/home/thompson/work/install/lib/python2.7/site-packages')
-   * import cv2
    * import numpy as np
    * import math
+   * xmat = np.zeros ((3,3), np.float64)
+   * ymat = np.zeros ((3,3), np.float64)
+   * zmat = np.zeros ((3,3), np.float64)
    *
-   * rotVec = np.zeros ((1,3), np.float64)
-   * rotVec[0] = [math.radians(30.0), math.radians(60.0) , math.radians(0.0) ]
-   * rotMat = cv2.Rodrigues(rotVec)
-   * print rotMat[0]
+   * x = math.radians(30)
+   * y = math.radians(60)
+   * z = math.radians(0.0)
+   * xmat =np.array([ 1.0, 0.0, 0.0,  0.0, math.cos(x) , - math.sin(x), 0.0, math.sin(x) , math.cos(x) ]).reshape (3,3)
+   * ymat = np.array([ math.cos(y), 0.0, math.sin(y),0.0, 1.0, 0.0 ,- math.sin(y), 0.0, math.cos(y)]).reshape(3,3)
+   * zmat =np.array( [math.cos(z), - math.sin(z), 0.0 , math.sin(z), math.cos(z), 0.0 ,0.0 , 0.0 , 1.0 ]).reshape(3,3)
+   * matrix = np.dot (np.dot ( xmat, ymat ), zmat)
+   * print ( matrix )
    *
-   * rotVec[0] = [math.radians(0.0), math.radians(60.0) , math.radians(0.0) ]
-   * rotMat = cv2.Rodrigues(rotVec)
-   * print rotMat[0]
+   * x = math.radians(0.0)
+   * y = math.radians(60)
+   * z = math.radians(0.0)
+   * xmat =np.array([ 1.0, 0.0, 0.0,  0.0, math.cos(x) , - math.sin(x), 0.0, math.sin(x) , math.cos(x) ]).reshape (3,3)
+   * ymat = np.array([ math.cos(y), 0.0, math.sin(y),0.0, 1.0, 0.0 ,- math.sin(y), 0.0, math.cos(y)]).reshape(3,3)
+   * zmat =np.array( [math.cos(z), - math.sin(z), 0.0 , math.sin(z), math.cos(z), 0.0 ,0.0 , 0.0 , 1.0 ]).reshape(3,3)
+   * matrix =np.dot ( np.dot ( xmat, ymat), zmat)
+   * print ( matrix )
    *
-   * rotVec[0] = [math.radians(30.0), math.radians(0.0) , math.radians(0.0) ]
-   * rotMat = cv2.Rodrigues(rotVec)
-   * print rotMat[0]
+   * x = math.radians(30)
+   * y = math.radians(60)
+   * z = math.radians(25.0)
+   * xmat =np.array([ 1.0, 0.0, 0.0,  0.0, math.cos(x) , - math.sin(x), 0.0, math.sin(x) , math.cos(x) ]).reshape (3,3)
+   * ymat = np.array([ math.cos(y), 0.0, math.sin(y),0.0, 1.0, 0.0 ,- math.sin(y), 0.0, math.cos(y)]).reshape(3,3)
+   * zmat = np.array( [math.cos(z), - math.sin(z), 0.0 , math.sin(z), math.cos(z), 0.0 ,0.0 , 0.0 , 1.0 ]).reshape(3,3)
+   * matrix = np.dot(np.dot ( xmat, ymat), zmat)
+   * print ( matrix )
    */
 
-  m2->SetElement(0,0,0.51153016);
-  m2->SetElement(0,1,0.24423492);
-  m2->SetElement(0,2,0.82382413);
+  m2->SetElement(0,0,0.50);
+  m2->SetElement(0,1,0.0);
+  m2->SetElement(0,2,0.8660254);
   m2->SetElement(0,3,100);
 
-  m2->SetElement(1,0,0.24423492);
-  m2->SetElement(1,1,0.87788254);
-  m2->SetElement(1,2,-0.41191207);
+  m2->SetElement(1,0,0.4330127);
+  m2->SetElement(1,1,0.8660254);
+  m2->SetElement(1,2,-0.25);
   m2->SetElement(1,3,-100);
 
-  m2->SetElement(2,0,-0.82382413);
-  m2->SetElement(2,1,0.41191207);
-  m2->SetElement(2,2,0.3894127);
+  m2->SetElement(2,0,-0.75);
+  m2->SetElement(2,1,0.5);
+  m2->SetElement(2,2,0.4330127);
   m2->SetElement(2,3,40);
 
   m2->SetElement(3,0,0.0);
@@ -88,13 +101,12 @@ int RigidTransformsFromVectorTest ()
 
   if ( niftk::MatricesAreEqual ( *m1 , *m2 , 1e-3 ) )
   {
-    std::cout << "SUCCESS: " << *m1 << " and " <<  *m2 << " are the same." << std::endl;
-    returnValue =  returnValue && EXIT_SUCCESS;
+    returnValue =  returnValue && true;
   }
   else
   {
     std::cout << "FAILURE: " << *m1 << " and " <<  *m2 << " are different." << std::endl;
-    returnValue = returnValue &&  EXIT_FAILURE;
+    returnValue = returnValue && false;
   }
 
   v1.clear();
@@ -125,13 +137,12 @@ int RigidTransformsFromVectorTest ()
   m2->SetElement(2,3,40);
   if ( niftk::MatricesAreEqual ( *m1 , *m2 , 1e-3 ) )
   {
-    std::cout << "SUCCESS: " << *m1 << " and " <<  *m2 << " are the same." << std::endl;
-    returnValue =  returnValue && EXIT_SUCCESS;
+    returnValue =  returnValue && true;
   }
   else
   {
     std::cout << "FAILURE: " << *m1 << " and " <<  *m2 << " are different." << std::endl;
-    returnValue = returnValue &&  EXIT_FAILURE;
+    returnValue = returnValue && false;
   }
 
   v1.clear();
@@ -139,40 +150,39 @@ int RigidTransformsFromVectorTest ()
   v1.push_back ( -100 );
   v1.push_back ( 40 );
   v1.push_back ( 30.0 );
-  v1.push_back ( 0.0 );
-  v1.push_back ( 0.0 );
+  v1.push_back ( 60.0 );
+  v1.push_back ( 25.0 );
 
   t1 = niftk::RigidTransformFromVector ( v1 );
 
   m1 = t1->GetMatrix();
 
-  m2->SetElement(0,0,1.0);
-  m2->SetElement(0,1,0.0);
-  m2->SetElement(0,2,0.0);
+  m2->SetElement(0,0,0.45315389);
+  m2->SetElement(0,1,-0.21130913);
+  m2->SetElement(0,2, 0.8660254);
   m2->SetElement(0,3,100);
 
-  m2->SetElement(1,0,0.0);
-  m2->SetElement(1,1,0.8660254);
-  m2->SetElement(1,2,-0.5);
+  m2->SetElement(1,0,0.75844093);
+  m2->SetElement(1,1,0.60188649);
+  m2->SetElement(1,2,-0.25);
   m2->SetElement(1,3,-100);
 
-  m2->SetElement(2,0,0.0);
-  m2->SetElement(2,1,0.5);
-  m2->SetElement(2,2,0.8660254);
+  m2->SetElement(2,0,-0.46842171);
+  m2->SetElement(2,1,0.77011759);
+  m2->SetElement(2,2, 0.4330127);
   m2->SetElement(2,3,40);
 
   if ( niftk::MatricesAreEqual ( *m1 , *m2 , 1e-3 ) )
   {
-    std::cout << "SUCCESS: " << *m1 << " and " <<  *m2 << " are the same." << std::endl;
-    returnValue =  returnValue && EXIT_SUCCESS;
+    returnValue =  returnValue && true;
   }
   else
   {
     std::cout << "FAILURE: " << *m1 << " and " <<  *m2 << " are different." << std::endl;
-    returnValue = returnValue &&  EXIT_FAILURE;
+    returnValue = returnValue && false;
   }
 
-  return EXIT_FAILURE;
+  return returnValue;
 
 }
 
@@ -188,7 +198,14 @@ int niftkVTKFunctionsTest ( int argc, char * argv[] )
     return EXIT_FAILURE;
   }
 
-  int success = EXIT_FAILURE;
-  success = RigidTransformsFromVectorTest();
-  return success;
+  bool success = true;
+  success = success &&  RigidTransformsFromVectorTest();
+  if ( success )
+  {
+    return EXIT_SUCCESS;
+  }
+  else
+  {
+    return EXIT_FAILURE;
+  }
 }
