@@ -25,4 +25,5 @@ set(MODULE_CUSTOM_TESTS
   niftkImageUtilsTest.cxx
   niftkCompareImagesForEqualityTest.cxx
   niftkCoordinateAxesDataRenderingTest.cxx
+  niftkBinaryMaskTest.cxx
 )
