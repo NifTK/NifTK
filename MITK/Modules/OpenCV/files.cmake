@@ -51,6 +51,7 @@ set(CPP_FILES
   PivotCalibration/mitkPivotCalibration.cxx
   SurfRecon/niftkSequentialCpuQds.cxx
   SurfRecon/niftkQDSCommon.cxx
+  DistanceMeasurer/niftkDistanceFromCamera.cxx
 )
 
 if(OPENCV_WITH_NONFREE)
