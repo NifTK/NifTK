@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     uni_Rand->SetSeed(time(NULL));
 
     randomTrans = niftk::RandomTransform ( perturbTrans, perturbTrans ,perturbTrans,
-        perturbRot, perturbRot, perturbRot, uni_Rand, scaleSD );
+        perturbRot, perturbRot, perturbRot, *uni_Rand, scaleSD );
     randomMatrix = randomTrans->GetMatrix();
   }
 

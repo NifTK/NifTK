@@ -152,7 +152,7 @@ int niftkICPBasedRegistrationTest(int argc, char* argv[])
 
   // Second test, moving non id fixed ID
   double scaleSD = -1.0;
-  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand, scaleSD);
+  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , *Uni_Rand, scaleSD);
 
   StartTrans->GetInverse(movingMatrix);
   movingMatrix->Invert();
@@ -172,7 +172,7 @@ int niftkICPBasedRegistrationTest(int argc, char* argv[])
   }
 
   // Third test, fixed non id moving ID
-  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand, scaleSD);
+  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , *Uni_Rand, scaleSD);
 
   StartTrans->GetInverse(fixedMatrix);
   fixedMatrix->Invert();
@@ -192,12 +192,12 @@ int niftkICPBasedRegistrationTest(int argc, char* argv[])
   }
 
   // Forth test, both non id.
-  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand, scaleSD );
+  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , *Uni_Rand, scaleSD );
 
   StartTrans->GetInverse(fixedMatrix);
   fixedMatrix->Invert();
 
-  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , Uni_Rand, scaleSD );
+  StartTrans = niftk::RandomTransform ( 200.0 , 200.0 , 200.0, 50.0 , 50.0, 50.0 , *Uni_Rand, scaleSD );
 
   StartTrans->GetInverse(movingMatrix);
   movingMatrix->Invert();

@@ -59,7 +59,7 @@ int main(int argc, char** argv)
     vtkSmartPointer<vtkMinimalStandardRandomSequence> uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
     uni_Rand->SetSeed(time(NULL));
     randomTrans = niftk::RandomTransform ( perturbTrans, perturbTrans ,perturbTrans,
-        perturbRot, perturbRot, perturbRot, uni_Rand, scaleSD );
+        perturbRot, perturbRot, perturbRot, *uni_Rand, scaleSD );
     randomMatrix = randomTrans->GetMatrix();
     niftk::ComposeTransformWithNode(*randomMatrix, movingnode);
   }
