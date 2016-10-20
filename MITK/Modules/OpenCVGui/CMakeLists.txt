@@ -13,15 +13,10 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS Common MaskMerger
-  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI
-  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui QVTK NiftyLink
+  DEPENDS MitkQtWidgets niftkOpenCV niftkCoreGui
+  PACKAGE_DEPENDS OpenCV 
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkIGIGui)
-endif()
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
+  cotire(niftkOpenCVGui)
 endif()

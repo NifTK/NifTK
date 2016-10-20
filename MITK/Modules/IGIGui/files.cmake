@@ -13,6 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Internal/niftkMaskMergerGUI.cxx
   Common/QmitkIGIUtils.cxx
   Common/QmitkStereoImageAndCameraSelectionWidget.cxx
   Common/StereoCameraCalibrationSelectionWidget.cxx
@@ -23,9 +24,11 @@ set(CPP_FILES
   Common/QmitkCalibratedModelRenderingPipeline.cxx
   Common/QmitkVideoTestClient.cxx
   Common/QmitkVideoPreviewWidget.cxx
+  MaskMerger/niftkMaskMergerController.cxx
 )
 
 set(MOC_H_FILES
+  Internal/niftkMaskMergerGUI.h
   Common/QmitkStereoImageAndCameraSelectionWidget.h
   Common/StereoCameraCalibrationSelectionWidget.h
   Common/QmitkRMSErrorWidget.h
@@ -35,9 +38,11 @@ set(MOC_H_FILES
   Common/QmitkCalibratedModelRenderingPipeline.h
   Common/QmitkVideoTestClient.h
   Common/QmitkVideoPreviewWidget.h
+  MaskMerger/niftkMaskMergerController.h
 )
 
 set(UI_FILES
+  Internal/niftkMaskMergerGUI.ui
   Common/QmitkStereoImageAndCameraSelectionWidget.ui
   Common/StereoCameraCalibrationSelectionWidget.ui
   Common/QmitkRMSErrorWidget.ui

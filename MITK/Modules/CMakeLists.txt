@@ -96,6 +96,13 @@ if(BUILD_IGI)
     )
   endif()
 
+  if(OPENCV_WITH_NONFREE)
+    set(MODULE_DIRS
+      ${MODULE_DIRS}
+      OpenCVGui
+    )
+  endif()
+
 endif()
 
 if(BUILD_VL)
