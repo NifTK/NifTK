@@ -89,8 +89,9 @@ double DistanceFromCameraPrivate::GetDistance(const mitk::Image::Pointer& leftIm
   extractor.compute( m_LeftGreyScale, leftKeyPoints, leftDescriptors );
   extractor.compute( m_RightGreyScale, rightKeyPoints, rightDescriptors );
 
-  cv::BFMatcher matcher(cv::NORM_L2);
   std::vector< cv::DMatch > matches;
+  cv::BFMatcher matcher(cv::NORM_L2, true /* cross match left & right */);
+
   matcher.match(leftDescriptors, rightDescriptors, matches);
 
   std::map<float, std::pair<int, int> > mapLeftToRight;
