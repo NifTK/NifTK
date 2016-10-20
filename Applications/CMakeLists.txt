@@ -208,6 +208,7 @@ set(_applications
   VoxelWiseMaximumIntensities
   VTKDistanceToSurface
   VTKIterativeClosestPointRegister
+  VTKRandomTransform
 )
 
 
