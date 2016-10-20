@@ -22,6 +22,8 @@
 #include <mitkIOUtil.h>
 #include <mitkCameraIntrinsics.h>
 #include <niftkDistanceFromCamera.h>
+#include <chrono>
+#include <ctime>
 
 int niftkDistanceFromCameraTest ( int argc, char * argv[] )
 {
@@ -75,7 +77,15 @@ int niftkDistanceFromCameraTest ( int argc, char * argv[] )
     stereoExtr[r][3] = rightToLeftTranslationVector.at<double>(0, r);
   }
   niftk::DistanceFromCamera::Pointer measurer = niftk::DistanceFromCamera::New();
+
+  std::chrono::time_point<std::chrono::system_clock> start, end;
+  start = std::chrono::system_clock::now();
+
   double actualDistance = measurer->GetDistance(leftImage, rightImage, leftIntr, rightIntr, stereoExtr);
+
+  end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed = end-start;
+  std::cout << "elapsed time: " << elapsed.count() << "s\n";
 
   MITK_TEST_CONDITION (fabs(expectedDistance - actualDistance) < tolerance, "... expected=" << expectedDistance << ", actual=" << actualDistance << ", tol=" << tolerance);
   MITK_TEST_END();

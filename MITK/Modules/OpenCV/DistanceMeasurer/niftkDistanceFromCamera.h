@@ -42,6 +42,7 @@ public:
 
   mitkClassMacroItkParent(DistanceFromCamera, itk::Object)
   itkNewMacro(DistanceFromCamera)
+  mitkNewMacro2Param(DistanceFromCamera, const unsigned int&, const unsigned int&)
 
   double GetDistance(const mitk::DataNode::Pointer& leftImage,
                      const mitk::DataNode::Pointer& rightImage,
@@ -61,6 +62,8 @@ public:
 protected:
 
   DistanceFromCamera();
+  DistanceFromCamera(const unsigned int& maxFeaturesToTriangulate,
+                     const unsigned int& minFeaturesToAverage);
   virtual ~DistanceFromCamera();
 
   DistanceFromCamera(const DistanceFromCamera&); // Purposefully not implemented.

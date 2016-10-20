@@ -28,7 +28,13 @@ class DistanceFromCameraPrivate {
 
 public:
 
-  DistanceFromCameraPrivate() {}
+  DistanceFromCameraPrivate(unsigned int maxFeaturesToTriangulate = 20,
+                            unsigned int minFeaturesToAverage = 5)
+  : m_MaxFeaturesToTriangulate(maxFeaturesToTriangulate)
+  , m_MinimumFeaturesToAverage(minFeaturesToAverage)
+  {
+  }
+
   ~DistanceFromCameraPrivate() {}
 
   double GetDistance(const mitk::Image::Pointer& leftImage,
@@ -42,9 +48,10 @@ public:
 
 private:
 
-  cv::Mat m_LeftGreyScale;
-  cv::Mat m_RightGreyScale;
-
+  cv::Mat      m_LeftGreyScale;
+  cv::Mat      m_RightGreyScale;
+  unsigned int m_MaxFeaturesToTriangulate;
+  unsigned int m_MinimumFeaturesToAverage;
 };
 
 
@@ -102,20 +109,18 @@ double DistanceFromCameraPrivate::GetDistance(const mitk::Image::Pointer& leftIm
                           std::pair<int, int>(matches[i].queryIdx, matches[i].trainIdx)));
   }
 
-  // Extract top 20 best matching points.
-  int numberOfPoints = 20;
   std::vector< std::pair<cv::Point2d, cv::Point2d> > pointPairs;
   std::vector< std::pair < cv::Point3d, double > > pointsIn3D;
 
   std::map<float, std::pair<int, int> >::iterator iter;
-  for (iter = mapLeftToRight.begin(); iter != mapLeftToRight.end() && pointPairs.size() < numberOfPoints; ++iter)
+  for (iter = mapLeftToRight.begin();
+       iter != mapLeftToRight.end() && pointPairs.size() < m_MaxFeaturesToTriangulate;
+       ++iter)
   {
     cv::Point2d leftPoint = leftKeyPoints[iter->second.first].pt;
     cv::Point2d rightPoint = rightKeyPoints[iter->second.second].pt;
 
     pointPairs.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPoint,rightPoint));
-
-    std::cerr << "Matt, left=" << leftPoint << ", right=" << rightPoint << std::endl;
   }
 
   // Triangulate
@@ -151,7 +156,14 @@ double DistanceFromCameraPrivate::GetDistance(const mitk::Image::Pointer& leftIm
     }
   }
 
-  return niftk::Median(zdist);
+  if (zdist.size() < m_MinimumFeaturesToAverage)
+  {
+    return 0;
+  }
+  else
+  {
+    return niftk::Median(zdist);
+  }
 }
 
 
@@ -159,6 +171,15 @@ double DistanceFromCameraPrivate::GetDistance(const mitk::Image::Pointer& leftIm
 DistanceFromCamera::DistanceFromCamera()
 : m_Impl(new DistanceFromCameraPrivate())
 {
+}
+
+
+//-----------------------------------------------------------------------------
+DistanceFromCamera::DistanceFromCamera(const unsigned int& maxFeaturesToTriangulate,
+                                       const unsigned int& minFeaturesToAverage)
+: m_Impl(new DistanceFromCameraPrivate(maxFeaturesToTriangulate, minFeaturesToAverage))
+{
+
 }
 
 
