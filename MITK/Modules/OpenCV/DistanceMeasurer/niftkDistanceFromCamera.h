@@ -44,14 +44,18 @@ public:
   itkNewMacro(DistanceFromCamera)
 
   double GetDistance(const mitk::DataNode::Pointer& leftImage,
-                     const mitk::DataNode::Pointer& rightImage
+                     const mitk::DataNode::Pointer& rightImage,
+                     const mitk::DataNode::Pointer& leftMask = nullptr,
+                     const mitk::DataNode::Pointer& rightMask = nullptr
                     );
 
   double GetDistance(const mitk::Image::Pointer& leftImage,
                      const mitk::Image::Pointer& rightImage,
                      const mitk::CameraIntrinsics::Pointer& leftIntrinsic,
                      const mitk::CameraIntrinsics::Pointer& rightIntrinsic,
-                     const itk::Matrix<float, 4, 4>& stereoExtrinsics
+                     const itk::Matrix<float, 4, 4>& stereoExtrinsics,
+                     const mitk::Image::Pointer& leftMask = nullptr,
+                     const mitk::Image::Pointer& rightMask = nullptr
                     );
 
 protected:
