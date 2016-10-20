@@ -264,9 +264,17 @@ vtkSmartPointer<vtkTransform> RandomTransform (
       *it *= scaleFactor ;
     }
     double correctedDistance = niftk::MahalanobisDistance ( zeros, randomTransform, covariance );
-    std::cout << "Corrected Normalised euclidean distance = " << correctedDistance << std::endl;
+    try
+    {
+      niftk::CheckDoublesEquals(scaleSD, correctedDistance, 1e-3);
+    }
+    catch (...)
+    {
+      std::string error = "niftk::RandomTransform, wrong scaled distance, Target = " + std::to_string(scaleSD) + ", achieved=" +
+              std::to_string( correctedDistance );
+      throw std::logic_error(error);
+    }
   }
-
   transform = niftk::RigidTransformFromVector ( randomTransform );
   return transform;
 }
