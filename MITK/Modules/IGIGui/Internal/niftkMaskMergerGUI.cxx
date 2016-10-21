@@ -14,6 +14,8 @@
 
 #include "niftkMaskMergerGUI.h"
 #include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkNodePredicateAnd.h>
 #include <mitkImage.h>
 
 namespace niftk
@@ -57,23 +59,29 @@ void MaskMergerGUI::ResetRight()
 void MaskMergerGUI::SetDataStorage(mitk::DataStorage* storage)
 {
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+  mitk::NodePredicateProperty::Pointer isBinary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true));
+
+  mitk::NodePredicateAnd::Pointer isBinaryImage = mitk::NodePredicateAnd::New();
+  isBinaryImage->AddPredicate(isImage);
+  isBinaryImage->AddPredicate(isBinary);
+
   m_LeftMask1ComboBox->SetAutoSelectNewItems(false);
-  m_LeftMask1ComboBox->SetPredicate(isImage);
+  m_LeftMask1ComboBox->SetPredicate(isBinaryImage);
   m_LeftMask1ComboBox->SetDataStorage(storage);
   m_LeftMask1ComboBox->setCurrentIndex(0);
 
   m_LeftMask2ComboBox->SetAutoSelectNewItems(false);
-  m_LeftMask2ComboBox->SetPredicate(isImage);
+  m_LeftMask2ComboBox->SetPredicate(isBinaryImage);
   m_LeftMask2ComboBox->SetDataStorage(storage);
   m_LeftMask2ComboBox->setCurrentIndex(0);
 
   m_RightMask1ComboBox->SetAutoSelectNewItems(false);
-  m_RightMask1ComboBox->SetPredicate(isImage);
+  m_RightMask1ComboBox->SetPredicate(isBinaryImage);
   m_RightMask1ComboBox->SetDataStorage(storage);
   m_RightMask1ComboBox->setCurrentIndex(0);
 
   m_RightMask2ComboBox->SetAutoSelectNewItems(false);
-  m_RightMask2ComboBox->SetPredicate(isImage);
+  m_RightMask2ComboBox->SetPredicate(isBinaryImage);
   m_RightMask2ComboBox->SetDataStorage(storage);
   m_RightMask2ComboBox->setCurrentIndex(0);
 }
