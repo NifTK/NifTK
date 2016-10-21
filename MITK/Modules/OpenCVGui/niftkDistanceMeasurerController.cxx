@@ -17,6 +17,9 @@
 #include <niftkDistanceFromCamera.h>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QFuture>
+#include <QFutureWatcher>
+#include <QtConcurrentRun>
 
 namespace niftk
 {
@@ -38,6 +41,9 @@ public:
   mitk::DataNode*                    m_RightMask;
   QMutex                             m_Lock;
   niftk::DistanceFromCamera::Pointer m_DistanceFromCamera;
+  QFuture<double>                    m_BackgroundProcess;
+  QFutureWatcher<double>             m_BackgroundProcessWatcher;
+
 };
 
 
@@ -58,6 +64,7 @@ DistanceMeasurerControllerPrivate::DistanceMeasurerControllerPrivate(DistanceMea
 //-----------------------------------------------------------------------------
 DistanceMeasurerControllerPrivate::~DistanceMeasurerControllerPrivate()
 {
+  m_BackgroundProcessWatcher.waitForFinished();
 }
 
 
@@ -90,10 +97,18 @@ void DistanceMeasurerController::SetupGUI(QWidget* parent)
   BaseController::SetupGUI(parent);
   d->m_GUI = dynamic_cast<DistanceMeasurerGUI*>(this->GetGUI());
   d->m_GUI->SetDataStorage(this->GetDataStorage());
-  connect(d->m_GUI, SIGNAL(LeftImageSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftImageSelectionChanged(const mitk::DataNode*)));
-  connect(d->m_GUI, SIGNAL(LeftMaskSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftMaskSelectionChanged(const mitk::DataNode*)));
-  connect(d->m_GUI, SIGNAL(RightImageSelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightImageSelectionChanged(const mitk::DataNode*)));
-  connect(d->m_GUI, SIGNAL(RightMaskSelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightMaskSelectionChanged(const mitk::DataNode*)));
+
+  bool ok = false;
+  ok = connect(d->m_GUI, SIGNAL(LeftImageSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftImageSelectionChanged(const mitk::DataNode*)));
+  assert(ok);
+  ok = connect(d->m_GUI, SIGNAL(LeftMaskSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftMaskSelectionChanged(const mitk::DataNode*)));
+  assert(ok);
+  ok = connect(d->m_GUI, SIGNAL(RightImageSelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightImageSelectionChanged(const mitk::DataNode*)));
+  assert(ok);
+  ok = connect(d->m_GUI, SIGNAL(RightMaskSelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightMaskSelectionChanged(const mitk::DataNode*)));
+  assert(ok);
+  ok = connect(&d->m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  assert(ok);
 }
 
 
@@ -160,15 +175,38 @@ void DistanceMeasurerController::Update()
   Q_D(DistanceMeasurerController);
   QMutexLocker locker(&d->m_Lock);
 
-  if (d->m_LeftImage != nullptr && d->m_RightImage != nullptr)
+  if (d->m_LeftImage != nullptr && d->m_RightImage != nullptr && !d->m_BackgroundProcess.isRunning())
   {
-    double distanceInCentimetres = d->m_DistanceFromCamera->GetDistance(d->m_LeftImage,
-                                                                        d->m_RightImage,
-                                                                        d->m_LeftMask,
-                                                                        d->m_RightMask
-                                                                       );
-    d->m_GUI->SetDistance(distanceInCentimetres / 10.0);
+    d->m_BackgroundProcess = QtConcurrent::run(this, &DistanceMeasurerController::InternalUpdate);
+    d->m_BackgroundProcessWatcher.setFuture(d->m_BackgroundProcess);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+double DistanceMeasurerController::InternalUpdate()
+{
+  Q_D(DistanceMeasurerController);
+  QMutexLocker locker(&d->m_Lock);
+
+  double distanceInMillimetres = d->m_DistanceFromCamera->GetDistance(d->m_LeftImage,
+                                                                      d->m_RightImage,
+                                                                      d->m_LeftMask,
+                                                                      d->m_RightMask
+                                                                     );
+
+  return distanceInMillimetres;
+}
+
+
+//-----------------------------------------------------------------------------
+void DistanceMeasurerController::OnBackgroundProcessFinished()
+{
+  Q_D(DistanceMeasurerController);
+  QMutexLocker locker(&d->m_Lock);
+
+  double distanceInMillimetres = d->m_BackgroundProcessWatcher.result();
+  d->m_GUI->SetDistance(distanceInMillimetres / 10.0);
 }
 
 } // end namespace

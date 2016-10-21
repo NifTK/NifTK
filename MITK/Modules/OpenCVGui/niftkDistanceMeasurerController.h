@@ -63,7 +63,11 @@ protected:
 
 protected slots:
 
+  void OnBackgroundProcessFinished();
+
 private:
+
+  double InternalUpdate();
 
   QScopedPointer<DistanceMeasurerControllerPrivate> d_ptr;
   Q_DECLARE_PRIVATE(DistanceMeasurerController);
