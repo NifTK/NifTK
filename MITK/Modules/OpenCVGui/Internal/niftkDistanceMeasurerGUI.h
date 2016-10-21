@@ -36,6 +36,7 @@ public:
   virtual ~DistanceMeasurerGUI();
 
   void SetDataStorage(mitk::DataStorage* storage);
+  void SetDistance(const double& distance);
   void Reset();
 
 signals:

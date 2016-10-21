@@ -24,7 +24,11 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftImageComboBox"/>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftImageComboBox">
+       <property name="toolTip">
+        <string/>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="m_RightImageLabel">
@@ -56,6 +60,20 @@
      <item row="3" column="1">
       <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightMaskComboBox"/>
      </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="m_DistanceLabel">
+       <property name="text">
+        <string>distance (cm):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="m_Distance">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
@@ -66,7 +84,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>151</height>
+       <height>125</height>
       </size>
      </property>
     </spacer>

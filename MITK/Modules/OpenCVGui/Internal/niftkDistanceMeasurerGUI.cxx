@@ -85,4 +85,11 @@ void DistanceMeasurerGUI::Reset()
   m_RightMaskComboBox->setCurrentIndex(0);
 }
 
+
+//-----------------------------------------------------------------------------
+void DistanceMeasurerGUI::SetDistance(const double& distance)
+{
+  m_Distance->setText(QString::number( distance, 'f', 2 ));
+}
+
 } // end namespace

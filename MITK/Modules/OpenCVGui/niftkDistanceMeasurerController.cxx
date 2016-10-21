@@ -14,6 +14,9 @@
 
 #include "niftkDistanceMeasurerController.h"
 #include <Internal/niftkDistanceMeasurerGUI.h>
+#include <niftkDistanceFromCamera.h>
+#include <QMutex>
+#include <QMutexLocker>
 
 namespace niftk
 {
@@ -28,15 +31,27 @@ public:
   DistanceMeasurerControllerPrivate(DistanceMeasurerController* q);
   ~DistanceMeasurerControllerPrivate();
 
-  DistanceMeasurerGUI* m_GUI;
+  DistanceMeasurerGUI*               m_GUI;
+  mitk::DataNode*                    m_LeftImage;
+  mitk::DataNode*                    m_LeftMask;
+  mitk::DataNode*                    m_RightImage;
+  mitk::DataNode*                    m_RightMask;
+  QMutex                             m_Lock;
+  niftk::DistanceFromCamera::Pointer m_DistanceFromCamera;
 };
 
 
 //-----------------------------------------------------------------------------
 DistanceMeasurerControllerPrivate::DistanceMeasurerControllerPrivate(DistanceMeasurerController* distanceMeasurerController)
 : q_ptr(distanceMeasurerController)
+, m_LeftImage(nullptr)
+, m_LeftMask(nullptr)
+, m_RightImage(nullptr)
+, m_RightMask(nullptr)
+, m_Lock(QMutex::Recursive)
 {
   Q_Q(DistanceMeasurerController);
+  m_DistanceFromCamera = niftk::DistanceFromCamera::New();
 }
 
 
@@ -75,13 +90,10 @@ void DistanceMeasurerController::SetupGUI(QWidget* parent)
   BaseController::SetupGUI(parent);
   d->m_GUI = dynamic_cast<DistanceMeasurerGUI*>(this->GetGUI());
   d->m_GUI->SetDataStorage(this->GetDataStorage());
-}
-
-
-//-----------------------------------------------------------------------------
-void DistanceMeasurerController::Update()
-{
-  Q_D(DistanceMeasurerController);
+  connect(d->m_GUI, SIGNAL(LeftImageSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftImageSelectionChanged(const mitk::DataNode*)));
+  connect(d->m_GUI, SIGNAL(LeftMaskSelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftMaskSelectionChanged(const mitk::DataNode*)));
+  connect(d->m_GUI, SIGNAL(RightImageSelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightImageSelectionChanged(const mitk::DataNode*)));
+  connect(d->m_GUI, SIGNAL(RightMaskSelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightMaskSelectionChanged(const mitk::DataNode*)));
 }
 
 
@@ -89,6 +101,74 @@ void DistanceMeasurerController::Update()
 void DistanceMeasurerController::OnNodeRemoved(const mitk::DataNode* node)
 {
   Q_D(DistanceMeasurerController);
+  QMutexLocker locker(&d->m_Lock);
+
+  if (   node == d->m_LeftImage
+      || node == d->m_LeftMask
+      || node == d->m_RightImage
+      || node == d->m_RightMask
+      )
+  {
+    d->m_GUI->Reset();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void DistanceMeasurerController::OnLeftImageSelectionChanged(const mitk::DataNode* node)
+{
+  Q_D(DistanceMeasurerController);
+  QMutexLocker locker(&d->m_Lock);
+
+  d->m_LeftImage = const_cast<mitk::DataNode*>(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void DistanceMeasurerController::OnLeftMaskSelectionChanged(const mitk::DataNode* node)
+{
+  Q_D(DistanceMeasurerController);
+  QMutexLocker locker(&d->m_Lock);
+
+  d->m_LeftMask = const_cast<mitk::DataNode*>(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void DistanceMeasurerController::OnRightImageSelectionChanged(const mitk::DataNode* node)
+{
+  Q_D(DistanceMeasurerController);
+  QMutexLocker locker(&d->m_Lock);
+
+  d->m_RightImage = const_cast<mitk::DataNode*>(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void DistanceMeasurerController::OnRightMaskSelectionChanged(const mitk::DataNode* node)
+{
+  Q_D(DistanceMeasurerController);
+  QMutexLocker locker(&d->m_Lock);
+
+  d->m_RightMask = const_cast<mitk::DataNode*>(node);
+}
+
+
+//-----------------------------------------------------------------------------
+void DistanceMeasurerController::Update()
+{
+  Q_D(DistanceMeasurerController);
+  QMutexLocker locker(&d->m_Lock);
+
+  if (d->m_LeftImage != nullptr && d->m_RightImage != nullptr)
+  {
+    double distanceInCentimetres = d->m_DistanceFromCamera->GetDistance(d->m_LeftImage,
+                                                                        d->m_RightImage,
+                                                                        d->m_LeftMask,
+                                                                        d->m_RightMask
+                                                                       );
+    d->m_GUI->SetDistance(distanceInCentimetres / 10.0);
+  }
 }
 
 } // end namespace

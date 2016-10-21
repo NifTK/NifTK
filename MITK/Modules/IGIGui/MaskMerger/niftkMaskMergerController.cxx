@@ -17,7 +17,6 @@
 #include <niftkBinaryMaskUtils.h>
 #include <niftkImageUtils.h>
 #include <mitkDataNode.h>
-#include <QMessageBox>
 #include <QMutex>
 #include <QMutexLocker>
 
