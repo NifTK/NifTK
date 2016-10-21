@@ -31,3 +31,10 @@ set(MODULE_CUSTOM_TESTS
   mitkIdealStereoCalibrationTest.cxx
   mitkUndistortionLoopTest.cxx
 )
+
+if(OPENCV_WITH_NONFREE)
+  list(APPEND MODULE_CUSTOM_TESTS
+    niftkDistanceFromCameraTest.cxx
+  )
+endif()
+

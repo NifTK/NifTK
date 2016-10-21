@@ -54,5 +54,8 @@ set(CPP_FILES
 )
 
 if(OPENCV_WITH_NONFREE)
-  list(APPEND CPP_FILES Features/mitkSurfTester.cxx)
+  list(APPEND CPP_FILES
+    Features/mitkSurfTester.cxx
+    DistanceMeasurer/niftkDistanceFromCamera.cxx
+  )
 endif()
