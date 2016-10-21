@@ -8,12 +8,4 @@
           icon="resources/niftkMaskMerger.png" />
   </extension>
 
-  <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.igimaskmerger.preferencepage"
-          name="Mask Merger"
-          class="niftk::MaskMergerPreferencePage">
-      <keywordreference id="uk.ac.ucl.cmic.maskmerger.keywords"></keywordreference>
-    </page>
-  </extension>
-
 </plugin>
