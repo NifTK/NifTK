@@ -96,6 +96,8 @@ public:
   mitk::BaseData::Pointer Run(
            const mitk::Image::Pointer image1,
            const mitk::Image::Pointer image2,
+           const mitk::Image::Pointer mask1,
+           const mitk::Image::Pointer mask2,
            Method method,
            OutputType outputtype,
            const mitk::DataNode::Pointer camnode,
@@ -111,6 +113,8 @@ public:
     mitk::DataNode::Pointer outputNode;
     mitk::Image::Pointer image1;
     mitk::Image::Pointer image2;
+    mitk::Image::Pointer mask1;
+    mitk::Image::Pointer mask2;
     Method method;
     OutputType outputtype;
     mitk::DataNode::Pointer camnode;

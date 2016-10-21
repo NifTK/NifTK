@@ -313,6 +313,9 @@ void SurfaceReconView::DoSurfaceReconstruction()
     mitk::DataNode::Pointer leftNode = m_StereoImageAndCameraSelectionWidget->GetLeftNode();
     mitk::DataNode::Pointer rightNode = m_StereoImageAndCameraSelectionWidget->GetRightNode();
 
+    mitk::Image::Pointer leftMask = m_StereoImageAndCameraSelectionWidget->GetLeftMask();
+    mitk::Image::Pointer rightMask = m_StereoImageAndCameraSelectionWidget->GetRightMask();
+
     // we store these for background processing.
     // we keep names instead of pointers because data storage screws up if we add the output node
     // with parents that might have been deleted already.
@@ -406,6 +409,8 @@ void SurfaceReconView::DoSurfaceReconstruction()
         niftk::SurfaceReconstruction::ParamPacket   params;
         params.image1 = leftImage;
         params.image2 = rightImage;
+        params.mask1 = leftMask;
+        params.mask2 = rightMask;
         params.method = method;
         params.outputtype = outputtype;
         params.camnode = camNode;
