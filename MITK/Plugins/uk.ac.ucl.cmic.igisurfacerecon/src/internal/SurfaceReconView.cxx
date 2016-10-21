@@ -70,6 +70,7 @@ SurfaceReconView::~SurfaceReconView()
       {
         eventAdmin->unsubscribeSlot(m_IGIUpdateSubscriptionID);
         eventAdmin->unsubscribeSlot(m_IGIRecordingStartedSubscriptionID);
+        eventAdmin->unsubscribeSlot(m_FootswitchSubscriptionID);
       }
     }
   }
@@ -103,6 +104,10 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
 
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTARTED";
     m_IGIRecordingStartedSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnRecordingStarted(ctkEvent)), properties);
+
+    ctkDictionary footswitchProperties;
+    footswitchProperties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH2START";
+    m_FootswitchSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnFootSwitchPressed(ctkEvent)), footswitchProperties);
   }
 
   this->RetrievePreferenceValues();
@@ -194,6 +199,16 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
     {
       DoSurfaceReconstruction();
     }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::OnFootSwitchPressed(const ctkEvent& event)
+{
+  if (!m_BackgroundProcess.isRunning())
+  {
+    DoSurfaceReconstruction();
   }
 }
 

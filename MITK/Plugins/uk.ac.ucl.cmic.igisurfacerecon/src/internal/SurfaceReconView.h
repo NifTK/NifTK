@@ -77,6 +77,11 @@ private slots:
    */
   void OnUpdate(const ctkEvent& event);
 
+  /**
+   * \brief We can also trigger from the footswitch.
+   */
+  void OnFootSwitchPressed(const ctkEvent& event);
+
   // we connect the future to this slot
   void OnBackgroundProcessFinished();
 
@@ -111,8 +116,9 @@ private:
   std::string                                m_BackgroundErrorMessage;
 
   // these are coming from the ctk event bus admin. we use them to explicitly unregister ourself.
-  qlonglong           m_IGIUpdateSubscriptionID;
-  qlonglong           m_IGIRecordingStartedSubscriptionID;
+  qlonglong                                  m_IGIUpdateSubscriptionID;
+  qlonglong                                  m_IGIRecordingStartedSubscriptionID;
+  qlonglong                                  m_FootswitchSubscriptionID;
 };
 
 #endif // SurfaceReconView_h
