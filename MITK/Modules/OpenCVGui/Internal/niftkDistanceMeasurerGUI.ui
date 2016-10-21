@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
@@ -29,7 +29,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="m_RightImageLabel">
        <property name="text">
-        <string>right image (optional):</string>
+        <string>right image:</string>
        </property>
       </widget>
      </item>
@@ -37,45 +37,39 @@
       <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightImageComboBox"/>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="m_ManualUpdateLabel">
+      <widget class="QLabel" name="m_LeftMaskLabel">
        <property name="text">
-        <string>manual update:</string>
+        <string>left mask (optional):</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QRadioButton" name="m_ManualUpdateRadioButton">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="m_ManualUpdatePushButton">
-         <property name="text">
-          <string>do it now</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftMaskComboBox"/>
      </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="m_AutomaticUpdateLabel">
+      <widget class="QLabel" name="m_RightMaskLabel">
        <property name="text">
-        <string>automatic update:</string>
+        <string>right mask (optional):</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QRadioButton" name="m_AutomaticUpdateRadioButton">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightMaskComboBox"/>
      </item>
     </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>151</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

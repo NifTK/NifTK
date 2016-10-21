@@ -36,8 +36,14 @@ public:
   virtual ~DistanceMeasurerGUI();
 
   void SetDataStorage(mitk::DataStorage* storage);
+  void Reset();
 
 signals:
+
+  void LeftImageSelectionChanged(const mitk::DataNode*);
+  void LeftMaskSelectionChanged(const mitk::DataNode*);
+  void RightImageSelectionChanged(const mitk::DataNode*);
+  void RightMaskSelectionChanged(const mitk::DataNode*);
 
 private:
 
