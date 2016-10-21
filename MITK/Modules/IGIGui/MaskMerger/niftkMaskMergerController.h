@@ -47,6 +47,11 @@ public:
 
 public slots:
 
+  void OnLeftMask1SelectionChanged(const mitk::DataNode*);
+  void OnLeftMask2SelectionChanged(const mitk::DataNode*);
+  void OnRightMask1SelectionChanged(const mitk::DataNode*);
+  void OnRightMask2SelectionChanged(const mitk::DataNode*);
+
 protected:
 
   /// \brief Creates the widget that holds the GUI components of the view.

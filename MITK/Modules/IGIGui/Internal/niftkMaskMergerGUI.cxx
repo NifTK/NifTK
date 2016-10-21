@@ -24,20 +24,32 @@ MaskMergerGUI::MaskMergerGUI(QWidget* parent)
 : BaseGUI(parent)
 {
   this->setupUi(parent);
-  this->m_ManualUpdateRadioButton->setChecked(false);
-  this->m_AutomaticUpdateRadioButton->setChecked(true);
-  this->connect(m_LeftImageComboBox, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), SIGNAL(OnLeftSelectionChanged(const mitk::DataNode*)));
-  this->connect(m_RightImageComboBox, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), SIGNAL(OnRightSelectionChanged(const mitk::DataNode*)));
-  this->connect(m_ManualUpdatePushButton, SIGNAL(pressed()), SIGNAL(OnDoItNowPressed()));
-  this->connect(m_ManualUpdateRadioButton, SIGNAL(clicked(bool)), SIGNAL(OnManualUpdateClicked(bool)));
-  this->connect(m_AutomaticUpdateRadioButton, SIGNAL(clicked(bool)), SIGNAL(OnAutomaticUpdateClicked(bool)));
+  this->connect(m_LeftMask1ComboBox, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), SIGNAL(LeftMask1SelectionChanged(const mitk::DataNode*)));
+  this->connect(m_LeftMask2ComboBox, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), SIGNAL(LeftMask2SelectionChanged(const mitk::DataNode*)));
+  this->connect(m_RightMask1ComboBox, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), SIGNAL(RightMask1SelectionChanged(const mitk::DataNode*)));
+  this->connect(m_RightMask2ComboBox, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), SIGNAL(RightMask2SelectionChanged(const mitk::DataNode*)));
 }
 
 
 //-----------------------------------------------------------------------------
 MaskMergerGUI::~MaskMergerGUI()
 {
+}
 
+
+//-----------------------------------------------------------------------------
+void MaskMergerGUI::ResetLeft()
+{
+  m_LeftMask1ComboBox->setCurrentIndex(0);
+  m_LeftMask2ComboBox->setCurrentIndex(0);
+}
+
+
+//-----------------------------------------------------------------------------
+void MaskMergerGUI::ResetRight()
+{
+  m_RightMask1ComboBox->setCurrentIndex(0);
+  m_RightMask2ComboBox->setCurrentIndex(0);
 }
 
 
@@ -45,15 +57,25 @@ MaskMergerGUI::~MaskMergerGUI()
 void MaskMergerGUI::SetDataStorage(mitk::DataStorage* storage)
 {
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-  m_LeftImageComboBox->SetAutoSelectNewItems(false);
-  m_LeftImageComboBox->SetPredicate(isImage);
-  m_LeftImageComboBox->SetDataStorage(storage);
-  m_LeftImageComboBox->setCurrentIndex(0);
+  m_LeftMask1ComboBox->SetAutoSelectNewItems(false);
+  m_LeftMask1ComboBox->SetPredicate(isImage);
+  m_LeftMask1ComboBox->SetDataStorage(storage);
+  m_LeftMask1ComboBox->setCurrentIndex(0);
 
-  m_RightImageComboBox->SetAutoSelectNewItems(false);
-  m_RightImageComboBox->SetPredicate(isImage);
-  m_RightImageComboBox->SetDataStorage(storage);
-  m_RightImageComboBox->setCurrentIndex(0);
+  m_LeftMask2ComboBox->SetAutoSelectNewItems(false);
+  m_LeftMask2ComboBox->SetPredicate(isImage);
+  m_LeftMask2ComboBox->SetDataStorage(storage);
+  m_LeftMask2ComboBox->setCurrentIndex(0);
+
+  m_RightMask1ComboBox->SetAutoSelectNewItems(false);
+  m_RightMask1ComboBox->SetPredicate(isImage);
+  m_RightMask1ComboBox->SetDataStorage(storage);
+  m_RightMask1ComboBox->setCurrentIndex(0);
+
+  m_RightMask2ComboBox->SetAutoSelectNewItems(false);
+  m_RightMask2ComboBox->SetPredicate(isImage);
+  m_RightMask2ComboBox->SetDataStorage(storage);
+  m_RightMask2ComboBox->setCurrentIndex(0);
 }
 
 } // end namespace

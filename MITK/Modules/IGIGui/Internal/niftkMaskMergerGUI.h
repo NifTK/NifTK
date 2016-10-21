@@ -23,7 +23,7 @@ namespace niftk
 {
 
 /// \class MaskMergerGUI
-/// \brief Widgets for Maske Merger plugin.
+/// \brief Widgets for Mask Merger plugin.
 class MaskMergerGUI : public BaseGUI,
                       private Ui::MaskMergerGUI
 {
@@ -36,14 +36,15 @@ public:
   virtual ~MaskMergerGUI();
 
   void SetDataStorage(mitk::DataStorage* storage);
+  void ResetLeft();
+  void ResetRight();
 
 signals:
 
-  void OnLeftSelectionChanged(const mitk::DataNode*);
-  void OnRightSelectionChanged(const mitk::DataNode*);
-  void OnDoItNowPressed();
-  void OnManualUpdateClicked(bool);
-  void OnAutomaticUpdateClicked(bool);
+  void LeftMask1SelectionChanged(const mitk::DataNode*);
+  void LeftMask2SelectionChanged(const mitk::DataNode*);
+  void RightMask1SelectionChanged(const mitk::DataNode*);
+  void RightMask2SelectionChanged(const mitk::DataNode*);
 
 private:
 

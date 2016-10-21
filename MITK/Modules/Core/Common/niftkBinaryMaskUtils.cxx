@@ -106,7 +106,7 @@ void ValidateBinaryMaskInputs(const mitk::Image::Pointer& input1,
 //-----------------------------------------------------------------------------
 void BinaryMaskAndOperator(const mitk::Image::Pointer& input1,
                            const mitk::Image::Pointer& input2,
-                           const mitk::Image::Pointer& output
+                           mitk::Image::Pointer& output
                           )
 {
 
@@ -147,7 +147,7 @@ void BinaryMaskAndOperator(const mitk::Image::Pointer& input1,
 //-----------------------------------------------------------------------------
 void BinaryMaskOrOperator(const mitk::Image::Pointer& input1,
                           const mitk::Image::Pointer& input2,
-                          const mitk::Image::Pointer& output
+                          mitk::Image::Pointer& output
                          )
 {
   niftk::ValidateBinaryMaskInputs(input1, input2, output);
