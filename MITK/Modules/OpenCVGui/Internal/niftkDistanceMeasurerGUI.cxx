@@ -50,12 +50,12 @@ void DistanceMeasurerGUI::SetDataStorage(mitk::DataStorage* storage)
   isBinaryImage->AddPredicate(isImage);
   isBinaryImage->AddPredicate(isBinary);
 
-  mitk::NodePredicateAnd::Pointer isNotBinaryImage = mitk::NodePredicateAnd::New();
-  isNotBinaryImage->AddPredicate(isImage);
-  isNotBinaryImage->AddPredicate(isNotBinary);
+  mitk::NodePredicateAnd::Pointer isNonBinaryImage = mitk::NodePredicateAnd::New();
+  isNonBinaryImage->AddPredicate(isImage);
+  isNonBinaryImage->AddPredicate(isNotBinary);
 
   m_LeftImageComboBox->SetAutoSelectNewItems(false);
-  m_LeftImageComboBox->SetPredicate(isNotBinaryImage);
+  m_LeftImageComboBox->SetPredicate(isNonBinaryImage);
   m_LeftImageComboBox->SetDataStorage(storage);
   m_LeftImageComboBox->setCurrentIndex(0);
 
@@ -65,7 +65,7 @@ void DistanceMeasurerGUI::SetDataStorage(mitk::DataStorage* storage)
   m_LeftMaskComboBox->setCurrentIndex(0);
 
   m_RightImageComboBox->SetAutoSelectNewItems(false);
-  m_RightImageComboBox->SetPredicate(isNotBinaryImage);
+  m_RightImageComboBox->SetPredicate(isNonBinaryImage);
   m_RightImageComboBox->SetDataStorage(storage);
   m_RightImageComboBox->setCurrentIndex(0);
 

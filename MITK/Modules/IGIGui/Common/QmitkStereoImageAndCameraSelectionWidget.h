@@ -39,6 +39,10 @@ public:
   mitk::DataNode* GetLeftNode() const;
   mitk::Image* GetRightImage() const;
   mitk::DataNode* GetRightNode() const;
+  mitk::Image* GetLeftMask() const;
+  mitk::DataNode* GetLeftMaskNode() const;
+  mitk::Image* GetRightMask() const;
+  mitk::DataNode* GetRightMaskNode() const;
   niftk::CoordinateAxesData* GetCameraTransform() const;
   mitk::DataNode* GetCameraNode() const;
   void SetCameraNode(mitk::DataNode* node);

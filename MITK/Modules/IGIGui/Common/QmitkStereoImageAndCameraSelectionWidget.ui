@@ -13,63 +13,79 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
-        <widget class="QLabel" name="m_LeftImageLabel">
-         <property name="text">
-          <string>Left channel:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_LeftImageCombo"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="m_RightImageLabel">
-         <property name="text">
-          <string>Right channel:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_RightImageCombo"/>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QLabel" name="m_InstructionsLabel">
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="m_LeftImageLabel">
        <property name="text">
-        <string>Pick a data storage node from the list or enter its name. The node should have an image attached to it.</string>
-       </property>
-       <property name="wordWrap">
-        <bool>true</bool>
+        <string>Left channel:</string>
        </property>
       </widget>
      </item>
-     <item>
-      <layout class="QFormLayout" name="formLayout_2">
-       <item row="0" column="0">
-        <widget class="QLabel" name="m_CameraPositionLabel">
-         <property name="text">
-          <string>Camera position:</string>
-         </property>
-         <property name="buddy">
-          <cstring>m_CameraPositionComboBox</cstring>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QmitkDataStorageComboBox" name="m_CameraPositionComboBox">
-         <property name="editable">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
+     <item row="0" column="1">
+      <widget class="QmitkDataStorageComboBox" name="m_LeftImageCombo"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="m_RightImageLabel">
+       <property name="text">
+        <string>Right channel:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QmitkDataStorageComboBox" name="m_RightImageCombo"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="m_LeftMaskLabel">
+       <property name="text">
+        <string>Left mask (optional):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QmitkDataStorageComboBox" name="m_LeftMaskCombo"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="m_RightMaskLabel">
+       <property name="text">
+        <string>Right mask (optional):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QmitkDataStorageComboBox" name="m_RightMaskCombo"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="m_InstructionsLabel">
+     <property name="text">
+      <string>Pick a data storage node from the list or enter its name. The node should have an image attached to it.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QFormLayout" name="formLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="m_CameraPositionLabel">
+       <property name="text">
+        <string>Camera position:</string>
+       </property>
+       <property name="buddy">
+        <cstring>m_CameraPositionComboBox</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QmitkDataStorageComboBox" name="m_CameraPositionComboBox">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
