@@ -110,9 +110,6 @@ public:
   /// \brief Sets the bounding box layer.
   void SetBoundingBoxLayer(int layer);
 
-  /// \brief Gets the bounding box visibility.
-  bool GetBoundingBoxVisible() const;
-
   /// \brief Gets whether to resond to mouse events, default is on.
   bool GetRespondToMouseEvents() const;
 
@@ -154,12 +151,6 @@ private:
 
   /// \brief Called to remove all observers from tracked objects.
   void RemoveObserversFromTrackedObjects();
-
-  /// \brief Adds the bounding box to the data storage.
-  void AddBoundingBoxToDataStorage();
-
-  /// \brief Removes the bounding box from the data storage.
-  void RemoveBoundingBoxFromDataStorage();
 
   /// \brief We need to provide access to data storage to listen to Node events.
   mitk::DataStorage::Pointer m_DataStorage;

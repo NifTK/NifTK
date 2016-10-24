@@ -70,15 +70,16 @@ ThumbnailRenderWindow::ThumbnailRenderWindow(QWidget *parent, mitk::RenderingMan
   m_BoundingBox = mitk::Cuboid::New();
   m_BoundingBoxNode = mitk::DataNode::New();
   m_BoundingBoxNode->SetData(m_BoundingBox);
-  m_BoundingBoxNode->SetProperty("name", mitk::StringProperty::New("ThumbnailBoundingBox"));
-  m_BoundingBoxNode->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
-  m_BoundingBoxNode->SetProperty("helper object", mitk::BoolProperty::New(true));
-  m_BoundingBoxNode->SetBoolProperty("visible", false); // globally turn it off, then we only turn it on in thumbnail (this) window.
+  m_BoundingBoxNode->SetName("ThumbnailBoundingBox");
+  m_BoundingBoxNode->SetBoolProperty("includeInBoundingBox", false);
+  m_BoundingBoxNode->SetBoolProperty("helper object", true);
+  m_BoundingBoxNode->SetVisibility(false); // globally turn it off, then we only turn it on in thumbnail (this) window.
 
-  m_BoundingBoxNode->SetBoolProperty("visible", false, m_Renderer);
   this->SetBoundingBoxOpacity(1);
   this->SetBoundingBoxLineThickness(1);
   this->SetBoundingBoxLayer(99);// arbitrary, copied from segmentation functionality
+
+  m_DataStorage->Add(m_BoundingBoxNode);
 
   /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
 
@@ -130,6 +131,8 @@ ThumbnailRenderWindow::~ThumbnailRenderWindow()
 
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
+
+  m_DataStorage->Remove(m_BoundingBoxNode);
 
   if (m_MouseEventEater != NULL)
   {
@@ -186,28 +189,6 @@ void ThumbnailRenderWindow::SetDisplayInteractionsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::AddBoundingBoxToDataStorage()
-{
-  if (!m_DataStorage->Exists(m_BoundingBoxNode))
-  {
-    m_BoundingBoxNode->SetBoolProperty("visible", true, m_Renderer);
-    m_DataStorage->Add(m_BoundingBoxNode);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::RemoveBoundingBoxFromDataStorage()
-{
-  if (m_DataStorage->Exists(m_BoundingBoxNode))
-  {
-    m_DataStorage->Remove(m_BoundingBoxNode);
-    m_BoundingBoxNode->SetBoolProperty("visible", false, m_Renderer);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void ThumbnailRenderWindow::Activated()
 {
 }
@@ -219,7 +200,6 @@ void ThumbnailRenderWindow::Deactivated()
   if (m_TrackedWorldTimeGeometry.IsNotNull())
   {
     this->RemoveObserversFromTrackedObjects();
-    this->RemoveBoundingBoxFromDataStorage();
   }
 }
 
@@ -439,7 +419,7 @@ void ThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::Pointer rende
       assert(m_TrackedSliceNavigator.IsNotNull());
 
       this->RemoveObserversFromTrackedObjects();
-      this->RemoveBoundingBoxFromDataStorage();
+      m_BoundingBoxNode->SetVisibility(false, m_Renderer);
 
       m_TrackedWorldTimeGeometry = 0;
       m_TrackedDisplayGeometry = 0;
@@ -475,14 +455,11 @@ void ThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::Pointer rende
 
     if (m_TrackedWorldTimeGeometry.IsNotNull())
     {
-      // I'm doing this in this method so that when the initial first
-      // window starts (i.e. before any data is loaded),
-      // the bounding box will not be included, and not visible.
-      this->AddBoundingBoxToDataStorage();
-
       this->UpdateWorldTimeGeometry();
       this->UpdateSliceAndTimeStep();
       this->UpdateBoundingBox();
+
+      m_BoundingBoxNode->SetVisibility(true, m_Renderer);
 
       this->AddObserversToTrackedObjects();
     }
@@ -556,15 +533,6 @@ float ThumbnailRenderWindow::GetBoundingBoxOpacity() const
 void ThumbnailRenderWindow::SetBoundingBoxOpacity(float opacity)
 {
   m_BoundingBoxNode->SetOpacity(opacity);
-}
-
-
-//-----------------------------------------------------------------------------
-bool ThumbnailRenderWindow::GetBoundingBoxVisible() const
-{
-  bool visible = false;
-  m_BoundingBoxNode->GetBoolProperty("visible", visible, m_Renderer);
-  return visible;
 }
 
 
