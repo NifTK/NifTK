@@ -125,26 +125,12 @@ public:
   /// \brief Sets whether to resond to wheel events.
   void SetRespondToWheelEvents(bool on);
 
-  /// \brief Called when a DataStorage Add Event was emmitted and sets m_InDataStorageChanged to true and calls NodeAdded afterwards.
-  void NodeAddedProxy(const mitk::DataNode* node);
-
-  /// \brief Called when a DataStorage Change Event was emmitted and sets m_InDataStorageChanged to true and calls NodeChanged afterwards.
-  void NodeChangedProxy(const mitk::DataNode* node);
-
   /// \brief Returns the currently tracked
   mitk::BaseRenderer::Pointer GetTrackedRenderer() const;
 
   /// \brief Makes the thumbnail render window track the given renderer.
   /// The renderer is supposed to come from the main display (aka. editor).
   void SetTrackedRenderer(mitk::BaseRenderer::Pointer rendererToTrack);
-
-protected:
-
-  /// \brief Called when a DataStorage Add event was emmitted and may be reimplemented by deriving classes.
-  virtual void OnNodeAdded(const mitk::DataNode* node);
-
-  /// \brief Called when a DataStorage Change event was emmitted and may be reimplemented by deriving classes.
-  virtual void OnNodeChanged(const mitk::DataNode* node);
 
 private:
 

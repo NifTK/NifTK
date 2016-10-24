@@ -210,14 +210,6 @@ void ThumbnailRenderWindow::RemoveBoundingBoxFromDataStorage()
 //-----------------------------------------------------------------------------
 void ThumbnailRenderWindow::Activated()
 {
-  if (m_DataStorage.IsNotNull())
-  {
-    m_DataStorage->AddNodeEvent.AddListener( mitk::MessageDelegate1<ThumbnailRenderWindow, const mitk::DataNode*>
-      ( this, &ThumbnailRenderWindow::NodeAddedProxy ) );
-
-    m_DataStorage->ChangedNodeEvent.AddListener( mitk::MessageDelegate1<ThumbnailRenderWindow, const mitk::DataNode*>
-      ( this, &ThumbnailRenderWindow::NodeChangedProxy ) );
-  }
 }
 
 
@@ -228,15 +220,6 @@ void ThumbnailRenderWindow::Deactivated()
   {
     this->RemoveObserversFromTrackedObjects();
     this->RemoveBoundingBoxFromDataStorage();
-  }
-
-  if (m_DataStorage.IsNotNull())
-  {
-    m_DataStorage->AddNodeEvent.RemoveListener( mitk::MessageDelegate1<ThumbnailRenderWindow, const mitk::DataNode*>
-      ( this, &ThumbnailRenderWindow::NodeAddedProxy ) );
-
-    m_DataStorage->ChangedNodeEvent.RemoveListener( mitk::MessageDelegate1<ThumbnailRenderWindow, const mitk::DataNode*>
-      ( this, &ThumbnailRenderWindow::NodeChangedProxy ) );
   }
 }
 
@@ -396,59 +379,6 @@ void ThumbnailRenderWindow::UpdateBoundingBox()
     // Request a single update at the end of the method.
     m_Renderer->RequestUpdate();
   }
-}
-
-
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
-{
-  // Guarantee no recursions when a new node event is created in NodeAdded()
-  if(!m_InDataStorageChanged
-      && node != NULL
-      && !niftk::IsNodeAHelperObject(node)
-      && node != m_BoundingBoxNode
-      )
-  {
-    m_InDataStorageChanged = true;
-    this->OnNodeAdded(node);
-    m_InDataStorageChanged = false;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::OnNodeAdded( const mitk::DataNode* node)
-{
-  this->UpdateWorldGeometry();
-  this->UpdateSliceAndTimeStep();
-
-  this->UpdateBoundingBox();
-
-  m_Renderer->RequestUpdate();
-}
-
-
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
-{
-  // Guarantee no recursions when a new node event is created in NodeAdded()
-  if(!m_InDataStorageChanged
-      && node != NULL
-      && !niftk::IsNodeAHelperObject(node)
-      && node != m_BoundingBoxNode
-      )
-  {
-    m_InDataStorageChanged = true;
-    this->OnNodeChanged(node);
-    m_InDataStorageChanged = false;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::OnNodeChanged( const mitk::DataNode* node)
-{
-  m_Renderer->RequestUpdate();
 }
 
 
