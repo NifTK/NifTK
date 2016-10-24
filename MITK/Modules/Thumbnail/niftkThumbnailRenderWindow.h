@@ -157,7 +157,7 @@ private:
   /// \brief When the world geometry changes, we have to make the thumbnail match, to get the same slice.
   void UpdateWorldGeometry();
 
-  /// \brief Updates the bounding box by taking the 4 corners of the tracked render window, by Get3DPoint().
+  /// \brief Updates the bounding box by taking the corners of the tracked render window.
   void UpdateBoundingBox();
 
   /// \brief Updates the slice and time step on the SliceNavigationController.
@@ -174,9 +174,6 @@ private:
 
   /// \brief Removes the bounding box from the data storage.
   void RemoveBoundingBoxFromDataStorage();
-
-  /// \brief Converts 2D pixel point to 3D millimetre point using MITK methods.
-  mitk::Point3D Get3DPoint(int x, int y);
 
   /// \brief We need to provide access to data storage to listen to Node events.
   mitk::DataStorage::Pointer m_DataStorage;

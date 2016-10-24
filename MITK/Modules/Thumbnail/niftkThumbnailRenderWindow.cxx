@@ -311,79 +311,51 @@ void ThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
 
 
 //-----------------------------------------------------------------------------
-mitk::Point3D ThumbnailRenderWindow::Get3DPoint(int x, int y)
-{
-  mitk::Point3D pointInMillimetres3D;
-  pointInMillimetres3D.Fill(0);
-
-  if (m_TrackedDisplayGeometry.IsNotNull())
-  {
-    mitk::Point2D pointInVoxels2D;
-    mitk::Point2D pointInMillimetres2D;
-
-    pointInVoxels2D[0] = x;
-    pointInVoxels2D[1] = y;
-
-    m_TrackedDisplayGeometry->DisplayToWorld(pointInVoxels2D, pointInMillimetres2D);
-    m_TrackedDisplayGeometry->Map(pointInMillimetres2D, pointInMillimetres3D);
-  }
-
-  return pointInMillimetres3D;
-}
-
-
-//-----------------------------------------------------------------------------
 void ThumbnailRenderWindow::UpdateBoundingBox()
 {
-  if (m_TrackedDisplayGeometry.IsNotNull())
+  if (m_TrackedDisplayGeometry.IsNotNull() && m_Renderer->GetWorldGeometry())
   {
     // Get min and max extent of the tracked render window's display geometry.
-    mitk::Point3D points[4];
-    points[0] = this->Get3DPoint(0, 0);
-    points[1] = this->Get3DPoint(m_TrackedDisplayGeometry->GetDisplayWidth()-1, 0);
-    points[2] = this->Get3DPoint(0, m_TrackedDisplayGeometry->GetDisplayHeight()-1);
-    points[3] = this->Get3DPoint(m_TrackedDisplayGeometry->GetDisplayWidth()-1, m_TrackedDisplayGeometry->GetDisplayHeight()-1);
+    mitk::Point3D min, max;
 
-    mitk::Point3D min = points[0];
-    mitk::Point3D max = points[0];
+    mitk::Point2D point2D;
+    point2D[0] = 0;
+    point2D[1] = 0;
+    m_TrackedDisplayGeometry->DisplayToWorld(point2D, point2D);
+    m_TrackedDisplayGeometry->Map(point2D, min);
+    m_Renderer->GetWorldGeometry()->WorldToIndex(min, min);
 
-    for (int i = 1; i < 4; i++)
+    point2D[0] = m_TrackedDisplayGeometry->GetDisplayWidth() - 1;
+    point2D[1] = m_TrackedDisplayGeometry->GetDisplayHeight() - 1;
+    m_TrackedDisplayGeometry->DisplayToWorld(point2D, point2D);
+    m_TrackedDisplayGeometry->Map(point2D, max);
+    m_Renderer->GetWorldGeometry()->WorldToIndex(max, max);
+
+    int planeAxis = -1;
+    for (int axis = 0; axis < 3; ++axis)
     {
-      for (int j = 0; j < 3; j++)
+      if (std::abs(min[axis] - max[axis]) < 0.0001)
       {
-        if (points[i][j] < min[j])
-        {
-          min[j] = points[i][j];
-        }
-        if (points[i][j] > max[j])
-        {
-          max[j] = points[i][j];
-        }
+        planeAxis = axis;
       }
     }
 
-    // Work out axis that changes the least (axis towards plane).
-    mitk::Point3D diff;
-    for (int i = 0; i < 3; i++)
+    if (planeAxis == -1)
     {
-      diff[i] = max[i] - min[i];
+      MITK_DEBUG << "ThumbnailRenderWindow::UpdateBoundingBox(): Cannot find plane axis.";
+      m_BoundingBoxNode->SetVisibility(false, m_Renderer);
+      return;
     }
 
-    double bestChange = fabs(diff[0]);
-    int bestIndex = 0;
-    for (int i = 1; i< 3; i++)
+    if (!m_BoundingBoxNode->IsVisible(m_Renderer))
     {
-      if (fabs(diff[i]) < bestChange)
-      {
-        bestIndex = i;
-        bestChange = fabs(diff[i]);
-      }
+      m_BoundingBoxNode->SetVisibility(true, m_Renderer);
     }
 
     // Add a bit of jitter so bounding box is on 2D.
     // So, this jitter adds depth to the bounding box in the through plane direction.
-    min[bestIndex] -= 1;
-    max[bestIndex] += 1;
+    min[planeAxis] -= 0.5;
+    max[planeAxis] += 0.5;
 
     // Create a cube.
     vtkCubeSource* cube = vtkCubeSource::New();
@@ -392,6 +364,7 @@ void ThumbnailRenderWindow::UpdateBoundingBox()
 
     // Update bounding box.
     m_BoundingBox->SetVtkPolyData(cube->GetOutput());
+    m_BoundingBox->SetGeometry(m_Renderer->GetWorldGeometry());
 
     if (m_TrackedSliceNavigator)
     {
