@@ -141,7 +141,7 @@ private:
   void OnBoundingBoxZoomed(double scaleFactor);
 
   /// \brief When the world geometry changes, we have to make the thumbnail match, to get the same slice.
-  void UpdateWorldGeometry();
+  void UpdateWorldTimeGeometry();
 
   /// \brief Updates the bounding box by taking the corners of the tracked render window.
   void UpdateBoundingBox();
@@ -177,7 +177,7 @@ private:
   mitk::BaseRenderer::Pointer m_TrackedRenderer;
 
   // This is set to the current world geometry.
-  mitk::BaseGeometry::Pointer m_TrackedWorldGeometry;
+  mitk::TimeGeometry::Pointer m_TrackedWorldTimeGeometry;
 
   /// \brief The rendering manager of the tracked renderer.
   /// The renderer of the thumbnail window should be added to the rendering manager
@@ -198,7 +198,7 @@ private:
   unsigned long m_TrackedRendererTag;
 
   /// \brief Used for when the tracked window world geometry changes
-  unsigned long m_TrackedWorldGeometryTag;
+  unsigned long m_TrackedWorldTimeGeometryTag;
 
   /// \brief Used for when the tracked window display geometry changes.
   unsigned long m_TrackedDisplayGeometryTag;
