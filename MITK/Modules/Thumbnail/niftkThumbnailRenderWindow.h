@@ -110,9 +110,6 @@ public:
   /// \brief Sets the bounding box layer.
   void SetBoundingBoxLayer(int layer);
 
-  /// \brief Gets the bounding box visibility.
-  bool GetBoundingBoxVisible() const;
-
   /// \brief Gets whether to resond to mouse events, default is on.
   bool GetRespondToMouseEvents() const;
 
@@ -125,26 +122,12 @@ public:
   /// \brief Sets whether to resond to wheel events.
   void SetRespondToWheelEvents(bool on);
 
-  /// \brief Called when a DataStorage Add Event was emmitted and sets m_InDataStorageChanged to true and calls NodeAdded afterwards.
-  void NodeAddedProxy(const mitk::DataNode* node);
-
-  /// \brief Called when a DataStorage Change Event was emmitted and sets m_InDataStorageChanged to true and calls NodeChanged afterwards.
-  void NodeChangedProxy(const mitk::DataNode* node);
-
   /// \brief Returns the currently tracked
   mitk::BaseRenderer::Pointer GetTrackedRenderer() const;
 
   /// \brief Makes the thumbnail render window track the given renderer.
   /// The renderer is supposed to come from the main display (aka. editor).
   void SetTrackedRenderer(mitk::BaseRenderer::Pointer rendererToTrack);
-
-protected:
-
-  /// \brief Called when a DataStorage Add event was emmitted and may be reimplemented by deriving classes.
-  virtual void OnNodeAdded(const mitk::DataNode* node);
-
-  /// \brief Called when a DataStorage Change event was emmitted and may be reimplemented by deriving classes.
-  virtual void OnNodeChanged(const mitk::DataNode* node);
 
 private:
 
@@ -155,7 +138,7 @@ private:
   void OnBoundingBoxZoomed(double scaleFactor);
 
   /// \brief When the world geometry changes, we have to make the thumbnail match, to get the same slice.
-  void UpdateWorldGeometry();
+  void UpdateWorldTimeGeometry();
 
   /// \brief Updates the bounding box by taking the corners of the tracked render window.
   void UpdateBoundingBox();
@@ -168,12 +151,6 @@ private:
 
   /// \brief Called to remove all observers from tracked objects.
   void RemoveObserversFromTrackedObjects();
-
-  /// \brief Adds the bounding box to the data storage.
-  void AddBoundingBoxToDataStorage();
-
-  /// \brief Removes the bounding box from the data storage.
-  void RemoveBoundingBoxFromDataStorage();
 
   /// \brief We need to provide access to data storage to listen to Node events.
   mitk::DataStorage::Pointer m_DataStorage;
@@ -191,7 +168,7 @@ private:
   mitk::BaseRenderer::Pointer m_TrackedRenderer;
 
   // This is set to the current world geometry.
-  mitk::BaseGeometry::Pointer m_TrackedWorldGeometry;
+  mitk::TimeGeometry::Pointer m_TrackedWorldTimeGeometry;
 
   /// \brief The rendering manager of the tracked renderer.
   /// The renderer of the thumbnail window should be added to the rendering manager
@@ -212,7 +189,7 @@ private:
   unsigned long m_TrackedRendererTag;
 
   /// \brief Used for when the tracked window world geometry changes
-  unsigned long m_TrackedWorldGeometryTag;
+  unsigned long m_TrackedWorldTimeGeometryTag;
 
   /// \brief Used for when the tracked window display geometry changes.
   unsigned long m_TrackedDisplayGeometryTag;

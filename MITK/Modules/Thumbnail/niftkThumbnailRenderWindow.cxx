@@ -46,11 +46,11 @@ ThumbnailRenderWindow::ThumbnailRenderWindow(QWidget *parent, mitk::RenderingMan
 , m_Renderer(NULL)
 , m_TrackedRenderer(NULL)
 , m_TrackedRenderingManager(NULL)
-, m_TrackedWorldGeometry(NULL)
+, m_TrackedWorldTimeGeometry(NULL)
 , m_TrackedDisplayGeometry(NULL)
 , m_TrackedSliceNavigator(NULL)
 , m_TrackedRendererTag(-1)
-, m_TrackedWorldGeometryTag(-1)
+, m_TrackedWorldTimeGeometryTag(-1)
 , m_TrackedDisplayGeometryTag(-1)
 , m_TrackedSliceSelectorTag(-1)
 , m_TrackedTimeStepSelectorTag(-1)
@@ -70,15 +70,16 @@ ThumbnailRenderWindow::ThumbnailRenderWindow(QWidget *parent, mitk::RenderingMan
   m_BoundingBox = mitk::Cuboid::New();
   m_BoundingBoxNode = mitk::DataNode::New();
   m_BoundingBoxNode->SetData(m_BoundingBox);
-  m_BoundingBoxNode->SetProperty("name", mitk::StringProperty::New("ThumbnailBoundingBox"));
-  m_BoundingBoxNode->SetProperty("includeInBoundingBox", mitk::BoolProperty::New(false));
-  m_BoundingBoxNode->SetProperty("helper object", mitk::BoolProperty::New(true));
-  m_BoundingBoxNode->SetBoolProperty("visible", false); // globally turn it off, then we only turn it on in thumbnail (this) window.
+  m_BoundingBoxNode->SetName("ThumbnailBoundingBox");
+  m_BoundingBoxNode->SetBoolProperty("includeInBoundingBox", false);
+  m_BoundingBoxNode->SetBoolProperty("helper object", true);
+  m_BoundingBoxNode->SetVisibility(false); // globally turn it off, then we only turn it on in thumbnail (this) window.
 
-  m_BoundingBoxNode->SetBoolProperty("visible", false, m_Renderer);
   this->SetBoundingBoxOpacity(1);
   this->SetBoundingBoxLineThickness(1);
   this->SetBoundingBoxLayer(99);// arbitrary, copied from segmentation functionality
+
+  m_DataStorage->Add(m_BoundingBoxNode);
 
   /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
 
@@ -130,6 +131,8 @@ ThumbnailRenderWindow::~ThumbnailRenderWindow()
 
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
+
+  m_DataStorage->Remove(m_BoundingBoxNode);
 
   if (m_MouseEventEater != NULL)
   {
@@ -186,57 +189,17 @@ void ThumbnailRenderWindow::SetDisplayInteractionsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::AddBoundingBoxToDataStorage()
-{
-  if (!m_DataStorage->Exists(m_BoundingBoxNode))
-  {
-    m_BoundingBoxNode->SetBoolProperty("visible", true, m_Renderer);
-    m_DataStorage->Add(m_BoundingBoxNode);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::RemoveBoundingBoxFromDataStorage()
-{
-  if (m_DataStorage->Exists(m_BoundingBoxNode))
-  {
-    m_DataStorage->Remove(m_BoundingBoxNode);
-    m_BoundingBoxNode->SetBoolProperty("visible", false, m_Renderer);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void ThumbnailRenderWindow::Activated()
 {
-  if (m_DataStorage.IsNotNull())
-  {
-    m_DataStorage->AddNodeEvent.AddListener( mitk::MessageDelegate1<ThumbnailRenderWindow, const mitk::DataNode*>
-      ( this, &ThumbnailRenderWindow::NodeAddedProxy ) );
-
-    m_DataStorage->ChangedNodeEvent.AddListener( mitk::MessageDelegate1<ThumbnailRenderWindow, const mitk::DataNode*>
-      ( this, &ThumbnailRenderWindow::NodeChangedProxy ) );
-  }
 }
 
 
 //-----------------------------------------------------------------------------
 void ThumbnailRenderWindow::Deactivated()
 {
-  if (m_TrackedWorldGeometry.IsNotNull())
+  if (m_TrackedWorldTimeGeometry.IsNotNull())
   {
     this->RemoveObserversFromTrackedObjects();
-    this->RemoveBoundingBoxFromDataStorage();
-  }
-
-  if (m_DataStorage.IsNotNull())
-  {
-    m_DataStorage->AddNodeEvent.RemoveListener( mitk::MessageDelegate1<ThumbnailRenderWindow, const mitk::DataNode*>
-      ( this, &ThumbnailRenderWindow::NodeAddedProxy ) );
-
-    m_DataStorage->ChangedNodeEvent.RemoveListener( mitk::MessageDelegate1<ThumbnailRenderWindow, const mitk::DataNode*>
-      ( this, &ThumbnailRenderWindow::NodeChangedProxy ) );
   }
 }
 
@@ -245,20 +208,20 @@ void ThumbnailRenderWindow::Deactivated()
 void ThumbnailRenderWindow::AddObserversToTrackedObjects()
 {
   assert(m_TrackedRenderer.IsNotNull());
-  assert(m_TrackedWorldGeometry.IsNotNull());
+  assert(m_TrackedWorldTimeGeometry.IsNotNull());
   assert(m_TrackedDisplayGeometry.IsNotNull());
   assert(m_TrackedSliceNavigator.IsNotNull());
 
   // Add Observers to track when these geometries change
   itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onRendererChangedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onRendererChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateWorldGeometry);
+  onRendererChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateWorldTimeGeometry);
   m_TrackedRendererTag = m_TrackedRenderer->AddObserver(itk::ModifiedEvent(), onRendererChangedCommand);
 
-  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onWorldGeometryChangedCommand =
+  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onWorldTimeGeometryChangedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onWorldGeometryChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateWorldGeometry);
-  m_TrackedWorldGeometryTag = m_TrackedWorldGeometry->AddObserver(itk::ModifiedEvent(), onWorldGeometryChangedCommand);
+  onWorldTimeGeometryChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateWorldTimeGeometry);
+  m_TrackedWorldTimeGeometryTag = m_TrackedWorldTimeGeometry->AddObserver(itk::ModifiedEvent(), onWorldTimeGeometryChangedCommand);
 
   itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onDisplayGeometryChangedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
@@ -282,7 +245,7 @@ void ThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
 {
   // NOTE the following curiosity:
   //
-  // Initially my m_TrackedWorldGeometry and m_TrackedDisplayGeometry were regular pointers
+  // Initially my m_TrackedWorldTimeGeometry and m_TrackedDisplayGeometry were regular pointers
   // not smart pointers. However, when exiting the application, it appeared that they were
   // not valid, causing seg faults.  It appeared to me (Matt), that as the focus changed between
   // windows, the slice navigation controller is constant for each render window, but the
@@ -293,14 +256,14 @@ void ThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
   // object will go out of scope when it is replaced with a new one, or this object is destroyed.
 
   assert(m_TrackedRenderer.IsNotNull());
-  assert(m_TrackedWorldGeometry.IsNotNull());
+  assert(m_TrackedWorldTimeGeometry.IsNotNull());
   assert(m_TrackedDisplayGeometry.IsNotNull());
   assert(m_TrackedSliceNavigator.IsNotNull());
 
   m_TrackedRenderer->RemoveObserver(m_TrackedRendererTag);
   m_TrackedRendererTag = -1;
-  m_TrackedWorldGeometry->RemoveObserver(m_TrackedWorldGeometryTag);
-  m_TrackedWorldGeometryTag = -1;
+  m_TrackedWorldTimeGeometry->RemoveObserver(m_TrackedWorldTimeGeometryTag);
+  m_TrackedWorldTimeGeometryTag = -1;
   m_TrackedDisplayGeometry->RemoveObserver(m_TrackedDisplayGeometryTag);
   m_TrackedDisplayGeometryTag = -1;
   m_TrackedSliceNavigator->RemoveObserver(m_TrackedSliceSelectorTag);
@@ -313,141 +276,88 @@ void ThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
 //-----------------------------------------------------------------------------
 void ThumbnailRenderWindow::UpdateBoundingBox()
 {
-  if (m_TrackedDisplayGeometry.IsNotNull() && m_Renderer->GetWorldGeometry())
+  assert(m_Renderer->GetWorldGeometry());
+  assert(m_TrackedDisplayGeometry.IsNotNull());
+
+  // Get min and max extent of the tracked render window's display geometry.
+  mitk::Point3D min, max;
+
+  mitk::Point2D point2D;
+  point2D[0] = 0;
+  point2D[1] = 0;
+  m_TrackedDisplayGeometry->DisplayToWorld(point2D, point2D);
+  m_TrackedDisplayGeometry->Map(point2D, min);
+  m_Renderer->GetWorldGeometry()->WorldToIndex(min, min);
+
+  point2D[0] = m_TrackedDisplayGeometry->GetDisplayWidth() - 1;
+  point2D[1] = m_TrackedDisplayGeometry->GetDisplayHeight() - 1;
+  m_TrackedDisplayGeometry->DisplayToWorld(point2D, point2D);
+  m_TrackedDisplayGeometry->Map(point2D, max);
+  m_Renderer->GetWorldGeometry()->WorldToIndex(max, max);
+
+  int planeAxis = -1;
+  for (int axis = 0; axis < 3; ++axis)
   {
-    // Get min and max extent of the tracked render window's display geometry.
-    mitk::Point3D min, max;
-
-    mitk::Point2D point2D;
-    point2D[0] = 0;
-    point2D[1] = 0;
-    m_TrackedDisplayGeometry->DisplayToWorld(point2D, point2D);
-    m_TrackedDisplayGeometry->Map(point2D, min);
-    m_Renderer->GetWorldGeometry()->WorldToIndex(min, min);
-
-    point2D[0] = m_TrackedDisplayGeometry->GetDisplayWidth() - 1;
-    point2D[1] = m_TrackedDisplayGeometry->GetDisplayHeight() - 1;
-    m_TrackedDisplayGeometry->DisplayToWorld(point2D, point2D);
-    m_TrackedDisplayGeometry->Map(point2D, max);
-    m_Renderer->GetWorldGeometry()->WorldToIndex(max, max);
-
-    int planeAxis = -1;
-    for (int axis = 0; axis < 3; ++axis)
+    if (std::abs(min[axis] - max[axis]) < 0.0001)
     {
-      if (std::abs(min[axis] - max[axis]) < 0.0001)
-      {
-        planeAxis = axis;
-      }
+      planeAxis = axis;
     }
-
-    if (planeAxis == -1)
-    {
-      MITK_DEBUG << "ThumbnailRenderWindow::UpdateBoundingBox(): Cannot find plane axis.";
-      m_BoundingBoxNode->SetVisibility(false, m_Renderer);
-      return;
-    }
-
-    if (!m_BoundingBoxNode->IsVisible(m_Renderer))
-    {
-      m_BoundingBoxNode->SetVisibility(true, m_Renderer);
-    }
-
-    // Add a bit of jitter so bounding box is on 2D.
-    // So, this jitter adds depth to the bounding box in the through plane direction.
-    min[planeAxis] -= 0.5;
-    max[planeAxis] += 0.5;
-
-    // Create a cube.
-    vtkCubeSource* cube = vtkCubeSource::New();
-    cube->SetBounds(min[0], max[0], min[1], max[1], min[2], max[2]);
-    cube->Update();
-
-    // Update bounding box.
-    m_BoundingBox->SetVtkPolyData(cube->GetOutput());
-    m_BoundingBox->SetGeometry(m_Renderer->GetWorldGeometry());
-
-    if (m_TrackedSliceNavigator)
-    {
-      mitk::SliceNavigationController::ViewDirection viewDirection = m_TrackedSliceNavigator->GetViewDirection();
-      if (viewDirection == mitk::SliceNavigationController::Frontal)
-      {
-        m_BoundingBoxNode->SetColor(0, 0, 255);
-      }
-      else if (viewDirection == mitk::SliceNavigationController::Sagittal)
-      {
-        m_BoundingBoxNode->SetColor(0, 255, 0);
-      }
-      else if (viewDirection == mitk::SliceNavigationController::Axial)
-      {
-        m_BoundingBoxNode->SetColor(255, 0, 0);
-      }
-      else
-      {
-        m_BoundingBoxNode->SetColor(0, 255, 255);
-      }
-    }
-
-    m_BoundingBox->Modified();
-    m_BoundingBoxNode->Modified();
-
-    // Tidy up
-    cube->Delete();
-
-    // Request a single update at the end of the method.
-    m_Renderer->RequestUpdate();
   }
-}
 
-
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::NodeAddedProxy( const mitk::DataNode* node )
-{
-  // Guarantee no recursions when a new node event is created in NodeAdded()
-  if(!m_InDataStorageChanged
-      && node != NULL
-      && !niftk::IsNodeAHelperObject(node)
-      && node != m_BoundingBoxNode
-      )
+  if (planeAxis == -1)
   {
-    m_InDataStorageChanged = true;
-    this->OnNodeAdded(node);
-    m_InDataStorageChanged = false;
+    MITK_DEBUG << "ThumbnailRenderWindow::UpdateBoundingBox(): Cannot find plane axis.";
+    m_BoundingBoxNode->SetVisibility(false, m_Renderer);
+    return;
   }
-}
 
-
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::OnNodeAdded( const mitk::DataNode* node)
-{
-  this->UpdateWorldGeometry();
-  this->UpdateSliceAndTimeStep();
-
-  this->UpdateBoundingBox();
-
-  m_Renderer->RequestUpdate();
-}
-
-
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::NodeChangedProxy( const mitk::DataNode* node )
-{
-  // Guarantee no recursions when a new node event is created in NodeAdded()
-  if(!m_InDataStorageChanged
-      && node != NULL
-      && !niftk::IsNodeAHelperObject(node)
-      && node != m_BoundingBoxNode
-      )
+  if (!m_BoundingBoxNode->IsVisible(m_Renderer))
   {
-    m_InDataStorageChanged = true;
-    this->OnNodeChanged(node);
-    m_InDataStorageChanged = false;
+    m_BoundingBoxNode->SetVisibility(true, m_Renderer);
   }
-}
 
+  // Add a bit of jitter so bounding box is on 2D.
+  // So, this jitter adds depth to the bounding box in the through plane direction.
+  min[planeAxis] -= 0.5;
+  max[planeAxis] += 0.5;
 
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::OnNodeChanged( const mitk::DataNode* node)
-{
+  // Create a cube.
+  vtkCubeSource* cube = vtkCubeSource::New();
+  cube->SetBounds(min[0], max[0], min[1], max[1], min[2], max[2]);
+  cube->Update();
+
+  // Update bounding box.
+  m_BoundingBox->SetVtkPolyData(cube->GetOutput());
+  m_BoundingBox->SetGeometry(m_Renderer->GetWorldGeometry());
+
+  if (m_TrackedSliceNavigator)
+  {
+    mitk::SliceNavigationController::ViewDirection viewDirection = m_TrackedSliceNavigator->GetViewDirection();
+    if (viewDirection == mitk::SliceNavigationController::Frontal)
+    {
+      m_BoundingBoxNode->SetColor(0, 0, 255);
+    }
+    else if (viewDirection == mitk::SliceNavigationController::Sagittal)
+    {
+      m_BoundingBoxNode->SetColor(0, 255, 0);
+    }
+    else if (viewDirection == mitk::SliceNavigationController::Axial)
+    {
+      m_BoundingBoxNode->SetColor(255, 0, 0);
+    }
+    else
+    {
+      m_BoundingBoxNode->SetColor(0, 255, 255);
+    }
+  }
+
+  m_BoundingBox->Modified();
+  m_BoundingBoxNode->Modified();
+
+  // Tidy up
+  cube->Delete();
+
+  // Request a single update at the end of the method.
   m_Renderer->RequestUpdate();
 }
 
@@ -455,35 +365,34 @@ void ThumbnailRenderWindow::OnNodeChanged( const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void ThumbnailRenderWindow::UpdateSliceAndTimeStep()
 {
-  if (m_TrackedRenderer.IsNotNull())
-  {
-    if (m_TrackedRenderer->GetTimeStep() != m_Renderer->GetTimeStep())
-    {
-      m_Renderer->SetTimeStep(m_TrackedRenderer->GetTimeStep());
-    }
+  assert(m_TrackedRenderer.IsNotNull());
 
-    if (m_TrackedRenderer->GetSlice() != m_Renderer->GetSlice())
-    {
-      m_Renderer->SetSlice(m_TrackedRenderer->GetSlice());
-    }
+  if (m_TrackedRenderer->GetTimeStep() != m_Renderer->GetTimeStep())
+  {
+    m_Renderer->SetTimeStep(m_TrackedRenderer->GetTimeStep());
+  }
+
+  if (m_TrackedRenderer->GetSlice() != m_Renderer->GetSlice())
+  {
+    m_Renderer->SetSlice(m_TrackedRenderer->GetSlice());
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::UpdateWorldGeometry()
+void ThumbnailRenderWindow::UpdateWorldTimeGeometry()
 {
-  if (m_TrackedRenderer && m_TrackedRenderer->GetWorldTimeGeometry())
-  {
-    // World geometry of thumbnail must be same (or larger) as world geometry of the tracked window.
-    m_Renderer->SetWorldTimeGeometry(m_TrackedRenderer->GetWorldTimeGeometry());
+  assert(m_TrackedRenderer);
+  assert(m_TrackedRenderer->GetWorldTimeGeometry());
 
-    // Display geometry of widget must encompass whole of world geometry
-    m_Renderer->GetDisplayGeometry()->Fit();
+  // World geometry of thumbnail must be same (or larger) as world geometry of the tracked window.
+  m_Renderer->SetWorldTimeGeometry(m_TrackedRenderer->GetWorldTimeGeometry());
 
-    // Request a single update at the end of the method.
-    m_Renderer->RequestUpdate();
-  }
+  // Display geometry of widget must encompass whole of world geometry
+  m_Renderer->GetDisplayGeometry()->Fit();
+
+  // Request a single update at the end of the method.
+  m_Renderer->RequestUpdate();
 }
 
 
@@ -504,15 +413,15 @@ void ThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::Pointer rende
 
   if (m_TrackedRenderer.IsNotNull())
   {
-    if (m_TrackedWorldGeometry.IsNotNull())
+    if (m_TrackedWorldTimeGeometry.IsNotNull())
     {
       assert(m_TrackedDisplayGeometry.IsNotNull());
       assert(m_TrackedSliceNavigator.IsNotNull());
 
       this->RemoveObserversFromTrackedObjects();
-      this->RemoveBoundingBoxFromDataStorage();
+      m_BoundingBoxNode->SetVisibility(false, m_Renderer);
 
-      m_TrackedWorldGeometry = 0;
+      m_TrackedWorldTimeGeometry = 0;
       m_TrackedDisplayGeometry = 0;
       m_TrackedSliceNavigator = 0;
     }
@@ -540,30 +449,24 @@ void ThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::Pointer rende
 
   if (m_TrackedRenderer.IsNotNull())
   {
-    m_TrackedWorldGeometry = const_cast<mitk::BaseGeometry*>(rendererToTrack->GetWorldGeometry());
+    m_TrackedWorldTimeGeometry = rendererToTrack->GetWorldTimeGeometry();
     m_TrackedDisplayGeometry = const_cast<mitk::DisplayGeometry*>(rendererToTrack->GetDisplayGeometry());
     m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()))->GetSliceNavigationController();
 
-    if (m_TrackedWorldGeometry.IsNotNull())
+    if (m_TrackedWorldTimeGeometry.IsNotNull())
     {
-      // I'm doing this in this method so that when the initial first
-      // window starts (i.e. before any data is loaded),
-      // the bounding box will not be included, and not visible.
-      this->AddBoundingBoxToDataStorage();
-
-      this->UpdateWorldGeometry();
+      this->UpdateWorldTimeGeometry();
       this->UpdateSliceAndTimeStep();
+      this->UpdateBoundingBox();
+
+      m_BoundingBoxNode->SetVisibility(true, m_Renderer);
 
       this->AddObserversToTrackedObjects();
     }
   }
 
-
   // Setup the visibility tracker.
   m_VisibilityTracker->SetTrackedRenderer(const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()));
-
-  // Get the box to update
-  this->UpdateBoundingBox();
 
   // Request a single update at the end of the method.
   m_Renderer->RequestUpdate();
@@ -630,15 +533,6 @@ float ThumbnailRenderWindow::GetBoundingBoxOpacity() const
 void ThumbnailRenderWindow::SetBoundingBoxOpacity(float opacity)
 {
   m_BoundingBoxNode->SetOpacity(opacity);
-}
-
-
-//-----------------------------------------------------------------------------
-bool ThumbnailRenderWindow::GetBoundingBoxVisible() const
-{
-  bool visible = false;
-  m_BoundingBoxNode->GetBoolProperty("visible", visible, m_Renderer);
-  return visible;
 }
 
 
