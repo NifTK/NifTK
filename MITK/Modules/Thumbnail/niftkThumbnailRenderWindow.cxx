@@ -213,29 +213,29 @@ void ThumbnailRenderWindow::AddObserversToTrackedObjects()
   assert(m_TrackedSliceNavigator.IsNotNull());
 
   // Add Observers to track when these geometries change
-  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onRendererChangedCommand =
+  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onRendererModifiedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onRendererChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateWorldTimeGeometry);
-  m_TrackedRendererTag = m_TrackedRenderer->AddObserver(itk::ModifiedEvent(), onRendererChangedCommand);
+  onRendererModifiedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnRendererModified);
+  m_TrackedRendererTag = m_TrackedRenderer->AddObserver(itk::ModifiedEvent(), onRendererModifiedCommand);
 
-  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onWorldTimeGeometryChangedCommand =
+  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onWorldTimeGeometryModifiedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onWorldTimeGeometryChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateWorldTimeGeometry);
-  m_TrackedWorldTimeGeometryTag = m_TrackedWorldTimeGeometry->AddObserver(itk::ModifiedEvent(), onWorldTimeGeometryChangedCommand);
+  onWorldTimeGeometryModifiedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnWorldTimeGeometryModified);
+  m_TrackedWorldTimeGeometryTag = m_TrackedWorldTimeGeometry->AddObserver(itk::ModifiedEvent(), onWorldTimeGeometryModifiedCommand);
 
-  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onDisplayGeometryChangedCommand =
+  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onDisplayGeometryModifiedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onDisplayGeometryChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateBoundingBox);
-  m_TrackedDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryChangedCommand);
+  onDisplayGeometryModifiedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnDisplayGeometryModified);
+  m_TrackedDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryModifiedCommand);
 
   itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onSliceChangedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onSliceChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateSliceAndTimeStep);
+  onSliceChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnSelectedSliceChanged);
   m_TrackedSliceSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(nullptr, 0), onSliceChangedCommand);
 
   itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onTimeChangedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onTimeChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateSliceAndTimeStep);
+  onTimeChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnSelectedTimeStepChanged);
   m_TrackedTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(nullptr, 0), onTimeChangedCommand);
 }
 
@@ -274,7 +274,7 @@ void ThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::UpdateBoundingBox()
+void ThumbnailRenderWindow::OnDisplayGeometryModified()
 {
   assert(m_Renderer->GetWorldGeometry());
   assert(m_TrackedDisplayGeometry.IsNotNull());
@@ -363,7 +363,7 @@ void ThumbnailRenderWindow::UpdateBoundingBox()
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::UpdateSliceAndTimeStep()
+void ThumbnailRenderWindow::OnSelectedTimeStepChanged()
 {
   assert(m_TrackedRenderer.IsNotNull());
 
@@ -371,6 +371,13 @@ void ThumbnailRenderWindow::UpdateSliceAndTimeStep()
   {
     m_Renderer->SetTimeStep(m_TrackedRenderer->GetTimeStep());
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void ThumbnailRenderWindow::OnSelectedSliceChanged()
+{
+  assert(m_TrackedRenderer.IsNotNull());
 
   if (m_TrackedRenderer->GetSlice() != m_Renderer->GetSlice())
   {
@@ -380,7 +387,16 @@ void ThumbnailRenderWindow::UpdateSliceAndTimeStep()
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::UpdateWorldTimeGeometry()
+void ThumbnailRenderWindow::OnRendererModified()
+{
+  /// For now we just delegate the call, as it used to be,
+  /// but a completely different logic should come here.
+  this->OnWorldTimeGeometryModified();
+}
+
+
+//-----------------------------------------------------------------------------
+void ThumbnailRenderWindow::OnWorldTimeGeometryModified()
 {
   assert(m_TrackedRenderer);
   assert(m_TrackedRenderer->GetWorldTimeGeometry());
@@ -455,9 +471,9 @@ void ThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::Pointer rende
 
     if (m_TrackedWorldTimeGeometry.IsNotNull())
     {
-      this->UpdateWorldTimeGeometry();
-      this->UpdateSliceAndTimeStep();
-      this->UpdateBoundingBox();
+      this->OnWorldTimeGeometryModified();
+      this->OnSelectedSliceChanged();
+      this->OnDisplayGeometryModified();
 
       m_BoundingBoxNode->SetVisibility(true, m_Renderer);
 

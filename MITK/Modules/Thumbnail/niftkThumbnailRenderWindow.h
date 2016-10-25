@@ -137,14 +137,20 @@ private:
   /// \brief Callback for when the bounding box is zoomed through the interactor.
   void OnBoundingBoxZoomed(double scaleFactor);
 
+  /// \brief Called when the renderer is modified, e.g. it gets a new world geometry.
+  void OnRendererModified();
+
   /// \brief When the world geometry changes, we have to make the thumbnail match, to get the same slice.
-  void UpdateWorldTimeGeometry();
+  void OnWorldTimeGeometryModified();
 
   /// \brief Updates the bounding box by taking the corners of the tracked render window.
-  void UpdateBoundingBox();
+  void OnDisplayGeometryModified();
 
-  /// \brief Updates the slice and time step on the SliceNavigationController.
-  void UpdateSliceAndTimeStep();
+  /// \brief Updates the selected time step on the SliceNavigationController.
+  void OnSelectedTimeStepChanged();
+
+  /// \brief Updates the selected slice on the SliceNavigationController.
+  void OnSelectedSliceChanged();
 
   /// \brief Called to add all observers to tracked objects.
   void AddObserversToTrackedObjects();
