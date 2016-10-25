@@ -78,8 +78,6 @@ ThumbnailRenderWindow::ThumbnailRenderWindow(QWidget *parent, mitk::RenderingMan
   this->SetBoundingBoxLineThickness(1);
   this->SetBoundingBoxLayer(99);// arbitrary, copied from segmentation functionality
 
-  m_DataStorage->Add(m_BoundingBoxNode);
-
   /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
 
   m_ToolNodeNameFilter = DataNodeStringPropertyFilter::New();
@@ -126,12 +124,23 @@ ThumbnailRenderWindow::ThumbnailRenderWindow(QWidget *parent, mitk::RenderingMan
 //-----------------------------------------------------------------------------
 ThumbnailRenderWindow::~ThumbnailRenderWindow()
 {
-  this->SetTrackedRenderer(0);
+  if (m_TrackedRenderer.IsNotNull())
+  {
+    this->UntrackRenderer();
+  }
+
+  if (m_TrackedRenderingManager)
+  {
+    m_TrackedRenderingManager->RemoveRenderWindow(this->GetRenderWindow());
+  }
 
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
 
-  m_DataStorage->Remove(m_BoundingBoxNode);
+  if (m_DataStorage->Exists(m_BoundingBoxNode))
+  {
+    m_DataStorage->Remove(m_BoundingBoxNode);
+  }
 
   if (m_MouseEventEater != nullptr)
   {
@@ -188,22 +197,6 @@ void ThumbnailRenderWindow::SetDisplayInteractionsEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::Activated()
-{
-}
-
-
-//-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::Deactivated()
-{
-  if (m_TrackedWorldTimeGeometry.IsNotNull())
-  {
-    this->RemoveObserversFromTrackedObjects();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 mitk::BaseRenderer::Pointer ThumbnailRenderWindow::GetTrackedRenderer() const
 {
   return m_TrackedRenderer;
@@ -220,31 +213,18 @@ void ThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::Pointer rende
 
   if (m_TrackedRenderer.IsNotNull())
   {
-    if (m_TrackedWorldTimeGeometry.IsNotNull())
-    {
-      assert(m_TrackedDisplayGeometry.IsNotNull());
-      assert(m_TrackedSliceNavigator.IsNotNull());
-
-      this->RemoveObserversFromTrackedObjects();
-      m_BoundingBoxNode->SetVisibility(false, m_Renderer);
-
-      m_TrackedWorldTimeGeometry = 0;
-      m_TrackedDisplayGeometry = 0;
-      m_TrackedSliceNavigator = 0;
-    }
-
-    m_TrackedRenderer = 0;
+    this->UntrackRenderer();
   }
 
-  mitk::RenderingManager* trackedRenderingManager = rendererToTrack ? rendererToTrack->GetRenderingManager() : 0;
-  if (trackedRenderingManager != m_TrackedRenderingManager)
+  mitk::RenderingManager* renderingManagerToTrack = rendererToTrack ? rendererToTrack->GetRenderingManager() : 0;
+  if (renderingManagerToTrack != m_TrackedRenderingManager)
   {
     if (m_TrackedRenderingManager)
     {
       m_TrackedRenderingManager->RemoveRenderWindow(this->GetRenderWindow());
     }
 
-    m_TrackedRenderingManager = trackedRenderingManager;
+    m_TrackedRenderingManager = renderingManagerToTrack;
 
     if (m_TrackedRenderingManager)
     {
@@ -256,24 +236,11 @@ void ThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::Pointer rende
 
   if (m_TrackedRenderer.IsNotNull())
   {
-    m_TrackedWorldTimeGeometry = rendererToTrack->GetWorldTimeGeometry();
-    m_TrackedDisplayGeometry = const_cast<mitk::DisplayGeometry*>(rendererToTrack->GetDisplayGeometry());
-    m_TrackedSliceNavigator = (const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()))->GetSliceNavigationController();
-
-    if (m_TrackedWorldTimeGeometry.IsNotNull())
-    {
-      this->OnWorldTimeGeometryModified();
-      this->OnSelectedSliceChanged();
-      this->OnDisplayGeometryModified();
-
-      m_BoundingBoxNode->SetVisibility(true, m_Renderer);
-
-      this->AddObserversToTrackedObjects();
-    }
+    this->TrackRenderer();
   }
 
   // Setup the visibility tracker.
-  m_VisibilityTracker->SetTrackedRenderer(const_cast<mitk::BaseRenderer*>(rendererToTrack.GetPointer()));
+  m_VisibilityTracker->SetTrackedRenderer(rendererToTrack);
 
   // Request a single update at the end of the method.
   m_Renderer->RequestUpdate();
@@ -388,43 +355,19 @@ void ThumbnailRenderWindow::OnBoundingBoxZoomed(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::AddObserversToTrackedObjects()
+void ThumbnailRenderWindow::TrackRenderer()
 {
-  assert(m_TrackedRenderer.IsNotNull());
-  assert(m_TrackedWorldTimeGeometry.IsNotNull());
-  assert(m_TrackedDisplayGeometry.IsNotNull());
-  assert(m_TrackedSliceNavigator.IsNotNull());
-
-  // Add Observers to track when these geometries change
   itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onRendererModifiedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
   onRendererModifiedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnRendererModified);
   m_TrackedRendererTag = m_TrackedRenderer->AddObserver(itk::ModifiedEvent(), onRendererModifiedCommand);
 
-  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onWorldTimeGeometryModifiedCommand =
-    itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onWorldTimeGeometryModifiedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnWorldTimeGeometryModified);
-  m_TrackedWorldTimeGeometryTag = m_TrackedWorldTimeGeometry->AddObserver(itk::ModifiedEvent(), onWorldTimeGeometryModifiedCommand);
-
-  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onDisplayGeometryModifiedCommand =
-    itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onDisplayGeometryModifiedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnDisplayGeometryModified);
-  m_TrackedDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryModifiedCommand);
-
-  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onSliceChangedCommand =
-    itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onSliceChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnSelectedSliceChanged);
-  m_TrackedSliceSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(nullptr, 0), onSliceChangedCommand);
-
-  itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onTimeChangedCommand =
-    itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
-  onTimeChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnSelectedTimeStepChanged);
-  m_TrackedTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(nullptr, 0), onTimeChangedCommand);
+  this->OnRendererModified();
 }
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
+void ThumbnailRenderWindow::UntrackRenderer()
 {
   // NOTE the following curiosity:
   //
@@ -438,30 +381,146 @@ void ThumbnailRenderWindow::RemoveObserversFromTrackedObjects()
   // to the object that it originally promised to listen to.  This will avoid crashes, and the geometry
   // object will go out of scope when it is replaced with a new one, or this object is destroyed.
 
-  assert(m_TrackedRenderer.IsNotNull());
-  assert(m_TrackedWorldTimeGeometry.IsNotNull());
-  assert(m_TrackedDisplayGeometry.IsNotNull());
-  assert(m_TrackedSliceNavigator.IsNotNull());
-
   m_TrackedRenderer->RemoveObserver(m_TrackedRendererTag);
   m_TrackedRendererTag = -1;
-  m_TrackedWorldTimeGeometry->RemoveObserver(m_TrackedWorldTimeGeometryTag);
-  m_TrackedWorldTimeGeometryTag = -1;
-  m_TrackedDisplayGeometry->RemoveObserver(m_TrackedDisplayGeometryTag);
-  m_TrackedDisplayGeometryTag = -1;
-  m_TrackedSliceNavigator->RemoveObserver(m_TrackedSliceSelectorTag);
-  m_TrackedSliceSelectorTag = -1;
-  m_TrackedSliceNavigator->RemoveObserver(m_TrackedTimeStepSelectorTag);
-  m_TrackedTimeStepSelectorTag = -1;
+  m_TrackedRenderer = nullptr;
+
+  if (m_TrackedWorldTimeGeometry.IsNotNull())
+  {
+    m_TrackedWorldTimeGeometry->RemoveObserver(m_TrackedWorldTimeGeometryTag);
+    m_TrackedWorldTimeGeometryTag = -1;
+    m_TrackedWorldTimeGeometry = nullptr;
+  }
+
+  if (m_TrackedSliceNavigator.IsNotNull())
+  {
+    m_TrackedSliceNavigator->RemoveObserver(m_TrackedSliceSelectorTag);
+    m_TrackedSliceSelectorTag = -1;
+    m_TrackedSliceNavigator->RemoveObserver(m_TrackedTimeStepSelectorTag);
+    m_TrackedTimeStepSelectorTag = -1;
+    m_TrackedSliceNavigator = nullptr;
+  }
+
+  if (m_TrackedDisplayGeometry.IsNotNull())
+  {
+    m_TrackedDisplayGeometry->RemoveObserver(m_TrackedDisplayGeometryTag);
+    m_TrackedDisplayGeometryTag = -1;
+    m_TrackedDisplayGeometry = nullptr;
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void ThumbnailRenderWindow::OnRendererModified()
 {
-  /// For now we just delegate the call, as it used to be,
-  /// but a completely different logic should come here.
-  this->OnWorldTimeGeometryModified();
+  assert(m_TrackedRenderer.IsNotNull());
+
+  mitk::TimeGeometry* worldTimeGeometryToTrack = m_TrackedRenderer->GetWorldTimeGeometry();
+  mitk::SliceNavigationController* sliceNavigatorToTrack = m_TrackedRenderer->GetSliceNavigationController();
+  mitk::DisplayGeometry* displayGeometryToTrack = m_TrackedRenderer->GetDisplayGeometry();
+
+  if (worldTimeGeometryToTrack != m_TrackedWorldTimeGeometry)
+  {
+    if (m_TrackedWorldTimeGeometry.IsNotNull())
+    {
+      m_TrackedWorldTimeGeometry->RemoveObserver(m_TrackedWorldTimeGeometryTag);
+      m_TrackedWorldTimeGeometryTag = -1;
+    }
+
+    m_TrackedWorldTimeGeometry = worldTimeGeometryToTrack;
+
+    if (m_TrackedWorldTimeGeometry.IsNotNull())
+    {
+      itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onWorldTimeGeometryChangedCommand =
+        itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
+      onWorldTimeGeometryChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnWorldTimeGeometryModified);
+      m_TrackedWorldTimeGeometryTag = m_TrackedWorldTimeGeometry->AddObserver(itk::ModifiedEvent(), onWorldTimeGeometryChangedCommand);
+
+      /// The renderer has a display geometry even without a valid world time geometry.
+      /// We only start listening to display events when the renderer gets a valid
+      /// world time geometry.
+      /// So, if the display geometry has not changed but it did not have a listener
+      /// because it has not had a world geometry so far, we assign a new listener now.
+      /// If the display geometry has changed now, a new listener will be assigned
+      /// later below.
+      if (m_TrackedDisplayGeometry == displayGeometryToTrack
+          && m_TrackedDisplayGeometry.IsNotNull()
+          && m_TrackedDisplayGeometryTag == -1)
+      {
+        itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onDisplayGeometryChangedCommand =
+          itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
+        onDisplayGeometryChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnDisplayGeometryModified);
+        m_TrackedDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryChangedCommand);
+      }
+    }
+  }
+
+  if (sliceNavigatorToTrack != m_TrackedSliceNavigator)
+  {
+    if (m_TrackedSliceNavigator.IsNotNull())
+    {
+      m_TrackedSliceNavigator->RemoveObserver(m_TrackedTimeStepSelectorTag);
+      m_TrackedTimeStepSelectorTag = -1;
+      m_TrackedSliceNavigator->RemoveObserver(m_TrackedSliceSelectorTag);
+      m_TrackedSliceSelectorTag = -1;
+    }
+
+    m_TrackedSliceNavigator = sliceNavigatorToTrack;
+
+    if (m_TrackedSliceNavigator.IsNotNull())
+    {
+      itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onSelectedTimeStepChangedCommand =
+        itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
+      onSelectedTimeStepChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnSelectedTimeStepChanged);
+      m_TrackedTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(nullptr, 0), onSelectedTimeStepChangedCommand);
+
+      itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onSelectedSliceChangedCommand =
+        itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
+      onSelectedSliceChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnSelectedSliceChanged);
+      m_TrackedSliceSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(nullptr, 0), onSelectedSliceChangedCommand);
+    }
+  }
+
+  if (displayGeometryToTrack != m_TrackedDisplayGeometry)
+  {
+    if (m_TrackedDisplayGeometry.IsNotNull())
+    {
+      m_TrackedDisplayGeometry->RemoveObserver(m_TrackedDisplayGeometryTag);
+      m_TrackedDisplayGeometryTag = -1;
+    }
+
+    m_TrackedDisplayGeometry = displayGeometryToTrack;
+
+    if (m_TrackedDisplayGeometry.IsNotNull() && m_TrackedWorldTimeGeometry.IsNotNull())
+    {
+      itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onDisplayGeometryChangedCommand =
+        itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
+      onDisplayGeometryChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::OnDisplayGeometryModified);
+      m_TrackedDisplayGeometryTag = m_TrackedDisplayGeometry->AddObserver(itk::ModifiedEvent(), onDisplayGeometryChangedCommand);
+    }
+  }
+
+  if (m_TrackedWorldTimeGeometry.IsNotNull()
+      && m_TrackedSliceNavigator.IsNotNull()
+      && m_TrackedDisplayGeometry.IsNotNull())
+  {
+    /// The bounding box is not added to the data storage until there is a tracked
+    /// renderer with a valid geometry. This function is called when a new geometry
+    /// is set for the renderer (it might not have had one) or when its current
+    /// geometry is modified.
+    /// Also, the data node can be removed from the data storage unintentedly, e.g.
+    /// by closing the project.
+    /// Therefore, here we add the bounding box to the data storage if necessary.
+    if (!m_DataStorage->Exists(m_BoundingBoxNode))
+    {
+      m_DataStorage->Add(m_BoundingBoxNode);
+    }
+
+    this->OnWorldTimeGeometryModified();
+    this->OnSelectedTimeStepChanged();
+    this->OnSelectedSliceChanged();
+    this->OnDisplayGeometryModified();
+  }
 }
 
 
@@ -469,10 +528,10 @@ void ThumbnailRenderWindow::OnRendererModified()
 void ThumbnailRenderWindow::OnWorldTimeGeometryModified()
 {
   assert(m_TrackedRenderer);
-  assert(m_TrackedRenderer->GetWorldTimeGeometry());
+  assert(m_TrackedWorldTimeGeometry);
 
   // World geometry of thumbnail must be same (or larger) as world geometry of the tracked window.
-  m_Renderer->SetWorldTimeGeometry(m_TrackedRenderer->GetWorldTimeGeometry());
+  m_Renderer->SetWorldTimeGeometry(m_TrackedWorldTimeGeometry);
 
   // Display geometry of widget must encompass whole of world geometry
   m_Renderer->GetDisplayGeometry()->Fit();
@@ -509,7 +568,9 @@ void ThumbnailRenderWindow::OnSelectedSliceChanged()
 //-----------------------------------------------------------------------------
 void ThumbnailRenderWindow::OnDisplayGeometryModified()
 {
-  assert(m_Renderer->GetWorldGeometry());
+  assert(m_TrackedRenderer.IsNotNull());
+  assert(m_TrackedWorldTimeGeometry.IsNotNull());
+  assert(m_TrackedSliceNavigator.IsNotNull());
   assert(m_TrackedDisplayGeometry.IsNotNull());
 
   // Get min and max extent of the tracked render window's display geometry.
@@ -520,13 +581,13 @@ void ThumbnailRenderWindow::OnDisplayGeometryModified()
   point2D[1] = 0;
   m_TrackedDisplayGeometry->DisplayToWorld(point2D, point2D);
   m_TrackedDisplayGeometry->Map(point2D, min);
-  m_Renderer->GetWorldGeometry()->WorldToIndex(min, min);
+  m_TrackedRenderer->GetWorldGeometry()->WorldToIndex(min, min);
 
   point2D[0] = m_TrackedDisplayGeometry->GetDisplayWidth() - 1;
   point2D[1] = m_TrackedDisplayGeometry->GetDisplayHeight() - 1;
   m_TrackedDisplayGeometry->DisplayToWorld(point2D, point2D);
   m_TrackedDisplayGeometry->Map(point2D, max);
-  m_Renderer->GetWorldGeometry()->WorldToIndex(max, max);
+  m_TrackedRenderer->GetWorldGeometry()->WorldToIndex(max, max);
 
   int planeAxis = -1;
   for (int axis = 0; axis < 3; ++axis)
@@ -561,34 +622,31 @@ void ThumbnailRenderWindow::OnDisplayGeometryModified()
 
   // Update bounding box.
   m_BoundingBox->SetVtkPolyData(cube->GetOutput());
-  m_BoundingBox->SetGeometry(m_Renderer->GetWorldGeometry());
+  m_BoundingBox->SetGeometry(m_TrackedRenderer->GetWorldGeometry());
 
-  if (m_TrackedSliceNavigator)
+  // Tidy up
+  cube->Delete();
+
+  mitk::SliceNavigationController::ViewDirection viewDirection = m_TrackedSliceNavigator->GetViewDirection();
+  if (viewDirection == mitk::SliceNavigationController::Frontal)
   {
-    mitk::SliceNavigationController::ViewDirection viewDirection = m_TrackedSliceNavigator->GetViewDirection();
-    if (viewDirection == mitk::SliceNavigationController::Frontal)
-    {
-      m_BoundingBoxNode->SetColor(0, 0, 255);
-    }
-    else if (viewDirection == mitk::SliceNavigationController::Sagittal)
-    {
-      m_BoundingBoxNode->SetColor(0, 255, 0);
-    }
-    else if (viewDirection == mitk::SliceNavigationController::Axial)
-    {
-      m_BoundingBoxNode->SetColor(255, 0, 0);
-    }
-    else
-    {
-      m_BoundingBoxNode->SetColor(0, 255, 255);
-    }
+    m_BoundingBoxNode->SetColor(0, 0, 255);
+  }
+  else if (viewDirection == mitk::SliceNavigationController::Sagittal)
+  {
+    m_BoundingBoxNode->SetColor(0, 255, 0);
+  }
+  else if (viewDirection == mitk::SliceNavigationController::Axial)
+  {
+    m_BoundingBoxNode->SetColor(255, 0, 0);
+  }
+  else
+  {
+    m_BoundingBoxNode->SetColor(0, 255, 255);
   }
 
   m_BoundingBox->Modified();
   m_BoundingBoxNode->Modified();
-
-  // Tidy up
-  cube->Delete();
 
   // Request a single update at the end of the method.
   m_Renderer->RequestUpdate();

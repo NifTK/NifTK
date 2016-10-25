@@ -42,15 +42,6 @@ class WheelEventEater;
  * current size of the currently tracked QmitkRenderWindow's view-port size.
  * \ingroup uk.ac.ucl.cmic.thumbnail
  *
- * The client must
- * <pre>
- * 1. Create widget
- * 2. Call "Activated" to register with the data storage when the widget is considered active (eg. on screen).
- * 3. Call "Deactivated" to de-register with the data storage when the widget is considered not-active (eg. off screen).
- * </pre>
- *
- * The data storage will be initialised from the rendering manager at the first activation.
- *
  * This class provides methods to set the bounding box opacity, line thickness,
  * and rendering layer. These values would normally be set via preferences pages in the GUI.
  * The preferences part is done in the ThumbnailView, but this widget could potentially be placed
@@ -85,12 +76,6 @@ public:
 
   /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
   void SetDisplayInteractionsEnabled(bool enabled);
-
-  /// \brief Registers listeners.
-  void Activated();
-
-  /// \brief Deregisters listeners.
-  void Deactivated();
 
   /// \brief Sets the bounding box line thickness, default is 1 pixel, but on some displays (eg. various Linux) may appear wider due to anti-aliasing.
   int GetBoundingBoxLineThickness() const;
@@ -152,11 +137,11 @@ private:
   /// \brief Updates the bounding box by taking the corners of the tracked render window.
   void OnDisplayGeometryModified();
 
-  /// \brief Called to add all observers to tracked objects.
-  void AddObserversToTrackedObjects();
+  /// \brief Called to add observers for the renderer to track.
+  void TrackRenderer();
 
-  /// \brief Called to remove all observers from tracked objects.
-  void RemoveObserversFromTrackedObjects();
+  /// \brief Called to remove observers from the tracked renderer.
+  void UntrackRenderer();
 
   /// \brief We need to provide access to data storage to listen to Node events.
   mitk::DataStorage::Pointer m_DataStorage;
