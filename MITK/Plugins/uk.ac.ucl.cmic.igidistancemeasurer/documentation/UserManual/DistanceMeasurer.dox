@@ -3,10 +3,34 @@
 
 \section DistanceMeasurerIntro Introduction
 
+The aim of this plugin is to simply measure the distance of the surface in-front of the camera.
+
+The algorithm is
+\li Extract SURF features, using OpenCV standard SURF detector with default settings.
+\li Compute the top 20 points with best matching desciptors, matching both left-to-right and right-to-left.
+\li Consider matched 2D points as belonging to the same thing, and triangulate the 3D point using camera calibration properties.
+\li Take the median of the z-distance of each 3D point, rejecting any points with negative z-distance as erroneous.
+
 \section DistanceMeasurerPreferences Preferences
+
+None.
 
 \section DistanceMeasurerControls Controls
 
-\section DistanceMeasurerReferences References
+Just select the images to combine.
+
+\image html DistanceMeasurerControls.png "Figure 1: Simply select the images."
+
+\li The video images must have camera calibration properties. See Video Camera Calibration plugin.
+\li The mask images must be 1 channel, 8 bit, unsigned char, with a "binary" property set to true.
+\li The mask images are optional.
+
+If an image is removed from Data Storage, the combo-boxes are reset.
+
+\section MaskMergerTechnical Technical Notes
+
+\li The plugin listens to the IGIUPDATE signal on the event bus, the rate of which is
+controlled by the Data Sources plugin. It then runs the update in a background thread
+to avoid locking the GUI event loop.
 
 */
