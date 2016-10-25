@@ -44,7 +44,7 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftMaskCombo"/>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftMaskCombo" native="true"/>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="m_RightMaskLabel">
@@ -54,7 +54,7 @@
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightMaskCombo"/>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightMaskCombo" native="true"/>
      </item>
     </layout>
    </item>
@@ -96,6 +96,12 @@
    <class>QmitkDataStorageComboBox</class>
    <extends>QComboBox</extends>
    <header>QmitkDataStorageComboBox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QmitkDataStorageComboBoxWithSelectNone</class>
+   <extends>QWidget</extends>
+   <header>QmitkDataStorageComboBoxWithSelectNone.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
