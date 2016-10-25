@@ -40,30 +40,30 @@ namespace niftk
 //-----------------------------------------------------------------------------
 ThumbnailRenderWindow::ThumbnailRenderWindow(QWidget *parent, mitk::RenderingManager* renderingManager)
 : QmitkRenderWindow(parent, "thumbnail viewer", 0, renderingManager)
-, m_DataStorage(NULL)
-, m_BoundingBoxNode(NULL)
-, m_BoundingBox(NULL)
-, m_Renderer(NULL)
-, m_TrackedRenderer(NULL)
-, m_TrackedRenderingManager(NULL)
-, m_TrackedWorldTimeGeometry(NULL)
-, m_TrackedDisplayGeometry(NULL)
-, m_TrackedSliceNavigator(NULL)
+, m_DataStorage(nullptr)
+, m_BoundingBoxNode(nullptr)
+, m_BoundingBox(nullptr)
+, m_Renderer(nullptr)
+, m_TrackedRenderer(nullptr)
+, m_TrackedRenderingManager(nullptr)
+, m_TrackedWorldTimeGeometry(nullptr)
+, m_TrackedDisplayGeometry(nullptr)
+, m_TrackedSliceNavigator(nullptr)
 , m_TrackedRendererTag(-1)
 , m_TrackedWorldTimeGeometryTag(-1)
 , m_TrackedDisplayGeometryTag(-1)
 , m_TrackedSliceSelectorTag(-1)
 , m_TrackedTimeStepSelectorTag(-1)
-, m_MouseEventEater(NULL)
-, m_WheelEventEater(NULL)
+, m_MouseEventEater(nullptr)
+, m_WheelEventEater(nullptr)
 , m_InDataStorageChanged(false)
-, m_VisibilityTracker(NULL)
+, m_VisibilityTracker(nullptr)
 {
   m_DataStorage = renderingManager->GetDataStorage();
   assert(m_DataStorage.IsNotNull());
 
   // This should come early on, as we are setting renderer specific properties,
-  // and when you set a renderer specific property, if the renderer is NULL,
+  // and when you set a renderer specific property, if the renderer is nullptr,
   // it is an equivalent function call to setting a global property.
   m_Renderer = mitk::BaseRenderer::GetInstance(this->GetVtkRenderWindow());
 
@@ -134,12 +134,12 @@ ThumbnailRenderWindow::~ThumbnailRenderWindow()
 
   m_DataStorage->Remove(m_BoundingBoxNode);
 
-  if (m_MouseEventEater != NULL)
+  if (m_MouseEventEater != nullptr)
   {
     delete m_MouseEventEater;
   }
 
-  if (m_WheelEventEater != NULL)
+  if (m_WheelEventEater != nullptr)
   {
     delete m_WheelEventEater;
   }
@@ -231,12 +231,12 @@ void ThumbnailRenderWindow::AddObserversToTrackedObjects()
   itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onSliceChangedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
   onSliceChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateSliceAndTimeStep);
-  m_TrackedSliceSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), onSliceChangedCommand);
+  m_TrackedSliceSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(nullptr, 0), onSliceChangedCommand);
 
   itk::SimpleMemberCommand<ThumbnailRenderWindow>::Pointer onTimeChangedCommand =
     itk::SimpleMemberCommand<ThumbnailRenderWindow>::New();
   onTimeChangedCommand->SetCallbackFunction(this, &ThumbnailRenderWindow::UpdateSliceAndTimeStep);
-  m_TrackedTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(NULL, 0), onTimeChangedCommand);
+  m_TrackedTimeStepSelectorTag = m_TrackedSliceNavigator->AddObserver(mitk::SliceNavigationController::GeometryTimeEvent(nullptr, 0), onTimeChangedCommand);
 }
 
 
