@@ -335,6 +335,7 @@ void ThumbnailRenderWindow::OnBoundingBoxPanned(const mitk::Vector2D& displaceme
   double trackedGeometryScaleFactor = m_TrackedDisplayGeometry->GetScaleFactorMMPerDisplayUnit();
   mitk::Vector2D trackedGeometryDisplacement = displacement * ownScaleFactor / trackedGeometryScaleFactor;
   m_TrackedDisplayGeometry->MoveBy(trackedGeometryDisplacement);
+  m_TrackedRenderingManager->RequestUpdateAll();
 }
 
 
@@ -351,6 +352,7 @@ void ThumbnailRenderWindow::OnBoundingBoxZoomed(double scaleFactor)
   centreInPx[0] = displaySize[0] / 2;
   centreInPx[1] = displaySize[1] / 2;
   m_TrackedDisplayGeometry->Zoom(scaleFactor, centreInPx);
+  m_TrackedRenderingManager->RequestUpdateAll();
 }
 
 
