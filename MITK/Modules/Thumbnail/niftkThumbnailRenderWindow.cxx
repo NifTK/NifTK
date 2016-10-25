@@ -118,12 +118,16 @@ ThumbnailRenderWindow::ThumbnailRenderWindow(QWidget *parent, mitk::RenderingMan
   m_WheelEventEater = new WheelEventEater();
   m_WheelEventEater->SetIsEating(true);
   this->installEventFilter(m_WheelEventEater);
+
+  this->RegisterInteractor();
 }
 
 
 //-----------------------------------------------------------------------------
 ThumbnailRenderWindow::~ThumbnailRenderWindow()
 {
+  this->UnregisterInteractor();
+
   if (m_TrackedRenderer.IsNotNull())
   {
     this->UntrackRenderer();
@@ -133,9 +137,6 @@ ThumbnailRenderWindow::~ThumbnailRenderWindow()
   {
     m_TrackedRenderingManager->RemoveRenderWindow(this->GetRenderWindow());
   }
-
-  // Release the display interactor.
-  this->SetDisplayInteractionsEnabled(false);
 
   if (m_DataStorage->Exists(m_BoundingBoxNode))
   {
@@ -155,44 +156,38 @@ ThumbnailRenderWindow::~ThumbnailRenderWindow()
 
 
 //-----------------------------------------------------------------------------
-bool ThumbnailRenderWindow::AreDisplayInteractionsEnabled() const
+void ThumbnailRenderWindow::RegisterInteractor()
 {
-  return m_DisplayInteractor.IsNotNull();
+  assert(m_DisplayInteractor.IsNull());
+
+  // Here we create our own display interactor...
+  m_DisplayInteractor = ThumbnailInteractor::New(this);
+
+  us::Module* thisModule = us::ModuleRegistry::GetModule("niftkThumbnail");
+  m_DisplayInteractor->LoadStateMachine("ThumbnailInteraction.xml", thisModule);
+  m_DisplayInteractor->SetEventConfig("ThumbnailConfig.xml", thisModule);
+
+  /// The interactor will be dynamically enabled/disabled as the container view is activated/deactivated.
+  m_DisplayInteractor->Disable();
+
+  // ... and register it as listener via the micro services.
+  us::ServiceProperties props;
+  props["name"] = std::string("ThumbnailInteractor");
+
+  us::ModuleContext* moduleContext = us::GetModuleContext();
+  m_DisplayInteractorService = moduleContext->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
 }
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::SetDisplayInteractionsEnabled(bool enabled)
+void ThumbnailRenderWindow::UnregisterInteractor()
 {
-  if (enabled == this->AreDisplayInteractionsEnabled())
-  {
-    // Already enabled/disabled.
-    return;
-  }
+  assert(m_DisplayInteractor.IsNotNull());
 
-  if (enabled)
-  {
-    // Here we create our own display interactor...
-    m_DisplayInteractor = ThumbnailInteractor::New(this);
-
-    us::Module* thisModule = us::ModuleRegistry::GetModule("niftkThumbnail");
-    m_DisplayInteractor->LoadStateMachine("ThumbnailInteraction.xml", thisModule);
-    m_DisplayInteractor->SetEventConfig("DisplayConfigMITK.xml");
-
-    // ... and register it as listener via the micro services.
-    us::ServiceProperties props;
-    props["name"] = std::string("ThumbnailInteractor");
-
-    us::ModuleContext* moduleContext = us::GetModuleContext();
-    m_DisplayInteractorService = moduleContext->RegisterService<mitk::InteractionEventObserver>(m_DisplayInteractor.GetPointer(), props);
-  }
-  else
-  {
-    // Unregister the display interactor service.
-    m_DisplayInteractorService.Unregister();
-    // Release the display interactor to let it be desctructed.
-    m_DisplayInteractor = 0;
-  }
+  // Unregister the display interactor service.
+  m_DisplayInteractorService.Unregister();
+  // Release the display interactor to let it be desctructed.
+  m_DisplayInteractor = nullptr;
 }
 
 

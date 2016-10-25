@@ -222,8 +222,6 @@ void ThumbnailView::CreateQtPartControl(QWidget* parent)
       m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
     }
 
-    m_ThumbnailWindow->SetDisplayInteractionsEnabled(true);
-
     this->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener.data());
 
     mitk::IRenderWindowPart* selectedEditor = this->GetSelectedEditor();

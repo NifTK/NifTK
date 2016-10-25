@@ -71,12 +71,6 @@ public:
   /// \brief Destructs the ThumbnailRenderWindow object.
   ~ThumbnailRenderWindow();
 
-  /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
-  bool AreDisplayInteractionsEnabled() const;
-
-  /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
-  void SetDisplayInteractionsEnabled(bool enabled);
-
   /// \brief Sets the bounding box line thickness, default is 1 pixel, but on some displays (eg. various Linux) may appear wider due to anti-aliasing.
   float GetBoundingBoxLineThickness() const;
 
@@ -115,6 +109,12 @@ public:
   void SetTrackedRenderer(mitk::BaseRenderer::Pointer rendererToTrack);
 
 private:
+
+  /// \brief Registers the interactor.
+  void RegisterInteractor();
+
+  /// \brief Unregisters the interactor.
+  void UnregisterInteractor();
 
   /// \brief Callback for when the bounding box is panned through the interactor.
   void OnBoundingBoxPanned(const mitk::Vector2D& displacement);
