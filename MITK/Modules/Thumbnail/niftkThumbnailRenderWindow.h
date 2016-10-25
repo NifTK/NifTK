@@ -143,14 +143,14 @@ private:
   /// \brief When the world geometry changes, we have to make the thumbnail match, to get the same slice.
   void OnWorldTimeGeometryModified();
 
-  /// \brief Updates the bounding box by taking the corners of the tracked render window.
-  void OnDisplayGeometryModified();
-
   /// \brief Updates the selected time step on the SliceNavigationController.
   void OnSelectedTimeStepChanged();
 
   /// \brief Updates the selected slice on the SliceNavigationController.
   void OnSelectedSliceChanged();
+
+  /// \brief Updates the bounding box by taking the corners of the tracked render window.
+  void OnDisplayGeometryModified();
 
   /// \brief Called to add all observers to tracked objects.
   void AddObserversToTrackedObjects();
@@ -173,9 +173,6 @@ private:
   /// \brief This is set to the currently tracked renderer. We don't construct or own it, so don't delete it.
   mitk::BaseRenderer::Pointer m_TrackedRenderer;
 
-  // This is set to the current world geometry.
-  mitk::TimeGeometry::Pointer m_TrackedWorldTimeGeometry;
-
   /// \brief The rendering manager of the tracked renderer.
   /// The renderer of the thumbnail window should be added to the rendering manager
   /// of the render window that is being tracked. This is not instead but in addition
@@ -184,36 +181,46 @@ private:
   /// when the contents of the tracked window changes.
   mitk::RenderingManager* m_TrackedRenderingManager;
 
-  /// \brief Keep track of this to register and unregister event listeners.
-  mitk::DisplayGeometry::Pointer m_TrackedDisplayGeometry;
+  /// \brief The world time geometry of the tracked renderer.
+  /// This should be the same as m_TrackedRenderer->GetWorldTimeGeometry(), but
+  /// we keep a smart pointer so that we can release the listeners from the old
+  /// world time geometry if the world time geometry of the renderer has changed.
+  mitk::TimeGeometry::Pointer m_TrackedWorldTimeGeometry;
 
-  /// \brief Keep track of this to register and unregister event listeners.
+  /// \brief The slice navigation controller of the tracked renderer.
+  /// This should be the same as m_TrackedRenderer->GetSliceNavigationController(), but
+  /// we keep a smart pointer so that we can release the listeners from the old
+  /// slice navigation controller if the slice navigation controller of the renderer
+  /// has changed.
   mitk::SliceNavigationController::Pointer m_TrackedSliceNavigator;
 
-  /// \brief Used for when the tracked renderer changes
+  /// \brief The display geometry of the tracked renderer.
+  /// This should be the same as m_TrackedRenderer->GetDisplayGeometry(), but
+  /// we keep a smart pointer so that we can release the listeners from the old
+  /// display geometry if the display geometry of the renderer has changed.
+  mitk::DisplayGeometry::Pointer m_TrackedDisplayGeometry;
+
+  /// \brief Identifier of the listener to the modification events of the tracked renderer.
   /// For example new world time geometry is set for the renderer.
   unsigned long m_TrackedRendererTag;
 
-  /// \brief Used for when the tracked window world geometry changes
+  /// \brief Identifier of the listener to the modification events of the tracked world time geometry.
   unsigned long m_TrackedWorldTimeGeometryTag;
 
-  /// \brief Used for when the tracked window display geometry changes.
-  unsigned long m_TrackedDisplayGeometryTag;
+  /// \brief Identifier of the listener to the time step change events of the tracked slice navigation controller.
+  unsigned long m_TrackedTimeStepSelectorTag;
 
-  /// \brief Used for when the tracked window changes slice.
+  /// \brief Identifier of the listener to the slice change events of the tracked slice navigation controller.
   unsigned long m_TrackedSliceSelectorTag;
 
-  /// \brief Used for when the tracked window changes time step.
-  unsigned long m_TrackedTimeStepSelectorTag;
+  /// \brief Identifier of the listener to the modification events of the tracked display geometry.
+  unsigned long m_TrackedDisplayGeometryTag;
 
   /// \brief Squash all mouse events.
   MouseEventEater* m_MouseEventEater;
 
   /// \brief Squash all wheel events.
   WheelEventEater* m_WheelEventEater;
-
-  /// \brief Simply keeps track of whether we are currently processing an update to avoid repeated/recursive calls.
-  bool m_InDataStorageChanged;
 
   /// \brief To track visibility changes.
   DataNodeVisibilityTracker::Pointer m_VisibilityTracker;
