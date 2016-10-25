@@ -20,18 +20,46 @@
       <default>-1.0</default>
       <channel>input</channel>
     </float>
+
+    <float>
+      <name>seed</name>
+      <longflag>seed</longflag>
+      <description>The seed for the random number generator. If you don't set this you'll get the same ranodom sequence every time.</description>
+      <label>seed</label>
+      <default>0.0</default>
+      <channel>input</channel>
+    </float>
+
+  <file>
+      <name>modelToCentreTransform</name>
+      <longflag>modelToCentreTransform</longflag>
+      <description>A 4x4 matrix defining the centre of the model</description>
+      <label>modelToCentreTransform</label>
+      <channel>input</channel>
+    </file>
+
   </parameters>
 
   <parameters>
     <label>Outputs</label>
     <description><![CDATA[Output parameters]]></description>
     <file>
-      <name>output</name>
-      <longflag>output</longflag>
-      <description>Write the transform to file.</description>
+      <name>outputPrefix</name>
+      <longflag>outputPrefix</longflag>
+      <description>Prefix of file to write to</description>
       <label>Output</label>
       <channel>output</channel>
     </file>
+
+    <integer>
+      <name>repeats</name>
+      <longflag>repeats</longflag>
+      <description>The number of matrices to generate</description>
+      <label>repeats</label>
+      <channel>output</channel>
+      <default>1</default>
+    </integer>
+
   </parameters>
 
 </executable>
