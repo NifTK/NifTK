@@ -44,7 +44,7 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QmitkDataStorageComboBox" name="m_LeftMaskCombo"/>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftMaskCombo"/>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="m_RightMaskLabel">
@@ -54,7 +54,7 @@
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QmitkDataStorageComboBox" name="m_RightMaskCombo"/>
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightMaskCombo"/>
      </item>
     </layout>
    </item>
