@@ -14,6 +14,8 @@
 
 #include "QmitkStereoImageAndCameraSelectionWidget.h"
 #include <mitkNodePredicateDataType.h>
+#include <mitkNodePredicateProperty.h>
+#include <mitkNodePredicateAnd.h>
 #include <niftkUndistortion.h>
 
 //-----------------------------------------------------------------------------
@@ -44,6 +46,7 @@ QmitkStereoImageAndCameraSelectionWidget::~QmitkStereoImageAndCameraSelectionWid
 void QmitkStereoImageAndCameraSelectionWidget::SetRightChannelEnabled(const bool& isEnabled)
 {
   m_RightImageCombo->setEnabled(isEnabled);
+  m_RightMaskCombo->setEnabled(isEnabled);
 }
 
 
@@ -51,6 +54,7 @@ void QmitkStereoImageAndCameraSelectionWidget::SetRightChannelEnabled(const bool
 void QmitkStereoImageAndCameraSelectionWidget::SetLeftChannelEnabled(const bool& isEnabled)
 {
   m_LeftImageCombo->setEnabled(isEnabled);
+  m_LeftMaskCombo->setEnabled(isEnabled);
 }
 
 
@@ -99,6 +103,50 @@ mitk::DataNode* QmitkStereoImageAndCameraSelectionWidget::GetRightNode() const
 
 
 //-----------------------------------------------------------------------------
+mitk::Image* QmitkStereoImageAndCameraSelectionWidget::GetLeftMask() const
+{
+  mitk::Image* result = NULL;
+
+  mitk::DataNode* node = this->GetLeftMaskNode();
+  if (node != NULL)
+  {
+    result = dynamic_cast<mitk::Image*>(node->GetData());
+  }
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode* QmitkStereoImageAndCameraSelectionWidget::GetLeftMaskNode() const
+{
+  return m_LeftMaskCombo->GetSelectedNode();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::Image* QmitkStereoImageAndCameraSelectionWidget::GetRightMask() const
+{
+  mitk::Image* result = NULL;
+
+  mitk::DataNode* node = this->GetRightMaskNode();
+  if (node != NULL)
+  {
+    result = dynamic_cast<mitk::Image*>(node->GetData());
+  }
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode* QmitkStereoImageAndCameraSelectionWidget::GetRightMaskNode() const
+{
+  return m_RightMaskCombo->GetSelectedNode();
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::DataNode* QmitkStereoImageAndCameraSelectionWidget::GetCameraNode() const
 {
   return m_CameraPositionComboBox->GetSelectedNode();
@@ -133,14 +181,32 @@ void QmitkStereoImageAndCameraSelectionWidget::SetDataStorage(const mitk::DataSt
   m_DataStorage = const_cast<mitk::DataStorage*>(dataStorage);
 
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+  mitk::NodePredicateProperty::Pointer isBinary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(true));
+  mitk::NodePredicateProperty::Pointer isNotBinary = mitk::NodePredicateProperty::New("binary", mitk::BoolProperty::New(false));
 
-  m_LeftImageCombo->SetDataStorage(m_DataStorage);
-  m_LeftImageCombo->SetPredicate(isImage);
+  mitk::NodePredicateAnd::Pointer isBinaryImage = mitk::NodePredicateAnd::New();
+  isBinaryImage->AddPredicate(isImage);
+  isBinaryImage->AddPredicate(isBinary);
+
+  mitk::NodePredicateAnd::Pointer isNonBinaryImage = mitk::NodePredicateAnd::New();
+  isNonBinaryImage->AddPredicate(isImage);
+  isNonBinaryImage->AddPredicate(isNotBinary);
+
   m_LeftImageCombo->SetAutoSelectNewItems(false);
+  m_LeftImageCombo->SetPredicate(isNonBinaryImage);
+  m_LeftImageCombo->SetDataStorage(m_DataStorage);
 
-  m_RightImageCombo->SetDataStorage(m_DataStorage);
-  m_RightImageCombo->SetPredicate(isImage);
   m_RightImageCombo->SetAutoSelectNewItems(false);
+  m_RightImageCombo->SetPredicate(isNonBinaryImage);
+  m_RightImageCombo->SetDataStorage(m_DataStorage);
+
+  m_LeftMaskCombo->SetAutoSelectNewItems(false);
+  m_LeftMaskCombo->SetPredicate(isBinaryImage);
+  m_LeftMaskCombo->SetDataStorage(m_DataStorage);
+
+  m_RightMaskCombo->SetAutoSelectNewItems(false);
+  m_RightMaskCombo->SetPredicate(isBinaryImage);
+  m_RightMaskCombo->SetDataStorage(m_DataStorage);
 
   mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::Pointer isCoords = mitk::TNodePredicateDataType<niftk::CoordinateAxesData>::New();
   m_CameraPositionComboBox->SetDataStorage(m_DataStorage);

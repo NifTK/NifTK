@@ -40,7 +40,7 @@ NIFTKCORE_EXPORT bool IsBinaryMask(const mitk::DataNode::Pointer& input);
 */
 NIFTKCORE_EXPORT void BinaryMaskAndOperator(const mitk::Image::Pointer& input1,
                                             const mitk::Image::Pointer& input2,
-                                            const mitk::Image::Pointer& output
+                                            mitk::Image::Pointer& output
                                            );
 
 /**
@@ -51,7 +51,7 @@ NIFTKCORE_EXPORT void BinaryMaskAndOperator(const mitk::Image::Pointer& input1,
 */
 NIFTKCORE_EXPORT void BinaryMaskOrOperator(const mitk::Image::Pointer& input1,
                                            const mitk::Image::Pointer& input2,
-                                           const mitk::Image::Pointer& output
+                                           mitk::Image::Pointer& output
                                           );
 
 } // end namespace

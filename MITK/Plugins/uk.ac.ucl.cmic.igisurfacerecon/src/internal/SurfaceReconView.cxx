@@ -70,6 +70,7 @@ SurfaceReconView::~SurfaceReconView()
       {
         eventAdmin->unsubscribeSlot(m_IGIUpdateSubscriptionID);
         eventAdmin->unsubscribeSlot(m_IGIRecordingStartedSubscriptionID);
+        eventAdmin->unsubscribeSlot(m_FootswitchSubscriptionID);
       }
     }
   }
@@ -103,6 +104,10 @@ void SurfaceReconView::CreateQtPartControl( QWidget *parent )
 
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTARTED";
     m_IGIRecordingStartedSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnRecordingStarted(ctkEvent)), properties);
+
+    ctkDictionary footswitchProperties;
+    footswitchProperties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH2START";
+    m_FootswitchSubscriptionID = eventAdmin->subscribeSlot(this, SLOT(OnFootSwitchPressed(ctkEvent)), footswitchProperties);
   }
 
   this->RetrievePreferenceValues();
@@ -194,6 +199,16 @@ void SurfaceReconView::OnUpdate(const ctkEvent& event)
     {
       DoSurfaceReconstruction();
     }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void SurfaceReconView::OnFootSwitchPressed(const ctkEvent& event)
+{
+  if (!m_BackgroundProcess.isRunning())
+  {
+    DoSurfaceReconstruction();
   }
 }
 
@@ -313,6 +328,9 @@ void SurfaceReconView::DoSurfaceReconstruction()
     mitk::DataNode::Pointer leftNode = m_StereoImageAndCameraSelectionWidget->GetLeftNode();
     mitk::DataNode::Pointer rightNode = m_StereoImageAndCameraSelectionWidget->GetRightNode();
 
+    mitk::Image::Pointer leftMask = m_StereoImageAndCameraSelectionWidget->GetLeftMask();
+    mitk::Image::Pointer rightMask = m_StereoImageAndCameraSelectionWidget->GetRightMask();
+
     // we store these for background processing.
     // we keep names instead of pointers because data storage screws up if we add the output node
     // with parents that might have been deleted already.
@@ -406,6 +424,8 @@ void SurfaceReconView::DoSurfaceReconstruction()
         niftk::SurfaceReconstruction::ParamPacket   params;
         params.image1 = leftImage;
         params.image2 = rightImage;
+        params.mask1 = leftMask;
+        params.mask2 = rightMask;
         params.method = method;
         params.outputtype = outputtype;
         params.camnode = camNode;

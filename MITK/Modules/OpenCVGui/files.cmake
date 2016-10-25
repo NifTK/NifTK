@@ -12,16 +12,16 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(
-  INCLUDE_DIRS Common MaskMerger
-  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI
-  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui QVTK NiftyLink
+set(CPP_FILES
+  Internal/niftkDistanceMeasurerGUI.cxx
+  niftkDistanceMeasurerController.cxx
 )
 
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkIGIGui)
-endif()
+set(MOC_H_FILES 
+  Internal/niftkDistanceMeasurerGUI.h
+  niftkDistanceMeasurerController.h
+)
 
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()
+set(UI_FILES
+  Internal/niftkDistanceMeasurerGUI.ui
+)

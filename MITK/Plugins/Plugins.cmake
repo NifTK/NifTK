@@ -124,6 +124,7 @@ set(NiftyIGI_PLUGINS
   Plugins/uk.ac.ucl.cmic.igipivotcalibration:ON
   Plugins/uk.ac.ucl.cmic.igipointercalib:ON
   Plugins/uk.ac.ucl.cmic.igicameracal:ON
+  Plugins/uk.ac.ucl.cmic.igimaskmerger:ON
 )
 
 if(WIN32)
@@ -144,6 +145,13 @@ if(BUILD_CAFFE)
   set(NiftyIGI_PLUGINS
     ${NiftyIGI_PLUGINS}
     Plugins/uk.ac.ucl.cmic.caffesegmentor:ON
+  )
+endif()
+
+if(OPENCV_WITH_NONFREE)
+  set(NiftyIGI_PLUGINS
+    ${NiftyIGI_PLUGINS}
+    Plugins/uk.ac.ucl.cmic.igidistancemeasurer:ON
   )
 endif()
 

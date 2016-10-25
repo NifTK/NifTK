@@ -65,6 +65,7 @@ set(_include_plugins
   uk.ac.ucl.cmic.igipointercalib
   uk.ac.ucl.cmic.igipointsetcropper
   uk.ac.ucl.cmic.igicameracal
+  uk.ac.ucl.cmic.igimaskmerger
 )
 
 if(WIN32)
@@ -94,6 +95,13 @@ if (BUILD_CAFFE)
   set(_include_plugins
     ${_include_plugins}
     uk.ac.ucl.cmic.caffesegmentor
+  )
+endif()
+
+if(OPENCV_WITH_NONFREE)
+  set(_include_plugins
+    ${_include_plugins}
+    uk.ac.ucl.cmic.igidistancemeasurer
   )
 endif()
 

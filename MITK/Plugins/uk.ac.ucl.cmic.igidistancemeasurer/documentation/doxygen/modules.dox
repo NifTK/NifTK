@@ -1,0 +1,17 @@
+/**
+  \defgroup uk_ac_ucl_cmic_igidistancemeasurer uk.ac.ucl.cmic.igidistancemeasurer Plugin
+  \ingroup CMICPlugins
+
+  \brief Implements a tool to measure the distance of SIFT points.
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk).
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_igidistancemeasurer_internal Internal
+  \ingroup uk_ac_ucl_cmic_igidistancemeasurer
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.igidistancemeasurer plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

@@ -20,6 +20,7 @@
 #include <niftkMathsUtils.h>
 #include <cv.h>
 #include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/nonfree/nonfree.hpp>
 
 namespace niftk
 {
@@ -33,6 +34,7 @@ public:
   : m_MaxFeaturesToTriangulate(maxFeaturesToTriangulate)
   , m_MinimumFeaturesToAverage(minFeaturesToAverage)
   {
+    cv::initModule_nonfree();
   }
 
   ~DistanceFromCameraPrivate() {}
@@ -71,99 +73,111 @@ double DistanceFromCameraPrivate::GetDistance(const mitk::Image::Pointer& leftIm
   cv::cvtColor(leftWrapper, m_LeftGreyScale, CV_RGB2GRAY);
   cv::cvtColor(rightWrapper, m_RightGreyScale, CV_RGB2GRAY);
 
-  cv::Mat leftMask;
-  cv::Mat rightMask;
-
-  if (leftMaskImage.IsNotNull() && rightMaskImage.IsNotNull())
-  {
-    leftMask = niftk::MitkImageToOpenCVMat(leftMaskImage);
-    rightMask = niftk::MitkImageToOpenCVMat(rightMaskImage);
-  }
-
-  cv::SIFT detector;
+  cv::SURF detector;
 
   std::vector<cv::KeyPoint> leftKeyPoints;
-  detector.detect(m_LeftGreyScale, leftKeyPoints, leftMask);
-
-  std::vector<cv::KeyPoint> rightKeyPoints;
-  detector.detect(m_RightGreyScale, rightKeyPoints, rightMask);
-
-  cv::SiftDescriptorExtractor extractor;
-
-  cv::Mat leftDescriptors;
-  cv::Mat rightDescriptors;
-
-  extractor.compute( m_LeftGreyScale, leftKeyPoints, leftDescriptors );
-  extractor.compute( m_RightGreyScale, rightKeyPoints, rightDescriptors );
-
-  std::vector< cv::DMatch > matches;
-  cv::BFMatcher matcher(cv::NORM_L2, true /* cross match left & right */);
-
-  matcher.match(leftDescriptors, rightDescriptors, matches);
-
-  std::map<float, std::pair<int, int> > mapLeftToRight;
-  for (unsigned int i = 0; i < matches.size(); i++)
+  if(leftMaskImage.IsNotNull())
   {
-    mapLeftToRight.insert(std::pair<float, std::pair<int, int> >
-                         (matches[i].distance,
-                          std::pair<int, int>(matches[i].queryIdx, matches[i].trainIdx)));
-  }
-
-  std::vector< std::pair<cv::Point2d, cv::Point2d> > pointPairs;
-  std::vector< std::pair < cv::Point3d, double > > pointsIn3D;
-
-  std::map<float, std::pair<int, int> >::iterator iter;
-  for (iter = mapLeftToRight.begin();
-       iter != mapLeftToRight.end() && pointPairs.size() < m_MaxFeaturesToTriangulate;
-       ++iter)
-  {
-    cv::Point2d leftPoint = leftKeyPoints[iter->second.first].pt;
-    cv::Point2d rightPoint = rightKeyPoints[iter->second.second].pt;
-
-    pointPairs.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPoint,rightPoint));
-  }
-
-  // Triangulate
-  cv::Mat rightToLeftRotationMatrix = cvCreateMat (3,3,CV_64FC1);
-  cv::Mat rightToLeftTranslationVector = cvCreateMat (1,3,CV_64FC1);
-  cv::Mat leftInt = leftIntrinsic->GetCameraMatrix();
-  cv::Mat rightInt = rightIntrinsic->GetCameraMatrix();
-
-  for (int r = 0; r < 3; r++)
-  {
-    for (int c = 0; c < 3; c++)
-    {
-      rightToLeftRotationMatrix.at<double>(r, c) = stereoExtrinsics[r][c];
-    }
-    rightToLeftTranslationVector.at<double>(0, r) = stereoExtrinsics[r][3];
-  }
-
-  pointsIn3D = mitk::TriangulatePointPairsUsingGeometry(
-    pointPairs,
-    leftInt,
-    rightInt,
-    rightToLeftRotationMatrix,
-    rightToLeftTranslationVector,
-    std::numeric_limits<int>::max());
-
-  // Take median z-distance of non negative numbers.
-  std::vector<double> zdist;
-  for (int i = 0; i < pointsIn3D.size(); i++)
-  {
-    if (pointsIn3D[i].first.z > 0)
-    {
-      zdist.push_back(pointsIn3D[i].first.z);
-    }
-  }
-
-  if (zdist.size() < m_MinimumFeaturesToAverage)
-  {
-    return 0;
+    cv::Mat leftMask = niftk::MitkImageToOpenCVMat(leftMaskImage);
+    detector.detect(m_LeftGreyScale, leftKeyPoints, leftMask);
   }
   else
   {
-    return niftk::Median(zdist);
+    detector.detect(m_LeftGreyScale, leftKeyPoints);
   }
+
+  std::vector<cv::KeyPoint> rightKeyPoints;
+  if(rightMaskImage.IsNotNull())
+  {
+    cv::Mat rightMask;
+    detector.detect(m_RightGreyScale, rightKeyPoints, rightMask);
+  }
+  else
+  {
+    detector.detect(m_RightGreyScale, rightKeyPoints);
+  }
+
+  double distance = 0;
+
+  if (leftKeyPoints.size() >= m_MinimumFeaturesToAverage
+      && rightKeyPoints.size() >= m_MinimumFeaturesToAverage
+      )
+  {
+
+    cv::SurfDescriptorExtractor extractor;
+
+    cv::Mat leftDescriptors;
+    cv::Mat rightDescriptors;
+
+    extractor.compute( m_LeftGreyScale, leftKeyPoints, leftDescriptors );
+    extractor.compute( m_RightGreyScale, rightKeyPoints, rightDescriptors );
+
+    std::vector< cv::DMatch > matches;
+    cv::BFMatcher matcher(cv::NORM_L2, true /* cross match left & right */);
+
+    matcher.match(leftDescriptors, rightDescriptors, matches);
+
+    std::map<float, std::pair<int, int> > mapLeftToRight;
+    for (unsigned int i = 0; i < matches.size(); i++)
+    {
+      mapLeftToRight.insert(std::pair<float, std::pair<int, int> >
+                           (matches[i].distance,
+                            std::pair<int, int>(matches[i].queryIdx, matches[i].trainIdx)));
+    }
+
+    std::vector< std::pair<cv::Point2d, cv::Point2d> > pointPairs;
+    std::vector< std::pair < cv::Point3d, double > > pointsIn3D;
+
+    std::map<float, std::pair<int, int> >::iterator iter;
+    for (iter = mapLeftToRight.begin();
+         iter != mapLeftToRight.end() && pointPairs.size() < m_MaxFeaturesToTriangulate;
+         ++iter)
+    {
+      cv::Point2d leftPoint = leftKeyPoints[iter->second.first].pt;
+      cv::Point2d rightPoint = rightKeyPoints[iter->second.second].pt;
+
+      pointPairs.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPoint,rightPoint));
+    }
+
+    // Triangulate
+    cv::Mat rightToLeftRotationMatrix = cvCreateMat (3,3,CV_64FC1);
+    cv::Mat rightToLeftTranslationVector = cvCreateMat (1,3,CV_64FC1);
+    cv::Mat leftInt = leftIntrinsic->GetCameraMatrix();
+    cv::Mat rightInt = rightIntrinsic->GetCameraMatrix();
+
+    for (int r = 0; r < 3; r++)
+    {
+      for (int c = 0; c < 3; c++)
+      {
+        rightToLeftRotationMatrix.at<double>(r, c) = stereoExtrinsics[r][c];
+      }
+      rightToLeftTranslationVector.at<double>(0, r) = stereoExtrinsics[r][3];
+    }
+
+    pointsIn3D = mitk::TriangulatePointPairsUsingGeometry(
+      pointPairs,
+      leftInt,
+      rightInt,
+      rightToLeftRotationMatrix,
+      rightToLeftTranslationVector,
+      std::numeric_limits<int>::max());
+
+    // Take median z-distance of non negative numbers.
+    std::vector<double> zdist;
+    for (int i = 0; i < pointsIn3D.size(); i++)
+    {
+      if (pointsIn3D[i].first.z > 0)
+      {
+        zdist.push_back(pointsIn3D[i].first.z);
+      }
+    }
+
+    if (zdist.size() >= m_MinimumFeaturesToAverage)
+    {
+      distance = niftk::Median(zdist);
+    }
+  }
+  return distance;
 }
 
 

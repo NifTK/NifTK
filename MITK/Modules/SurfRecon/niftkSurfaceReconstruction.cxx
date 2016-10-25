@@ -99,7 +99,7 @@ SurfaceReconstruction::~SurfaceReconstruction()
 //-----------------------------------------------------------------------------
 mitk::BaseData::Pointer SurfaceReconstruction::Run(ParamPacket params)
 {
-  return this->Run(params.image1, params.image2, params.method, params.outputtype, params.camnode, params.maxTriangulationError, params.minDepth, params.maxDepth, params.bakeCameraTransform);
+  return this->Run(params.image1, params.image2, params.mask1, params.mask2, params.method, params.outputtype, params.camnode, params.maxTriangulationError, params.minDepth, params.maxDepth, params.bakeCameraTransform);
 }
 
 
@@ -107,6 +107,8 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(ParamPacket params)
 mitk::BaseData::Pointer SurfaceReconstruction::Run(
                                 const mitk::Image::Pointer image1,
                                 const mitk::Image::Pointer image2,
+                                const mitk::Image::Pointer mask1,
+                                const mitk::Image::Pointer mask2,
                                 Method method,
                                 OutputType outputtype,
                                 const mitk::DataNode::Pointer camnode,
@@ -131,10 +133,40 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
   {
     throw std::runtime_error("Left and right image height are different");
   }
+  if (mask1.IsNotNull() && mask1->GetDimension(0) != width)
+  {
+    throw std::runtime_error("Left mask width doesn't match left image width");
+  }
+  if (mask1.IsNotNull() && mask1->GetDimension(1) != height)
+  {
+    throw std::runtime_error("Left mask height doesn't match left image height");
+  }
+  if (mask2.IsNotNull() && mask2->GetDimension(0) != width)
+  {
+    throw std::runtime_error("Right mask width doesn't match left image width");
+  }
+  if (mask2.IsNotNull() && mask2->GetDimension(1) != height)
+  {
+    throw std::runtime_error("Right mask height doesn't match left image height");
+  }
+
   // we dont really care here whether the image has a z dimension or not
   // but for debugging purposes might as well check
   assert(image1->GetDimension(2) == 1);
   assert(image2->GetDimension(2) == 1);
+
+  bool isMasking = (mask1.IsNotNull() && mask2.IsNotNull());
+
+  cv::Mat leftMask;
+  cv::Mat rightMask;
+  if (isMasking)
+  {
+    assert(mask1->GetNumberOfChannels() == 1);
+    assert(mask2->GetNumberOfChannels() == 1);
+
+    leftMask = niftk::MitkImageToOpenCVMat(mask1);
+    rightMask = niftk::MitkImageToOpenCVMat(mask1);
+  }
 
   // calibration properties needed for pointcloud output
   mitk::CameraIntrinsicsProperty::Pointer   camIntr1;
@@ -266,6 +298,7 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
       case MITK_POINT_CLOUD:
       case PCL_POINT_CLOUD:
       {
+
         cv::Point2d leftPixel;
         cv::Point2d rightPixel;
         cv::Mat left2right_rotation = cv::Mat(3, 3, CV_32F, (void*) &stereoRig->GetValue().GetVnlMatrix()(0, 0), sizeof(float) * 4);
@@ -294,14 +327,20 @@ mitk::BaseData::Pointer SurfaceReconstruction::Run(
               leftPixel.y = y;
               rightPixel.x = r.x;
               rightPixel.y = r.y;
-              inputUndistortedPoints.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPixel, rightPixel));
-#ifdef _USE_PCL
-              if (outputtype == PCL_POINT_CLOUD)
+
+              if(!isMasking
+                 || (isMasking && leftMask.at<unsigned char>(leftPixel.y, leftPixel.x) && rightMask.at<unsigned char>(rightPixel.y, rightPixel.x))
+                 )
               {
-                CvScalar rgba = cvGet2D(&leftIpl, y, x);
-                pointcolours.push_back(cv::Point3f(rgba.val[0], rgba.val[1], rgba.val[2]));
-              }
+                inputUndistortedPoints.push_back(std::pair<cv::Point2d, cv::Point2d>(leftPixel, rightPixel));
+#ifdef _USE_PCL
+                if (outputtype == PCL_POINT_CLOUD)
+                {
+                  CvScalar rgba = cvGet2D(&leftIpl, y, x);
+                  pointcolours.push_back(cv::Point3f(rgba.val[0], rgba.val[1], rgba.val[2]));
+                }
 #endif
+              }
             }
           }
         }

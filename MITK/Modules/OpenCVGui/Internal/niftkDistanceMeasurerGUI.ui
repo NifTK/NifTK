@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DistanceMeasurerGUI</class>
+ <widget class="QWidget" name="DistanceMeasurerGUI">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="m_LeftImageLabel">
+       <property name="text">
+        <string>left image:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftImageComboBox">
+       <property name="toolTip">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="m_RightImageLabel">
+       <property name="text">
+        <string>right image:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightImageComboBox"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="m_LeftMaskLabel">
+       <property name="text">
+        <string>left mask (optional):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_LeftMaskComboBox"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="m_RightMaskLabel">
+       <property name="text">
+        <string>right mask (optional):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightMaskComboBox"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="m_DistanceLabel">
+       <property name="text">
+        <string>distance (cm):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="m_Distance">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>125</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QmitkDataStorageComboBoxWithSelectNone</class>
+   <extends>QComboBox</extends>
+   <header location="global">QmitkDataStorageComboBoxWithSelectNone.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

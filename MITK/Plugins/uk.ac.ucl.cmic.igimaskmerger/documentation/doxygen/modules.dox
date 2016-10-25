@@ -1,0 +1,17 @@
+/**
+  \defgroup uk_ac_ucl_cmic_igimaskmerger uk.ac.ucl.cmic.igimaskmerger Plugin
+  \ingroup CMICPlugins
+
+  \brief Implements Merging of Binary Masks.
+  
+  Written by Matt Clarkson (m.clarkson@ucl.ac.uk).
+*/
+
+/**
+  \defgroup uk_ac_ucl_cmic_igimaskmerger_internal Internal
+  \ingroup uk_ac_ucl_cmic_igimaskmerger
+
+  \brief This subcategory includes the internal classes of the uk.ac.ucl.cmic.igimaskmerger plugin. Other
+  plugins must not rely on these classes. They contain implementation details and their interface
+  may change at any time. We mean it.
+*/

@@ -1,0 +1,30 @@
+/**
+\page uk_ac_ucl_cmic_igimaskmerger The Mask Merger View
+
+\section MaskMergerIntro Introduction
+
+The aim of this plugin is to simply merge (logical AND) two binary masks
+for up to 2 video channels, such as from a stereo laparoscope.
+
+\section MaskMergerPreferences Preferences
+
+None.
+
+\section MaskMergerControls Controls
+
+Just select the images to combine.
+
+\image html MaskMergerControls.png "Figure 1: Simply select the images."
+
+\li The images must be 1 channel, 8 bit, unsigned char, with a "binary" property set to true.
+\li For each channel, the images must be the same size and have the same spatial extent.
+\li Either left or right channel is optional. The names left and right are arbitrary.
+
+If an image is removed from Data Storage, the combo-boxes are reset.
+
+\section MaskMergerTechnical Technical Notes
+
+\li The plugin listens to the IGIUPDATE signal on the event bus, the rate of which is
+controlled by the Data Sources plugin. It then runs the update in a background thread
+to avoid locking the GUI event loop.
+*/

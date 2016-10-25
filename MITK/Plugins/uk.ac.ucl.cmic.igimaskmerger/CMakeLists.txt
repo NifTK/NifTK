@@ -12,16 +12,14 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(
-  INCLUDE_DIRS Common MaskMerger
-  DEPENDS MitkQtWidgetsExt MitkIGTUI niftkCoreGui niftkIGI
-  PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui QVTK NiftyLink
+project(uk_ac_ucl_cmic_igimaskmerger)
+
+mitk_create_plugin(
+  EXPORT_DIRECTIVE IGIMASKMERGER_EXPORTS
+  EXPORTED_INCLUDE_SUFFIXES src
+  MODULE_DEPENDS niftkIGIGui
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkIGIGui)
-endif()
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
+  cotire(uk_ac_ucl_cmic_igimaskmerger)
 endif()
