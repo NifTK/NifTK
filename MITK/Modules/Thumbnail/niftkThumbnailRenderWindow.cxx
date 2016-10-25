@@ -75,7 +75,7 @@ ThumbnailRenderWindow::ThumbnailRenderWindow(QWidget *parent, mitk::RenderingMan
   m_BoundingBoxNode->SetVisibility(false); // globally turn it off, then we only turn it on in thumbnail (this) window.
 
   this->SetBoundingBoxOpacity(1);
-  this->SetBoundingBoxLineThickness(1);
+  this->SetBoundingBoxLineThickness(1.0f);
   this->SetBoundingBoxLayer(99);// arbitrary, copied from segmentation functionality
 
   /// TODO Very ugly. This should be done in the other way round, from the MIDAS tools.
@@ -248,18 +248,18 @@ void ThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::Pointer rende
 
 
 //-----------------------------------------------------------------------------
-int ThumbnailRenderWindow::GetBoundingBoxLineThickness() const
+float ThumbnailRenderWindow::GetBoundingBoxLineThickness() const
 {
-  int thickness = 0;
-  m_BoundingBoxNode->GetIntProperty("line width", thickness);
+  float thickness = 0.0f;
+  m_BoundingBoxNode->GetFloatProperty("line width", thickness);
   return thickness;
 }
 
 
 //-----------------------------------------------------------------------------
-void ThumbnailRenderWindow::SetBoundingBoxLineThickness(int thickness)
+void ThumbnailRenderWindow::SetBoundingBoxLineThickness(float thickness)
 {
-  m_BoundingBoxNode->SetIntProperty("line width", thickness);
+  m_BoundingBoxNode->SetFloatProperty("line width", thickness);
 }
 
 

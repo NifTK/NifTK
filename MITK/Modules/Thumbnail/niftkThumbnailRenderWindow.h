@@ -78,10 +78,10 @@ public:
   void SetDisplayInteractionsEnabled(bool enabled);
 
   /// \brief Sets the bounding box line thickness, default is 1 pixel, but on some displays (eg. various Linux) may appear wider due to anti-aliasing.
-  int GetBoundingBoxLineThickness() const;
+  float GetBoundingBoxLineThickness() const;
 
   /// \brief Gets the bounding box line thickness.
-  void SetBoundingBoxLineThickness(int thickness);
+  void SetBoundingBoxLineThickness(float thickness);
 
   /// \brief Gets the bounding box opacity, default is 1.
   float GetBoundingBoxOpacity() const;
