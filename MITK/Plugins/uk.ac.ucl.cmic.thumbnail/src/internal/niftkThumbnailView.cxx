@@ -140,7 +140,6 @@ ThumbnailView::~ThumbnailView()
 
   if (m_ThumbnailWindow)
   {
-    m_ThumbnailWindow->Deactivated();
     delete m_ThumbnailWindow;
   }
 }
@@ -169,7 +168,6 @@ void ThumbnailView::CreateQtPartControl(QWidget* parent)
       m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
     }
 
-    m_ThumbnailWindow->Activated();
     m_ThumbnailWindow->SetDisplayInteractionsEnabled(true);
 
     this->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener.data());
