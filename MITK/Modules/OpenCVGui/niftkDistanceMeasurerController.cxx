@@ -175,7 +175,7 @@ void DistanceMeasurerController::Update()
   Q_D(DistanceMeasurerController);
   QMutexLocker locker(&d->m_Lock);
 
-  if (d->m_LeftImage != nullptr && d->m_RightImage != nullptr && !d->m_BackgroundProcess.isRunning())
+  if (d->m_LeftImage != nullptr && d->m_RightImage != nullptr && !d->m_BackgroundProcess.isRunning() && d->m_LeftImage != d->m_RightImage)
   {
     d->m_BackgroundProcess = QtConcurrent::run(this, &DistanceMeasurerController::InternalUpdate);
     d->m_BackgroundProcessWatcher.setFuture(d->m_BackgroundProcess);

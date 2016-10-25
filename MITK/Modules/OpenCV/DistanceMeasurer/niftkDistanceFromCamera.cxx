@@ -175,13 +175,6 @@ double DistanceFromCameraPrivate::GetDistance(const mitk::Image::Pointer& leftIm
     if (zdist.size() >= m_MinimumFeaturesToAverage)
     {
       distance = niftk::Median(zdist);
-
-      MITK_INFO << "lkp=" << leftKeyPoints.size()
-                << ", rkp=" << rightKeyPoints.size()
-                << ", pp=" << pointPairs.size()
-                << ", 3Dp=" << pointsIn3D.size()
-                << ", Median distance = " << distance
-                << std::endl;
     }
   }
   return distance;

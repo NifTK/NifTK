@@ -63,10 +63,14 @@ protected:
 
 protected slots:
 
+  void OnBackgroundProcessFinished();
+
 private:
 
   QScopedPointer<MaskMergerControllerPrivate> d_ptr;
   Q_DECLARE_PRIVATE(MaskMergerController);
+
+  bool InternalUpdate();
 
 };
 

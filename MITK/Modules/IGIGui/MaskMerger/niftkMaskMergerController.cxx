@@ -19,6 +19,8 @@
 #include <mitkDataNode.h>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QFutureWatcher>
+#include <QtConcurrentRun>
 
 namespace niftk
 {
@@ -52,6 +54,8 @@ public:
   mitk::DataNode::Pointer m_LeftResult;
   mitk::DataNode::Pointer m_RightResult;
   QMutex                  m_Lock;
+  QFuture<bool>           m_BackgroundProcess;
+  QFutureWatcher<bool>    m_BackgroundProcessWatcher;
 };
 
 
@@ -160,7 +164,7 @@ void MaskMergerControllerPrivate::UpdateMask(const mitk::DataNode* input1,
     mitk::Image* im2 = dynamic_cast<mitk::Image*>(input2->GetData());
     mitk::Image::Pointer op = dynamic_cast<mitk::Image*>(output1->GetData());
 
-    if (im1 != nullptr && im2 != nullptr && op.IsNotNull())
+    if (im1 != nullptr && im2 != nullptr && op.IsNotNull() && im1 != im2)
     {
       niftk::BinaryMaskAndOperator(im1, im2, op);
       op->Modified();
@@ -202,6 +206,8 @@ void MaskMergerController::SetupGUI(QWidget* parent)
   connect(d->m_GUI, SIGNAL(LeftMask2SelectionChanged(const mitk::DataNode*)), this, SLOT(OnLeftMask2SelectionChanged(const mitk::DataNode*)));
   connect(d->m_GUI, SIGNAL(RightMask1SelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightMask1SelectionChanged(const mitk::DataNode*)));
   connect(d->m_GUI, SIGNAL(RightMask2SelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightMask2SelectionChanged(const mitk::DataNode*)));
+  connect(&d->m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+
 }
 
 
@@ -279,8 +285,32 @@ void MaskMergerController::Update()
   Q_D(MaskMergerController);
   QMutexLocker locker(&d->m_Lock);
 
+  d->m_BackgroundProcess = QtConcurrent::run(this, &MaskMergerController::InternalUpdate);
+  d->m_BackgroundProcessWatcher.setFuture(d->m_BackgroundProcess);
+}
+
+
+//-----------------------------------------------------------------------------
+bool MaskMergerController::InternalUpdate()
+{
+  Q_D(MaskMergerController);
+  QMutexLocker locker(&d->m_Lock);
+
   d->UpdateMask(d->m_LeftMask1, d->m_LeftMask2, d->m_LeftResult);
   d->UpdateMask(d->m_RightMask1, d->m_RightMask2, d->m_RightResult);
+
+  return true;
 }
+
+
+//-----------------------------------------------------------------------------
+void MaskMergerController::OnBackgroundProcessFinished()
+{
+  Q_D(MaskMergerController);
+  QMutexLocker locker(&d->m_Lock);
+
+  // Nothing to do right now - placeholder.
+}
+
 
 } // end namespace

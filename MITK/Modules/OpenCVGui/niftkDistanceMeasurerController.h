@@ -67,10 +67,10 @@ protected slots:
 
 private:
 
-  double InternalUpdate();
-
   QScopedPointer<DistanceMeasurerControllerPrivate> d_ptr;
   Q_DECLARE_PRIVATE(DistanceMeasurerController);
+
+  double InternalUpdate();
 
 };
 
