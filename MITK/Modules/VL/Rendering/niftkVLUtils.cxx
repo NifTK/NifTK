@@ -301,13 +301,13 @@ void VLUtils::initFogProps( mitk::DataNode* node )
   // gocFog()->setStart( . );
   mitk::FloatProperty::Pointer fog_start = mitk::FloatProperty::New();
   node->SetProperty("VL.Fog.Start", fog_start);
-  fog_start->SetValue( 0 );
+  fog_start->SetValue( 2.5 );
 
   // Only used with Linear mode
   // gocFog()->setEnd( . );
   mitk::FloatProperty::Pointer fog_stop = mitk::FloatProperty::New();
   node->SetProperty("VL.Fog.End", fog_stop);
-  fog_stop->SetValue( 1000 );
+  fog_stop->SetValue( 25 );
 
   // Only used with Exp & Exp2 mode
   // gocFog()->setDensity( . );
@@ -320,11 +320,13 @@ void VLUtils::initFogProps( mitk::DataNode* node )
 
 void VLUtils::updateFogProps( vl::Effect* fx, const mitk::DataNode* node )
 {
+  float cm_to_mm = 10.0; //vl::Shader wants fog params in mm. Our property is in cm
+
   int fog_mode = VLUtils::getEnumProp( node, "VL.Fog.Mode", 0 );
   int fog_target = VLUtils::getEnumProp( node, "VL.Fog.Target", 0 );
   vl::vec4 fog_color = VLUtils::getColorProp( node, "VL.Fog.Color", vl::black );
-  float fog_start = VLUtils::getFloatProp( node, "VL.Fog.Start", 0 );
-  float fog_end = VLUtils::getFloatProp( node, "VL.Fog.End", 0 );
+  float fog_start = VLUtils::getFloatProp( node, "VL.Fog.Start", 0 ) * cm_to_mm;
+  float fog_end = VLUtils::getFloatProp( node, "VL.Fog.End", 0 ) * cm_to_mm;
   float fog_density = VLUtils::getFloatProp( node, "VL.Fog.Density", 0 );
 
   vl::Shader* sh = fx->shader();

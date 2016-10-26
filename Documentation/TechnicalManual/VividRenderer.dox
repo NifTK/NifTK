@@ -145,7 +145,7 @@ DataNode properties:
   - VL.Fog.Color = #000044
   - VL.Fog.Mode = Linear   <----- enable linear fogging
   - VL.Fog.Start = 0
-  - VL.Fog.End = 250
+  - VL.Fog.End = 25.0
 - Sphere
   - visible = off
   - VL.IsStencil = on   <----- use sphere for stencil
@@ -166,8 +166,8 @@ The screenshot in figure 3. has been generated adjusting the following settings:
   - VL.Outline.Color = #00FF00
   - VL.Fog.Target = Alpha
   - VL.Fog.Mode = Linear
-  - VL.Fog.Start = 100
-  - VL.Fog.End = 180
+  - VL.Fog.Start = 10.0
+  - VL.Fog.End = 18.0
 - VL Debug
   - VL.Global.Stencil.Smoothness = 50
 - Opacity slider = 45%
