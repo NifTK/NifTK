@@ -35,6 +35,13 @@ int main(int argc, char** argv)
 
   bool silent = false;
 
+  std::ofstream transformsOut;
+  if ( outputTransformFile.length() != 0 )
+  {
+    transformsOut.open (outputTransformFile.c_str(), std::ios::out);
+    transformsOut << "#xt yt zt xr yr zr" << std::endl;
+  }
+
   vtkSmartPointer<vtkMatrix4x4> toCentreMat = vtkSmartPointer<vtkMatrix4x4>::New();
   vtkSmartPointer<vtkTransform> toCentre = vtkSmartPointer<vtkTransform>::New();
   toCentreMat->Identity();
@@ -52,15 +59,28 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkBoxMuellerRandomSequence> normal_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
 
   Uni_Rand->SetSeed(seed);
+  normal_Rand->SetUniformSequence(Uni_Rand);
 
+  niftk::CreateDirAndParents ( outputPrefix ) ;
   unsigned int widthOfNumber = static_cast<unsigned int>(std::floor(std::log10(repeats)) + 1);
   for ( unsigned int i = 0 ; i < repeats ; ++i )
   {
 
-    randomTransform = niftk::RandomTransformAboutRemoteCentre ( 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0, *normal_Rand,
+    randomTransform = niftk::RandomTransformAboutRemoteCentre ( xtsd , ytsd , ztsd, xrsd , yrsd, zrsd, *normal_Rand,
         toCentre, scaleSD);
 
     randomMatrix = randomTransform->GetMatrix();
+
+    if ( transformsOut )
+    {
+      double orientations [3];
+      randomTransform->GetOrientation(orientations);
+      double positions [3];
+      randomTransform->GetPosition(positions);
+
+      transformsOut << positions[0] << " " <<  positions[1] << " " << positions[2] << " ";
+      transformsOut << orientations[0] << " " <<  orientations[1] << " " << orientations[2] << std::endl;
+    }
 
     std::ostringstream outputNumber;
     outputNumber << std::setw(widthOfNumber) << std::setfill ('0') << i;
