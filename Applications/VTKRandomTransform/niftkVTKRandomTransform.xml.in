@@ -38,6 +38,60 @@
       <channel>input</channel>
     </file>
 
+    <float>
+      <name>xtsd</name>
+      <longflag>xtsd</longflag>
+      <description>The desired standard deviation of the x translations in mm</description>
+      <label>xtsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>ytsd</name>
+      <longflag>ytsd</longflag>
+      <description>The desired standard deviation of the y translations in mm</description>
+      <label>ytsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>ztsd</name>
+      <longflag>ztsd</longflag>
+      <description>The desired standard deviation of the z translations in mm</description>
+      <label>ztsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>xrsd</name>
+      <longflag>xrsd</longflag>
+      <description>The desired standard deviation of the x rotations in degrees</description>
+      <label>xrsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>yrsd</name>
+      <longflag>yrsd</longflag>
+      <description>The desired standard deviation of the y rotations in degrees</description>
+      <label>yrsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>zrsd</name>
+      <longflag>zrsd</longflag>
+      <description>The desired standard deviation of the z rotations in degrees</description>
+      <label>zrsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
   </parameters>
 
   <parameters>
@@ -47,7 +101,7 @@
       <name>outputPrefix</name>
       <longflag>outputPrefix</longflag>
       <description>Prefix of file to write to</description>
-      <label>Output</label>
+      <label>outputPrefix</label>
       <channel>output</channel>
     </file>
 
@@ -59,6 +113,14 @@
       <channel>output</channel>
       <default>1</default>
     </integer>
+
+    <file>
+      <name>outputTransformFile</name>
+      <longflag>outputTransformFile</longflag>
+      <description>Optionally write transforms to a single file of 6 columns and repeats rows.</description>
+      <label>outputTransformFile</label>
+      <channel>outputTransformFile</channel>
+    </file>
 
   </parameters>
 
