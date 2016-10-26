@@ -270,9 +270,10 @@ vtkSmartPointer<vtkTransform> RandomTransform (
     }
     catch (...)
     {
-      std::string error = "niftk::RandomTransform, wrong scaled distance, Target = " + std::to_string(scaleSD) + ", achieved=" +
-              std::to_string( correctedDistance );
-      throw std::logic_error(error);
+      std::ostringstream errorStream;
+
+      errorStream << "niftk::RandomTransform, wrong scaled distance, Target = " << scaleSD <<  ", achieved=" <<  correctedDistance;
+      throw std::logic_error(errorStream.str());
     }
   }
   transform = niftk::RigidTransformFromVector ( randomTransform );

@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <functional>
 #include <cmath>
+#include <sstream>
 
 namespace niftk {
 
@@ -190,9 +191,10 @@ void CheckDoublesEquals(double expected, double actual, double tol)
 {
   if (fabs(expected - actual) > tol)
   {
-    std::string error =  "Failed:Expected=" + std::to_string(expected) + ", actual=" +
-      std::to_string( actual )  + ", tolerance=" + std::to_string (tol);
-    throw std::logic_error(error);
+    std::stringstream errorStream;
+    errorStream <<  "Failed:Expected=" << expected << ", actual=" <<
+      actual <<", tolerance=" << tol;
+    throw std::logic_error(errorStream.str());
   }
 }
 
