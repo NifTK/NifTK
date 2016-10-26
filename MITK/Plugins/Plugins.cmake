@@ -37,6 +37,16 @@
 # configured. Worse than this, if you see a problem and then
 # re-run cmake, the problem will disappear, but will re-appear
 # on the next full clean build.
+#
+# Every plugin must be listed only one time. Therefore, the
+# plugins that are needed by multiple applications should be
+# put in the first, common section, even if they are not needed
+# by all of them. The application specific sections should contain
+# plugins that are only needed by those applications. Listing a
+# plugin in multiple sections causes error at configuration.
+# You can fine control which plugins you want in which application
+# by the white list in the application's CMakeLists.txt file.
+#
 ###################################################################
 
 set(PROJECT_PLUGINS
@@ -57,6 +67,7 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.imagelookuptables:ON
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
+  Plugins/uk.ac.ucl.cmic.thumbnail:ON
 )
 
 # ---------------------------------------------------------------------------------------------------
@@ -91,7 +102,6 @@ set(NiftyMIDAS_PLUGINS
   Plugins/uk.ac.ucl.cmic.dnddisplay:ON
   Plugins/uk.ac.ucl.cmic.niftymidas:ON
   Plugins/uk.ac.ucl.cmic.sideviewer:ON
-  Plugins/uk.ac.ucl.cmic.thumbnail:ON
   Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
   Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
   Plugins/uk.ac.ucl.cmic.pointsetconverter:ON
