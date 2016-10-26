@@ -62,7 +62,7 @@ int main(int argc, char** argv)
   Uni_Rand->SetSeed(seed);
   normal_Rand->SetUniformSequence(Uni_Rand);
 
-  niftk::CreateDirAndParents ( outputPrefix ) ;
+  niftk::CreateDirAndParents ( niftk::Dirname(outputPrefix) ) ;
   unsigned int widthOfNumber = static_cast<unsigned int>(std::floor(std::log10(repeats)) + 1);
   for ( unsigned int i = 0 ; i < repeats ; ++i )
   {
