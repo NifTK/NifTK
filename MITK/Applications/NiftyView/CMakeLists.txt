@@ -50,6 +50,7 @@ set(_include_plugins
   uk.ac.ucl.cmic.snapshot
   uk.ac.ucl.cmic.imagestatistics
   uk.ac.ucl.cmic.thumbnail
+  uk.ac.ucl.cmic.sideviewer
   uk.ac.ucl.cmic.xnat
 )
 
