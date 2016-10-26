@@ -21,6 +21,7 @@
 
 #include <niftkVTKRandomTransformCLP.h>
 #include <niftkVTKFunctions.h>
+#include <niftkFileHelper.h>
 
 #include <niftkConversionUtils.h>
 #include <vtkMinimalStandardRandomSequence.h>
