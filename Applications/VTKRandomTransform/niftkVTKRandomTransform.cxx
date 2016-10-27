@@ -29,6 +29,8 @@
 #include <vtkMatrix4x4.h>
 #include <vtkTransform.h>
 
+#include <cmath>
+
 int main(int argc, char** argv)
 {
   // To parse command line args.
