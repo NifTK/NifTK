@@ -247,8 +247,8 @@ vtkSmartPointer<vtkTransform> RandomTransform (
 
   for ( std::vector<double>::iterator it = stddev.begin() ; it < stddev.end() ; ++ it )
   {
-    randomTransform.push_back ( (*it) * NormalisedRNG ( &rng ));
     rng.Next();
+    randomTransform.push_back ( (*it) * NormalisedRNG ( &rng ));
     zeros.push_back(0.0);
     covariance.push_back ( (*it) * (*it) );
   }
