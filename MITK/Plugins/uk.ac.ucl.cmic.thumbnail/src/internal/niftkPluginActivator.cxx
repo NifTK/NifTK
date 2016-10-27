@@ -21,9 +21,40 @@
 namespace niftk
 {
 
+PluginActivator* PluginActivator::s_Instance = nullptr;
+
+//-----------------------------------------------------------------------------
+PluginActivator::PluginActivator()
+{
+  s_Instance = this;
+}
+
+
+//-----------------------------------------------------------------------------
+PluginActivator::~PluginActivator()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+PluginActivator* PluginActivator::GetInstance()
+{
+  return s_Instance;
+}
+
+
+//-----------------------------------------------------------------------------
+ctkPluginContext* PluginActivator::GetContext() const
+{
+  return m_Context;
+}
+
+
 //-----------------------------------------------------------------------------
 void PluginActivator::start(ctkPluginContext* context)
 {
+  m_Context = context;
+
   BERRY_REGISTER_EXTENSION_CLASS(ThumbnailView, context);
   BERRY_REGISTER_EXTENSION_CLASS(ThumbnailViewPreferencePage, context);
 }

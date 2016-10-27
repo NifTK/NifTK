@@ -18,10 +18,10 @@ TODO Std move to abort interaction of scroll/pan/zoom
 -->
 <statemachine>
     <state name="start" startstate="true" >
-        <transition event_class="InteractionPositionEvent" event_variant="StartMove" target="move">
+        <transition event_class="InteractionPositionEvent" event_variant="StartPanning" target="move">
             <action name="init"/>
         </transition>
-        <transition event_class="InteractionPositionEvent" event_variant="StartZoom" target="zoom">
+        <transition event_class="InteractionPositionEvent" event_variant="StartZooming" target="zoom">
             <action name="init"/>
         </transition>
         <!-- mitkDispplayInteractor.cpp implements this for all events -->
@@ -39,10 +39,10 @@ TODO Std move to abort interaction of scroll/pan/zoom
         </transition>
     </state>
     <state name="move">
-      <transition event_class="InteractionPositionEvent" event_variant="Moving" target="move">
+      <transition event_class="InteractionPositionEvent" event_variant="Panning" target="move">
             <action name="move"/>
       </transition>
-      <transition event_class="InteractionPositionEvent" event_variant="EndMoving" target="start"/>
+      <transition event_class="InteractionPositionEvent" event_variant="EndPanning" target="start"/>
     </state>
     <state name="zoom">
       <transition event_class="InteractionPositionEvent" event_variant="Zooming" target="zoom">
