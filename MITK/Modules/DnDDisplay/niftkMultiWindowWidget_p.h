@@ -42,6 +42,19 @@ class SliceNavigationController;
 namespace niftk
 {
 
+enum WorldDirections
+{
+  AxialBottomToTop = 0,
+  AxialTopToBottom = 1,
+  SagittalLeftToRight = 0,
+  SagittalRightToLeft = 2,
+  CoronalBackToFront = 0,
+  CoronalFrontToBack = 4,
+  ImageDirections = 8,
+  MITKWorldDirections = AxialTopToBottom | SagittalLeftToRight | CoronalBackToFront,
+  NifTKWorldDirections = AxialBottomToTop | SagittalLeftToRight | CoronalBackToFront
+};
+
 /**
  * \class MultiWindowWidget
  * \brief Subclass of QmitkStdMultiWidget to provide MIDAS specific functionality
@@ -524,9 +537,6 @@ private:
   /// \brief Scale factors for each render window in mm/px.
   std::vector<double> m_ScaleFactors;
 
-  typedef enum { ImageGeometry, AxialGeometry, SagittalGeometry, CoronalGeometry } GeometryType;
-  GeometryType m_GeometryType;
-
   int m_OrientationAxes[3];
   char m_OrientationString[4];
 
@@ -622,6 +632,8 @@ private:
 
   /// \brief Dummy widget to fill up the gap at the place of the 3D window in WINDOW_LAYOUT_ORTHO_NO_3D.
   QWidget* m_EmptySpace;
+
+  WorldDirections m_WorldDirections;
 
   friend class DisplayGeometryModificationCommand;
 

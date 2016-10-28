@@ -133,6 +133,7 @@ MultiWindowWidget::MultiWindowWidget(
 , m_IntensityAnnotationVisible(true)
 , m_PropertyAnnotationVisible(false)
 , m_EmptySpace(new QWidget(this))
+, m_WorldDirections(NifTKWorldDirections)
 {
   /// Note:
   /// The rendering manager is surely not null. If NULL is specified then the superclass
@@ -1205,48 +1206,23 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 
     mitk::Point3D worldBottomLeftBackCorner = m_Geometry->GetOrigin();
 
-    if (m_Geometry->GetImageGeometry())
+    for (int i = 0; i < 3; ++i)
     {
-      m_GeometryType = ImageGeometry;
+      /// The distance of the origin from the bottom left back corner.
+      double distance = m_UpDirections[i] > 0 ? 0.0 : permutedBoundingBox[i];
 
-      for (int i = 0; i < 3; ++i)
+      if (m_Geometry->GetImageGeometry())
       {
-        if (m_UpDirections[i] > 0)
-        {
-          worldBottomLeftBackCorner[i] -= 0.5 * (
-                permutedSpacing[0] * permutedMatrix[i][0]
-              + permutedSpacing[1] * permutedMatrix[i][1]
-              + permutedSpacing[2] * permutedMatrix[i][2]);
-        }
-        else
-        {
-          worldBottomLeftBackCorner[i] -= (permutedBoundingBox[i] - 0.5) * (
-                permutedSpacing[0] * permutedMatrix[i][0]
-              + permutedSpacing[1] * permutedMatrix[i][1]
-              + permutedSpacing[2] * permutedMatrix[i][2]);
-        }
+        distance += m_UpDirections[i] * 0.5;
       }
+
+      worldBottomLeftBackCorner[i] -= distance * (
+              permutedSpacing[0] * permutedMatrix[i][0]
+            + permutedSpacing[1] * permutedMatrix[i][1]
+            + permutedSpacing[2] * permutedMatrix[i][2]);
     }
-    else if (permutedAxes[0] == 0 && permutedAxes[1] == 1 && permutedAxes[2] == 2) // Axial
-    {
-      m_GeometryType = AxialGeometry;
-      /// In the axial render window the origin is in the bottom left front corner, not in the bottom left back.
-      worldBottomLeftBackCorner[0] -= permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[0][1];
-      worldBottomLeftBackCorner[1] -= permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
-      worldBottomLeftBackCorner[2] -= permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[2][1];
-    }
-    else if (permutedAxes[0] == 2 && permutedAxes[1] == 0 && permutedAxes[2] == 1) // Sagittal
-    {
-      m_GeometryType = SagittalGeometry;
-    }
-    else if (permutedAxes[0] == 0 && permutedAxes[1] == 2 && permutedAxes[2] == 1) // Coronal
-    {
-      m_GeometryType = CoronalGeometry;
-    }
-    else
-    {
-      assert(false);
-    }
+    MITK_INFO << "bottom left back corner: " << worldBottomLeftBackCorner;
+    MITK_INFO << "up directions: " << m_UpDirections[0] << " " << m_UpDirections[1] << " " << m_UpDirections[2];
 
     std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
     for (unsigned int i = 0; i < renderWindows.size(); i++)
@@ -1263,7 +1239,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 
       if (i < 3)
       {
-        mitk::Point3D originOfSlice;
+        mitk::Point3D originOfSlice = worldBottomLeftBackCorner;
         mitk::VnlVector rightDV(3);
         mitk::VnlVector bottomDV(3);
         mitk::VnlVector normal(3);
@@ -1272,6 +1248,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
         unsigned int slices = 1;
         mitk::ScalarType viewSpacing = 1;
         bool isFlipped;
+        double distance = 0.5;
 
         // Setting up the width, height, axis orientation.
         switch (viewDirection)
@@ -1282,9 +1259,18 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[0];
           viewSpacing = permutedSpacing[0];
           isFlipped = false;
-          originOfSlice[0] = worldBottomLeftBackCorner[0] + 0.5 * permutedSpacing[0] * permutedMatrix[0][0];
-          originOfSlice[1] = worldBottomLeftBackCorner[1] + 0.5 * permutedSpacing[0] * permutedMatrix[1][0];
-          originOfSlice[2] = worldBottomLeftBackCorner[2] + 0.5 * permutedSpacing[0] * permutedMatrix[2][0];
+          if ((m_WorldDirections & SagittalRightToLeft)
+              || ((m_WorldDirections & ImageDirections) && (m_UpDirections[0] < 0)))
+          {
+            distance = permutedBoundingBox[0] - 0.5;
+            normal[0] *= -1;
+            normal[1] *= -1;
+            normal[2] *= -1;
+            isFlipped = true;
+          }
+          originOfSlice[0] += distance * permutedSpacing[0] * permutedMatrix[0][0];
+          originOfSlice[1] += distance * permutedSpacing[0] * permutedMatrix[1][0];
+          originOfSlice[2] += distance * permutedSpacing[0] * permutedMatrix[2][0];
           rightDV[0] = permutedSpacing[1] * permutedMatrix[0][1];
           rightDV[1] = permutedSpacing[1] * permutedMatrix[1][1];
           rightDV[2] = permutedSpacing[1] * permutedMatrix[2][1];
@@ -1302,9 +1288,18 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[1];
           viewSpacing = permutedSpacing[1];
           isFlipped = true;
-          originOfSlice[0] = worldBottomLeftBackCorner[0] + 0.5 * permutedSpacing[1] * permutedMatrix[0][1];
-          originOfSlice[1] = worldBottomLeftBackCorner[1] + 0.5 * permutedSpacing[1] * permutedMatrix[1][1];
-          originOfSlice[2] = worldBottomLeftBackCorner[2] + 0.5 * permutedSpacing[1] * permutedMatrix[2][1];
+          if ((m_WorldDirections & CoronalFrontToBack)
+              || ((m_WorldDirections & ImageDirections) && (m_UpDirections[1] < 0)))
+          {
+            distance = permutedBoundingBox[1] - 0.5;
+            normal[0] *= -1;
+            normal[1] *= -1;
+            normal[2] *= -1;
+            isFlipped = false;
+          }
+          originOfSlice[0] += distance * permutedSpacing[1] * permutedMatrix[0][1];
+          originOfSlice[1] += distance * permutedSpacing[1] * permutedMatrix[1][1];
+          originOfSlice[2] += distance * permutedSpacing[1] * permutedMatrix[2][1];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[0] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[0] * permutedMatrix[2][0];
@@ -1322,13 +1317,21 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[2];
           viewSpacing = permutedSpacing[2];
           isFlipped = true;
-          mitk::Point3D worldBottomLeftFrontCorner = worldBottomLeftBackCorner;
-          worldBottomLeftFrontCorner[0] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[0][1];
-          worldBottomLeftFrontCorner[1] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
-          worldBottomLeftFrontCorner[2] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[2][1];
-          originOfSlice[0] = worldBottomLeftFrontCorner[0] + 0.5 * permutedSpacing[2] * permutedMatrix[0][2];
-          originOfSlice[1] = worldBottomLeftFrontCorner[1] + 0.5 * permutedSpacing[2] * permutedMatrix[1][2];
-          originOfSlice[2] = worldBottomLeftFrontCorner[2] + 0.5 * permutedSpacing[2] * permutedMatrix[2][2];
+          if ((m_WorldDirections & AxialTopToBottom)
+              || ((m_WorldDirections & ImageDirections) && (m_UpDirections[2] < 0)))
+          {
+            distance = permutedBoundingBox[2] - 0.5;
+            normal[0] *= -1;
+            normal[1] *= -1;
+            normal[2] *= -1;
+            isFlipped = false;
+          }
+          originOfSlice[0] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[0][1];
+          originOfSlice[1] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
+          originOfSlice[2] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[2][1];
+          originOfSlice[0] += distance * permutedSpacing[2] * permutedMatrix[0][2];
+          originOfSlice[1] += distance * permutedSpacing[2] * permutedMatrix[1][2];
+          originOfSlice[2] += distance * permutedSpacing[2] * permutedMatrix[2][2];
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[0] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[0] * permutedMatrix[2][0];
@@ -1340,6 +1343,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           normal[2] = permutedSpacing[2] * permutedMatrix[2][2];
           break;
         }
+        MITK_INFO << "origin of slice 0: " << originOfSlice;
 
         mitk::TimeStepType numberOfTimeSteps = timeGeometry->CountTimeSteps();
 
@@ -2315,6 +2319,9 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
       mitk::Point3D selectedPositionInVx;
       m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
+      mitk::Point3D selectedPositionInVx2;
+      m_RenderWindows[windowIndex]->GetRenderer()->GetCurrentWorldGeometry()->WorldToIndex(m_SelectedPosition, selectedPositionInVx2);
+
       if (!m_Geometry->GetImageGeometry())
       {
         for (int i = 0; i < 3; ++i)
@@ -2322,8 +2329,15 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
           selectedPositionInVx[i] -= 0.5;
         }
       }
+      for (int i = 0; i < 3; ++i)
+      {
+        selectedPositionInVx2[i] -= 0.5;
+      }
+
+      std::string m_OrientationString2 = "---";
 
       stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << m_OrientationString << ")" << std::endl;
+      stream << selectedPositionInVx2[0] << ", " << selectedPositionInVx2[1] << ", " << selectedPositionInVx2[2] << " vx (" << m_OrientationString2 << ")" << std::endl;
       stream << std::fixed << std::setprecision(1) << m_SelectedPosition[0] << ", " << m_SelectedPosition[1] << ", " << m_SelectedPosition[2] << " mm";
 
       if (m_TimeGeometry->CountTimeSteps() > 1)
