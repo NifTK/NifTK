@@ -42,15 +42,6 @@ class WheelEventEater;
  * current size of the currently tracked QmitkRenderWindow's view-port size.
  * \ingroup uk.ac.ucl.cmic.thumbnail
  *
- * The client must
- * <pre>
- * 1. Create widget
- * 2. Call "Activated" to register with the data storage when the widget is considered active (eg. on screen).
- * 3. Call "Deactivated" to de-register with the data storage when the widget is considered not-active (eg. off screen).
- * </pre>
- *
- * The data storage will be initialised from the rendering manager at the first activation.
- *
  * This class provides methods to set the bounding box opacity, line thickness,
  * and rendering layer. These values would normally be set via preferences pages in the GUI.
  * The preferences part is done in the ThumbnailView, but this widget could potentially be placed
@@ -80,23 +71,11 @@ public:
   /// \brief Destructs the ThumbnailRenderWindow object.
   ~ThumbnailRenderWindow();
 
-  /// \brief Gets the flag that controls whether the display interactions are enabled for the render windows.
-  bool AreDisplayInteractionsEnabled() const;
-
-  /// \brief Sets the flag that controls whether the display interactions are enabled for the render windows.
-  void SetDisplayInteractionsEnabled(bool enabled);
-
-  /// \brief Registers listeners.
-  void Activated();
-
-  /// \brief Deregisters listeners.
-  void Deactivated();
-
   /// \brief Sets the bounding box line thickness, default is 1 pixel, but on some displays (eg. various Linux) may appear wider due to anti-aliasing.
-  int GetBoundingBoxLineThickness() const;
+  float GetBoundingBoxLineThickness() const;
 
   /// \brief Gets the bounding box line thickness.
-  void SetBoundingBoxLineThickness(int thickness);
+  void SetBoundingBoxLineThickness(float thickness);
 
   /// \brief Gets the bounding box opacity, default is 1.
   float GetBoundingBoxOpacity() const;
@@ -131,26 +110,38 @@ public:
 
 private:
 
+  /// \brief Registers the interactor.
+  void RegisterInteractor();
+
+  /// \brief Unregisters the interactor.
+  void UnregisterInteractor();
+
   /// \brief Callback for when the bounding box is panned through the interactor.
   void OnBoundingBoxPanned(const mitk::Vector2D& displacement);
 
   /// \brief Callback for when the bounding box is zoomed through the interactor.
   void OnBoundingBoxZoomed(double scaleFactor);
 
+  /// \brief Called when the renderer is modified, e.g. it gets a new world geometry.
+  void OnRendererModified();
+
   /// \brief When the world geometry changes, we have to make the thumbnail match, to get the same slice.
-  void UpdateWorldTimeGeometry();
+  void OnWorldTimeGeometryModified();
+
+  /// \brief Updates the selected time step on the SliceNavigationController.
+  void OnSelectedTimeStepChanged();
+
+  /// \brief Updates the selected slice on the SliceNavigationController.
+  void OnSelectedSliceChanged();
 
   /// \brief Updates the bounding box by taking the corners of the tracked render window.
-  void UpdateBoundingBox();
+  void OnDisplayGeometryModified();
 
-  /// \brief Updates the slice and time step on the SliceNavigationController.
-  void UpdateSliceAndTimeStep();
+  /// \brief Called to add observers for the renderer to track.
+  void TrackRenderer();
 
-  /// \brief Called to add all observers to tracked objects.
-  void AddObserversToTrackedObjects();
-
-  /// \brief Called to remove all observers from tracked objects.
-  void RemoveObserversFromTrackedObjects();
+  /// \brief Called to remove observers from the tracked renderer.
+  void UntrackRenderer();
 
   /// \brief We need to provide access to data storage to listen to Node events.
   mitk::DataStorage::Pointer m_DataStorage;
@@ -167,9 +158,6 @@ private:
   /// \brief This is set to the currently tracked renderer. We don't construct or own it, so don't delete it.
   mitk::BaseRenderer::Pointer m_TrackedRenderer;
 
-  // This is set to the current world geometry.
-  mitk::TimeGeometry::Pointer m_TrackedWorldTimeGeometry;
-
   /// \brief The rendering manager of the tracked renderer.
   /// The renderer of the thumbnail window should be added to the rendering manager
   /// of the render window that is being tracked. This is not instead but in addition
@@ -178,36 +166,46 @@ private:
   /// when the contents of the tracked window changes.
   mitk::RenderingManager* m_TrackedRenderingManager;
 
-  /// \brief Keep track of this to register and unregister event listeners.
-  mitk::DisplayGeometry::Pointer m_TrackedDisplayGeometry;
+  /// \brief The world time geometry of the tracked renderer.
+  /// This should be the same as m_TrackedRenderer->GetWorldTimeGeometry(), but
+  /// we keep a smart pointer so that we can release the listeners from the old
+  /// world time geometry if the world time geometry of the renderer has changed.
+  mitk::TimeGeometry::Pointer m_TrackedWorldTimeGeometry;
 
-  /// \brief Keep track of this to register and unregister event listeners.
+  /// \brief The slice navigation controller of the tracked renderer.
+  /// This should be the same as m_TrackedRenderer->GetSliceNavigationController(), but
+  /// we keep a smart pointer so that we can release the listeners from the old
+  /// slice navigation controller if the slice navigation controller of the renderer
+  /// has changed.
   mitk::SliceNavigationController::Pointer m_TrackedSliceNavigator;
 
-  /// \brief Used for when the tracked renderer changes
+  /// \brief The display geometry of the tracked renderer.
+  /// This should be the same as m_TrackedRenderer->GetDisplayGeometry(), but
+  /// we keep a smart pointer so that we can release the listeners from the old
+  /// display geometry if the display geometry of the renderer has changed.
+  mitk::DisplayGeometry::Pointer m_TrackedDisplayGeometry;
+
+  /// \brief Identifier of the listener to the modification events of the tracked renderer.
   /// For example new world time geometry is set for the renderer.
   unsigned long m_TrackedRendererTag;
 
-  /// \brief Used for when the tracked window world geometry changes
+  /// \brief Identifier of the listener to the modification events of the tracked world time geometry.
   unsigned long m_TrackedWorldTimeGeometryTag;
 
-  /// \brief Used for when the tracked window display geometry changes.
-  unsigned long m_TrackedDisplayGeometryTag;
+  /// \brief Identifier of the listener to the time step change events of the tracked slice navigation controller.
+  unsigned long m_TrackedTimeStepSelectorTag;
 
-  /// \brief Used for when the tracked window changes slice.
+  /// \brief Identifier of the listener to the slice change events of the tracked slice navigation controller.
   unsigned long m_TrackedSliceSelectorTag;
 
-  /// \brief Used for when the tracked window changes time step.
-  unsigned long m_TrackedTimeStepSelectorTag;
+  /// \brief Identifier of the listener to the modification events of the tracked display geometry.
+  unsigned long m_TrackedDisplayGeometryTag;
 
   /// \brief Squash all mouse events.
   MouseEventEater* m_MouseEventEater;
 
   /// \brief Squash all wheel events.
   WheelEventEater* m_WheelEventEater;
-
-  /// \brief Simply keeps track of whether we are currently processing an update to avoid repeated/recursive calls.
-  bool m_InDataStorageChanged;
 
   /// \brief To track visibility changes.
   DataNodeVisibilityTracker::Pointer m_VisibilityTracker;

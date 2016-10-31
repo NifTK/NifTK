@@ -30,7 +30,6 @@ DataNodeVisibilityTracker::DataNodeVisibilityTracker(const mitk::DataStorage::Po
 //-----------------------------------------------------------------------------
 DataNodeVisibilityTracker::~DataNodeVisibilityTracker()
 {
-  this->SetTrackedRenderer(0);
 }
 
 

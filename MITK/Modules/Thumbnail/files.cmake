@@ -25,6 +25,7 @@ set(UI_FILES
 )
 
 set(RESOURCE_FILES
+  Interactions/ThumbnailConfig.xml
   Interactions/ThumbnailInteraction.xml
 )
 
