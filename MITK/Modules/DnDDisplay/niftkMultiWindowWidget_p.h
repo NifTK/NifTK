@@ -42,19 +42,6 @@ class SliceNavigationController;
 namespace niftk
 {
 
-enum WorldDirections
-{
-  AxialBottomToTop = 0,
-  AxialTopToBottom = 1,
-  SagittalLeftToRight = 0,
-  SagittalRightToLeft = 2,
-  CoronalBackToFront = 0,
-  CoronalFrontToBack = 4,
-  ImageDirections = 8,
-  MITKWorldDirections = AxialTopToBottom | SagittalLeftToRight | CoronalBackToFront,
-  NifTKWorldDirections = AxialBottomToTop | SagittalLeftToRight | CoronalBackToFront
-};
-
 /**
  * \class MultiWindowWidget
  * \brief Subclass of QmitkStdMultiWidget to provide MIDAS specific functionality
@@ -555,6 +542,8 @@ private:
   /// This is not the geometry at the selected time step.
   const mitk::BaseGeometry* m_ReferenceGeometry;
 
+  int m_DefaultWorldDirections;
+
   /// \brief Voxel size in millimetres.
   /// The values are stored in axis order. The mapping of orientations to axes
   /// is stored in m_OrientationAxes.
@@ -632,8 +621,6 @@ private:
 
   /// \brief Dummy widget to fill up the gap at the place of the 3D window in WINDOW_LAYOUT_ORTHO_NO_3D.
   QWidget* m_EmptySpace;
-
-  WorldDirections m_WorldDirections;
 
   friend class DisplayGeometryModificationCommand;
 

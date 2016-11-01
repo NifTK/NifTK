@@ -15,8 +15,10 @@
 #include "niftkMultiWindowWidget_p.h"
 
 #include <cmath>
+
 #include <itkMatrix.h>
 #include <itkSpatialOrientationAdapter.h>
+
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkTextProperty.h>
@@ -42,6 +44,25 @@
 
 namespace niftk
 {
+
+/// \brief The WorldDirection flags are used to describe the directions used to create world geometries.
+enum WorldDirections
+{
+  LeftToRight = 0,
+  RightToLeft = 1,
+  BackToFront = 0,
+  FrontToBack = 2,
+  BottomToTop = 0,
+  TopToBottom = 4,
+
+  KeepImageDirections = 8,
+  KeepNonImageDirections = 16
+};
+
+const int MITKWorldDirections = LeftToRight | BackToFront | TopToBottom;
+const int NifTKWorldDirections = KeepImageDirections | KeepNonImageDirections;
+const int NifTKWorldDirectionsWithMITKCompatibility = MITKWorldDirections | KeepImageDirections;
+
 
 /**
  * This class is to notify the SingleViewerWidget about the display geometry changes of a render window.
@@ -105,11 +126,13 @@ MultiWindowWidget::MultiWindowWidget(
 , m_TimeStep(0)
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
+, m_OrientationString("")
 , m_WorldGeometries(3)
 , m_RenderWindowSizes(3)
 , m_Origins(3)
 , m_TimeGeometry(NULL)
 , m_ReferenceGeometry(NULL)
+, m_DefaultWorldDirections(NifTKWorldDirectionsWithMITKCompatibility)
 , m_BlockDisplayEvents(false)
 , m_BlockSncEvents(false)
 , m_BlockFocusEvents(false)
@@ -123,7 +146,6 @@ MultiWindowWidget::MultiWindowWidget(
 , m_ScaleFactorHasChanged(3)
 , m_CursorPositionBindingHasChanged(false)
 , m_ScaleFactorBindingHasChanged(false)
-, m_OrientationString{0}
 , m_CursorPositionBinding(true)
 , m_CursorAxialPositionsAreBound(true)
 , m_CursorSagittalPositionsAreBound(true)
@@ -133,7 +155,6 @@ MultiWindowWidget::MultiWindowWidget(
 , m_IntensityAnnotationVisible(true)
 , m_PropertyAnnotationVisible(false)
 , m_EmptySpace(new QWidget(this))
-, m_WorldDirections(NifTKWorldDirections)
 {
   /// Note:
   /// The rendering manager is surely not null. If NULL is specified then the superclass
@@ -1236,6 +1257,23 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     MITK_INFO << "bottom left back corner: " << worldBottomLeftBackCorner;
     MITK_INFO << "up directions: " << m_UpDirections[0] << " " << m_UpDirections[1] << " " << m_UpDirections[2];
 
+    int worldDirections = 0;
+    if ((m_ReferenceGeometry->GetImageGeometry() && (m_DefaultWorldDirections & KeepImageDirections))
+        || (!m_ReferenceGeometry->GetImageGeometry() && (m_DefaultWorldDirections & KeepNonImageDirections)))
+    {
+      for (int i = 0; i < 3; ++i)
+      {
+        if (m_UpDirections[i] < 0)
+        {
+          worldDirections |= 1 << i;
+        }
+      }
+    }
+    else
+    {
+      worldDirections = m_DefaultWorldDirections;
+    }
+
     std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
     for (unsigned int i = 0; i < renderWindows.size(); i++)
     {
@@ -1271,8 +1309,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[0];
           viewSpacing = permutedSpacing[0];
           isFlipped = false;
-          if ((m_WorldDirections & SagittalRightToLeft)
-              || ((m_WorldDirections & ImageDirections) && (m_UpDirections[0] < 0)))
+          if (worldDirections & RightToLeft)
           {
             distance = permutedBoundingBox[0] - 0.5;
             normal[0] *= -1;
@@ -1300,8 +1337,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[1];
           viewSpacing = permutedSpacing[1];
           isFlipped = true;
-          if ((m_WorldDirections & CoronalFrontToBack)
-              || ((m_WorldDirections & ImageDirections) && (m_UpDirections[1] < 0)))
+          if (worldDirections & FrontToBack)
           {
             distance = permutedBoundingBox[1] - 0.5;
             normal[0] *= -1;
@@ -1329,8 +1365,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[2];
           viewSpacing = permutedSpacing[2];
           isFlipped = true;
-          if ((m_WorldDirections & AxialTopToBottom)
-              || ((m_WorldDirections & ImageDirections) && (m_UpDirections[2] < 0)))
+          if (worldDirections & TopToBottom)
           {
             distance = permutedBoundingBox[2] - 0.5;
             normal[0] *= -1;
