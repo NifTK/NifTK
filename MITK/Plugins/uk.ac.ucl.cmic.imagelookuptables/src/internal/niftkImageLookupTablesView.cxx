@@ -198,8 +198,6 @@ void ImageLookupTablesView::EnableControls(bool b)
   m_Controls->m_LookupTableComboBox->setEnabled(b);
   m_Controls->m_LoadButton->setEnabled(b);
   m_Controls->m_NewButton->setEnabled(b);
-  this->EnableScaleControls(b);
-  this->EnableLabelControls(b);
 }
 
 
@@ -375,6 +373,7 @@ void ImageLookupTablesView::DifferentImageSelected()
 
   m_Controls->m_MinLimitDoubleSpinBox->setValue(minDataLimit);
   m_Controls->m_MaxLimitDoubleSpinBox->setValue(maxDataLimit);
+  this->BlockSignals(false);
 
   signed int lookupTableIndex = -1;
   if (lookupTableNameFound)
@@ -390,8 +389,6 @@ void ImageLookupTablesView::DifferentImageSelected()
   {
     m_Controls->m_LookupTableComboBox->setCurrentIndex(0);
   }
-
-  this->BlockSignals(false);
 }
 
 
