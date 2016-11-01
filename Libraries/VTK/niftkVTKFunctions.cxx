@@ -254,7 +254,6 @@ vtkSmartPointer<vtkTransform> RandomTransform (
   }
 
   double currentDistance = niftk::MahalanobisDistance ( zeros, randomTransform, covariance );
-  std::cout << "Initial Normalised euclidean distance = " << currentDistance << std::endl;
   double scaleFactor = scaleSD / currentDistance;
 
   if ( scaleSD > 0 )
