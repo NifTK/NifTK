@@ -2112,7 +2112,7 @@ int MultiWindowWidget::GetSelectedSlice(int windowIndex) const
 {
   assert(0 <= windowIndex && windowIndex < 3);
 
-  int selectedSlice = 0;
+  int selectedSlice = -1;
 
   if (m_ReferenceGeometry != NULL)
   {
@@ -2120,6 +2120,11 @@ int MultiWindowWidget::GetSelectedSlice(int windowIndex) const
 
     mitk::Point3D selectedPositionInVx;
     m_ReferenceGeometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
+
+    if (!m_ReferenceGeometry->GetImageGeometry())
+    {
+      selectedPositionInVx[axis] -= 0.5;
+    }
 
     /// Round it to the closest integer.
     selectedSlice = static_cast<int>(selectedPositionInVx[axis] + 0.5);
@@ -2141,6 +2146,11 @@ void MultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice)
 
     int axis = m_OrientationAxes[windowIndex];
     selectedPositionInVx[axis] = selectedSlice;
+
+    if (!m_ReferenceGeometry->GetImageGeometry())
+    {
+      selectedPositionInVx[axis] += 0.5;
+    }
 
     m_ReferenceGeometry->IndexToWorld(selectedPositionInVx, selectedPosition);
 
