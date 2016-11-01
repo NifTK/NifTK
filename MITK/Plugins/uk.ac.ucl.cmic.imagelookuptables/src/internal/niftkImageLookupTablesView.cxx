@@ -348,6 +348,9 @@ void ImageLookupTablesView::Unregister()
     property->RemoveObserver(m_LevelWindowPropertyObserverTag);
 
     m_CurrentNode = NULL;
+
+    this->EnableLabelControls(false);
+    this->EnableScaleControls(false);
   }
 }
 
