@@ -58,19 +58,29 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkTransform> randomTransform = vtkSmartPointer<vtkTransform>::New();
   vtkSmartPointer<vtkMatrix4x4> randomMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
-  vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+  vtkSmartPointer<vtkMinimalStandardRandomSequence> uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
   vtkSmartPointer<vtkBoxMuellerRandomSequence> normal_Rand = vtkSmartPointer<vtkBoxMuellerRandomSequence>::New();
 
-  Uni_Rand->SetSeed(seed);
-  normal_Rand->SetUniformSequence(Uni_Rand);
+  uni_Rand->SetSeed(seed);
+  normal_Rand->SetUniformSequence(uni_Rand);
 
   niftk::CreateDirAndParents ( niftk::Dirname(outputPrefix) ) ;
   unsigned int widthOfNumber = static_cast<unsigned int>(std::floor(std::log10(repeats)) + 1);
   for ( unsigned int i = 0 ; i < repeats ; ++i )
   {
 
-    randomTransform = niftk::RandomTransformAboutRemoteCentre ( xtsd , ytsd , ztsd, xrsd , yrsd, zrsd, *normal_Rand,
-        toCentre, scaleSD);
+    if ( useUniformRNG )
+    {
+      std::cout << "Using uniform RNG" << std::endl;
+      randomTransform = niftk::RandomTransformAboutRemoteCentre ( xtsd , ytsd , ztsd, xrsd , yrsd, zrsd, *uni_Rand,
+          toCentre, scaleSD);
+    }
+    else
+    {
+      std::cout << "Using normal RNG" << std::endl;
+      randomTransform = niftk::RandomTransformAboutRemoteCentre ( xtsd , ytsd , ztsd, xrsd , yrsd, zrsd, *normal_Rand,
+          toCentre, scaleSD);
+    }
 
     randomMatrix = randomTransform->GetMatrix();
 
