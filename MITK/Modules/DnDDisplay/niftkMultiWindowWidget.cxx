@@ -2376,9 +2376,6 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
       mitk::Point3D selectedPositionInVx;
       m_ReferenceGeometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
-      mitk::Point3D selectedPositionInVx2;
-      m_RenderWindows[windowIndex]->GetRenderer()->GetCurrentWorldGeometry()->WorldToIndex(m_SelectedPosition, selectedPositionInVx2);
-
       if (!m_ReferenceGeometry->GetImageGeometry())
       {
         for (int i = 0; i < 3; ++i)
@@ -2386,15 +2383,79 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
           selectedPositionInVx[i] -= 0.5;
         }
       }
-      for (int i = 0; i < 3; ++i)
-      {
-        selectedPositionInVx2[i] -= 0.5;
-      }
-
-      std::string m_OrientationString2 = "---";
 
       stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << m_OrientationString << ")" << std::endl;
-      stream << selectedPositionInVx2[0] << ", " << selectedPositionInVx2[1] << ", " << selectedPositionInVx2[2] << " vx (" << m_OrientationString2 << ")" << std::endl;
+
+      /// Display selected voxel index coordinates and orientation string in the renderer geometry in debug mode only.
+#ifndef NDEBUG
+      m_RenderWindows[windowIndex]->GetRenderer()->GetCurrentWorldGeometry()->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
+
+      for (int i = 0; i < 3; ++i)
+      {
+        selectedPositionInVx[i] -= 0.5;
+      }
+
+      std::string orientationString = "---";
+
+      if (windowIndex == 0)
+      {
+        // Axial
+        orientationString[0] = 'R';
+        orientationString[1] = 'P';
+      }
+      else if (windowIndex == 1)
+      {
+        // Sagittal
+        orientationString[0] = 'A';
+        orientationString[1] = 'S';
+      }
+      else if (windowIndex == 2)
+      {
+        // Coronal
+        orientationString[0] = 'R';
+        orientationString[1] = 'S';
+      }
+      if ((m_ReferenceGeometry->GetImageGeometry() && (m_DefaultWorldDirections & KeepImageDirections))
+          || (!m_ReferenceGeometry->GetImageGeometry() && (m_DefaultWorldDirections & KeepNonImageDirections)))
+      {
+        if (windowIndex == 0)
+        {
+          // Axial
+          orientationString[2] = m_OrientationString[m_OrientationAxes[AXIAL]];
+        }
+        else if (windowIndex == 1)
+        {
+          // Sagittal
+          orientationString[2] = m_OrientationString[m_OrientationAxes[SAGITTAL]];
+        }
+        else if (windowIndex == 2)
+        {
+          // Coronal
+          orientationString[2] = m_OrientationString[m_OrientationAxes[CORONAL]];
+        }
+      }
+      else
+      {
+        if (windowIndex == 0)
+        {
+          // Axial
+          orientationString[2] = (m_DefaultWorldDirections & TopToBottom) ? 'I' : 'S';
+        }
+        else if (windowIndex == 1)
+        {
+          // Sagittal
+          orientationString[2] = (m_DefaultWorldDirections & RightToLeft) ? 'L' : 'R';
+        }
+        else if (windowIndex == 2)
+        {
+          // Coronal
+          orientationString[2] = (m_DefaultWorldDirections & FrontToBack) ? 'P' : 'A';
+        }
+      }
+
+      stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << orientationString << ")" << std::endl;
+#endif
+
       stream << std::fixed << std::setprecision(1) << m_SelectedPosition[0] << ", " << m_SelectedPosition[1] << ", " << m_SelectedPosition[2] << " mm";
 
       if (m_TimeGeometry->CountTimeSteps() > 1)
