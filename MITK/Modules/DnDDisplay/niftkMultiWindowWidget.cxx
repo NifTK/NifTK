@@ -109,7 +109,7 @@ MultiWindowWidget::MultiWindowWidget(
 , m_RenderWindowSizes(3)
 , m_Origins(3)
 , m_TimeGeometry(NULL)
-, m_Geometry(NULL)
+, m_ReferenceGeometry(NULL)
 , m_BlockDisplayEvents(false)
 , m_BlockSncEvents(false)
 , m_BlockFocusEvents(false)
@@ -399,7 +399,7 @@ void MultiWindowWidget::OnCoronalSliceChanged(const itk::EventObject& /*geometry
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::OnTimeStepChanged(const itk::EventObject& /*geometryTimeEvent*/)
 {
-  if (!m_BlockSncEvents && m_Geometry != NULL)
+  if (!m_BlockSncEvents && m_ReferenceGeometry != NULL)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -527,7 +527,7 @@ void MultiWindowWidget::UpdateBorders()
   // then highlighting them all starts to look a bit confusing, so we just highlight the
   // most recently focused window, (eg. axial, sagittal, coronal or 3D).
 
-  if (m_IsFocused && m_Geometry)
+  if (m_IsFocused && m_ReferenceGeometry)
   {
     if (m_SelectedWindowIndex == AXIAL)
     {
@@ -898,7 +898,7 @@ const std::vector<QmitkRenderWindow*>& MultiWindowWidget::GetRenderWindows() con
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::FitRenderWindows(double scaleFactor)
 {
-  if (!m_Geometry)
+  if (!m_ReferenceGeometry)
   {
     return;
   }
@@ -954,18 +954,18 @@ void MultiWindowWidget::FitRenderWindows(double scaleFactor)
           double regionHeightInMm;
           if (windowIndex == AXIAL)
           {
-            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+            regionWidthInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+            regionHeightInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
           }
           else if (windowIndex == SAGITTAL)
           {
-            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+            regionWidthInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+            regionHeightInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
           }
           else if (windowIndex == CORONAL)
           {
-            regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-            regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+            regionWidthInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+            regionHeightInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
           }
 
           double sfh = regionWidthInMm / windowWidthInPx;
@@ -1010,18 +1010,18 @@ void MultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor)
   double regionHeightInMm;
   if (windowIndex == AXIAL)
   {
-    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+    regionWidthInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+    regionHeightInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
   }
   else if (windowIndex == SAGITTAL)
   {
-    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
-    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+    regionWidthInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[CORONAL]);
+    regionHeightInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
   }
   else if (windowIndex == CORONAL)
   {
-    regionWidthInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
-    regionHeightInMm = m_Geometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
+    regionWidthInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[SAGITTAL]);
+    regionHeightInMm = m_ReferenceGeometry->GetExtentInMM(m_OrientationAxes[AXIAL]);
   }
 
   if (scaleFactor == 0.0)
@@ -1084,13 +1084,25 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
 
     m_TimeGeometry = timeGeometry;
-    m_Geometry = timeGeometry->GetGeometryForTimeStep(0);
+    m_ReferenceGeometry = timeGeometry->GetGeometryForTimeStep(0);
+    if (!m_ReferenceGeometry->GetImageGeometry())
+    {
+      /// If the input is from a renderer, we need the geometry that was used to initialise its geometry.
+      /// This can be an image geometry or a manually created world geometry.
+      if (auto slicedGeometry = dynamic_cast<const mitk::SlicedGeometry3D*>(m_ReferenceGeometry))
+      {
+        if (slicedGeometry->HasReferenceGeometry())
+        {
+          m_ReferenceGeometry = slicedGeometry->GetReferenceGeometry();
+        }
+      }
+    }
 
     // Calculating the voxel size. This is needed for the conversion between the
     // magnification and the scale factors.
     for (int axis = 0; axis < 3; ++axis)
     {
-      m_MmPerVx[axis] = m_Geometry->GetExtentInMM(axis) / m_Geometry->GetExtent(axis);
+      m_MmPerVx[axis] = m_ReferenceGeometry->GetExtentInMM(axis) / m_ReferenceGeometry->GetExtent(axis);
     }
 
     // Add these annotations the first time we have a real geometry.
@@ -1134,7 +1146,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     // Inspired by:
     // http://www.na-mic.org/Wiki/index.php/Coordinate_System_Conversion_Between_ITK_and_Slicer3
 
-    mitk::AffineTransform3D::Pointer affineTransform = m_Geometry->GetIndexToWorldTransform();
+    mitk::AffineTransform3D::ConstPointer affineTransform = m_ReferenceGeometry->GetIndexToWorldTransform();
     itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
     mitk::AffineTransform3D::MatrixType::InternalMatrixType normalisedAffineTransformMatrix;
     for (unsigned int i=0; i < 3; i++)
@@ -1174,13 +1186,13 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     m_UpDirections[1] = signAP;
     m_UpDirections[2] = signSI;
 
-    permutedBoundingBox[0] = static_cast<int>(m_Geometry->GetExtent(dominantAxisRL));
-    permutedBoundingBox[1] = static_cast<int>(m_Geometry->GetExtent(dominantAxisAP));
-    permutedBoundingBox[2] = static_cast<int>(m_Geometry->GetExtent(dominantAxisSI));
+    permutedBoundingBox[0] = static_cast<int>(m_ReferenceGeometry->GetExtent(dominantAxisRL));
+    permutedBoundingBox[1] = static_cast<int>(m_ReferenceGeometry->GetExtent(dominantAxisAP));
+    permutedBoundingBox[2] = static_cast<int>(m_ReferenceGeometry->GetExtent(dominantAxisSI));
 
-    permutedSpacing[0] = m_Geometry->GetSpacing()[permutedAxes[0]];
-    permutedSpacing[1] = m_Geometry->GetSpacing()[permutedAxes[1]];
-    permutedSpacing[2] = m_Geometry->GetSpacing()[permutedAxes[2]];
+    permutedSpacing[0] = m_ReferenceGeometry->GetSpacing()[permutedAxes[0]];
+    permutedSpacing[1] = m_ReferenceGeometry->GetSpacing()[permutedAxes[1]];
+    permutedSpacing[2] = m_ReferenceGeometry->GetSpacing()[permutedAxes[2]];
 
     mitk::AffineTransform3D::MatrixType::InternalMatrixType permutedMatrix;
     permutedMatrix.set_identity();
@@ -1204,14 +1216,14 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     m_OrientationString[dominantAxisRL] = signRL > 0 ? 'R' : 'L';
     m_OrientationString[dominantAxisAP] = signAP > 0 ? 'A' : 'P';
 
-    mitk::Point3D worldBottomLeftBackCorner = m_Geometry->GetOrigin();
+    mitk::Point3D worldBottomLeftBackCorner = m_ReferenceGeometry->GetOrigin();
 
     for (int i = 0; i < 3; ++i)
     {
       /// The distance of the origin from the bottom left back corner.
       double distance = m_UpDirections[i] > 0 ? 0.0 : permutedBoundingBox[i];
 
-      if (m_Geometry->GetImageGeometry())
+      if (m_ReferenceGeometry->GetImageGeometry())
       {
         distance += m_UpDirections[i] * 0.5;
       }
@@ -1385,7 +1397,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           // Then we create the SlicedGeometry3D from an initial plane, and a given number of slices.
           mitk::SlicedGeometry3D::Pointer slicedGeometry = mitk::SlicedGeometry3D::New();
           slicedGeometry->SetIdentity();
-          slicedGeometry->SetReferenceGeometry(m_Geometry);
+          slicedGeometry->SetReferenceGeometry(m_ReferenceGeometry);
           slicedGeometry->SetImageGeometry(false);
           slicedGeometry->InitializeEvenlySpaced(planeGeometry, viewSpacing, slices, isFlipped);
 
@@ -1825,7 +1837,7 @@ void MultiWindowWidget::SetCursorPosition(int windowIndex, const mitk::Vector2D&
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::MoveToCursorPosition(int windowIndex)
 {
-  if (m_Geometry)
+  if (m_ReferenceGeometry)
   {
     QmitkRenderWindow* renderWindow = m_RenderWindows[windowIndex];
     if (renderWindow->isVisible())
@@ -1861,7 +1873,7 @@ void MultiWindowWidget::MoveToCursorPosition(int windowIndex)
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::OnDisplayGeometryModified(int windowIndex)
 {
-  if (m_BlockDisplayEvents || !m_Geometry)
+  if (m_BlockDisplayEvents || !m_ReferenceGeometry)
   {
     return;
   }
@@ -1952,7 +1964,7 @@ void MultiWindowWidget::OnDisplayGeometryModified(int windowIndex)
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::OnOriginChanged(int windowIndex, bool beingPanned)
 {
-  if (m_Geometry)
+  if (m_ReferenceGeometry)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -2016,7 +2028,7 @@ void MultiWindowWidget::OnOriginChanged(int windowIndex, bool beingPanned)
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor)
 {
-  if (m_Geometry)
+  if (m_ReferenceGeometry)
   {
     if (scaleFactor != m_ScaleFactors[windowIndex])
     {
@@ -2044,7 +2056,7 @@ void MultiWindowWidget::OnScaleFactorChanged(int windowIndex, double scaleFactor
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::OnSelectedPositionChanged(int windowIndex)
 {
-  if (!m_BlockSncEvents && m_Geometry != NULL)
+  if (!m_BlockSncEvents && m_ReferenceGeometry != NULL)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -2067,12 +2079,12 @@ int MultiWindowWidget::GetSelectedSlice(int windowIndex) const
 
   int selectedSlice = 0;
 
-  if (m_Geometry != NULL)
+  if (m_ReferenceGeometry != NULL)
   {
     int axis = m_OrientationAxes[windowIndex];
 
     mitk::Point3D selectedPositionInVx;
-    m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
+    m_ReferenceGeometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
     /// Round it to the closest integer.
     selectedSlice = static_cast<int>(selectedPositionInVx[axis] + 0.5);
@@ -2085,17 +2097,17 @@ int MultiWindowWidget::GetSelectedSlice(int windowIndex) const
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice)
 {
-  if (m_Geometry != NULL)
+  if (m_ReferenceGeometry != NULL)
   {
     mitk::Point3D selectedPosition = m_SelectedPosition;
 
     mitk::Point3D selectedPositionInVx;
-    m_Geometry->WorldToIndex(selectedPosition, selectedPositionInVx);
+    m_ReferenceGeometry->WorldToIndex(selectedPosition, selectedPositionInVx);
 
     int axis = m_OrientationAxes[windowIndex];
     selectedPositionInVx[axis] = selectedSlice;
 
-    m_Geometry->IndexToWorld(selectedPositionInVx, selectedPosition);
+    m_ReferenceGeometry->IndexToWorld(selectedPositionInVx, selectedPosition);
 
     this->SetSelectedPosition(selectedPosition);
   }
@@ -2105,7 +2117,7 @@ void MultiWindowWidget::SetSelectedSlice(int windowIndex, int selectedSlice)
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::MoveSlice(int windowIndex, int slices, bool restart)
 {
-  if (m_Geometry && windowIndex < 3 && slices != 0)
+  if (m_ReferenceGeometry && windowIndex < 3 && slices != 0)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -2317,12 +2329,12 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
       stream.imbue(std::locale::classic());
 
       mitk::Point3D selectedPositionInVx;
-      m_Geometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
+      m_ReferenceGeometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
       mitk::Point3D selectedPositionInVx2;
       m_RenderWindows[windowIndex]->GetRenderer()->GetCurrentWorldGeometry()->WorldToIndex(m_SelectedPosition, selectedPositionInVx2);
 
-      if (!m_Geometry->GetImageGeometry())
+      if (!m_ReferenceGeometry->GetImageGeometry())
       {
         for (int i = 0; i < 3; ++i)
         {
@@ -2813,7 +2825,7 @@ void MultiWindowWidget::SetScaleFactors(const std::vector<double>& scaleFactors)
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::ZoomAroundCursorPosition(int windowIndex)
 {
-  if (m_Geometry)
+  if (m_ReferenceGeometry)
   {
     mitk::BaseRenderer* renderer = m_RenderWindows[windowIndex]->GetRenderer();
     mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
@@ -2866,7 +2878,7 @@ double MultiWindowWidget::GetMagnification(int windowIndex) const
 {
   double magnification = 0.0;
 
-  if (m_Geometry)
+  if (m_ReferenceGeometry)
   {
     int dominantAxis = this->GetDominantAxis(windowIndex);
     double scaleFactorPxPerVx = m_MmPerVx[dominantAxis] / m_ScaleFactors[windowIndex];
@@ -2887,7 +2899,7 @@ double MultiWindowWidget::GetMagnification(int windowIndex) const
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::SetMagnification(int windowIndex, double magnification)
 {
-  if (m_Geometry)
+  if (m_ReferenceGeometry)
   {
     double scaleFactorVxPerPx;
     if (magnification >= 0.0)
@@ -2911,7 +2923,7 @@ void MultiWindowWidget::SetMagnification(int windowIndex, double magnification)
 int MultiWindowWidget::GetSliceUpDirection(WindowOrientation orientation) const
 {
   int upDirection = 0;
-  if (m_Geometry && orientation >= 0 && orientation < 3)
+  if (m_ReferenceGeometry && orientation >= 0 && orientation < 3)
   {
     if (orientation == WINDOW_ORIENTATION_AXIAL)
     {
@@ -2999,7 +3011,7 @@ void MultiWindowWidget::SetLinkedNavigationEnabled(bool linkedNavigationEnabled)
   if (linkedNavigationEnabled != m_LinkedNavigationEnabled)
   {
     m_LinkedNavigationEnabled = linkedNavigationEnabled;
-    this->SetWidgetPlanesLocked(!linkedNavigationEnabled || !m_IsFocused || !m_Geometry);
+    this->SetWidgetPlanesLocked(!linkedNavigationEnabled || !m_IsFocused || !m_ReferenceGeometry);
   }
 }
 
@@ -3109,7 +3121,7 @@ bool MultiWindowWidget::BlockUpdate(bool blocked)
 
       if (m_FocusHasChanged)
       {
-        this->SetWidgetPlanesLocked(!m_LinkedNavigationEnabled || !m_IsFocused || !m_Geometry);
+        this->SetWidgetPlanesLocked(!m_LinkedNavigationEnabled || !m_IsFocused || !m_ReferenceGeometry);
 
         this->UpdateBorders();
 
@@ -3123,7 +3135,7 @@ bool MultiWindowWidget::BlockUpdate(bool blocked)
 
       if (m_GeometryHasChanged || m_TimeStepHasChanged)
       {
-        this->SetWidgetPlanesLocked(!m_LinkedNavigationEnabled || !m_IsFocused || !m_Geometry);
+        this->SetWidgetPlanesLocked(!m_LinkedNavigationEnabled || !m_IsFocused || !m_ReferenceGeometry);
 
         /// Note:
         /// A viewer has a border iff it has the focus *and* it has a valid geometry.
@@ -3187,7 +3199,7 @@ bool MultiWindowWidget::BlockUpdate(bool blocked)
       if (m_FocusHasChanged)
       {
         m_FocusHasChanged = false;
-        if (m_IsFocused && m_Geometry)
+        if (m_IsFocused && m_ReferenceGeometry)
         {
           m_BlockFocusEvents = true;
           m_RenderWindows[m_SelectedWindowIndex]->setFocus();
@@ -3199,7 +3211,7 @@ bool MultiWindowWidget::BlockUpdate(bool blocked)
       if (m_GeometryHasChanged)
       {
         m_GeometryHasChanged = false;
-        if (m_IsFocused && m_Geometry)
+        if (m_IsFocused && m_ReferenceGeometry)
         {
           m_BlockFocusEvents = true;
           m_RenderWindows[m_SelectedWindowIndex]->setFocus();

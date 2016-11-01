@@ -553,7 +553,7 @@ private:
   /// \brief The 3D geometry for the first time step.
   /// The viewer assumes that the dimensions are equal at each time step.
   /// This is not the geometry at the selected time step.
-  mitk::BaseGeometry* m_Geometry;
+  const mitk::BaseGeometry* m_ReferenceGeometry;
 
   /// \brief Voxel size in millimetres.
   /// The values are stored in axis order. The mapping of orientations to axes
