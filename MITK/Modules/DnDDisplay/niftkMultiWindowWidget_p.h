@@ -542,8 +542,6 @@ private:
   /// This is not the geometry at the selected time step.
   const mitk::BaseGeometry* m_ReferenceGeometry;
 
-  int m_DefaultWorldDirections;
-
   /// \brief Voxel size in millimetres.
   /// The values are stored in axis order. The mapping of orientations to axes
   /// is stored in m_OrientationAxes.

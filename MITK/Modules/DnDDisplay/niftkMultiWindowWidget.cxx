@@ -45,24 +45,35 @@
 namespace niftk
 {
 
-/// \brief The WorldDirection flags are used to describe the directions used to create world geometries.
-enum WorldDirections
-{
-  LeftToRight = 0,
-  RightToLeft = 1,
-  BackToFront = 0,
-  FrontToBack = 2,
-  BottomToTop = 0,
-  TopToBottom = 4,
+/// The renderer directions give information about how the geometries of the individual renderers
+/// should be created when the viewer is initialised with a 'reference' geometry. The direction
+/// of the first two dimensions (right and bottom vectors) are fixed for each renderer and changing
+/// them would mirror the displayed image. The third dimension (normal vector), however, is
+/// orthogonal to the rendered plane, and can go either ways. Reverting its direction reverts
+/// the order of slice indexes in the slice navigation controller of the renderer.
+///
+/// The renderer directions string has to contain three letters: 'L' or 'R', 'P' or 'A' and 'I' or
+/// 'S'. The letters mean left, right, posterior, anterior, inferior and superior, respectively.
+///
+/// MITK creates the renderer geometries in "RAI" mode, i.e. the index of the rendered slices in
+/// the sagittal window goes from left to right, in the coronal window from back to front and in
+/// the axial window from top to bottom.
+///
+/// It looks more natural to me to create the renderer geometries in "RAS" mode, that is to number
+/// the slices in the axial renderer from bottom to top. This is more consistent with how world
+/// geometries are constructed in MITK. The origin of world geometries is at the bottom-left-back
+/// corner of their bottom-left-back voxel (non-image geometry). Hence, the world indices go from
+/// left to right, back to front and bottom to top, always.
+///
+/// However, using "RAS" directions needs a patch for MITK. See MITK bug 20180 for details.
+///
+/// Note that since the current renderer directions do not follow neither the image directions nor
+/// the world directions, you must *not* rely on the indices in the slice navigation controller of
+/// the renderers, but you always need to translate world coordinates to index coordinates using
+/// the reference geometry that was used to initialise the viewer, and in case of non-image
+/// geometries, you need to subtract 0.5 from the index coordinates before or after the conversion.
 
-  KeepImageDirections = 8,
-  KeepNonImageDirections = 16
-};
-
-const int MITKWorldDirections = LeftToRight | BackToFront | TopToBottom;
-const int NifTKWorldDirections = KeepImageDirections | KeepNonImageDirections;
-const int NifTKWorldDirectionsWithMITKCompatibility = MITKWorldDirections | KeepImageDirections;
-
+const std::string RENDERER_DIRECTIONS = "RAI";
 
 /**
  * This class is to notify the SingleViewerWidget about the display geometry changes of a render window.
@@ -132,7 +143,6 @@ MultiWindowWidget::MultiWindowWidget(
 , m_Origins(3)
 , m_TimeGeometry(NULL)
 , m_ReferenceGeometry(NULL)
-, m_DefaultWorldDirections(NifTKWorldDirectionsWithMITKCompatibility)
 , m_BlockDisplayEvents(false)
 , m_BlockSncEvents(false)
 , m_BlockFocusEvents(false)
@@ -1257,23 +1267,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     MITK_INFO << "bottom left back corner: " << worldBottomLeftBackCorner;
     MITK_INFO << "up directions: " << m_UpDirections[0] << " " << m_UpDirections[1] << " " << m_UpDirections[2];
 
-    int worldDirections = 0;
-    if ((m_ReferenceGeometry->GetImageGeometry() && (m_DefaultWorldDirections & KeepImageDirections))
-        || (!m_ReferenceGeometry->GetImageGeometry() && (m_DefaultWorldDirections & KeepNonImageDirections)))
-    {
-      for (int i = 0; i < 3; ++i)
-      {
-        if (m_UpDirections[i] < 0)
-        {
-          worldDirections |= 1 << i;
-        }
-      }
-    }
-    else
-    {
-      worldDirections = m_DefaultWorldDirections;
-    }
-
     std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
     for (unsigned int i = 0; i < renderWindows.size(); i++)
     {
@@ -1309,7 +1302,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[0];
           viewSpacing = permutedSpacing[0];
           isFlipped = false;
-          if (worldDirections & RightToLeft)
+          if (RENDERER_DIRECTIONS.find('L') != -1)
           {
             distance = permutedBoundingBox[0] - 0.5;
             normal[0] *= -1;
@@ -1337,7 +1330,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[1];
           viewSpacing = permutedSpacing[1];
           isFlipped = true;
-          if (worldDirections & FrontToBack)
+          if (RENDERER_DIRECTIONS.find('P') != -1)
           {
             distance = permutedBoundingBox[1] - 0.5;
             normal[0] *= -1;
@@ -1365,7 +1358,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           slices = permutedBoundingBox[2];
           viewSpacing = permutedSpacing[2];
           isFlipped = true;
-          if (worldDirections & TopToBottom)
+          if (RENDERER_DIRECTIONS.find('I') != -1)
           {
             distance = permutedBoundingBox[2] - 0.5;
             normal[0] *= -1;
@@ -2402,55 +2395,21 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
         // Axial
         orientationString[0] = 'R';
         orientationString[1] = 'P';
+        orientationString[2] = (RENDERER_DIRECTIONS.find('S') != -1) ? 'S' : 'I';
       }
       else if (windowIndex == 1)
       {
         // Sagittal
         orientationString[0] = 'A';
         orientationString[1] = 'S';
+        orientationString[2] = (RENDERER_DIRECTIONS.find('R') != -1) ? 'R' : 'L';
       }
       else if (windowIndex == 2)
       {
         // Coronal
         orientationString[0] = 'R';
         orientationString[1] = 'S';
-      }
-      if ((m_ReferenceGeometry->GetImageGeometry() && (m_DefaultWorldDirections & KeepImageDirections))
-          || (!m_ReferenceGeometry->GetImageGeometry() && (m_DefaultWorldDirections & KeepNonImageDirections)))
-      {
-        if (windowIndex == 0)
-        {
-          // Axial
-          orientationString[2] = m_OrientationString[m_OrientationAxes[AXIAL]];
-        }
-        else if (windowIndex == 1)
-        {
-          // Sagittal
-          orientationString[2] = m_OrientationString[m_OrientationAxes[SAGITTAL]];
-        }
-        else if (windowIndex == 2)
-        {
-          // Coronal
-          orientationString[2] = m_OrientationString[m_OrientationAxes[CORONAL]];
-        }
-      }
-      else
-      {
-        if (windowIndex == 0)
-        {
-          // Axial
-          orientationString[2] = (m_DefaultWorldDirections & TopToBottom) ? 'I' : 'S';
-        }
-        else if (windowIndex == 1)
-        {
-          // Sagittal
-          orientationString[2] = (m_DefaultWorldDirections & RightToLeft) ? 'L' : 'R';
-        }
-        else if (windowIndex == 2)
-        {
-          // Coronal
-          orientationString[2] = (m_DefaultWorldDirections & FrontToBack) ? 'P' : 'A';
-        }
+        orientationString[2] = (RENDERER_DIRECTIONS.find('A') != -1) ? 'A' : 'P';
       }
 
       stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << orientationString << ")" << std::endl;
