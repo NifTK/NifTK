@@ -33,6 +33,7 @@ set(TEMPORARY_OUTPUT ${NIFTK_BINARY_DIR}/Testing/Temporary)
 set(VTKUnitTests_SRCS
   niftkVTKLoadSaveMatrix4x4Test.cxx
   niftkVTKInterpolateMatrixTest.cxx
+  niftkVTKFunctionsTest.cxx
 )
 
 add_executable(niftkVTKUnitTests niftkVTKUnitTests.cxx ${VTKUnitTests_SRCS})
@@ -47,6 +48,7 @@ add_test(VTK-InterpolateMatrixAfter ${VTK_UNIT_TESTS} niftkVTKInterpolateMatrixT
 add_test(VTK-InterpolateMatrixHalf ${VTK_UNIT_TESTS} niftkVTKInterpolateMatrixTest ${INPUT_DATA}/InterpolateMatrixBefore.4x4 ${INPUT_DATA}/InterpolateMatrixAfter.4x4 0.5 ${INPUT_DATA}/InterpolateMatrixHalf.4x4 )
 add_test(VTK-InterpolateMatrixLower ${VTK_UNIT_TESTS} niftkVTKInterpolateMatrixTest ${INPUT_DATA}/InterpolateMatrixBefore.4x4 ${INPUT_DATA}/InterpolateMatrixAfter.4x4 0.1 ${INPUT_DATA}/InterpolateMatrixLower.4x4 )
 add_test(VTK-InterpolateMatrixUpper ${VTK_UNIT_TESTS} niftkVTKInterpolateMatrixTest ${INPUT_DATA}/InterpolateMatrixBefore.4x4 ${INPUT_DATA}/InterpolateMatrixAfter.4x4 0.9 ${INPUT_DATA}/InterpolateMatrixUpper.4x4 )
+add_test(VTK-Functions-Test ${VTK_UNIT_TESTS} niftkVTKFunctionsTest )
 
 #################################################################################
 # Build instructions for Integration Tests.

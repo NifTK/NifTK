@@ -15,6 +15,7 @@
 #include <math.h>
 #include <iostream>
 #include <niftkConversionUtils.h>
+#include <niftkMathsUtils.h>
 #include "niftkVTKFunctions.h"
 #include <vtkSmartPointer.h>
 #include <vtkTransformPolyDataFilter.h>
@@ -28,6 +29,7 @@
 #include <vtkVersion.h>
 #include <vtkMath.h>
 #include <sstream>
+#include <stdexcept>
 #include <cstdlib>
 
 namespace niftk {
@@ -196,32 +198,101 @@ void CopyDoubleVector(int n, const double *a, double *b)
 
 
 //-----------------------------------------------------------------------------
-void RandomTransform ( vtkTransform * transform,
-    double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot,
-    vtkRandomSequence* rng)
+vtkSmartPointer<vtkTransform> RandomTransformAboutRemoteCentre (
+    const double& xtrans, const double& ytrans, const double& ztrans,
+    const double& xrot, const double& yrot, const double& zrot,
+    vtkRandomSequence& rng,
+    vtkSmartPointer<vtkTransform> toCentre,
+    const double& scaleSD)
 {
-  double x;
-  double y;
-  double z;
-  x=xtrans * NormalisedRNG ( rng ) ;
-  rng->Next();
-  y=ytrans * NormalisedRNG ( rng );
-  rng->Next();
-  z=ztrans * NormalisedRNG ( rng );
-  rng->Next();
-  transform->Translate(x,y,z);
-  double rot;
-  rot=xrot * NormalisedRNG ( rng);
-  rng->Next();
-  transform->RotateX(rot);
-  rot=yrot * NormalisedRNG(rng);
-  rng->Next();
-  transform->RotateY(rot);
-  rot=zrot * NormalisedRNG(rng);
-  rng->Next();
-  transform->RotateZ(rot);
+  vtkSmartPointer < vtkTransform > transform = vtkSmartPointer<vtkTransform>::New();
+  transform->Identity();
+
+  vtkSmartPointer < vtkTransform > randomTransform = niftk::RandomTransform (
+      xtrans, ytrans, ztrans, xrot, yrot, zrot, rng, scaleSD );
+  vtkSmartPointer < vtkTransform > toOrigin = vtkSmartPointer<vtkTransform>::New();
+  toOrigin->DeepCopy (toCentre);
+  toOrigin->Inverse();
+
+  transform->PostMultiply();
+  transform->Concatenate(toOrigin);
+  transform->Concatenate(randomTransform);
+  transform->Concatenate(toCentre);
+
+  return transform;
 }
 
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkTransform> RandomTransform (
+    const double& xtransSD, const double& ytransSD, const double& ztransSD,
+    const double& xrotSD, const double& yrotSD, const double& zrotSD,
+    vtkRandomSequence& rng,
+    const double& scaleSD)
+{
+  vtkSmartPointer < vtkTransform > transform = vtkSmartPointer<vtkTransform>::New();
+
+  transform->Identity();
+
+  //create covariance vector
+  std::vector < double > stddev;
+  std::vector < double > covariance;
+  std::vector < double > zeros;
+  std::vector < double > randomTransform;
+  stddev.push_back ( xtransSD );
+  stddev.push_back ( ytransSD );
+  stddev.push_back ( ztransSD );
+  stddev.push_back ( xrotSD );
+  stddev.push_back ( yrotSD );
+  stddev.push_back ( zrotSD );
+
+  for ( std::vector<double>::iterator it = stddev.begin() ; it < stddev.end() ; ++ it )
+  {
+    rng.Next();
+    randomTransform.push_back ( (*it) * NormalisedRNG ( &rng ));
+    zeros.push_back(0.0);
+    covariance.push_back ( (*it) * (*it) );
+  }
+
+  double currentDistance = niftk::MahalanobisDistance ( zeros, randomTransform, covariance );
+  double scaleFactor = scaleSD / currentDistance;
+
+  if ( scaleSD > 0 )
+  {
+    for ( std::vector<double>::iterator it = randomTransform.begin() ; it < randomTransform.end() ; ++ it )
+    {
+      *it *= scaleFactor ;
+    }
+    double correctedDistance = niftk::MahalanobisDistance ( zeros, randomTransform, covariance );
+    try
+    {
+      niftk::CheckDoublesEquals(scaleSD, correctedDistance, 1e-3);
+    }
+    catch (...)
+    {
+      std::ostringstream errorStream;
+
+      errorStream << "niftk::RandomTransform, wrong scaled distance, Target = " << scaleSD <<  ", achieved=" <<  correctedDistance;
+      throw std::logic_error(errorStream.str());
+    }
+  }
+  transform = niftk::RigidTransformFromVector ( randomTransform );
+  return transform;
+}
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkTransform> RigidTransformFromVector ( std::vector < double > transform )
+{
+  if ( transform.size() != 6 )
+  {
+    throw std::runtime_error ( "Vector to define rigid transform requires 6 values");
+  }
+  vtkSmartPointer <vtkTransform> transformOut = vtkSmartPointer<vtkTransform>::New();
+  transformOut->Translate(transform [0],transform [1],transform [2]);
+  transformOut->RotateX(transform [3]);
+  transformOut->RotateY(transform [4]);
+  transformOut->RotateZ(transform [5]);
+  return transformOut;
+}
 
 //-----------------------------------------------------------------------------
 void TranslatePolyData(vtkPolyData* polydata, vtkTransform * transform)
@@ -318,17 +389,6 @@ void PerturbPolyData(vtkPolyData* polydata,
    Gauss_Rand->SetUniformSequence(Uni_Rand);
    PerturbPolyData(polydata,xerr, yerr,zerr, Gauss_Rand);
 }
-
-
-//-----------------------------------------------------------------------------
-void RandomTransform ( vtkTransform * transform,
-    double xtrans, double ytrans, double ztrans, double xrot, double yrot, double zrot)
-{
-   vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
-   Uni_Rand->SetSeed(time(NULL));
-   RandomTransform(transform,xtrans,ytrans,ztrans,xrot,yrot,zrot,Uni_Rand);
-}
-
 
 //-----------------------------------------------------------------------------
 double NormalisedRNG (vtkRandomSequence* rng)
@@ -582,7 +642,7 @@ void SetCameraParallelTo2DImage(
     const double *clippingRange,
     const bool& flipYAxis,
     vtkCamera& camera,
-    const double& distanceToFocalPoint 
+    const double& distanceToFocalPoint
     )
 {
   double focalPoint[3] = {0, 0, 1};
@@ -596,7 +656,7 @@ void SetCameraParallelTo2DImage(
   double vectorAlongX[3] = {1, 0, 0};
   double vectorAlongY[3] = {0, 1, 0};
   double vectorAlongZ[3] = {0, 0, 1};
-  
+
   double viewUpScaleFactor = 1.0e9;
   if ( flipYAxis )
   {
