@@ -122,7 +122,13 @@ protected:
   virtual bool ToggleDirectionAnnotations(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Toggles displaying the intensity annotation on/off.
+  virtual bool TogglePositionAnnotation(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Toggles displaying the intensity annotation on/off.
   virtual bool ToggleIntensityAnnotation(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Toggles displaying the intensity annotation on/off.
+  virtual bool TogglePropertyAnnotation(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Selects the previous slice.
   /// The slices are ordered in the following way:
