@@ -91,7 +91,9 @@ void DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
   CONNECT_FUNCTION("toggleCursorVisibility", ToggleCursorVisibility);
   CONNECT_FUNCTION("toggleDirectionAnnotations", ToggleDirectionAnnotations);
+  CONNECT_FUNCTION("togglePositionAnnotation", TogglePositionAnnotation);
   CONNECT_FUNCTION("toggleIntensityAnnotation", ToggleIntensityAnnotation);
+  CONNECT_FUNCTION("togglePropertyAnnotation", TogglePropertyAnnotation);
   CONNECT_FUNCTION("selectPreviousSlice", SelectPreviousSlice);
   CONNECT_FUNCTION("selectNextSlice", SelectNextSlice);
   CONNECT_FUNCTION("selectPreviousTimeStep", SelectPreviousTimeStep);
@@ -357,9 +359,25 @@ bool DnDDisplayInteractor::ToggleDirectionAnnotations(mitk::StateMachineAction* 
 
 
 //-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::TogglePositionAnnotation(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  m_Viewer->TogglePositionAnnotation();
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
 bool DnDDisplayInteractor::ToggleIntensityAnnotation(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   m_Viewer->ToggleIntensityAnnotation();
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::TogglePropertyAnnotation(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  m_Viewer->TogglePropertyAnnotation();
   return true;
 }
 
