@@ -62,12 +62,6 @@ public:
   virtual void OnFocusChanged();
 
   /**
-   * \brief Returns whether this functionality should be exclusive, or in other words, the only active plugin.
-   * \return false Always false.
-   */
-  virtual bool IsExclusiveFunctionality() const;
-
-  /**
    * \brief Returns the activation status
    *
    * \return bool true if activated and false otherwise.

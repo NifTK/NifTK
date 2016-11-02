@@ -51,7 +51,7 @@ class ThumbnailView : public QmitkAbstractView
   
 public:
 
-  berryObjectMacro(ThumbnailView);
+  berryObjectMacro(ThumbnailView)
   ThumbnailView();
   virtual ~ThumbnailView();
 
@@ -61,9 +61,6 @@ public:
 
   /// \brief Called when preferences are updated.
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
-
-  /// \brief This is not an exclusive functionality, as it just listens to input and updates itself, and can happily live alongside other functionalities.
-  virtual bool IsExclusiveFunctionality() const { return false; }
 
   /// \brief Returns the renderer being tracked if there is one, otherwise NULL.
   mitk::BaseRenderer* GetTrackedRenderer() const;

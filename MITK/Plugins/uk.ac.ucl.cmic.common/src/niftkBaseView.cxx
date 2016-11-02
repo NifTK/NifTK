@@ -111,13 +111,6 @@ BaseView::~BaseView() {
 
 
 //-----------------------------------------------------------------------------
-bool BaseView::IsExclusiveFunctionality() const
-{
-  return false;
-}
-
-
-//-----------------------------------------------------------------------------
 QWidget* BaseView::GetParent()
 {
   Q_D(BaseView);

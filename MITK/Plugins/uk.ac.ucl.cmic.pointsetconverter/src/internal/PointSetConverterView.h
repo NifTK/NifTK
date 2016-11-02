@@ -65,10 +65,10 @@ class PointSetConverterView : public QmitkAbstractView
 
     virtual void SetFocus();
 
-    /// \brief called by QmitkFunctionality when DataManager's selection has changed
+    /// \brief called by QmitkAbstractView when DataManager's selection has changed
     /// If the selected node is a point set -- it will be changed to the active point set
     virtual void OnSelectionChanged( berry::IWorkbenchPart::Pointer source,
-                                     const QList<mitk::DataNode::Pointer>& nodes );
+                                     const QList<mitk::DataNode::Pointer>& nodes ) override;
 
     Ui::PointSetConverterViewControls* m_Controls;
 
