@@ -23,6 +23,7 @@
 #include <niftkDataStorageUtils.h>
 #include <niftkPointBasedRegistration.h>
 #include <niftkPointSetRegisterCLP.h>
+#include <niftkPointRegMaths.h>
 #include <niftkVTKFunctions.h>
 
 int main(int argc, char** argv)
@@ -52,6 +53,7 @@ int main(int argc, char** argv)
   movingnode->SetData(movingPoints);
 
   vtkSmartPointer<vtkMatrix4x4> randomMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  randomMatrix->Identity();
   if ( (perturbTrans > 0.0) || (perturbRot > 0.0) )
   {
     vtkSmartPointer<vtkTransform> randomTrans = vtkSmartPointer<vtkTransform>::New();
@@ -61,7 +63,8 @@ int main(int argc, char** argv)
     niftk::ComposeTransformWithNode(*randomMatrix, movingnode);
   }
 
-  vtkMatrix4x4 * initialTransform = vtkMatrix4x4::New();
+  vtkSmartPointer <vtkMatrix4x4> initialTransform = vtkSmartPointer<vtkMatrix4x4>::New();
+  initialTransform->Identity();
   if ( initTrans.length() != 0 ) 
   {
     initialTransform = niftk::LoadMatrix4x4FromFile(initTrans);
@@ -69,12 +72,15 @@ int main(int argc, char** argv)
   }
    
   vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
+  resultMatrix->Identity();
   registerer->SetUsePointIDToMatchPoints( usePointIDToMatchPoints);
   registerer->SetUseICPInitialisation ( useICPInitialisation); 
   
   MITK_INFO << "Starting registration";
+  MITK_INFO << "Start FRE = " << niftk::CalculateFiducialRegistrationError ( fixedPoints, movingPoints, resultMatrix );
   double fre = registerer->Update(fixedPoints, movingPoints, *resultMatrix);
   MITK_INFO << "Init" << *initialTransform;
+  //std::cout << "Init" << initialTransform;
   if ( (perturbTrans > 0.0) || (perturbRot > 0.0) )
   {
     MITK_INFO << "Random" << *randomMatrix;
