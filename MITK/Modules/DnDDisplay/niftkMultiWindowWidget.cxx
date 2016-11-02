@@ -2381,7 +2381,9 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
 #ifndef NDEBUG
       m_RenderWindows[windowIndex]->GetRenderer()->GetCurrentWorldGeometry()->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
-      for (int i = 0; i < 3; ++i)
+      /// The renderer window geometry is already half voxel shifted along the renderer plane axis,
+      /// therefore we do not adjust the last index coordinate.
+      for (int i = 0; i < 2; ++i)
       {
         selectedPositionInVx[i] -= 0.5;
       }
