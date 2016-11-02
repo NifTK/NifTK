@@ -52,9 +52,6 @@ class IntensityProfileViewPrivate;
  \brief IntensityProfileView
 
  \warning  This application module is not yet documented.
-
- \sa QmitkFunctionality
- \ingroup Functionalities
  */
 class IntensityProfileView :
     public niftk::BaseView,
