@@ -68,6 +68,7 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.affinetransform:ON
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
   Plugins/uk.ac.ucl.cmic.thumbnail:ON
+  Plugins/uk.ac.ucl.cmic.sideviewer:ON
 )
 
 # ---------------------------------------------------------------------------------------------------
@@ -101,7 +102,6 @@ set(NiftyMIDAS_PLUGINS
   Plugins/uk.ac.ucl.cmic.commonmidas:ON
   Plugins/uk.ac.ucl.cmic.dnddisplay:ON
   Plugins/uk.ac.ucl.cmic.niftymidas:ON
-  Plugins/uk.ac.ucl.cmic.sideviewer:ON
   Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
   Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
   Plugins/uk.ac.ucl.cmic.pointsetconverter:ON

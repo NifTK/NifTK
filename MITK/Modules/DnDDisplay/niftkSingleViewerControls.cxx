@@ -335,8 +335,6 @@ WindowLayout SingleViewerControls::GetWindowLayout() const
 //-----------------------------------------------------------------------------
 void SingleViewerControls::SetWindowLayout(WindowLayout windowLayout)
 {
-  assert(windowLayout >= 0 && windowLayout < WINDOW_LAYOUT_NUMBER);
-
   if (windowLayout == m_WindowLayout)
   {
     // Nothing to do.

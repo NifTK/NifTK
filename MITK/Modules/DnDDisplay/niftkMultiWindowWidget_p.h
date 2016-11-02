@@ -524,9 +524,6 @@ private:
   /// \brief Scale factors for each render window in mm/px.
   std::vector<double> m_ScaleFactors;
 
-  typedef enum { ImageGeometry, AxialGeometry, SagittalGeometry, CoronalGeometry } GeometryType;
-  GeometryType m_GeometryType;
-
   int m_OrientationAxes[3];
   char m_OrientationString[4];
 
@@ -543,7 +540,7 @@ private:
   /// \brief The 3D geometry for the first time step.
   /// The viewer assumes that the dimensions are equal at each time step.
   /// This is not the geometry at the selected time step.
-  mitk::BaseGeometry* m_Geometry;
+  const mitk::BaseGeometry* m_ReferenceGeometry;
 
   /// \brief Voxel size in millimetres.
   /// The values are stored in axis order. The mapping of orientations to axes

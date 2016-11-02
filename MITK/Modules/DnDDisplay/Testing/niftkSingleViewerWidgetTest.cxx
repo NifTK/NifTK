@@ -253,42 +253,19 @@ mitk::Point3D SingleViewerWidgetTestClass::GetWorldBottomLeftBackCorner(const mi
 
   int permutedAxes[3] = {dominantAxisRL, dominantAxisAP, dominantAxisSI};
   int upDirections[3] = {signRL, signAP, signSI};
-  const mitk::Vector3D& spacings = geometry->GetSpacing();
-  double permutedSpacing[3] = {spacings[permutedAxes[0]], spacings[permutedAxes[1]], spacings[permutedAxes[2]]};
 
   mitk::Point3D originInVx;
   for (int i = 0; i < 3; ++i)
   {
-    originInVx[permutedAxes[i]] = upDirections[i] > 0 ? 0 : geometry->GetExtent(permutedAxes[i]) - 1;
+    originInVx[permutedAxes[i]] = upDirections[i] > 0 ? 0 : geometry->GetExtent(permutedAxes[i]);
+    if (geometry->GetImageGeometry())
+    {
+      originInVx[permutedAxes[i]] -= 0.5;
+    }
   }
 
   mitk::Point3D bottomLeftBackCorner;
   geometry->IndexToWorld(originInVx, bottomLeftBackCorner);
-
-  if (geometry->GetImageGeometry())
-  {
-    bottomLeftBackCorner[0] -= 0.5 * permutedSpacing[0];
-    bottomLeftBackCorner[1] -= 0.5 * permutedSpacing[1];
-    bottomLeftBackCorner[2] -= 0.5 * permutedSpacing[2];
-  }
-  else
-  {
-    if (permutedAxes[0] == 0 && permutedAxes[1] == 1 && permutedAxes[2] == 2) // Axial
-    {
-      /// TODO !!! This line should not be needed. !!!
-      bottomLeftBackCorner[1] -= permutedSpacing[1];
-    }
-    else if (permutedAxes[0] == 2 && permutedAxes[1] == 0 && permutedAxes[2] == 1) // Sagittal
-    {
-    }
-    else if (permutedAxes[0] == 0 && permutedAxes[1] == 2 && permutedAxes[2] == 1) // Coronal
-    {
-    }
-    else
-    {
-      assert(false);
-    }
-  }
 
   return bottomLeftBackCorner;
 }
@@ -880,33 +857,33 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
   /// -------------------------------------------------------------------------
 
   mitk::Point3D expectedAxialOrigin = worldBottomLeftBackCorner;
-  /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
   expectedAxialOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
+  expectedAxialOrigin[2] += (d->WorldExtents[2] - 0.5) * d->WorldSpacings[2];
   mitk::Point3D expectedSagittalOrigin = worldBottomLeftBackCorner;
+  expectedSagittalOrigin[0] += 0.5 * d->WorldSpacings[0];
   mitk::Point3D expectedCoronalOrigin = worldBottomLeftBackCorner;
+  expectedCoronalOrigin[1] += 0.5 * d->WorldSpacings[1];
 
   mitk::Point3D expectedAxialCentre = worldCentre;
+  expectedAxialCentre[2] -= 0.5 * d->WorldSpacings[2];
   mitk::Point3D expectedSagittalCentre = worldCentre;
+  expectedSagittalCentre[0] += 0.5 * d->WorldSpacings[0];
   mitk::Point3D expectedCoronalCentre = worldCentre;
+  expectedCoronalCentre[1] += 0.5 * d->WorldSpacings[1];
 
   mitk::Point3D expectedAxialBottomLeftBackCorner = worldBottomLeftBackCorner;
+  expectedAxialBottomLeftBackCorner[2] -= 0.5 * d->WorldSpacings[2];
   mitk::Point3D expectedSagittalBottomLeftBackCorner = worldBottomLeftBackCorner;
+  expectedSagittalBottomLeftBackCorner[0] += 0.5 * d->WorldSpacings[0];
   mitk::Point3D expectedCoronalBottomLeftBackCorner = worldBottomLeftBackCorner;
+  expectedCoronalBottomLeftBackCorner[1] += 0.5 * d->WorldSpacings[1];
 
-  mitk::Point3D expectedAxialFirstPlaneOrigin = worldBottomLeftBackCorner;
-  /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
-  expectedAxialFirstPlaneOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
-  expectedAxialFirstPlaneOrigin[2] += 0.5 * d->WorldSpacings[2];
-
-  mitk::Point3D expectedSagittalFirstPlaneOrigin = worldBottomLeftBackCorner;
-  expectedSagittalFirstPlaneOrigin[0] += 0.5 * d->WorldSpacings[0];
-
-  mitk::Point3D expectedCoronalFirstPlaneOrigin = worldBottomLeftBackCorner;
-  expectedCoronalFirstPlaneOrigin[1] += 0.5 * d->WorldSpacings[1];
+  mitk::Point3D expectedAxialFirstPlaneOrigin = expectedAxialOrigin;
+  mitk::Point3D expectedSagittalFirstPlaneOrigin = expectedSagittalOrigin;
+  mitk::Point3D expectedCoronalFirstPlaneOrigin = expectedCoronalOrigin;
 
   mitk::Point3D expectedAxialFirstPlaneCentre = expectedAxialFirstPlaneOrigin;
   expectedAxialFirstPlaneCentre[0] += 0.5 * d->WorldExtents[0] * d->WorldSpacings[0];
-  /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
   expectedAxialFirstPlaneCentre[1] -= 0.5 * d->WorldExtents[1] * d->WorldSpacings[1];
   expectedAxialFirstPlaneCentre[2] -= 0.5 * d->WorldSpacings[2];
 
@@ -922,7 +899,7 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
   expectedCoronalFirstPlaneCentre[2] += 0.5 * d->WorldExtents[2] * d->WorldSpacings[2];
 
   mitk::Point3D expectedAxialSecondPlaneOrigin = expectedAxialFirstPlaneOrigin;
-  expectedAxialSecondPlaneOrigin[2] += d->WorldSpacings[2];
+  expectedAxialSecondPlaneOrigin[2] -= d->WorldSpacings[2];
 
   mitk::Point3D expectedSagittalSecondPlaneOrigin = expectedSagittalFirstPlaneOrigin;
   expectedSagittalSecondPlaneOrigin[0] += d->WorldSpacings[0];
@@ -931,7 +908,7 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
   expectedCoronalSecondPlaneOrigin[1] += d->WorldSpacings[1];
 
   mitk::Point3D expectedAxialSecondPlaneCentre = expectedAxialFirstPlaneCentre;
-  expectedAxialSecondPlaneCentre[2] += d->WorldSpacings[2];
+  expectedAxialSecondPlaneCentre[2] -= d->WorldSpacings[2];
 
   mitk::Point3D expectedSagittalSecondPlaneCentre = expectedSagittalFirstPlaneCentre;
   expectedSagittalSecondPlaneCentre[0] += d->WorldSpacings[0];
@@ -1353,29 +1330,33 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 //  MITK_INFO << "world centre: " << worldCentre;
 
   mitk::Point3D expectedAxialOrigin = worldBottomLeftBackCorner;
-  /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
   expectedAxialOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
+  expectedAxialOrigin[2] += (d->WorldExtents[2] - 0.5) * d->WorldSpacings[2];
   mitk::Point3D expectedSagittalOrigin = worldBottomLeftBackCorner;
+  expectedSagittalOrigin[0] += 0.5 * d->WorldSpacings[0];
   mitk::Point3D expectedCoronalOrigin = worldBottomLeftBackCorner;
+  expectedCoronalOrigin[1] += 0.5 * d->WorldSpacings[1];
 
   mitk::Point3D expectedAxialCentre = worldCentre;
+  expectedAxialCentre[2] -= 0.5 * d->WorldSpacings[2];
   mitk::Point3D expectedSagittalCentre = worldCentre;
+  expectedSagittalCentre[0] += 0.5 * d->WorldSpacings[0];
   mitk::Point3D expectedCoronalCentre = worldCentre;
+  expectedCoronalCentre[1] += 0.5 * d->WorldSpacings[1];
 
-  mitk::Point3D expectedAxialFirstPlaneOrigin = worldBottomLeftBackCorner;
-  /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
-  expectedAxialFirstPlaneOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
-  expectedAxialFirstPlaneOrigin[2] += 0.5 * d->WorldSpacings[2];
+  mitk::Point3D expectedAxialBottomLeftBackCorner = worldBottomLeftBackCorner;
+  expectedAxialBottomLeftBackCorner[2] -= 0.5 * d->WorldSpacings[2];
+  mitk::Point3D expectedSagittalBottomLeftBackCorner = worldBottomLeftBackCorner;
+  expectedSagittalBottomLeftBackCorner[0] += 0.5 * d->WorldSpacings[0];
+  mitk::Point3D expectedCoronalBottomLeftBackCorner = worldBottomLeftBackCorner;
+  expectedCoronalBottomLeftBackCorner[1] += 0.5 * d->WorldSpacings[1];
 
-  mitk::Point3D expectedSagittalFirstPlaneOrigin = worldBottomLeftBackCorner;
-  expectedSagittalFirstPlaneOrigin[0] += 0.5 * d->WorldSpacings[0];
-
-  mitk::Point3D expectedCoronalFirstPlaneOrigin = worldBottomLeftBackCorner;
-  expectedCoronalFirstPlaneOrigin[1] += 0.5 * d->WorldSpacings[1];
+  mitk::Point3D expectedAxialFirstPlaneOrigin = expectedAxialOrigin;
+  mitk::Point3D expectedSagittalFirstPlaneOrigin = expectedSagittalOrigin;
+  mitk::Point3D expectedCoronalFirstPlaneOrigin = expectedCoronalOrigin;
 
   mitk::Point3D expectedAxialFirstPlaneCentre = expectedAxialFirstPlaneOrigin;
   expectedAxialFirstPlaneCentre[0] += 0.5 * d->WorldExtents[0] * d->WorldSpacings[0];
-  /// Why is the y axis of the axial renderer geometry flipped? Is this correct?
   expectedAxialFirstPlaneCentre[1] -= 0.5 * d->WorldExtents[1] * d->WorldSpacings[1];
   expectedAxialFirstPlaneCentre[2] -= 0.5 * d->WorldSpacings[2];
 
@@ -1386,8 +1367,7 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 
   mitk::Point3D expectedCoronalFirstPlaneCentre = expectedCoronalFirstPlaneOrigin;
   expectedCoronalFirstPlaneCentre[0] += 0.5 * d->WorldExtents[0] * d->WorldSpacings[0];
-  /// Why is this minus and not plus?
-  expectedCoronalFirstPlaneCentre[1] -= 0.5 * d->WorldSpacings[1];
+  expectedCoronalFirstPlaneCentre[1] += 0.5 * d->WorldSpacings[1];
   expectedCoronalFirstPlaneCentre[2] += 0.5 * d->WorldExtents[2] * d->WorldSpacings[2];
 
   mitk::Point3D expectedAxialSecondPlaneOrigin = expectedAxialFirstPlaneOrigin;
@@ -1521,9 +1501,9 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
   QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
   QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
   QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
-  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(axialBottomLeftBackCorner, expectedAxialBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, expectedSagittalBottomLeftBackCorner, 0.001));
+  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, expectedCoronalBottomLeftBackCorner, 0.001));
   QVERIFY(Self::Equals(axialFirstPlaneOrigin, expectedAxialFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(sagittalFirstPlaneOrigin, expectedSagittalFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(coronalFirstPlaneOrigin, expectedCoronalFirstPlaneOrigin, 0.001));
