@@ -2379,40 +2379,43 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
 
       /// Display selected voxel index coordinates and orientation string in the renderer geometry in debug mode only.
 #ifndef NDEBUG
-      m_RenderWindows[windowIndex]->GetRenderer()->GetCurrentWorldGeometry()->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
-
-      /// The renderer window geometry is already half voxel shifted along the renderer plane axis,
-      /// therefore we do not adjust the last index coordinate.
-      for (int i = 0; i < 2; ++i)
+      if (const mitk::BaseGeometry* rendererGeometry = m_RenderWindows[windowIndex]->GetRenderer()->GetCurrentWorldGeometry())
       {
-        selectedPositionInVx[i] -= 0.5;
-      }
+        rendererGeometry->WorldToIndex(m_SelectedPosition, selectedPositionInVx);
 
-      std::string orientationString = "---";
+        /// The renderer window geometry is already half voxel shifted along the renderer plane axis,
+        /// therefore we do not adjust the last index coordinate.
+        for (int i = 0; i < 2; ++i)
+        {
+          selectedPositionInVx[i] -= 0.5;
+        }
 
-      if (windowIndex == 0)
-      {
-        // Axial
-        orientationString[0] = 'R';
-        orientationString[1] = 'P';
-        orientationString[2] = (RENDERER_DIRECTIONS.find('S') != -1) ? 'S' : 'I';
-      }
-      else if (windowIndex == 1)
-      {
-        // Sagittal
-        orientationString[0] = 'A';
-        orientationString[1] = 'S';
-        orientationString[2] = (RENDERER_DIRECTIONS.find('R') != -1) ? 'R' : 'L';
-      }
-      else if (windowIndex == 2)
-      {
-        // Coronal
-        orientationString[0] = 'R';
-        orientationString[1] = 'S';
-        orientationString[2] = (RENDERER_DIRECTIONS.find('A') != -1) ? 'A' : 'P';
-      }
+        std::string orientationString = "---";
 
-      stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << orientationString << ")" << std::endl;
+        if (windowIndex == 0)
+        {
+          // Axial
+          orientationString[0] = 'R';
+          orientationString[1] = 'P';
+          orientationString[2] = (RENDERER_DIRECTIONS.find('S') != -1) ? 'S' : 'I';
+        }
+        else if (windowIndex == 1)
+        {
+          // Sagittal
+          orientationString[0] = 'A';
+          orientationString[1] = 'S';
+          orientationString[2] = (RENDERER_DIRECTIONS.find('R') != -1) ? 'R' : 'L';
+        }
+        else if (windowIndex == 2)
+        {
+          // Coronal
+          orientationString[0] = 'R';
+          orientationString[1] = 'S';
+          orientationString[2] = (RENDERER_DIRECTIONS.find('A') != -1) ? 'A' : 'P';
+        }
+
+        stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << orientationString << ")" << std::endl;
+      }
 #endif
 
       stream << std::fixed << std::setprecision(1) << m_SelectedPosition[0] << ", " << m_SelectedPosition[1] << ", " << m_SelectedPosition[2] << " mm";
