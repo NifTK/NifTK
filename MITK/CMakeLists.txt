@@ -74,6 +74,8 @@ if(MITK_USE_BLUEBERRY)
   niftkMacroForcePluginCacheValue("${NiftyMIDAS_PLUGINS}" ${NIFTK_Apps/NiftyMIDAS})
   niftkMacroForcePluginCacheValue("${NiftyIGI_PLUGINS}" ${NIFTK_Apps/NiftyIGI})
 
+  list(REMOVE_DUPLICATES PROJECT_PLUGINS)
+
   ctkMacroSetupPlugins(${PROJECT_PLUGINS}
                        APPS ${_apps_fullpath} 
                        BUILD_OPTION_PREFIX ${PROJECT_NAME}_

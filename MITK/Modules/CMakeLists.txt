@@ -29,8 +29,15 @@ set(MODULE_DIRS
   CoreIO
   CoreGui
   CoreApp
-  Thumbnail
 )
+
+if(BUILD_VIEW)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    DnDDisplay
+    Thumbnail
+  )
+endif()
 
 if(BUILD_MIDAS)
   set(MODULE_DIRS
@@ -38,6 +45,7 @@ if(BUILD_MIDAS)
     DnDDisplay
     MIDAS
     MIDASGui
+    Thumbnail
   )
 endif()
 
@@ -111,6 +119,8 @@ if(BUILD_VL)
     VL
   )
 endif()
+
+list(REMOVE_DUPLICATES MODULE_DIRS)
 
 foreach(MODULE_DIR ${MODULE_DIRS})
   add_subdirectory(${MODULE_DIR})
