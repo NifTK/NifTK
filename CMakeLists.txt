@@ -50,6 +50,11 @@ if(NIFTK_USE_COTIRE)
 endif()
 
 ######################################################################
+# Organise module/plugin/etc projects better within the IDE.
+######################################################################
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+######################################################################
 # We have a super-build option. (Terminology comes from MITK/CTK).
 ######################################################################
 
