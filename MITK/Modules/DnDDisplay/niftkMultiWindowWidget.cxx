@@ -137,7 +137,7 @@ MultiWindowWidget::MultiWindowWidget(
 , m_TimeStep(0)
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
-, m_OrientationString("")
+, m_OrientationString{0}
 , m_WorldGeometries(3)
 , m_RenderWindowSizes(3)
 , m_Origins(3)
