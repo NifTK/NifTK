@@ -24,6 +24,7 @@ set(CPP_FILES
   Internal/niftkCoreIOObjectFactory.cxx
   Internal/niftkLabeledLookupTablePropertySerializer.cxx
   Internal/niftkNamedLookupTablePropertySerializer.cxx
+  Internal/niftkVLPropertySerializers.cxx
   Internal/niftkPNMReaderService.cxx
   Internal/niftkPNMWriterService.cxx
   Internal/niftkLabelMapReader.cxx

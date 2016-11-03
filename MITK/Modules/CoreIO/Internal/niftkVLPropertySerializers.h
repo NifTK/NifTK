@@ -16,6 +16,7 @@
 #define niftkVLPropertySerializers_h
 
 #include <mitkEnumerationPropertySerializer.h>
+#include <niftkVLProperties.h>
 
 namespace niftk
 {
@@ -27,7 +28,18 @@ class VL_Render_Mode_PropertySerializer : public mitk::EnumerationPropertySerial
 {
 public:
   mitkClassMacro( VL_Render_Mode_PropertySerializer, mitk::EnumerationPropertySerializer)
-  itkNewMacro(Self)
+  itkFactorylessNewMacro(Self)
+  itkCloneMacro(Self)
+
+  virtual mitk::BaseProperty::Pointer Deserialize(TiXmlElement* element) override
+  {
+    if (!element) return nullptr;
+    const char* sa( element->Attribute("value") );
+    std::string s(sa?sa:"");
+    VL_Render_Mode_Property::Pointer property = VL_Render_Mode_Property::New();
+    property->SetValue( s );
+    return property.GetPointer();
+  }
 
 protected:
   VL_Render_Mode_PropertySerializer();
