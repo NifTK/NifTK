@@ -31,7 +31,7 @@ set(MODULE_DIRS
   CoreApp
 )
 
-if(BUILD_VIEW)
+if(BUILD_NiftyView)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     DnDDisplay
@@ -39,7 +39,7 @@ if(BUILD_VIEW)
   )
 endif()
 
-if(BUILD_MIDAS)
+if(BUILD_NiftyMIDAS)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     DnDDisplay
@@ -56,7 +56,7 @@ if(BUILD_PCL)
   )
 endif()
 
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     SerialPort

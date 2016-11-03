@@ -24,7 +24,7 @@ set(NIFTK_TEST_CUDA_LINK_LIBRARIES
 list(APPEND CUDAKernelsTests_SRCS Example/niftkAddTwoIntegersKernelTests.cxx)
 
 # the test needs opencv for validation. but that is build automatically only for the igi config.
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
   set(CUDAKernelsTests_SRCS
     ${CUDAKernelsTests_SRCS}
     CameraCalibration/niftkUndistortionKernelTests.cxx

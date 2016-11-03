@@ -23,7 +23,7 @@ if(BUILD_PCL)
 endif()
 
 # vl renderer can use calibrated cameras
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
   set(_modules ${_modules} niftkOpenCV MitkCameraCalibration)
 endif()
 

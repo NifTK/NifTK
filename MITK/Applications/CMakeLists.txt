@@ -22,7 +22,7 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
 
     add_subdirectory(PointSetStatistics)
 
-    if(BUILD_IGI)
+    if(BUILD_NiftyIGI)
       add_subdirectory(AverageStationaryChessboards)
       add_subdirectory(AverageTrackingMatrices)
       add_subdirectory(BifurcationToPointSet)

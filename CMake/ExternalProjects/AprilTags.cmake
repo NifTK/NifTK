@@ -22,7 +22,7 @@ if(DEFINED AprilTags_DIR AND NOT EXISTS ${AprilTags_DIR})
   message(FATAL_ERROR "AprilTags_DIR variable is defined but corresponds to non-existing directory \"${AprilTags_DIR}\".")
 endif()
 
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
 
   set(version "3c6af59723")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-apriltags-${version}.tar.gz")

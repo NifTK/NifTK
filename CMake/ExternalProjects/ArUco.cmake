@@ -22,7 +22,7 @@ if(DEFINED aruco_DIR AND NOT EXISTS ${aruco_DIR})
   message(FATAL_ERROR "aruco_DIR variable is defined but corresponds to non-existing directory \"${aruco_DIR}\".")
 endif()
 
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
 
   set(version "1.3.0")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/aruco-${version}.tar.gz")

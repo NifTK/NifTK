@@ -14,7 +14,7 @@
 find_package(NiftyLink REQUIRED)
 if(NiftyLink_FOUND)
   include(${NiftyLink_USE_FILE})
-  add_definitions(-DBUILD_IGI)
+  add_definitions(-DBUILD_NiftyIGI)
   list(APPEND ALL_INCLUDE_DIRECTORIES ${NiftyLink_INCLUDE_DIRS})
   list(APPEND ALL_LIBRARIES ${NiftyLink_LIBRARIES})
   link_directories(${NiftyLink_LIBRARY_DIRS})

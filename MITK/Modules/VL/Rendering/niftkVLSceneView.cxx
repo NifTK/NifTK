@@ -50,7 +50,7 @@
 
 #include <stdexcept>
 
-#ifdef BUILD_IGI
+#ifdef BUILD_NiftyIGI
   #include <CameraCalibration/niftkUndistortion.h>
   #include <mitkCameraIntrinsicsProperty.h>
   #include <mitkCameraIntrinsics.h>
@@ -1122,7 +1122,7 @@ void VLSceneView::updateCameraParameters()
     // Calibration parameters come from the background node.
     VIVID_CHECK( m_BackgroundNode );
 
-    #ifdef BUILD_IGI
+    #ifdef BUILD_NiftyIGI
       mitk::BaseProperty::Pointer cam_cal_prop = m_BackgroundNode->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName);
       if ( cam_cal_prop ) {
         mitk::CameraIntrinsicsProperty::Pointer cam_intr_prop = dynamic_cast<mitk::CameraIntrinsicsProperty*>(cam_cal_prop.GetPointer());

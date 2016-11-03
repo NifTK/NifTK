@@ -22,7 +22,7 @@ if(DEFINED NiftyLink_DIR AND NOT EXISTS ${NiftyLink_DIR})
   message(FATAL_ERROR "NiftyLink_DIR variable is defined but corresponds to non-existing directory \"${NIFTYLINK_DIR}\".")
 endif()
 
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
 
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink.git")
 
@@ -111,4 +111,4 @@ if(BUILD_IGI)
 
   endif(NOT DEFINED NiftyLink_DIR)
 
-endif(BUILD_IGI)
+endif()
