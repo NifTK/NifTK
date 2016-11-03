@@ -14,6 +14,8 @@
 
 #include "niftkVLUtils.h"
 
+#include <niftkVLProperties.h>
+
 #include <vlGraphics/Effect.hpp>
 #include <vlGraphics/Actor.hpp>
 #include <vlGraphics/GeometryPrimitives.hpp>
