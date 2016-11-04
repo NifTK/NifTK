@@ -29,6 +29,7 @@ set(MODULE_DIRS
   CoreIO
   CoreGui
   CoreApp
+  Thumbnail
 )
 
 if(BUILD_MIDAS)
@@ -37,7 +38,6 @@ if(BUILD_MIDAS)
     DnDDisplay
     MIDAS
     MIDASGui
-    Thumbnail
   )
 endif()
 

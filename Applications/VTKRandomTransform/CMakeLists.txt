@@ -12,22 +12,15 @@
 #
 #============================================================================*/
 
-set(CPP_FILES
-  niftkThumbnailRenderWindow.cxx
-  niftkThumbnailInteractor.cxx
-)
+if(SlicerExecutionModel_FOUND AND VTK_FOUND)
 
-set(MOC_H_FILES 
-  niftkThumbnailRenderWindow.h
-)
+  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+	  NAME niftkVTKRandomTransform
+    BUILD_SLICER
+    INSTALL_SCRIPT
+    TARGET_LIBRARIES
+      niftkVTK
+  )
 
-set(UI_FILES
-)
+endif()
 
-set(RESOURCE_FILES
-  Interactions/ThumbnailConfig.xml
-  Interactions/ThumbnailInteraction.xml
-)
-
-set(QRC_FILES
-)

@@ -103,6 +103,13 @@ std::string Basename(const std::string& pathName)
   return fs::basename(full_path);
 }
 
+//-----------------------------------------------------------------------------
+std::string Dirname(const std::string& pathName)
+{
+  fs::path full_path(fs::initial_path<fs::path>());
+  full_path = fs::system_complete(fs::path(pathName));
+  return full_path.parent_path().string();
+}
 
 //-----------------------------------------------------------------------------
 std::string CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix)

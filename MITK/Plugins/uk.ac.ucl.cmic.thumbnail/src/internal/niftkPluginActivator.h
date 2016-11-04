@@ -20,13 +20,8 @@
 namespace niftk
 {
 
-/**
- * \class PluginActivator
- * \brief CTK Plugin Activator class for ThumbnailView.
- * \ingroup uk.ac.ucl.cmic.thumbnail_internal
- */
-class PluginActivator :
-  public QObject, public ctkPluginActivator
+/// \brief Plugin activator for the uk.ac.ucl.cmic.thumbnail plugin.
+class PluginActivator : public QObject, public ctkPluginActivator
 {
   Q_OBJECT
   Q_INTERFACES(ctkPluginActivator)
@@ -36,8 +31,22 @@ class PluginActivator :
 
 public:
 
-  void start(ctkPluginContext* context) override;
-  void stop(ctkPluginContext* context) override;
+  PluginActivator();
+  virtual ~PluginActivator();
+
+  static PluginActivator* GetInstance();
+
+  ctkPluginContext* GetContext() const;
+
+  virtual void start(ctkPluginContext* context) override;
+
+  virtual void stop(ctkPluginContext* context) override;
+
+private:
+
+  ctkPluginContext* m_Context;
+
+  static PluginActivator* s_Instance;
 
 };
 

@@ -21,9 +21,12 @@
 #include <mitkDataStorage.h>
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
+#include <mitkInteractionEventObserver.h>
 
-#include "niftkThumbnailViewPreferencePage.h"
 #include <niftkThumbnailRenderWindow.h>
+
+#include "niftkPluginActivator.h"
+#include "niftkThumbnailViewPreferencePage.h"
 
 #include <QHBoxLayout>
 
@@ -46,9 +49,60 @@ public:
 
 private:
 
+  std::map<mitk::InteractionEventObserver*, bool> m_InteractorWasEnabled;
+
   Events::Types GetPartEventTypes() const override
   {
-    return Events::VISIBLE | Events::HIDDEN;
+    return Events::VISIBLE | Events::HIDDEN | Events::ACTIVATED | Events::DEACTIVATED;
+  }
+
+  void PartActivated(const berry::IWorkbenchPartReference::Pointer& partRef) override
+  {
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+    if (part == m_ThumbnailView)
+    {
+      m_InteractorWasEnabled.clear();
+
+      ctkPluginContext* context = PluginActivator::GetInstance()->GetContext();
+      QList<ctkServiceReference> interactorRefs = context->getServiceReferences<mitk::InteractionEventObserver>();
+      for (ctkServiceReference interactorRef: interactorRefs)
+      {
+        mitk::InteractionEventObserver* interactor = context->getService<mitk::InteractionEventObserver>(interactorRef);
+        if (dynamic_cast<ThumbnailInteractor*>(interactor))
+        {
+          interactor->Enable();
+        }
+        else if (interactor->IsEnabled())
+        {
+          m_InteractorWasEnabled[interactor] = true;
+          interactor->Disable();
+        }
+      }
+    }
+  }
+
+  void PartDeactivated(const berry::IWorkbenchPartReference::Pointer& partRef) override
+  {
+    berry::IWorkbenchPart* part = partRef->GetPart(false).GetPointer();
+    if (part == m_ThumbnailView)
+    {
+      ctkPluginContext* context = PluginActivator::GetInstance()->GetContext();
+      QList<ctkServiceReference> interactorRefs = context->getServiceReferences<mitk::InteractionEventObserver>();
+      for (ctkServiceReference interactorRef: interactorRefs)
+      {
+        mitk::InteractionEventObserver* interactor = context->getService<mitk::InteractionEventObserver>(interactorRef);
+        if (dynamic_cast<ThumbnailInteractor*>(interactor))
+        {
+          interactor->Disable();
+        }
+        else if (m_InteractorWasEnabled[interactor])
+        {
+          interactor->Enable();
+        }
+      }
+
+      m_InteractorWasEnabled.clear();
+    }
   }
 
   void PartVisible(const berry::IWorkbenchPartReference::Pointer& partRef) override
@@ -140,7 +194,6 @@ ThumbnailView::~ThumbnailView()
 
   if (m_ThumbnailWindow)
   {
-    m_ThumbnailWindow->Deactivated();
     delete m_ThumbnailWindow;
   }
 }
@@ -168,9 +221,6 @@ void ThumbnailView::CreateQtPartControl(QWidget* parent)
 
       m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
     }
-
-    m_ThumbnailWindow->Activated();
-    m_ThumbnailWindow->SetDisplayInteractionsEnabled(true);
 
     this->GetSite()->GetPage()->AddPartListener(m_EditorLifeCycleListener.data());
 

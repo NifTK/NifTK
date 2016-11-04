@@ -40,11 +40,15 @@ int main(int argc, char** argv)
   vtkMatrix4x4 * combinedTransform = vtkMatrix4x4::New();
   userTransform->Identity();
   randomMatrix->Identity();
+  double scaleSD = -1.0;
   if ( (perturbTrans > 0.0) || (perturbRot > 0.0) )
   {
     vtkSmartPointer<vtkTransform> randomTrans = vtkSmartPointer<vtkTransform>::New();
-    niftk::RandomTransform ( randomTrans , perturbTrans, perturbTrans ,perturbTrans, 
-        perturbRot, perturbRot, perturbRot);
+    vtkSmartPointer<vtkMinimalStandardRandomSequence> uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+    uni_Rand->SetSeed(time(NULL));
+
+    randomTrans = niftk::RandomTransform ( perturbTrans, perturbTrans ,perturbTrans,
+        perturbRot, perturbRot, perturbRot, *uni_Rand, scaleSD );
     randomMatrix = randomTrans->GetMatrix();
   }
 

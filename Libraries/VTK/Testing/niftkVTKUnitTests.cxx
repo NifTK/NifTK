@@ -23,4 +23,6 @@ void RegisterTests()
 {
   REGISTER_TEST(niftkVTKLoadSaveMatrix4x4Test);
   REGISTER_TEST(niftkVTKInterpolateMatrixTest);
+  REGISTER_TEST(niftkVTKFunctionsTest);
 }
+

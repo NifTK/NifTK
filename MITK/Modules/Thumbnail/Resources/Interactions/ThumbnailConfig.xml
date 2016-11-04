@@ -1,0 +1,49 @@
+<config>
+
+  <!-- Select position -->
+  <event_variant class="MousePressEvent" name="StartSelectingPosition">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseMoveEvent" name="SelectingPosition">
+    <attribute name="ButtonState" value="LeftMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseReleaseEvent" name="StopSelectingPosition">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+  </event_variant>
+
+  <!-- Moving -->
+  <event_variant class="MousePressEvent" name="StartPanning">
+    <attribute name="EventButton" value="MiddleMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseMoveEvent" name="Panning">
+    <attribute name="ButtonState" value="MiddleMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseReleaseEvent" name="EndPanning">
+    <attribute name="EventButton" value="MiddleMouseButton"/>
+  </event_variant>
+
+  <event_variant class="MousePressEvent" name="StartPanning">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="MouseMoveEvent" name="Panning">
+    <attribute name="ButtonState" value="LeftMouseButton"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="MouseReleaseEvent" name="EndPanning">
+    <attribute name="EventButton" value="LeftMouseButton"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+
+  <!-- Zooming -->
+  <event_variant class="MousePressEvent" name="StartZooming">
+    <attribute name="EventButton" value="RightMouseButton"/>
+  </event_variant>
+   <event_variant class="MouseMoveEvent" name="Zooming">
+    <attribute name="ButtonState" value="RightMouseButton"/>
+  </event_variant>
+  <event_variant class="MouseReleaseEvent" name="EndZooming">
+    <attribute name="EventButton" value="RightMouseButton"/>
+  </event_variant>
+
+</config>

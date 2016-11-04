@@ -36,6 +36,10 @@ NIFTKCOMMON_WINEXPORT std::string ConvertToFullNativePath(const std::string& pat
 */
 NIFTKCOMMON_WINEXPORT std::string Basename(const std::string& pathName);
 
+/**
+* @brief Returns the dirname.
+*/
+NIFTKCOMMON_WINEXPORT std::string Dirname(const std::string& pathName);
 
 /**
 * Returns the file separator.

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Laparoscopic Demo</category>
+  <title>VTK Random Transform</title>
+  <description><![CDATA[Creates a random transform.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Stephen Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>Inputs</label>
+    <description><![CDATA[Input parameters]]></description>
+    <float>
+      <name>scaleSD</name>
+      <longflag>scaleSD</longflag>
+      <description>Scale the transform's magnititude to be equal to this many standard deviations</description>
+      <label>scaleSD</label>
+      <default>-1.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>seed</name>
+      <longflag>seed</longflag>
+      <description>The seed for the random number generator. If you don't set this you'll get the same ranodom sequence every time.</description>
+      <label>seed</label>
+      <default>0.0</default>
+      <channel>input</channel>
+    </float>
+
+  <file>
+      <name>modelToCentreTransform</name>
+      <longflag>modelToCentreTransform</longflag>
+      <description>A 4x4 matrix defining the centre of the model</description>
+      <label>modelToCentreTransform</label>
+      <channel>input</channel>
+    </file>
+
+    <float>
+      <name>xtsd</name>
+      <longflag>xtsd</longflag>
+      <description>The desired standard deviation of the x translations in mm</description>
+      <label>xtsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>ytsd</name>
+      <longflag>ytsd</longflag>
+      <description>The desired standard deviation of the y translations in mm</description>
+      <label>ytsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>ztsd</name>
+      <longflag>ztsd</longflag>
+      <description>The desired standard deviation of the z translations in mm</description>
+      <label>ztsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>xrsd</name>
+      <longflag>xrsd</longflag>
+      <description>The desired standard deviation of the x rotations in degrees</description>
+      <label>xrsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>yrsd</name>
+      <longflag>yrsd</longflag>
+      <description>The desired standard deviation of the y rotations in degrees</description>
+      <label>yrsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <float>
+      <name>zrsd</name>
+      <longflag>zrsd</longflag>
+      <description>The desired standard deviation of the z rotations in degrees</description>
+      <label>zrsd</label>
+      <default>10.0</default>
+      <channel>input</channel>
+    </float>
+
+    <boolean>
+      <name>useUniformRNG</name>
+      <longflag>useUniformRNG</longflag>
+      <description>By default we use a random number generator returning normally distributed numbers, we can use a uniform distribution by setting this flag</description>
+      <label>useUnformRNG</label>
+      <default>0</default>
+      <channel>input</channel>
+    </boolean>
+
+  </parameters>
+
+  <parameters>
+    <label>Outputs</label>
+    <description><![CDATA[Output parameters]]></description>
+    <file>
+      <name>outputPrefix</name>
+      <longflag>outputPrefix</longflag>
+      <description>Prefix of file to write to</description>
+      <label>outputPrefix</label>
+      <channel>output</channel>
+    </file>
+
+    <integer>
+      <name>repeats</name>
+      <longflag>repeats</longflag>
+      <description>The number of matrices to generate</description>
+      <label>repeats</label>
+      <channel>output</channel>
+      <default>1</default>
+    </integer>
+
+    <file>
+      <name>outputTransformFile</name>
+      <longflag>outputTransformFile</longflag>
+      <description>Optionally write transforms to a single file of 6 columns and repeats rows.</description>
+      <label>outputTransformFile</label>
+      <channel>outputTransformFile</channel>
+    </file>
+
+  </parameters>
+
+</executable>

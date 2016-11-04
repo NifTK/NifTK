@@ -120,12 +120,16 @@ void TestICP(std::string targetFileName,
     for (unsigned int counter = 0; counter < iterations; counter++)
     {
 
-      vtkSmartPointer<vtkTransform> startTrans = vtkSmartPointer<vtkTransform>::New();
       double translationStdDev = range;
       double rotationStdDev = range;
-      niftk::RandomTransform ( startTrans, translationStdDev , translationStdDev, translationStdDev,
-                               rotationStdDev , rotationStdDev , rotationStdDev,
-                               uniRand);
+      vtkSmartPointer<vtkTransform> toCentre = vtkSmartPointer<vtkTransform>::New();
+      toCentre->Identity();
+      double scaleSD = -1.0;
+      vtkSmartPointer <vtkTransform> startTrans = niftk::RandomTransformAboutRemoteCentre (
+          translationStdDev , translationStdDev, translationStdDev,
+          rotationStdDev , rotationStdDev , rotationStdDev,
+          *uniRand,
+          toCentre, scaleSD);
 
       vtkSmartPointer<vtkTransformPolyDataFilter> transformedSource = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
       transformedSource->SetInputConnection(sourceReader->GetOutputPort());

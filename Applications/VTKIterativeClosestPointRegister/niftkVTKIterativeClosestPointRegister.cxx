@@ -50,6 +50,7 @@
 #include <vtkLookupTable.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
+#include <vtkMinimalStandardRandomSequence.h>
 
 #include <boost/algorithm/string/predicate.hpp>
 
@@ -203,7 +204,10 @@ int main(int argc, char** argv)
   vtkSmartPointer<vtkTransform> StartTrans = vtkSmartPointer<vtkTransform>::New();
   if ( args.randomTransform )
   {
-    niftk::RandomTransform ( StartTrans, 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0 );
+    vtkSmartPointer<vtkMinimalStandardRandomSequence> Uni_Rand = vtkSmartPointer<vtkMinimalStandardRandomSequence>::New();
+    Uni_Rand->SetSeed(time(NULL));
+    double scaleSD = -1.0;
+    StartTrans = niftk::RandomTransform ( 10.0 , 10.0 , 10.0, 10.0 , 10.0, 10.0, *Uni_Rand, scaleSD);
     niftk::TranslatePolyData ( source , StartTrans);
   }
   if ( args.perturbTarget )

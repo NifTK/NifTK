@@ -33,9 +33,13 @@ add_test(Conv-Utils-05 ${EXECUTABLE_OUTPUT_PATH}/niftkCommonUnitTests niftkConve
 add_test(Conv-Utils-06 ${EXECUTABLE_OUTPUT_PATH}/niftkCommonUnitTests niftkConversionUtilsTest 6)
 add_test(Deliberate-Memory-Leak ${EXECUTABLE_OUTPUT_PATH}/niftkCommonUnitTests niftkDeliberateMemoryLeakTest )
 
+add_test(Maths-Utils-01 ${EXECUTABLE_OUTPUT_PATH}/niftkCommonUnitTests niftkMathsUtilsTest 1)
+add_test(Maths-Utils-02 ${EXECUTABLE_OUTPUT_PATH}/niftkCommonUnitTests niftkMathsUtilsTest 2)
+
 set(CommonUnitTests_SRCS
   niftkConversionUtilsTest.cxx
   niftkDeliberateMemoryLeakTest.cxx
+  niftkMathsUtilsTest.cxx
 )
 
 add_executable(niftkCommonUnitTests niftkCommonUnitTests.cxx ${CommonUnitTests_SRCS})

@@ -19,60 +19,52 @@
 #include <iostream>
 #include <stdlib.h>
 #include <niftkConversionUtils.h>
-
-void CheckDoublesEquals(double expected, double actual, double tol)
-{
-  if (fabs(expected - actual) > tol)
-    {
-      std::cerr << "Failed:Expected=" << expected << ", actual=" << actual << ", tolerance=" << tol << std::endl;
-      throw std::exception();
-    }
-}
+#include <niftkMathsUtils.h>
 
 int testCalculateVarianceFromFWHM()
 {
-  CheckDoublesEquals(2.88539008177793, niftk::CalculateVarianceFromFWHM(4.0), 0.0001);
-  CheckDoublesEquals(0, niftk::CalculateVarianceFromFWHM(0), 0.0001);
+  niftk::CheckDoublesEquals(2.88539008177793, niftk::CalculateVarianceFromFWHM(4.0), 0.0001);
+  niftk::CheckDoublesEquals(0, niftk::CalculateVarianceFromFWHM(0), 0.0001);
   return EXIT_SUCCESS;
 }
 
 int testCalculateStdDevFromFWHM()
 {
-  CheckDoublesEquals(1.69864360057604, niftk::CalculateStdDevFromFWHM(4.0) , 0.0001);
-  CheckDoublesEquals(0, niftk::CalculateStdDevFromFWHM(0), 0.0001);
+  niftk::CheckDoublesEquals(1.69864360057604, niftk::CalculateStdDevFromFWHM(4.0) , 0.0001);
+  niftk::CheckDoublesEquals(0, niftk::CalculateStdDevFromFWHM(0), 0.0001);
   return EXIT_SUCCESS;
 }
 
 int testConvertFirstVoxelCoordinateToMiddleOfImageCoordinate()
 {
-  CheckDoublesEquals(3, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0,9,0.75), 0.001);  
-  CheckDoublesEquals(2.5, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(-0.5,9,0.75), 0.001);
-  CheckDoublesEquals(3.5, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0.5,9,0.75), 0.001);
-  CheckDoublesEquals(2.625, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0,8,0.75), 0.001);  
-  CheckDoublesEquals(2.125, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(-0.5,8,0.75), 0.001);
-  CheckDoublesEquals(3.125, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0.5,8,0.75), 0.001);
-  CheckDoublesEquals(0.5, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0.5,1,0.33), 0.001);
-  CheckDoublesEquals(0.665, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0.5,2,0.33), 0.001);
+  niftk::CheckDoublesEquals(3, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0,9,0.75), 0.001);  
+  niftk::CheckDoublesEquals(2.5, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(-0.5,9,0.75), 0.001);
+  niftk::CheckDoublesEquals(3.5, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0.5,9,0.75), 0.001);
+  niftk::CheckDoublesEquals(2.625, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0,8,0.75), 0.001);  
+  niftk::CheckDoublesEquals(2.125, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(-0.5,8,0.75), 0.001);
+  niftk::CheckDoublesEquals(3.125, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0.5,8,0.75), 0.001);
+  niftk::CheckDoublesEquals(0.5, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0.5,1,0.33), 0.001);
+  niftk::CheckDoublesEquals(0.665, niftk::ConvertFirstVoxelCoordinateToMiddleOfImageCoordinate(0.5,2,0.33), 0.001);
   return EXIT_SUCCESS;
 }
 
 int testConvertMiddleOfImageCoordinateToFirstVoxelCoordinate()
 {
-  CheckDoublesEquals(-3, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0,9,0.75), 0.001);  
-  CheckDoublesEquals(-3.5, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(-0.5,9,0.75), 0.001);
-  CheckDoublesEquals(-2.5, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0.5,9,0.75), 0.001);
-  CheckDoublesEquals(-2.625, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0,8,0.75), 0.001);  
-  CheckDoublesEquals(-3.125, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(-0.5,8,0.75), 0.001);
-  CheckDoublesEquals(-2.125, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0.5,8,0.75), 0.001);  
-  CheckDoublesEquals(0.5, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0.5,1,0.33), 0.001);
-  CheckDoublesEquals(0.335, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0.5,2,0.33), 0.001);
+  niftk::CheckDoublesEquals(-3, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0,9,0.75), 0.001);  
+  niftk::CheckDoublesEquals(-3.5, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(-0.5,9,0.75), 0.001);
+  niftk::CheckDoublesEquals(-2.5, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0.5,9,0.75), 0.001);
+  niftk::CheckDoublesEquals(-2.625, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0,8,0.75), 0.001);  
+  niftk::CheckDoublesEquals(-3.125, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(-0.5,8,0.75), 0.001);
+  niftk::CheckDoublesEquals(-2.125, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0.5,8,0.75), 0.001);  
+  niftk::CheckDoublesEquals(0.5, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0.5,1,0.33), 0.001);
+  niftk::CheckDoublesEquals(0.335, niftk::ConvertMiddleOfImageCoordinateToFirstVoxelCoordinate(0.5,2,0.33), 0.001);
   return EXIT_SUCCESS;
 }
 
 int testRoundingToNDecimalPlaces()
 {
-  CheckDoublesEquals(12.35, niftk::Round(12.345,2), 0.001);
-  CheckDoublesEquals(12.34, niftk::Round(12.344,2), 0.001);
+  niftk::CheckDoublesEquals(12.35, niftk::Round(12.345,2), 0.001);
+  niftk::CheckDoublesEquals(12.34, niftk::Round(12.344,2), 0.001);
   return EXIT_SUCCESS;
 }
 
