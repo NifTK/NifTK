@@ -364,16 +364,12 @@ void ImageLookupTablesView::DifferentImageSelected()
   mitk::LevelWindow levelWindow;
   m_CurrentNode->GetLevelWindow(levelWindow);
 
-  float minDataLimit(0);
-  float maxDataLimit(0);
   std::string lookupTableName("");
 
-  m_CurrentNode->GetFloatProperty("image data min", minDataLimit);
-  m_CurrentNode->GetFloatProperty("image data max", maxDataLimit);
   bool lookupTableNameFound = m_CurrentNode->GetStringProperty("LookupTableName", lookupTableName);
 
-  m_Controls->m_MinLimitDoubleSpinBox->setValue(minDataLimit);
-  m_Controls->m_MaxLimitDoubleSpinBox->setValue(maxDataLimit);
+  m_Controls->m_MinLimitDoubleSpinBox->setValue(levelWindow.GetRangeMin());
+  m_Controls->m_MaxLimitDoubleSpinBox->setValue(levelWindow.GetRangeMax());
   this->BlockSignals(false);
 
   signed int lookupTableIndex = -1;
@@ -460,6 +456,8 @@ void ImageLookupTablesView::OnRangeChanged()
   double rangeMax = levelWindow.GetRangeMax();
   double range = levelWindow.GetRange();
 
+  m_CurrentNode->SetLevelWindow(levelWindow);
+
   // Trac 1680 - don't forget, MIDAS generally deals with integer images
   // so the user requirements are such that they must be able to change
   // intensity ranges in steps of 1. If however, we are using float images
@@ -528,11 +526,15 @@ void ImageLookupTablesView::UpdateGuiFromLevelWindow()
   double max = levelWindow.GetUpperWindowBound();
   double level = levelWindow.GetLevel();
   double window = levelWindow.GetWindow();
+  double rangeMin = levelWindow.GetRangeMin();
+  double rangeMax = levelWindow.GetRangeMax();
 
   m_Controls->m_MinSlider->setValue(min);
   m_Controls->m_MaxSlider->setValue(max);
   m_Controls->m_LevelSlider->setValue(level);
   m_Controls->m_WindowSlider->setValue(window);
+  m_Controls->m_MinLimitDoubleSpinBox->setValue(rangeMin);
+  m_Controls->m_MaxLimitDoubleSpinBox->setValue(rangeMax);
 
   this->BlockSignals(false);
 }
