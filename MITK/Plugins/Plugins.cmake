@@ -64,105 +64,91 @@ set(PROJECT_PLUGINS
 # NiftyView Specific Plugins
 # ---------------------------------------------------------------------------------------------------
 
-set(NiftyView_PLUGINS
-  Plugins/uk.ac.ucl.cmic.niftyview:ON
-  Plugins/uk.ac.ucl.cmic.sideviewer:ON
-  Plugins/uk.ac.ucl.cmic.thumbnail:ON
-)
-
-# Unfortunately not finished yet.
-#if(BUILD_VL)
-#  set(NiftyView_PLUGINS
-#    ${NiftyView_PLUGINS}
-#    Plugins/uk.ac.ucl.cmic.vlstandarddisplayeditor:ON
-#  )
-#endif()
-
 if(NIFTK_Apps/NiftyView)
-  set(PROJECT_PLUGINS
-    ${PROJECT_PLUGINS}
-    ${NiftyView_PLUGINS}
+
+  list(APPEND PROJECT_PLUGINS
+    Plugins/uk.ac.ucl.cmic.niftyview:ON
+    Plugins/uk.ac.ucl.cmic.sideviewer:ON
+    Plugins/uk.ac.ucl.cmic.thumbnail:ON
   )
+
+  # Unfortunately not finished yet.
+  #if(BUILD_VL)
+  #  list(APPEND PROJECT_PLUGINS
+  #    Plugins/uk.ac.ucl.cmic.vlstandarddisplayeditor:ON
+  #  )
+  #endif()
+
 endif()
 
 # ---------------------------------------------------------------------------------------------------
 # NiftyMIDAS Specific Plugins
 # ---------------------------------------------------------------------------------------------------
 
-set(NiftyMIDAS_PLUGINS
-  Plugins/uk.ac.ucl.cmic.commonmidas:ON
-  Plugins/uk.ac.ucl.cmic.dnddisplay:ON
-  Plugins/uk.ac.ucl.cmic.niftymidas:ON
-  Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
-  Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
-  Plugins/uk.ac.ucl.cmic.pointsetconverter:ON
-  Plugins/uk.ac.ucl.cmic.sideviewer:ON
-  Plugins/uk.ac.ucl.cmic.thumbnail:ON
-)
-
 if(NIFTK_Apps/NiftyMIDAS)
-  set(PROJECT_PLUGINS
-    ${PROJECT_PLUGINS}
-    ${NiftyMIDAS_PLUGINS}
+
+  list(APPEND PROJECT_PLUGINS
+    Plugins/uk.ac.ucl.cmic.commonmidas:ON
+    Plugins/uk.ac.ucl.cmic.dnddisplay:ON
+    Plugins/uk.ac.ucl.cmic.niftymidas:ON
+    Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
+    Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
+    Plugins/uk.ac.ucl.cmic.pointsetconverter:ON
+    Plugins/uk.ac.ucl.cmic.sideviewer:ON
+    Plugins/uk.ac.ucl.cmic.thumbnail:ON
   )
+
 endif()
 
 # ---------------------------------------------------------------------------------------------------
 # NiftyIGI Specific Plugins
 # ---------------------------------------------------------------------------------------------------
 
-set(NiftyIGI_PLUGINS
-  Plugins/uk.ac.ucl.cmic.niftyigi:ON
-  Plugins/uk.ac.ucl.cmic.igivideooverlayeditor:ON
-  Plugins/uk.ac.ucl.cmic.igiultrasoundoverlayeditor:ON
-  Plugins/uk.ac.ucl.cmic.igidatasources:ON
-  Plugins/uk.ac.ucl.cmic.igisurfacerecon:ON
-  Plugins/uk.ac.ucl.cmic.igitrackedimage:ON
-  Plugins/uk.ac.ucl.cmic.igitrackedpointer:ON
-  Plugins/uk.ac.ucl.cmic.igipointreg:ON
-  Plugins/uk.ac.ucl.cmic.igisurfacereg:ON
-  Plugins/uk.ac.ucl.cmic.igiundistort:ON
-  Plugins/uk.ac.ucl.cmic.igirmserror:ON
-  Plugins/uk.ac.ucl.cmic.igipointsetcropper:ON
-  Plugins/uk.ac.ucl.cmic.igipivotcalibration:ON
-  Plugins/uk.ac.ucl.cmic.igipointercalib:ON
-  Plugins/uk.ac.ucl.cmic.igicameracal:ON
-  Plugins/uk.ac.ucl.cmic.igimaskmerger:ON
-)
-
-if(WIN32)
-  set(NiftyIGI_PLUGINS
-    ${NiftyIGI_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.igifootpedalhotkey:ON
-  )
-endif()
-
-if(BUILD_VL AND NOT APPLE)
-  set(NiftyIGI_PLUGINS
-    ${NiftyIGI_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.igivlvideooverlayeditor:ON
-  )
-endif()
-
-if(BUILD_CAFFE)
-  set(NiftyIGI_PLUGINS
-    ${NiftyIGI_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.caffesegmentor:ON
-  )
-endif()
-
-if(OPENCV_WITH_NONFREE)
-  set(NiftyIGI_PLUGINS
-    ${NiftyIGI_PLUGINS}
-    Plugins/uk.ac.ucl.cmic.igidistancemeasurer:ON
-  )
-endif()
-
 if(NIFTK_Apps/NiftyIGI)
-  set(PROJECT_PLUGINS
-    ${PROJECT_PLUGINS}
-    ${NiftyIGI_PLUGINS}
+
+  list(APPEND PROJECT_PLUGINS
+    Plugins/uk.ac.ucl.cmic.niftyigi:ON
+    Plugins/uk.ac.ucl.cmic.igivideooverlayeditor:ON
+    Plugins/uk.ac.ucl.cmic.igiultrasoundoverlayeditor:ON
+    Plugins/uk.ac.ucl.cmic.igidatasources:ON
+    Plugins/uk.ac.ucl.cmic.igisurfacerecon:ON
+    Plugins/uk.ac.ucl.cmic.igitrackedimage:ON
+    Plugins/uk.ac.ucl.cmic.igitrackedpointer:ON
+    Plugins/uk.ac.ucl.cmic.igipointreg:ON
+    Plugins/uk.ac.ucl.cmic.igisurfacereg:ON
+    Plugins/uk.ac.ucl.cmic.igiundistort:ON
+    Plugins/uk.ac.ucl.cmic.igirmserror:ON
+    Plugins/uk.ac.ucl.cmic.igipointsetcropper:ON
+    Plugins/uk.ac.ucl.cmic.igipivotcalibration:ON
+    Plugins/uk.ac.ucl.cmic.igipointercalib:ON
+    Plugins/uk.ac.ucl.cmic.igicameracal:ON
+    Plugins/uk.ac.ucl.cmic.igimaskmerger:ON
   )
+
+  if(WIN32)
+    list(APPEND PROJECT_PLUGINS
+      Plugins/uk.ac.ucl.cmic.igifootpedalhotkey:ON
+    )
+  endif()
+
+  if(BUILD_VL AND NOT APPLE)
+    list(APPEND PROJECT_PLUGINS
+      Plugins/uk.ac.ucl.cmic.igivlvideooverlayeditor:ON
+    )
+  endif()
+
+  if(BUILD_CAFFE)
+    list(APPEND PROJECT_PLUGINS
+      Plugins/uk.ac.ucl.cmic.caffesegmentor:ON
+    )
+  endif()
+
+  if(OPENCV_WITH_NONFREE)
+    list(APPEND PROJECT_PLUGINS
+      Plugins/uk.ac.ucl.cmic.igidistancemeasurer:ON
+    )
+  endif()
+
 endif()
 
 # ---------------------------------------------------------------------------------------------------

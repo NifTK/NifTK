@@ -15,7 +15,7 @@
 ######################################################################
 # Set the minimum CMake version.
 ######################################################################
-set(NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION 3.2)
+set(NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION 3.3)
 cmake_minimum_required(VERSION ${NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION})
 
 ##################################################################################
@@ -24,6 +24,7 @@ cmake_minimum_required(VERSION ${NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION})
 ##################################################################################
 
 set(project_policies
+  CMP0057 # Support new ``if()`` IN_LIST operator.
   CMP0063 # Honor visibility properties for all target types.
 )
 foreach(policy ${project_policies})
