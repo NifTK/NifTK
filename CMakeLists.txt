@@ -15,7 +15,7 @@
 ######################################################################
 # Set the minimum CMake version.
 ######################################################################
-set(NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION 3.2)
+set(NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION 3.3)
 cmake_minimum_required(VERSION ${NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION})
 
 ##################################################################################
@@ -24,6 +24,7 @@ cmake_minimum_required(VERSION ${NIFTK_CMAKE_MINIMUM_REQUIRED_VERSION})
 ##################################################################################
 
 set(project_policies
+  CMP0057 # Support new ``if()`` IN_LIST operator.
   CMP0063 # Honor visibility properties for all target types.
 )
 foreach(policy ${project_policies})
@@ -113,10 +114,12 @@ endmacro()
 include("${CMAKE_CURRENT_SOURCE_DIR}/MITK/Applications/Apps.cmake")
 set(BUILD_GUI OFF)
 mark_as_advanced(BUILD_GUI)
-set(BUILD_IGI OFF)
-mark_as_advanced(BUILD_IGI)
-set(BUILD_MIDAS OFF)
-mark_as_advanced(BUILD_MIDAS)
+set(BUILD_NiftyView OFF)
+mark_as_advanced(BUILD_NiftyView)
+set(BUILD_NiftyIGI OFF)
+mark_as_advanced(BUILD_NiftyIGI)
+set(BUILD_NiftyMIDAS OFF)
+mark_as_advanced(BUILD_NiftyMIDAS)
 
 # Check each GUI application.
 foreach(NIFTK_APP ${NIFTK_APPS})
@@ -131,12 +134,16 @@ foreach(NIFTK_APP ${NIFTK_APPS})
 
     set(BUILD_GUI ON)
 
+    if (${app_name} STREQUAL "NiftyView")
+      set(BUILD_NiftyView ON)
+    endif()
+
     if (${app_name} STREQUAL "NiftyIGI")
-      set(BUILD_IGI ON)
+      set(BUILD_NiftyIGI ON)
     endif()
 
     if (${app_name} STREQUAL "NiftyMIDAS")
-      set(BUILD_MIDAS ON)
+      set(BUILD_NiftyMIDAS ON)
     endif()
 
   endif()
@@ -159,7 +166,7 @@ option(BUILD_NiftySeg "Build NiftySeg." ON)
 option(BUILD_Python "Build Python wrapping." OFF)
 option(BUILD_PCL "Build PCL - Experimental." OFF)
 option(BUILD_RTK "Build RTK - Experimental." OFF)
-if(NOT APPLE AND BUILD_IGI)
+if(NOT APPLE AND BUILD_NiftyIGI)
   option(BUILD_VL "Build VisualizationLibrary - Experimental." ON)
 else()
   option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
@@ -514,7 +521,7 @@ if(MITK_USE_QT)
   if(DESIRED_QT_VERSION MATCHES 4)
     set(MITK_QT4_MINIMUM_VERSION 4.7)
     set(MITK_QT4_COMPONENTS QtCore QtGui QtXml QtScript)
-    if(BUILD_IGI)
+    if(BUILD_NiftyIGI)
       list(APPEND MITK_QT4_COMPONENTS QtNetwork)
     endif()
     find_package(Qt4 ${MITK_QT4_MINIMUM_VERSION} COMPONENTS ${MITK_QT4_COMPONENTS} REQUIRED)
@@ -621,7 +628,7 @@ mitkFunctionAddExternalProject(NAME Caffe    OFF ADVANCED NO_PACKAGE DEPENDS ${_
 
 env_option(MITK_USE_OpenCL "Use OpenCL GPU-Computing library" ON)
 
-if (BUILD_IGI)
+if (BUILD_NiftyIGI)
   set(MITK_USE_AprilTags ON CACHE BOOL "" FORCE)
   set(MITK_USE_ArUco ON CACHE BOOL "" FORCE)
   set(MITK_USE_NiftyLink ON CACHE BOOL "" FORCE)
@@ -1124,8 +1131,8 @@ if(APPLE)
 
 endif()
 
-if(BUILD_IGI)
-  add_definitions(-DBUILD_IGI)
+if(BUILD_NiftyIGI)
+  add_definitions(-DBUILD_NiftyIGI)
 endif()
 if(BUILD_PCL)
   add_definitions(-DBUILD_PCL)
@@ -1249,7 +1256,7 @@ endif()
 ######################################################################
 # Find OpenCV.
 ######################################################################
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
   set(OpenCV_FIND_QUIETLY ON)
   find_package(OpenCV REQUIRED)
   if(OpenCV_FOUND)
@@ -1262,7 +1269,7 @@ if(BUILD_IGI)
     include(${NiftyLink_USE_FILE})
   endif()
 
-endif(BUILD_IGI)
+endif()
 
 ######################################################################
 # Find MITK. Even though MITK can be built without Qt, CTK can't.
@@ -1275,7 +1282,7 @@ if(MITK_USE_Qt4 OR MITK_USE_Qt5)
   set(MITK_USE_QT ON)
 endif()
 set(MITK_DESIRED_QT_VERSION ${DESIRED_QT_VERSION})
-set(MITK_USE_OpenCV ${BUILD_IGI})
+set(MITK_USE_OpenCV ${BUILD_NiftyIGI})
 
 if(NIFTK_GENERATE_DOXYGEN_HELP)
   set(BLUEBERRY_USE_QT_HELP ON)
@@ -1674,7 +1681,7 @@ configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/FLANN.txt ${CMAKE_BINA
 configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/PCL.txt ${CMAKE_BINARY_DIR}/LICENSE_PCL.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/Plus.txt ${CMAKE_BINARY_DIR}/LICENSE_PLUS.txt)
 configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/Atamai.txt ${CMAKE_BINARY_DIR}/LICENSE_ATAMAI.txt)
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
   configure_file(${NiftyLink_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/NiftyLink.txt @ONLY)
   configure_file(${NiftyLink_OIGT_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt @ONLY)
   configure_file(${NiftyLink_QSLOG_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/QsLog.txt @ONLY)
@@ -1721,7 +1728,7 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/FLANN.txt DESTINATIO
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/PCL.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/Plus.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/Atamai.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/NiftyLink.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/QsLog.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)

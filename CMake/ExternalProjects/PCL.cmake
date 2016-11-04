@@ -22,7 +22,7 @@ if(DEFINED PCL_DIR AND NOT EXISTS ${PCL_DIR})
   message(FATAL_ERROR "PCL_DIR variable is defined but corresponds to non-existing directory \"${PCL_DIR}\".")
 endif()
 
-if(BUILD_IGI AND BUILD_PCL)
+if(BUILD_NiftyIGI AND BUILD_PCL)
 
   set(version "83c02003a2")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/PointCloudLibrary-pcl-${version}.tar.gz")

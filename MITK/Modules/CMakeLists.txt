@@ -29,15 +29,23 @@ set(MODULE_DIRS
   CoreIO
   CoreGui
   CoreApp
-  Thumbnail
 )
 
-if(BUILD_MIDAS)
+if(BUILD_NiftyView)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    DnDDisplay
+    Thumbnail
+  )
+endif()
+
+if(BUILD_NiftyMIDAS)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     DnDDisplay
     MIDAS
     MIDASGui
+    Thumbnail
   )
 endif()
 
@@ -48,7 +56,7 @@ if(BUILD_PCL)
   )
 endif()
 
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     SerialPort
@@ -111,6 +119,8 @@ if(BUILD_VL)
     VL
   )
 endif()
+
+list(REMOVE_DUPLICATES MODULE_DIRS)
 
 foreach(MODULE_DIR ${MODULE_DIRS})
   add_subdirectory(${MODULE_DIR})

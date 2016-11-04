@@ -66,13 +66,12 @@ if(MITK_USE_BLUEBERRY)
   # This is to get a list of plugins to pass to ctkMacroSetupPlugins
   include(${CMAKE_CURRENT_SOURCE_DIR}/Plugins/Plugins.cmake)
 
-  # These are required, because people turn the apps off
-  # and expect all the corresponding plugins to do the same.
-  # Note that the first argument is a list and therefore it needs to be protected
+  # This is required, because people turn the apps off and expect all the
+  # corresponding plugins to do the same, unless needed by another app.
+  # Note that the argument is a list and therefore it needs to be protected
   # by double quotes so that it is passed to the function as a single argument.
-  niftkMacroForcePluginCacheValue("${NiftyView_PLUGINS}" ${NIFTK_Apps/NiftyView})
-  niftkMacroForcePluginCacheValue("${NiftyMIDAS_PLUGINS}" ${NIFTK_Apps/NiftyMIDAS})
-  niftkMacroForcePluginCacheValue("${NiftyIGI_PLUGINS}" ${NIFTK_Apps/NiftyIGI})
+
+  niftkMacroForcePluginCacheValues("${PROJECT_PLUGINS}")
 
   ctkMacroSetupPlugins(${PROJECT_PLUGINS}
                        APPS ${_apps_fullpath} 

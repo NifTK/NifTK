@@ -23,7 +23,7 @@ void RegisterTests()
 {
   REGISTER_TEST(niftkAddTwoIntegersKernelTests);
 // depends on opencv for validation
-#ifdef BUILD_IGI
+#ifdef BUILD_NiftyIGI
   REGISTER_TEST(niftkUndistortionKernelTests);
 #endif
 }

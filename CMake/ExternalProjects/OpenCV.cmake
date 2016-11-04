@@ -22,7 +22,7 @@ if(DEFINED OpenCV_DIR AND NOT EXISTS ${OpenCV_DIR})
   message(FATAL_ERROR "OpenCV_DIR variable is defined but corresponds to non-existing directory")
 endif()
 
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
 
   set(version "2.4.11")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenCV-${version}.tar.gz")

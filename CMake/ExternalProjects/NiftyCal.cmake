@@ -21,7 +21,7 @@ if(DEFINED NiftyCal_DIR AND NOT EXISTS ${NiftyCal_DIR})
   message(FATAL_ERROR "NiftyCal_DIR variable is defined but corresponds to non-existing directory \"${NiftyCal_DIR}\".")
 endif()
 
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
 
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyCal.git")
   set(version "ee1cbadc20")
@@ -70,4 +70,4 @@ if(BUILD_IGI)
 
   endif()
 
-endif(BUILD_IGI)
+endif()

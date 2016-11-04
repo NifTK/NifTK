@@ -25,9 +25,9 @@ else()
 endif()
 message("Qt version=${NIFTK_VERSION_QT}")
 message("CTK version=${NIFTK_VERSION_CTK}")
-if(BUILD_IGI)
+if(BUILD_NiftyIGI)
   message("NiftyLink version=${NIFTK_VERSION_NiftyLink}")
-endif(BUILD_IGI)
+endif()
 
 # Print out other versions.
 message("Boost version=${NIFTK_VERSION_Boost}")

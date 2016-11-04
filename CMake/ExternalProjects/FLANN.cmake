@@ -22,7 +22,7 @@ if(DEFINED FLANN_DIR AND NOT EXISTS ${FLANN_DIR})
   message(FATAL_ERROR "FLANN_DIR variable is defined but corresponds to non-existing directory \"${FLANN_DIR}\".")
 endif()
 
-if(BUILD_IGI AND BUILD_PCL)
+if(BUILD_NiftyIGI AND BUILD_PCL)
 
   set(version "1.8.4.1")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/flann-${version}-src.tar.gz")

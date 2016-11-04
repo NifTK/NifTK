@@ -76,7 +76,7 @@ macro(NIFTK_CREATE_GUI_APPLICATION)
   )
 
   # FIXME
-  if(BUILD_IGI)
+  if(BUILD_NiftyIGI)
     include(${CMAKE_SOURCE_DIR}/CMake/PackageDepends/MITK_NiftyLink_Config.cmake)
     list(APPEND _library_dirs ${NiftyLink_LIBRARY_DIRS})
   endif()

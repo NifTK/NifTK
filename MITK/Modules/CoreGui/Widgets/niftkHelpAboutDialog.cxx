@@ -229,7 +229,7 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
         ).arg(niftySimVersion).arg(niftySimLocation);
   #endif
 
-  #ifdef BUILD_IGI
+  #ifdef BUILD_NiftyIGI
     QString niftyLinkVersion(NIFTK_NIFTYLINK_VERSION);
     //QString niftyLinkLocation(NIFTK_NIFTYLINK_LOCATION);
     QString niftyLinkText = QObject::tr(
@@ -410,7 +410,7 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
 #ifdef USE_NIFTYSIM
       .append(niftySimText)
 #endif
-#ifdef BUILD_IGI
+#ifdef BUILD_NiftyIGI
       .append(niftyLinkText)
       .append(arucoText)
       .append(eigenText)
