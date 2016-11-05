@@ -1252,7 +1252,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 
     for (int i = 0; i < 3; ++i)
     {
-      /// The distance of the origin from the bottom left back corner.
+      /// The distance of the origin from the bottom left back corner in voxels.
       double distance = m_UpDirections[i] > 0 ? 0.0 : permutedBoundingBox[i];
 
       if (m_ReferenceGeometry->GetImageGeometry())
@@ -1260,10 +1260,10 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
         distance += m_UpDirections[i] * 0.5;
       }
 
-      worldBottomLeftBackCorner[i] -= distance * (
-              permutedSpacing[0] * permutedMatrix[i][0]
-            + permutedSpacing[1] * permutedMatrix[i][1]
-            + permutedSpacing[2] * permutedMatrix[i][2]);
+      for (int j = 0; j < 3; ++j)
+      {
+        worldBottomLeftBackCorner[j] -= distance * permutedSpacing[i] * permutedMatrix[j][i];
+      }
     }
 
     std::vector<QmitkRenderWindow*> renderWindows = this->GetRenderWindows();
