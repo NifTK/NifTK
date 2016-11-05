@@ -21,9 +21,6 @@
 
 macro(niftkMacroForcePluginCacheValues list_of_plugins)
 
-  set(_plugins_on )
-  set(_plugins_off )
-
   foreach (plugin ${list_of_plugins})
     string(REPLACE ":" "\;" target_info ${plugin})
     set(target_info_list ${target_info})
@@ -31,25 +28,10 @@ macro(niftkMacroForcePluginCacheValues list_of_plugins)
     list(GET target_info_list 1 plugin_value)
 
     if (plugin_value STREQUAL ON)
-      if (NOT plugin_name IN_LIST _plugins_on)
-        list(APPEND _plugins_on ${plugin_name})
-      endif()
-      if (plugin_name IN_LIST _plugins_off)
-        list(REMOVE_ITEM _plugins_off ${plugin_name})
-      endif()
+      set(${PROJECT_NAME}_${plugin_name} ON CACHE BOOL "Build the ${plugin_name} Plugin. " FORCE)
     elseif (plugin_value STREQUAL OFF)
-      if (NOT plugin_name IN_LIST _plugins_off AND NOT plugin_name IN_LIST _plugins_off)
-        list(APPEND _plugins_off ${plugin_name})
-      endif()
+      set(${PROJECT_NAME}_${plugin_name} OFF CACHE BOOL "Build the ${plugin_name} Plugin. " FORCE)
     endif()
-  endforeach()
-
-  foreach (plugin ${_plugins_on})
-    set(${PROJECT_NAME}_${plugin} ON CACHE BOOL "Build the ${plugin_name} Plugin. " FORCE)
-  endforeach()
-
-  foreach (plugin ${_plugins_off})
-    set(${PROJECT_NAME}_${plugin} OFF CACHE BOOL "Build the ${plugin_name} Plugin. " FORCE)
   endforeach()
 
 endmacro()
