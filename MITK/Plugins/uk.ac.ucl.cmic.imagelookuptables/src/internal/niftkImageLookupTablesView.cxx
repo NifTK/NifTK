@@ -282,7 +282,7 @@ bool ImageLookupTablesView::IsSelectionValid(const QList<mitk::DataNode::Pointer
   {
     return false;
   }
-  else if ( dynamic_cast<mitk::Image*>(node->GetData()) == NULL)
+  else if (dynamic_cast<mitk::Image*>(node->GetData()) == NULL)
   {
     return false;
   }
@@ -346,6 +346,9 @@ void ImageLookupTablesView::Unregister()
     property->RemoveObserver(m_LevelWindowPropertyObserverTag);
 
     m_CurrentNode = NULL;
+
+    this->EnableLabelControls(false);
+    this->EnableScaleControls(false);
   }
 }
 
@@ -371,6 +374,7 @@ void ImageLookupTablesView::DifferentImageSelected()
 
   m_Controls->m_MinLimitDoubleSpinBox->setValue(minDataLimit);
   m_Controls->m_MaxLimitDoubleSpinBox->setValue(maxDataLimit);
+  this->BlockSignals(false);
 
   signed int lookupTableIndex = -1;
   if (lookupTableNameFound)
@@ -387,7 +391,15 @@ void ImageLookupTablesView::DifferentImageSelected()
     m_Controls->m_LookupTableComboBox->setCurrentIndex(0);
   }
 
-  this->BlockSignals(false);
+  LookupTableProviderService* lutService = PluginActivator::GetInstance()->GetLookupTableProviderService();
+  if (lutService == NULL)
+  {
+    mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
+  }
+
+  bool isScaled = lutService->GetIsScaled(QString::fromStdString(lookupTableName));
+  this->EnableScaleControls(isScaled);
+  this->EnableLabelControls(!isScaled);
 }
 
 
