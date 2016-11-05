@@ -66,6 +66,8 @@ if(MITK_USE_BLUEBERRY)
   # This is to get a list of plugins to pass to ctkMacroSetupPlugins
   include(${CMAKE_CURRENT_SOURCE_DIR}/Plugins/Plugins.cmake)
 
+  list(REMOVE_DUPLICATES PROJECT_PLUGINS)
+
   # This is required, because people turn the apps off and expect all the
   # corresponding plugins to do the same, unless needed by another app.
   # Note that the argument is a list and therefore it needs to be protected
