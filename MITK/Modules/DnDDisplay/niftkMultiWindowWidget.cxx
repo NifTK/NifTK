@@ -1468,6 +1468,13 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
       }
     }
 
+    /// Although we created time geometries for each renderers and they have their own 'slice'
+    /// navigation controller for time, the image navigator view does not use these but the
+    /// 'global' one, that of the rendering manager. Therefore, we need to set the input time
+    /// geometry for that slice navigator.
+    m_RenderingManager->GetTimeNavigationController()->SetInputWorldTimeGeometry(m_TimeGeometry);
+    m_RenderingManager->GetTimeNavigationController()->Update();
+
     this->BlockDisplayEvents(displayEventsWereBlocked);
 
     m_GeometryHasChanged = true;
@@ -3180,6 +3187,7 @@ bool MultiWindowWidget::BlockUpdate(bool blocked)
     {
       m_RenderWindows[i]->GetSliceNavigationController()->BlockSignals(blocked);
     }
+    m_RenderingManager->GetTimeNavigationController()->BlockSignals(blocked);
 
     if (!blocked)
     {
@@ -3294,6 +3302,11 @@ bool MultiWindowWidget::BlockUpdate(bool blocked)
           this->BlockDisplayEvents(displayEventsWereBlocked);
           m_BlockSncEvents = false;
         }
+        m_BlockSncEvents = true;
+        bool displayEventsWereBlocked = this->BlockDisplayEvents(true);
+        m_RenderingManager->GetTimeNavigationController()->SendCreatedWorldGeometry();
+        this->BlockDisplayEvents(displayEventsWereBlocked);
+        m_BlockSncEvents = false;
       }
 
       bool selectedPositionHasChanged = false;
