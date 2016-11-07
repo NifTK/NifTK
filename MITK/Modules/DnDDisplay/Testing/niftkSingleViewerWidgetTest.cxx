@@ -41,6 +41,8 @@
 namespace niftk
 {
 
+mitk::Vector3D SingleViewerWidgetTestClass::s_MITKRendererUpDirections;
+
 class SingleViewerWidgetTestClassPrivate
 {
 public:
@@ -75,6 +77,11 @@ public:
   /// If the updirection is -1 then higher voxel index means lower mm position in world,
   /// i.e. moving towards the bottom, left or back.
   mitk::Vector3D WorldUpDirections;
+
+  mitk::Vector3D RendererUpDirections;
+
+  /// The index of image axes in world coordinate order: sagittal, coronal, axial.
+  mitk::Vector3D WorldAxes;
 
   SingleViewerWidget* Viewer;
   MultiViewerVisibilityManager::Pointer VisibilityManager;
@@ -117,6 +124,10 @@ SingleViewerWidgetTestClass::SingleViewerWidgetTestClass()
 {
   Q_D(SingleViewerWidgetTestClass);
 
+  SingleViewerWidgetTestClass::s_MITKRendererUpDirections[0] = 1;
+  SingleViewerWidgetTestClass::s_MITKRendererUpDirections[1] = 1;
+  SingleViewerWidgetTestClass::s_MITKRendererUpDirections[2] = -1;
+
   d->ImageNode = 0;
   d->Image = 0;
   d->WorldOrigin.Fill(0.0);
@@ -125,6 +136,12 @@ SingleViewerWidgetTestClass::SingleViewerWidgetTestClass()
   d->WorldUpDirections[0] = 0;
   d->WorldUpDirections[1] = 0;
   d->WorldUpDirections[2] = 0;
+  d->RendererUpDirections[0] = 0;
+  d->RendererUpDirections[1] = 0;
+  d->RendererUpDirections[2] = 0;
+  d->WorldAxes[0] = 0;
+  d->WorldAxes[1] = 1;
+  d->WorldAxes[2] = 2;
   d->Viewer = 0;
   d->VisibilityManager = 0;
   d->InteractiveMode = false;
@@ -233,6 +250,27 @@ mitk::Vector3D SingleViewerWidgetTestClass::GetWorldUpDirections(const mitk::Bas
   worldUpDirections[2] = signSI;
 
   return worldUpDirections;
+}
+
+
+// --------------------------------------------------------------------------
+mitk::Vector3D SingleViewerWidgetTestClass::GetWorldAxes(const mitk::BaseGeometry* geometry)
+{
+  const mitk::AffineTransform3D* affineTransform = geometry->GetIndexToWorldTransform();
+  itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
+  affineTransformMatrix.GetVnlMatrix().normalize_columns();
+  mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
+
+  int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0], inverseTransformMatrix[1][0], inverseTransformMatrix[2][0]);
+  int dominantAxisAP = itk::Function::Max3(inverseTransformMatrix[0][1], inverseTransformMatrix[1][1], inverseTransformMatrix[2][1]);
+  int dominantAxisSI = itk::Function::Max3(inverseTransformMatrix[0][2], inverseTransformMatrix[1][2], inverseTransformMatrix[2][2]);
+
+  mitk::Vector3D worldAxes;
+  worldAxes[0] = dominantAxisRL;
+  worldAxes[1] = dominantAxisAP;
+  worldAxes[2] = dominantAxisSI;
+
+  return worldAxes;
 }
 
 
@@ -560,20 +598,34 @@ void SingleViewerWidgetTestClass::initTestCase()
   niftk::GetExtentsInVxInWorldCoordinateOrder(d->Image, d->WorldExtents);
   niftk::GetSpacingInWorldCoordinateOrder(d->Image, d->WorldSpacings);
 
+  d->WorldUpDirections = Self::GetWorldUpDirections(d->Image->GetGeometry());
+
+  /// The DnD Display should create the renderer geometries in the same direction as in the
+  /// reference (input) geometry. However, MITK likes to flip the axial axis in the axial
+  /// renderer. Therefore, so that the image navigator shows correct axial indices, we keep
+  /// the original up direction in the axes that MITK does not flip, and we flip the direction
+  /// where MITK flips it.
+  for (int i = 0; i < 3; ++i)
+  {
+    d->RendererUpDirections[i] = d->WorldUpDirections[i] * niftk::SingleViewerWidgetTestClass::s_MITKRendererUpDirections[i];
+  }
+
+  d->WorldAxes = Self::GetWorldAxes(d->Image->GetGeometry());
+
 //  MITK_INFO << "Image origin: " << d->Image->GetGeometry()->GetOrigin();
 //  MITK_INFO << "World origin: " << d->WorldOrigin;
 //  MITK_INFO << "World extents: " << d->WorldExtents;
 //  MITK_INFO << "World spacings: " << d->WorldSpacings;
 //  MITK_INFO << "World up directions: " << d->WorldUpDirections;
+//  MITK_INFO << "Renderer up directions: " << d->RendererUpDirections;
 //  mitk::Point3D bottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(d->Image->GetGeometry());
+//  MITK_INFO << "World axes in image: " << d->WorldAxes;
 //  MITK_INFO << "World bottom left back corner: " << bottomLeftBackCorner;
 //  MITK_INFO << "World centre: " << d->Image->GetGeometry()->GetCenter();
 //  for (int i = 0; i < 8; ++i)
 //  {
 //    MITK_INFO << "corner point " << i << ": " << d->Image->GetGeometry()->GetCornerPoint(i & 4, i & 2, i & 1);
 //  }
-
-  d->WorldUpDirections = Self::GetWorldUpDirections(d->Image->GetGeometry());
 }
 
 
@@ -771,19 +823,12 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
   mitk::Point3D sagittalCentre = sagittalGeometry->GetCenter();
   mitk::Point3D coronalCentre = coronalGeometry->GetCenter();
 
-  mitk::Point3D axialBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(axialGeometry);
-  mitk::Point3D sagittalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(sagittalGeometry);
-  mitk::Point3D coronalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(coronalGeometry);
-
 //  MITK_INFO << "axial origin: " << axialOrigin;
 //  MITK_INFO << "sagittal origin: " << sagittalOrigin;
 //  MITK_INFO << "coronal origin: " << coronalOrigin;
 //  MITK_INFO << "axial centre: " << axialCentre;
 //  MITK_INFO << "sagittal centre: " << sagittalCentre;
 //  MITK_INFO << "coronal centre: " << coronalCentre;
-//  MITK_INFO << "axial bottom left back corner: " << axialBottomLeftBackCorner;
-//  MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
-//  MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 
   const mitk::SlicedGeometry3D* axialSlicedGeometry = dynamic_cast<const mitk::SlicedGeometry3D*>(axialGeometry);
   const mitk::SlicedGeometry3D* sagittalSlicedGeometry = dynamic_cast<const mitk::SlicedGeometry3D*>(sagittalGeometry);
@@ -858,29 +903,57 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
 
   mitk::Point3D expectedAxialOrigin = worldBottomLeftBackCorner;
   expectedAxialOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
-  expectedAxialOrigin[2] += (d->WorldExtents[2] - 0.5) * d->WorldSpacings[2];
+  if (d->RendererUpDirections[2] > 0)
+  {
+    expectedAxialOrigin[2] += 0.5 * d->WorldSpacings[2];
+  }
+  else
+  {
+    expectedAxialOrigin[2] += (d->WorldExtents[2] - 0.5) * d->WorldSpacings[2];
+  }
+
   mitk::Point3D expectedSagittalOrigin = worldBottomLeftBackCorner;
-  expectedSagittalOrigin[0] += 0.5 * d->WorldSpacings[0];
+  if (d->RendererUpDirections[0] > 0)
+  {
+    expectedSagittalOrigin[0] += 0.5 * d->WorldSpacings[0];
+  }
+  else
+  {
+    expectedSagittalOrigin[0] += (d->WorldExtents[0] - 0.5) * d->WorldSpacings[0];
+  }
+
   mitk::Point3D expectedCoronalOrigin = worldBottomLeftBackCorner;
-  expectedCoronalOrigin[1] += 0.5 * d->WorldSpacings[1];
+  if (d->RendererUpDirections[1] > 0)
+  {
+    expectedCoronalOrigin[1] += 0.5 * d->WorldSpacings[1];
+  }
+  else
+  {
+    expectedCoronalOrigin[1] += (d->WorldExtents[1] - 0.5) * d->WorldSpacings[1];
+  }
 
   mitk::Point3D expectedAxialCentre = worldCentre;
-  expectedAxialCentre[2] -= 0.5 * d->WorldSpacings[2];
-  mitk::Point3D expectedSagittalCentre = worldCentre;
-  expectedSagittalCentre[0] += 0.5 * d->WorldSpacings[0];
-  mitk::Point3D expectedCoronalCentre = worldCentre;
-  expectedCoronalCentre[1] += 0.5 * d->WorldSpacings[1];
+  expectedAxialCentre[2] += d->RendererUpDirections[2] * 0.5 * d->WorldSpacings[2];
 
-  mitk::Point3D expectedAxialBottomLeftBackCorner = worldBottomLeftBackCorner;
-  expectedAxialBottomLeftBackCorner[2] -= 0.5 * d->WorldSpacings[2];
-  mitk::Point3D expectedSagittalBottomLeftBackCorner = worldBottomLeftBackCorner;
-  expectedSagittalBottomLeftBackCorner[0] += 0.5 * d->WorldSpacings[0];
-  mitk::Point3D expectedCoronalBottomLeftBackCorner = worldBottomLeftBackCorner;
-  expectedCoronalBottomLeftBackCorner[1] += 0.5 * d->WorldSpacings[1];
+  mitk::Point3D expectedSagittalCentre = worldCentre;
+  expectedSagittalCentre[0] += d->RendererUpDirections[0] * 0.5 * d->WorldSpacings[0];
+
+  mitk::Point3D expectedCoronalCentre = worldCentre;
+  expectedCoronalCentre[1] += d->RendererUpDirections[1] * 0.5 * d->WorldSpacings[1];
 
   mitk::Point3D expectedAxialFirstPlaneOrigin = expectedAxialOrigin;
   mitk::Point3D expectedSagittalFirstPlaneOrigin = expectedSagittalOrigin;
   mitk::Point3D expectedCoronalFirstPlaneOrigin = expectedCoronalOrigin;
+
+  /// Note:
+  /// Plane geometries are not real 2D planes in MITK, but have a depth of one voxel.
+  /// Therefore, the centre of plane geometries are half voxel away from their origin
+  /// along the renderer axis.
+  /// However, I do not quite understand why the direction is positive for the sagittal
+  /// planes and negative for the coronal and axial planes, always, rather than having
+  /// the same direction as in the renderer. This might be related to that the 'isFlipped'
+  /// flag is set to 'true' for the sagittal renderer and 'false' to the coronal and
+  /// axial renderer by default in niftk::MultiWindowWidget::SetTimeGeometry().
 
   mitk::Point3D expectedAxialFirstPlaneCentre = expectedAxialFirstPlaneOrigin;
   expectedAxialFirstPlaneCentre[0] += 0.5 * d->WorldExtents[0] * d->WorldSpacings[0];
@@ -894,27 +967,26 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
 
   mitk::Point3D expectedCoronalFirstPlaneCentre = expectedCoronalFirstPlaneOrigin;
   expectedCoronalFirstPlaneCentre[0] += 0.5 * d->WorldExtents[0] * d->WorldSpacings[0];
-  /// Why is this minus and not plus?
   expectedCoronalFirstPlaneCentre[1] -= 0.5 * d->WorldSpacings[1];
   expectedCoronalFirstPlaneCentre[2] += 0.5 * d->WorldExtents[2] * d->WorldSpacings[2];
 
   mitk::Point3D expectedAxialSecondPlaneOrigin = expectedAxialFirstPlaneOrigin;
-  expectedAxialSecondPlaneOrigin[2] -= d->WorldSpacings[2];
+  expectedAxialSecondPlaneOrigin[2] += d->RendererUpDirections[2] * d->WorldSpacings[2];
 
   mitk::Point3D expectedSagittalSecondPlaneOrigin = expectedSagittalFirstPlaneOrigin;
-  expectedSagittalSecondPlaneOrigin[0] += d->WorldSpacings[0];
+  expectedSagittalSecondPlaneOrigin[0] += d->RendererUpDirections[0] * d->WorldSpacings[0];
 
   mitk::Point3D expectedCoronalSecondPlaneOrigin = expectedCoronalFirstPlaneOrigin;
-  expectedCoronalSecondPlaneOrigin[1] += d->WorldSpacings[1];
+  expectedCoronalSecondPlaneOrigin[1] += d->RendererUpDirections[1] * d->WorldSpacings[1];
 
   mitk::Point3D expectedAxialSecondPlaneCentre = expectedAxialFirstPlaneCentre;
-  expectedAxialSecondPlaneCentre[2] -= d->WorldSpacings[2];
+  expectedAxialSecondPlaneCentre[2] += d->RendererUpDirections[2] * d->WorldSpacings[2];
 
   mitk::Point3D expectedSagittalSecondPlaneCentre = expectedSagittalFirstPlaneCentre;
-  expectedSagittalSecondPlaneCentre[0] += d->WorldSpacings[0];
+  expectedSagittalSecondPlaneCentre[0] += d->RendererUpDirections[0] * d->WorldSpacings[0];
 
   mitk::Point3D expectedCoronalSecondPlaneCentre = expectedCoronalFirstPlaneCentre;
-  expectedCoronalSecondPlaneCentre[1] += d->WorldSpacings[1];
+  expectedCoronalSecondPlaneCentre[1] += d->RendererUpDirections[1] * d->WorldSpacings[1];
 
 //  MITK_INFO << "expected axial origin: " << expectedAxialOrigin;
 //  MITK_INFO << "expected sagittal origin: " << expectedSagittalOrigin;
@@ -941,9 +1013,6 @@ void SingleViewerWidgetTestClass::testGetTimeGeometry()
   QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
   QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
   QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
-  QVERIFY(Self::Equals(axialBottomLeftBackCorner, expectedAxialBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, expectedSagittalBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, expectedCoronalBottomLeftBackCorner, 0.001));
   QVERIFY(Self::Equals(axialFirstPlaneOrigin, expectedAxialFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(sagittalFirstPlaneOrigin, expectedSagittalFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(coronalFirstPlaneOrigin, expectedCoronalFirstPlaneOrigin, 0.001));
@@ -1249,9 +1318,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
   mitk::Point3D axialCentre = axialGeometry->GetCenter();
   mitk::Point3D sagittalCentre = sagittalGeometry->GetCenter();
   mitk::Point3D coronalCentre = coronalGeometry->GetCenter();
-  mitk::Point3D axialBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(axialGeometry);
-  mitk::Point3D sagittalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(sagittalGeometry);
-  mitk::Point3D coronalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(coronalGeometry);
 
   const mitk::SlicedGeometry3D* axialSlicedGeometry = dynamic_cast<const mitk::SlicedGeometry3D*>(axialGeometry);
   const mitk::SlicedGeometry3D* sagittalSlicedGeometry = dynamic_cast<const mitk::SlicedGeometry3D*>(sagittalGeometry);
@@ -1294,9 +1360,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 //  MITK_INFO << "axial centre: " << axialCentre;
 //  MITK_INFO << "sagittal centre: " << sagittalCentre;
 //  MITK_INFO << "coronal centre: " << coronalCentre;
-//  MITK_INFO << "axial bottom left back corner: " << axialBottomLeftBackCorner;
-//  MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
-//  MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 //  MITK_INFO << "axial first plane origin: " << axialFirstPlaneOrigin;
 //  MITK_INFO << "sagittal first plane origin: " << sagittalFirstPlaneOrigin;
 //  MITK_INFO << "coronal first plane origin: " << coronalFirstPlaneOrigin;
@@ -1331,29 +1394,57 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 
   mitk::Point3D expectedAxialOrigin = worldBottomLeftBackCorner;
   expectedAxialOrigin[1] += d->WorldExtents[1] * d->WorldSpacings[1];
-  expectedAxialOrigin[2] += (d->WorldExtents[2] - 0.5) * d->WorldSpacings[2];
+  if (d->RendererUpDirections[2] > 0)
+  {
+    expectedAxialOrigin[2] += 0.5 * d->WorldSpacings[2];
+  }
+  else
+  {
+    expectedAxialOrigin[2] += (d->WorldExtents[2] - 0.5) * d->WorldSpacings[2];
+  }
+
   mitk::Point3D expectedSagittalOrigin = worldBottomLeftBackCorner;
-  expectedSagittalOrigin[0] += 0.5 * d->WorldSpacings[0];
+  if (d->RendererUpDirections[0] > 0)
+  {
+    expectedSagittalOrigin[0] += 0.5 * d->WorldSpacings[0];
+  }
+  else
+  {
+    expectedSagittalOrigin[0] += (d->WorldExtents[0] - 0.5) * d->WorldSpacings[0];
+  }
+
   mitk::Point3D expectedCoronalOrigin = worldBottomLeftBackCorner;
-  expectedCoronalOrigin[1] += 0.5 * d->WorldSpacings[1];
+  if (d->RendererUpDirections[1] > 0)
+  {
+    expectedCoronalOrigin[1] += 0.5 * d->WorldSpacings[1];
+  }
+  else
+  {
+    expectedCoronalOrigin[1] += (d->WorldExtents[1] - 0.5) * d->WorldSpacings[1];
+  }
 
   mitk::Point3D expectedAxialCentre = worldCentre;
-  expectedAxialCentre[2] -= 0.5 * d->WorldSpacings[2];
-  mitk::Point3D expectedSagittalCentre = worldCentre;
-  expectedSagittalCentre[0] += 0.5 * d->WorldSpacings[0];
-  mitk::Point3D expectedCoronalCentre = worldCentre;
-  expectedCoronalCentre[1] += 0.5 * d->WorldSpacings[1];
+  expectedAxialCentre[2] += d->RendererUpDirections[2] * 0.5 * d->WorldSpacings[2];
 
-  mitk::Point3D expectedAxialBottomLeftBackCorner = worldBottomLeftBackCorner;
-  expectedAxialBottomLeftBackCorner[2] -= 0.5 * d->WorldSpacings[2];
-  mitk::Point3D expectedSagittalBottomLeftBackCorner = worldBottomLeftBackCorner;
-  expectedSagittalBottomLeftBackCorner[0] += 0.5 * d->WorldSpacings[0];
-  mitk::Point3D expectedCoronalBottomLeftBackCorner = worldBottomLeftBackCorner;
-  expectedCoronalBottomLeftBackCorner[1] += 0.5 * d->WorldSpacings[1];
+  mitk::Point3D expectedSagittalCentre = worldCentre;
+  expectedSagittalCentre[0] += d->RendererUpDirections[0] * 0.5 * d->WorldSpacings[0];
+
+  mitk::Point3D expectedCoronalCentre = worldCentre;
+  expectedCoronalCentre[1] += d->RendererUpDirections[1] * 0.5 * d->WorldSpacings[1];
 
   mitk::Point3D expectedAxialFirstPlaneOrigin = expectedAxialOrigin;
   mitk::Point3D expectedSagittalFirstPlaneOrigin = expectedSagittalOrigin;
   mitk::Point3D expectedCoronalFirstPlaneOrigin = expectedCoronalOrigin;
+
+  /// Note:
+  /// Plane geometries are not real 2D planes in MITK, but have a depth of one voxel.
+  /// Therefore, the centre of plane geometries are half voxel away from their origin
+  /// along the renderer axis.
+  /// However, I do not quite understand why the direction is positive for the sagittal
+  /// planes and negative for the coronal and axial planes, always, rather than having
+  /// the same direction as in the renderer. This might be related to that the 'isFlipped'
+  /// flag is set to 'true' for the sagittal renderer and 'false' to the coronal and
+  /// axial renderer by default in niftk::MultiWindowWidget::SetTimeGeometry().
 
   mitk::Point3D expectedAxialFirstPlaneCentre = expectedAxialFirstPlaneOrigin;
   expectedAxialFirstPlaneCentre[0] += 0.5 * d->WorldExtents[0] * d->WorldSpacings[0];
@@ -1367,26 +1458,26 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 
   mitk::Point3D expectedCoronalFirstPlaneCentre = expectedCoronalFirstPlaneOrigin;
   expectedCoronalFirstPlaneCentre[0] += 0.5 * d->WorldExtents[0] * d->WorldSpacings[0];
-  expectedCoronalFirstPlaneCentre[1] += 0.5 * d->WorldSpacings[1];
+  expectedCoronalFirstPlaneCentre[1] -= 0.5 * d->WorldSpacings[1];
   expectedCoronalFirstPlaneCentre[2] += 0.5 * d->WorldExtents[2] * d->WorldSpacings[2];
 
   mitk::Point3D expectedAxialSecondPlaneOrigin = expectedAxialFirstPlaneOrigin;
-  expectedAxialSecondPlaneOrigin[2] += d->WorldSpacings[2];
+  expectedAxialSecondPlaneOrigin[2] += d->RendererUpDirections[2] * d->WorldSpacings[2];
 
   mitk::Point3D expectedSagittalSecondPlaneOrigin = expectedSagittalFirstPlaneOrigin;
-  expectedSagittalSecondPlaneOrigin[0] += d->WorldSpacings[0];
+  expectedSagittalSecondPlaneOrigin[0] += d->RendererUpDirections[0] * d->WorldSpacings[0];
 
   mitk::Point3D expectedCoronalSecondPlaneOrigin = expectedCoronalFirstPlaneOrigin;
-  expectedCoronalSecondPlaneOrigin[1] += d->WorldSpacings[1];
+  expectedCoronalSecondPlaneOrigin[1] += d->RendererUpDirections[1] * d->WorldSpacings[1];
 
   mitk::Point3D expectedAxialSecondPlaneCentre = expectedAxialFirstPlaneCentre;
-  expectedAxialSecondPlaneCentre[2] += d->WorldSpacings[2];
+  expectedAxialSecondPlaneCentre[2] += d->RendererUpDirections[2] * d->WorldSpacings[2];
 
   mitk::Point3D expectedSagittalSecondPlaneCentre = expectedSagittalFirstPlaneCentre;
-  expectedSagittalSecondPlaneCentre[0] += d->WorldSpacings[0];
+  expectedSagittalSecondPlaneCentre[0] += d->RendererUpDirections[0] * d->WorldSpacings[0];
 
   mitk::Point3D expectedCoronalSecondPlaneCentre = expectedCoronalFirstPlaneCentre;
-  expectedCoronalSecondPlaneCentre[1] += d->WorldSpacings[1];
+  expectedCoronalSecondPlaneCentre[1] += d->RendererUpDirections[1] * d->WorldSpacings[1];
 
 //  MITK_INFO << "expected axial origin: " << expectedAxialOrigin;
 //  MITK_INFO << "expected sagittal origin: " << expectedSagittalOrigin;
@@ -1457,9 +1548,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
   axialCentre = axialGeometry->GetCenter();
   sagittalCentre = sagittalGeometry->GetCenter();
   coronalCentre = coronalGeometry->GetCenter();
-  axialBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(axialGeometry);
-  sagittalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(sagittalGeometry);
-  coronalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(coronalGeometry);
   axialFirstPlaneOrigin = axialFirstPlaneGeometry->GetOrigin();
   sagittalFirstPlaneOrigin = sagittalFirstPlaneGeometry->GetOrigin();
   coronalFirstPlaneOrigin = coronalFirstPlaneGeometry->GetOrigin();
@@ -1479,9 +1567,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 //  MITK_INFO << "axial centre: " << axialCentre;
 //  MITK_INFO << "sagittal centre: " << sagittalCentre;
 //  MITK_INFO << "coronal centre: " << coronalCentre;
-//  MITK_INFO << "axial bottom left back corner: " << axialBottomLeftBackCorner;
-//  MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
-//  MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 //  MITK_INFO << "axial first plane origin: " << axialFirstPlaneOrigin;
 //  MITK_INFO << "sagittal first plane origin: " << sagittalFirstPlaneOrigin;
 //  MITK_INFO << "coronal first plane origin: " << coronalFirstPlaneOrigin;
@@ -1501,9 +1586,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
   QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
   QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
   QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
-  QVERIFY(Self::Equals(axialBottomLeftBackCorner, expectedAxialBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, expectedSagittalBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, expectedCoronalBottomLeftBackCorner, 0.001));
   QVERIFY(Self::Equals(axialFirstPlaneOrigin, expectedAxialFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(sagittalFirstPlaneOrigin, expectedSagittalFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(coronalFirstPlaneOrigin, expectedCoronalFirstPlaneOrigin, 0.001));
@@ -1567,9 +1649,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
   axialCentre = axialGeometry->GetCenter();
   sagittalCentre = sagittalGeometry->GetCenter();
   coronalCentre = coronalGeometry->GetCenter();
-  axialBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(axialGeometry);
-  sagittalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(sagittalGeometry);
-  coronalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(coronalGeometry);
   axialFirstPlaneOrigin = axialFirstPlaneGeometry->GetOrigin();
   sagittalFirstPlaneOrigin = sagittalFirstPlaneGeometry->GetOrigin();
   coronalFirstPlaneOrigin = coronalFirstPlaneGeometry->GetOrigin();
@@ -1589,9 +1668,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 //  MITK_INFO << "axial centre: " << axialCentre;
 //  MITK_INFO << "sagittal centre: " << sagittalCentre;
 //  MITK_INFO << "coronal centre: " << coronalCentre;
-//  MITK_INFO << "axial bottom left back corner: " << axialBottomLeftBackCorner;
-//  MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
-//  MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 //  MITK_INFO << "axial first plane origin: " << axialFirstPlaneOrigin;
 //  MITK_INFO << "sagittal first plane origin: " << sagittalFirstPlaneOrigin;
 //  MITK_INFO << "coronal first plane origin: " << coronalFirstPlaneOrigin;
@@ -1611,9 +1687,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
   QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
   QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
   QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
-  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
   QVERIFY(Self::Equals(axialFirstPlaneOrigin, expectedAxialFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(sagittalFirstPlaneOrigin, expectedSagittalFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(coronalFirstPlaneOrigin, expectedCoronalFirstPlaneOrigin, 0.001));
@@ -1677,9 +1750,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
   axialCentre = axialGeometry->GetCenter();
   sagittalCentre = sagittalGeometry->GetCenter();
   coronalCentre = coronalGeometry->GetCenter();
-  axialBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(axialGeometry);
-  sagittalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(sagittalGeometry);
-  coronalBottomLeftBackCorner = Self::GetWorldBottomLeftBackCorner(coronalGeometry);
   axialFirstPlaneOrigin = axialFirstPlaneGeometry->GetOrigin();
   sagittalFirstPlaneOrigin = sagittalFirstPlaneGeometry->GetOrigin();
   coronalFirstPlaneOrigin = coronalFirstPlaneGeometry->GetOrigin();
@@ -1699,9 +1769,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 //  MITK_INFO << "axial centre: " << axialCentre;
 //  MITK_INFO << "sagittal centre: " << sagittalCentre;
 //  MITK_INFO << "coronal centre: " << coronalCentre;
-//  MITK_INFO << "axial bottom left back corner: " << axialBottomLeftBackCorner;
-//  MITK_INFO << "sagittal bottom left back corner: " << sagittalBottomLeftBackCorner;
-//  MITK_INFO << "coronal bottom left back corner: " << coronalBottomLeftBackCorner;
 //  MITK_INFO << "expected axial first plane origin: " << expectedAxialFirstPlaneOrigin;
 //  MITK_INFO << "axial first plane origin: " << axialFirstPlaneOrigin;
 //  MITK_INFO << "sagittal first plane origin: " << sagittalFirstPlaneOrigin;
@@ -1722,9 +1789,6 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
   QVERIFY(Self::Equals(axialCentre, expectedAxialCentre, 0.001));
   QVERIFY(Self::Equals(sagittalCentre, expectedSagittalCentre, 0.001));
   QVERIFY(Self::Equals(coronalCentre, expectedCoronalCentre, 0.001));
-  QVERIFY(Self::Equals(axialBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(sagittalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
-  QVERIFY(Self::Equals(coronalBottomLeftBackCorner, worldBottomLeftBackCorner, 0.001));
   QVERIFY(Self::Equals(axialFirstPlaneOrigin, expectedAxialFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(sagittalFirstPlaneOrigin, expectedSagittalFirstPlaneOrigin, 0.001));
   QVERIFY(Self::Equals(coronalFirstPlaneOrigin, expectedCoronalFirstPlaneOrigin, 0.001));
@@ -1772,6 +1836,8 @@ void SingleViewerWidgetTestClass::testGetSelectedPosition()
   QVERIFY(d->StateTester->GetQtSignals().empty());
 
   mitk::Point3D centre = d->Image->GetGeometry()->GetCenter();
+//  MITK_INFO << "Image geometry centre: " << centre;
+//  MITK_INFO << "Selected position: " << selectedPosition;
 
   for (int i = 0; i < 3; ++i)
   {
@@ -1998,47 +2064,67 @@ void SingleViewerWidgetTestClass::testGetSelectedSlice()
 {
   Q_D(SingleViewerWidgetTestClass);
 
-  int expectedAxialSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL);
-  int expectedSagittalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL);
-  int expectedCoronalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_CORONAL);
-  unsigned expectedAxialSliceInSnc = d->Viewer->GetAxialWindow()->GetSliceNavigationController()->GetSlice()->GetPos();
-  unsigned expectedSagittalSliceInSnc = d->Viewer->GetSagittalWindow()->GetSliceNavigationController()->GetSlice()->GetPos();
-  unsigned expectedCoronalSliceInSnc = d->Viewer->GetCoronalWindow()->GetSliceNavigationController()->GetSlice()->GetPos();
+  int axialSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL);
+  int sagittalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL);
+  int coronalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_CORONAL);
+
+  unsigned axialSliceInSnc = d->AxialSnc->GetSlice()->GetPos();
+  unsigned sagittalSliceInSnc = d->SagittalSnc->GetSlice()->GetPos();
+  unsigned coronalSliceInSnc = d->CoronalSnc->GetSlice()->GetPos();
+
+  int expectedAxialSlice = axialSlice;
+  int expectedSagittalSlice = sagittalSlice;
+  int expectedCoronalSlice = coronalSlice;
+
+  unsigned expectedAxialSliceInSnc = d->RendererUpDirections[2] > 0
+      ? axialSlice
+      : d->WorldExtents[2] - 1 - axialSlice;
+  unsigned expectedSagittalSliceInSnc = d->RendererUpDirections[0] > 0
+      ? sagittalSlice
+      : d->WorldExtents[0] - 1 - sagittalSlice;
+  unsigned expectedCoronalSliceInSnc = d->RendererUpDirections[1] > 0
+      ? coronalSlice
+      : d->WorldExtents[1] - 1 - coronalSlice;
+
+  QCOMPARE(axialSliceInSnc, expectedAxialSliceInSnc);
+  QCOMPARE(sagittalSliceInSnc, expectedSagittalSliceInSnc);
+  QCOMPARE(coronalSliceInSnc, expectedCoronalSliceInSnc);
+
   mitk::Point3D selectedPosition = d->Viewer->GetSelectedPosition();
 
   selectedPosition[CoronalAxis] += 20 * d->WorldSpacings[CoronalAxis];
-  expectedCoronalSliceInSnc += 20;
+  expectedCoronalSliceInSnc += d->RendererUpDirections[CoronalAxis] * 20;
   expectedCoronalSlice += d->WorldUpDirections[CoronalAxis] * 20;
 
   d->Viewer->SetSelectedPosition(selectedPosition);
   d->StateTester->Clear();
 
-  int coronalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_CORONAL);
-  unsigned coronalSliceInSnc = d->CoronalSnc->GetSlice()->GetPos();
+  coronalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_CORONAL);
+  coronalSliceInSnc = d->CoronalSnc->GetSlice()->GetPos();
   QCOMPARE(coronalSlice, expectedCoronalSlice);
   QCOMPARE(coronalSliceInSnc, expectedCoronalSliceInSnc);
 
   selectedPosition[AxialAxis] += 30 * d->WorldSpacings[AxialAxis];
-  expectedAxialSliceInSnc += 30;
+  expectedAxialSliceInSnc += d->RendererUpDirections[AxialAxis] * 30;
   expectedAxialSlice += d->WorldUpDirections[AxialAxis] * 30;
 
   d->Viewer->SetSelectedPosition(selectedPosition);
   d->StateTester->Clear();
 
-  int axialSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL);
-  unsigned axialSliceInSnc = d->AxialSnc->GetSlice()->GetPos();
+  axialSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL);
+  axialSliceInSnc = d->AxialSnc->GetSlice()->GetPos();
   QCOMPARE(axialSlice, expectedAxialSlice);
   QCOMPARE(axialSliceInSnc, expectedAxialSliceInSnc);
 
   selectedPosition[SagittalAxis] += 40 * d->WorldSpacings[SagittalAxis];
-  expectedSagittalSliceInSnc = expectedSagittalSlice + 40;
+  expectedSagittalSliceInSnc += d->RendererUpDirections[SagittalAxis] * 40;
   expectedSagittalSlice += d->WorldUpDirections[SagittalAxis] * 40;
 
   d->Viewer->SetSelectedPosition(selectedPosition);
   d->StateTester->Clear();
 
-  int sagittalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL);
-  unsigned sagittalSliceInSnc = d->SagittalSnc->GetSlice()->GetPos();
+  sagittalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL);
+  sagittalSliceInSnc = d->SagittalSnc->GetSlice()->GetPos();
   QCOMPARE(sagittalSlice, expectedSagittalSlice);
   QCOMPARE(sagittalSliceInSnc, expectedSagittalSliceInSnc);
 }
@@ -2050,25 +2136,64 @@ void SingleViewerWidgetTestClass::testSetSelectedSlice()
 
 //  ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
 
-//  int axialSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL);
-//  int sagittalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL);
+  int axialSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL);
+  int sagittalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL);
   int coronalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_CORONAL);
 
-  unsigned expectedCoronalSncPos = d->CoronalSnc->GetSlice()->GetSteps() - 1 - coronalSlice;
+  int expectedAxialSlice = axialSlice;
+  int expectedSagittalSlice = sagittalSlice;
+  int expectedCoronalSlice = coronalSlice;
+
+  unsigned expectedAxialSliceInSnc = d->RendererUpDirections[2] > 0
+      ? axialSlice
+      : d->WorldExtents[2] - 1 - axialSlice;
+  unsigned expectedSagittalSliceInSnc = d->RendererUpDirections[0] > 0
+      ? sagittalSlice
+      : d->WorldExtents[0] - 1 - sagittalSlice;
+  unsigned expectedCoronalSliceInSnc = d->RendererUpDirections[1] > 0
+      ? coronalSlice
+      : d->WorldExtents[1] - 1 - coronalSlice;
 
   mitk::Point3D expectedSelectedPosition = d->Viewer->GetSelectedPosition();
 
-  int delta;
+  int delta = 20;
 
-  delta = +20;
-  coronalSlice += d->WorldUpDirections[CoronalAxis] * delta;
+  coronalSlice += delta;
+
+  expectedCoronalSlice += d->WorldUpDirections[CoronalAxis] * delta;
+  expectedCoronalSliceInSnc += d->RendererUpDirections[CoronalAxis] * delta;
   expectedSelectedPosition[CoronalAxis] += delta * d->WorldSpacings[CoronalAxis];
-  expectedCoronalSncPos += delta;
 
   d->Viewer->SetSelectedSlice(WINDOW_ORIENTATION_CORONAL, coronalSlice);
 
-  QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_CORONAL), coronalSlice);
-  QCOMPARE(d->CoronalSnc->GetSlice()->GetPos(), expectedCoronalSncPos);
+  QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_CORONAL), expectedCoronalSlice);
+  QCOMPARE(d->CoronalSnc->GetSlice()->GetPos(), expectedCoronalSliceInSnc);
+
+  d->StateTester->Clear();
+
+  axialSlice += delta;
+
+  expectedAxialSlice += d->WorldUpDirections[AxialAxis] * delta;
+  expectedAxialSliceInSnc += d->RendererUpDirections[AxialAxis] * delta;
+  expectedSelectedPosition[AxialAxis] += delta * d->WorldSpacings[AxialAxis];
+
+  d->Viewer->SetSelectedSlice(WINDOW_ORIENTATION_AXIAL, axialSlice);
+
+  QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_AXIAL), expectedAxialSlice);
+  QCOMPARE(d->AxialSnc->GetSlice()->GetPos(), expectedAxialSliceInSnc);
+
+  d->StateTester->Clear();
+
+  sagittalSlice += delta;
+
+  expectedSagittalSlice += d->WorldUpDirections[SagittalAxis] * delta;
+  expectedSagittalSliceInSnc += d->RendererUpDirections[SagittalAxis] * delta;
+  expectedSelectedPosition[SagittalAxis] += delta * d->WorldSpacings[SagittalAxis];
+
+  d->Viewer->SetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL, sagittalSlice);
+
+  QCOMPARE(d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL), expectedSagittalSlice);
+  QCOMPARE(d->SagittalSnc->GetSlice()->GetPos(), expectedSagittalSliceInSnc);
 
   d->StateTester->Clear();
 }
@@ -3676,8 +3801,8 @@ void SingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationControlle
 
   axialSliceDelta = +2;
   axialSncPos += axialSliceDelta;
-  expectedAxialSlice += d->WorldUpDirections[AxialAxis] * axialSliceDelta;
-  expectedSelectedPosition[AxialAxis] += axialSliceDelta * d->WorldSpacings[AxialAxis];
+  expectedAxialSlice += d->RendererUpDirections[AxialAxis] * axialSliceDelta;
+  expectedSelectedPosition[AxialAxis] += d->RendererUpDirections[AxialAxis] * axialSliceDelta * d->WorldSpacings[AxialAxis];
 
   d->AxialSnc->GetSlice()->SetPos(axialSncPos);
 
@@ -3688,8 +3813,8 @@ void SingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationControlle
 
   sagittalSliceDelta = -3;
   sagittalSncPos += sagittalSliceDelta;
-  expectedSagittalSlice += d->WorldUpDirections[SagittalAxis] * sagittalSliceDelta;
-  expectedSelectedPosition[SagittalAxis] += sagittalSliceDelta * d->WorldSpacings[SagittalAxis];
+  expectedSagittalSlice += d->RendererUpDirections[SagittalAxis] * sagittalSliceDelta;
+  expectedSelectedPosition[SagittalAxis] += d->RendererUpDirections[SagittalAxis] * sagittalSliceDelta * d->WorldSpacings[SagittalAxis];
 
   d->SagittalSnc->GetSlice()->SetPos(sagittalSncPos);
 
@@ -3700,8 +3825,8 @@ void SingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationControlle
 
   coronalSliceDelta = +5;
   coronalSncPos += coronalSliceDelta;
-  expectedCoronalSlice += d->WorldUpDirections[CoronalAxis] * coronalSliceDelta;
-  expectedSelectedPosition[CoronalAxis] += coronalSliceDelta * d->WorldSpacings[CoronalAxis];
+  expectedCoronalSlice += d->RendererUpDirections[CoronalAxis] * coronalSliceDelta;
+  expectedSelectedPosition[CoronalAxis] += d->RendererUpDirections[CoronalAxis] * coronalSliceDelta * d->WorldSpacings[CoronalAxis];
 
   d->CoronalSnc->GetSlice()->SetPos(coronalSncPos);
 
@@ -3728,13 +3853,13 @@ void SingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationContro
   itk::Index<3> expectedSelectedIndex;
   worldGeometry->WorldToIndex(expectedSelectedPosition, expectedSelectedIndex);
 
-  int expectedAxialSlice = expectedSelectedIndex[1];
-  int expectedSagittalSlice = expectedSelectedIndex[0];
-  int expectedCoronalSlice = expectedSelectedIndex[2];
+  int expectedAxialSlice = expectedSelectedIndex[d->WorldAxes[2]];
+  int expectedSagittalSlice = expectedSelectedIndex[d->WorldAxes[0]];
+  int expectedCoronalSlice = expectedSelectedIndex[d->WorldAxes[1]];
 
-  unsigned expectedAxialSncPos = d->WorldUpDirections[2] > 0 ? expectedAxialSlice : d->AxialSnc->GetSlice()->GetSteps() - 1 - expectedAxialSlice;
-  unsigned expectedSagittalSncPos = d->WorldUpDirections[0] > 0 ? expectedSagittalSlice : d->SagittalSnc->GetSlice()->GetSteps() - 1 - expectedSagittalSlice;
-  unsigned expectedCoronalSncPos = d->WorldUpDirections[1] > 0 ? expectedCoronalSlice: d->CoronalSnc->GetSlice()->GetSteps() - 1 - expectedCoronalSlice;
+  unsigned expectedAxialSncPos = d->RendererUpDirections[2] > 0 ? expectedAxialSlice : d->AxialSnc->GetSlice()->GetSteps() - 1 - expectedAxialSlice;
+  unsigned expectedSagittalSncPos = d->RendererUpDirections[0] > 0 ? expectedSagittalSlice : d->SagittalSnc->GetSlice()->GetSteps() - 1 - expectedSagittalSlice;
+  unsigned expectedCoronalSncPos = d->RendererUpDirections[1] > 0 ? expectedCoronalSlice: d->CoronalSnc->GetSlice()->GetSteps() - 1 - expectedCoronalSlice;
 
   d->AxialSnc->SelectSliceByPoint(expectedSelectedPosition);
 
@@ -3747,8 +3872,8 @@ void SingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationContro
 
   worldGeometry->WorldToIndex(expectedSelectedPosition, expectedSelectedIndex);
 
-  expectedSagittalSlice = expectedSelectedIndex[0];
-  expectedSagittalSncPos = d->WorldUpDirections[0] > 0 ? expectedSagittalSlice : d->SagittalSnc->GetSlice()->GetSteps() - 1 - expectedSagittalSlice;
+  expectedSagittalSlice = expectedSelectedIndex[d->WorldAxes[0]];
+  expectedSagittalSncPos = d->RendererUpDirections[0] > 0 ? expectedSagittalSlice : d->SagittalSnc->GetSlice()->GetSteps() - 1 - expectedSagittalSlice;
 
   d->SagittalSnc->SelectSliceByPoint(expectedSelectedPosition);
 
@@ -3761,8 +3886,8 @@ void SingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationContro
 
   worldGeometry->WorldToIndex(expectedSelectedPosition, expectedSelectedIndex);
 
-  expectedCoronalSlice = expectedSelectedIndex[2];
-  expectedCoronalSncPos = d->WorldUpDirections[1] > 0 ? expectedCoronalSlice: d->CoronalSnc->GetSlice()->GetSteps() - 1 - expectedCoronalSlice;
+  expectedCoronalSlice = expectedSelectedIndex[d->WorldAxes[1]];
+  expectedCoronalSncPos = d->RendererUpDirections[1] > 0 ? expectedCoronalSlice: d->CoronalSnc->GetSlice()->GetSteps() - 1 - expectedCoronalSlice;
 
   d->CoronalSnc->SelectSliceByPoint(expectedSelectedPosition);
 

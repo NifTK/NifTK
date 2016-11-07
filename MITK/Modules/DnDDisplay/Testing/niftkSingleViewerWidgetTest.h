@@ -78,7 +78,7 @@ public:
   static mitk::Vector3D GetWorldUpDirections(const mitk::BaseGeometry* geometry);
 
   /// \brief Calculates the world axes from a 3D geometry.
-  static std::vector<int> GetWorldAxes(const mitk::Geometry3D* geometry);
+  static mitk::Vector3D GetWorldAxes(const mitk::BaseGeometry* geometry);
 
   /// \brief Calculates the world origin from a 3D geometry.
   /// The world origin is the centre of the bottom-left-back voxel for image geometries
@@ -243,6 +243,8 @@ private:
 
   static void MouseWheel(QWidget* window, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                          QPoint point, int delta, Qt::Orientation orientation = Qt::Vertical);
+
+  static mitk::Vector3D s_MITKRendererUpDirections;
 
   QScopedPointer<SingleViewerWidgetTestClassPrivate> d_ptr;
 
