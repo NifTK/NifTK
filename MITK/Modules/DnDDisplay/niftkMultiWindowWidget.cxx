@@ -2417,21 +2417,21 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
           // Axial
           orientationString[0] = 'R';
           orientationString[1] = 'P';
-          orientationString[2] = (RENDERER_DIRECTIONS.find('S') != -1) ? 'S' : 'I';
+          orientationString[2] = (m_OrientationString.find('S') != -1) == (MITK_RENDERER_DIRECTIONS.find('S') != -1) ? 'S' : 'I';
         }
         else if (windowIndex == 1)
         {
           // Sagittal
           orientationString[0] = 'A';
           orientationString[1] = 'S';
-          orientationString[2] = (RENDERER_DIRECTIONS.find('R') != -1) ? 'R' : 'L';
+          orientationString[2] = (m_OrientationString.find('R') != -1) == (MITK_RENDERER_DIRECTIONS.find('R') != -1) ? 'R' : 'L';
         }
         else if (windowIndex == 2)
         {
           // Coronal
           orientationString[0] = 'R';
           orientationString[1] = 'S';
-          orientationString[2] = (RENDERER_DIRECTIONS.find('A') != -1) ? 'A' : 'P';
+          orientationString[2] = (m_OrientationString.find('A') != -1) == (MITK_RENDERER_DIRECTIONS.find('A') != -1) ? 'A' : 'P';
         }
 
         stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << orientationString << ")" << std::endl;
