@@ -525,7 +525,7 @@ private:
   std::vector<double> m_ScaleFactors;
 
   int m_OrientationAxes[3];
-  char m_OrientationString[4];
+  std::string m_OrientationString;
 
   /// \brief The up direction of the world axes.
   /// The values are in world coordinate order, i.e. sagittal, coronal and axial.
