@@ -65,15 +65,25 @@ namespace niftk
 /// corner of their bottom-left-back voxel (non-image geometry). Hence, the world indices go from
 /// left to right, back to front and bottom to top, always.
 ///
-/// However, using "RAS" directions needs a patch for MITK. See MITK bug 20180 for details.
+/// However, using "RAS" directions needs a patch for MITK. See MITK bug T20180 for details.
 ///
 /// Note that since the current renderer directions do not follow neither the image directions nor
 /// the world directions, you must *not* rely on the indices in the slice navigation controller of
 /// the renderers, but you always need to translate world coordinates to index coordinates using
 /// the reference geometry that was used to initialise the viewer, and in case of non-image
 /// geometries, you need to subtract 0.5 from the index coordinates before or after the conversion.
+///
+/// In this sense, it rarely matters in which directions the renderer geometries are created.
+/// However, the image navigator connects to the slice navigation controller of the renderers
+/// directly and displays their slice indices in the sliders on the GUI. In case of the sagittal
+/// and coronal renderers the connection is direct but for the axial renderer it is inverted,
+/// to compensate for the flipped direction in the axial renderer window (see T20180).
+///
+/// If we want to see the original image indices in the image navigator, we need to create the
+/// axial renderer geometry in opposite direction as in the image. This 'trick' or work-around
+/// can be removed when T20180 gets fixed.
 
-const std::string RENDERER_DIRECTIONS = "RAI";
+const std::string MITK_RENDERER_DIRECTIONS = "RAI";
 
 /**
  * This class is to notify the SingleViewerWidget about the display geometry changes of a render window.
@@ -137,7 +147,7 @@ MultiWindowWidget::MultiWindowWidget(
 , m_TimeStep(0)
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
-, m_OrientationString{0}
+, m_OrientationString("---")
 , m_WorldGeometries(3)
 , m_RenderWindowSizes(3)
 , m_Origins(3)
@@ -1310,7 +1320,8 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           normal[0] = permutedSpacing[0] * permutedMatrix[0][0];
           normal[1] = permutedSpacing[0] * permutedMatrix[1][0];
           normal[2] = permutedSpacing[0] * permutedMatrix[2][0];
-          if (RENDERER_DIRECTIONS.find('L') != -1)
+          /// If the direction is not the same as the default direction in MITK, we flip the geometry.
+          if ((m_OrientationString.find('R') != -1) != (MITK_RENDERER_DIRECTIONS.find('R') != -1))
           {
             distance = permutedBoundingBox[0] - 0.5;
             normal[0] *= -1;
@@ -1338,7 +1349,8 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           normal[0] = permutedSpacing[1] * permutedMatrix[0][1];
           normal[1] = permutedSpacing[1] * permutedMatrix[1][1];
           normal[2] = permutedSpacing[1] * permutedMatrix[2][1];
-          if (RENDERER_DIRECTIONS.find('P') != -1)
+          /// If the direction is not the same as the default direction in MITK, we flip the geometry.
+          if ((m_OrientationString.find('A') != -1) != (MITK_RENDERER_DIRECTIONS.find('A') != -1))
           {
             distance = permutedBoundingBox[1] - 0.5;
             normal[0] *= -1;
@@ -1366,7 +1378,8 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           normal[0] = permutedSpacing[2] * permutedMatrix[0][2];
           normal[1] = permutedSpacing[2] * permutedMatrix[1][2];
           normal[2] = permutedSpacing[2] * permutedMatrix[2][2];
-          if (RENDERER_DIRECTIONS.find('I') != -1)
+          /// If the direction is not the same as the default direction in MITK, we flip the geometry.
+          if ((m_OrientationString.find('S') != -1) != (MITK_RENDERER_DIRECTIONS.find('S') != -1))
           {
             distance = permutedBoundingBox[2] - 0.5;
             normal[0] *= -1;
