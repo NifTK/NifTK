@@ -153,19 +153,19 @@ protected:
   virtual ~AtomicStateTransitionTester();
 
   /// \brief Handler for the ITK signals. Checks the consistency of the test object.
-  virtual void OnItkSignalReceived(const itk::Object* object, const itk::EventObject& event)
+  virtual void OnItkSignalReceived(const itk::Object* object, const itk::EventObject& event) override
   {
     this->CheckState();
   }
 
   /// \brief Handler for the Qt signals. Checks the consistency of the test object.
-  virtual void OnQtSignalReceived(const QObject* object, const char* signal)
+  virtual void OnQtSignalReceived(const QObject* object, const char* signal) override
   {
     this->CheckState();
   }
 
   /// \brief Prints the collected signals to the given stream or to the standard output if no stream is given.
-  virtual void PrintSelf(std::ostream & os, itk::Indent indent) const;
+  virtual void PrintSelf(std::ostream & os, itk::Indent indent) const override;
 
 private:
 
