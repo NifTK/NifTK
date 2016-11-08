@@ -1455,9 +1455,17 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
         {
           // Now geometry is established, set to middle slice.
           int middleSlicePos = sliceNavigationController->GetSlice()->GetSteps() / 2;
-          if ((slices % 2 == 0) && isFlipped)
+          if (slices % 2 == 0)
           {
-            middleSlicePos -= 1;
+            if ((viewDirection == AXIAL
+                 && ((m_OrientationString.find('S') != -1) != (MITK_RENDERER_DIRECTIONS.find('S') != -1)))
+                || (viewDirection == SAGITTAL
+                    && ((m_OrientationString.find('R') != -1) != (MITK_RENDERER_DIRECTIONS.find('R') != -1)))
+                || (viewDirection == CORONAL
+                    && ((m_OrientationString.find('A') != -1) != (MITK_RENDERER_DIRECTIONS.find('A') != -1))))
+            {
+              middleSlicePos -= 1;
+            }
           }
           sliceNavigationController->GetSlice()->SetPos(middleSlicePos);
         }
@@ -2417,21 +2425,21 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
           // Axial
           orientationString[0] = 'R';
           orientationString[1] = 'P';
-          orientationString[2] = (RENDERER_DIRECTIONS.find('S') != -1) ? 'S' : 'I';
+          orientationString[2] = (m_OrientationString.find('S') != -1) == (MITK_RENDERER_DIRECTIONS.find('S') != -1) ? 'S' : 'I';
         }
         else if (windowIndex == 1)
         {
           // Sagittal
           orientationString[0] = 'A';
           orientationString[1] = 'S';
-          orientationString[2] = (RENDERER_DIRECTIONS.find('R') != -1) ? 'R' : 'L';
+          orientationString[2] = (m_OrientationString.find('R') != -1) == (MITK_RENDERER_DIRECTIONS.find('R') != -1) ? 'R' : 'L';
         }
         else if (windowIndex == 2)
         {
           // Coronal
           orientationString[0] = 'R';
           orientationString[1] = 'S';
-          orientationString[2] = (RENDERER_DIRECTIONS.find('A') != -1) ? 'A' : 'P';
+          orientationString[2] = (m_OrientationString.find('A') != -1) == (MITK_RENDERER_DIRECTIONS.find('A') != -1) ? 'A' : 'P';
         }
 
         stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << orientationString << ")" << std::endl;
