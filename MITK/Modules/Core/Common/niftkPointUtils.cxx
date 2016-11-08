@@ -314,7 +314,7 @@ void TransformPointsByVtkMatrix(
   for (pIt = points->Begin(); pIt != points->End(); ++pIt)
   {
     pointID = pIt->Index();
-    point = pIt->Value();
+    point = input.GetPoint(pointID);
     TransformPointByVtkMatrix(&matrix, false, point);
     output.InsertPoint(pointID, point);
   }
