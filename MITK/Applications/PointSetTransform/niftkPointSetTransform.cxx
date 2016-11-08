@@ -13,8 +13,7 @@
 =============================================================================*/
 
 #include <cstdlib>
-#include <mitkPointSetReader.h>
-#include <mitkPointSetWriter.h>
+#include <mitkIOUtil.h>
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
 #include <vtkMinimalStandardRandomSequence.h>
@@ -28,12 +27,9 @@ int main(int argc, char** argv)
   PARSE_ARGS;
 
   //Read Moving Points
-  mitk::PointSetReader::Pointer  movingReader = mitk::PointSetReader::New();
-  movingReader->SetFileName(source);
-  mitk::PointSet::Pointer movingPoints = mitk::PointSet::New();
+  mitk::PointSet::Pointer movingPoints = mitk::IOUtil::LoadPointSet(source);
+  mitk::IOUtil::Save(movingPoints, "/dev/shm/movingPointsInOut.mps");
   mitk::PointSet::Pointer movedPoints = mitk::PointSet::New();
-  movingReader->Update();
-  movingPoints = movingReader->GetOutput();
  
   vtkSmartPointer<vtkMatrix4x4> randomMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   vtkMatrix4x4 * userTransform = vtkMatrix4x4::New();
@@ -57,10 +53,7 @@ int main(int argc, char** argv)
   niftk::TransformPointsByVtkMatrix ( *movingPoints, *combinedTransform, *movedPoints);
   if ( output.length () != 0 ) 
   {
-    mitk::PointSetWriter::Pointer writer = mitk::PointSetWriter::New();
-    writer->SetFileName(output);
-    writer->SetInput(movedPoints);
-    writer->Update();
+    mitk::IOUtil::Save(movedPoints, output);
   }
   return EXIT_SUCCESS;
 } 
