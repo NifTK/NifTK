@@ -107,8 +107,6 @@ double PointBasedRegistration::Update(
     transformFilter->SetUseICPInitialization(m_UseICPInitialisation);
     transformFilter->SetTargetLandmarks(fixedPoints);
     transformFilter->SetSourceLandmarks(movingPoints);
-    fiducialRegistrationError = transformFilter->GetFRE();
-    MITK_INFO << "Starting FRE = " <<  fiducialRegistrationError;
     transformFilter->Update();
 
     MITK_INFO << "PointBasedRegistration: FRE=" << transformFilter->GetFRE()
