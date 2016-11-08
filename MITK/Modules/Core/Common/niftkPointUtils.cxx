@@ -90,7 +90,7 @@ double GetRMSErrorBetweenPoints(
   for (pIt = points->Begin(); pIt != points->End(); ++pIt)
   {
     pointID = pIt->Index();
-    movingPoint = pIt->Value();
+    movingPoint = movingPoints.GetPoint(pointID);
 
     if (fixedPoints.GetPointIfExists(pointID, &fixedPoint))
     {
@@ -173,7 +173,7 @@ double FindLargestDistanceBetweenTwoPoints(const mitk::PointSet& input)
   {
     for ( ; innerIt != iterEnd; ++innerIt)
     {
-      double squaredDistance = GetSquaredDistanceBetweenPoints(outerIt->Value(), innerIt->Value());
+      double squaredDistance = GetSquaredDistanceBetweenPoints(input.GetPoint(outerIt->Index()), input.GetPoint(innerIt->Index()));
       if (squaredDistance > maxSquaredDistance)
       {
         maxSquaredDistance = squaredDistance;
@@ -194,7 +194,7 @@ int CopyPointSets(const mitk::PointSet& input, mitk::PointSet& output)
   mitk::PointSet::PointsConstIterator inputEnd = inputContainer->End();
   for ( ; inputIt != inputEnd; ++inputIt)
   {
-    output.InsertPoint(inputIt->Index(), inputIt->Value());
+    output.InsertPoint(inputIt->Index(), input.GetPoint(inputIt->Index()));
   }
   return output.GetSize();
 }
@@ -212,7 +212,7 @@ void ScalePointSets(const mitk::PointSet& input, mitk::PointSet& output, double 
 
   for ( ; inputIt != inputEnd; ++inputIt)
   {
-    point = inputIt->Value();
+    point = input.GetPoint(inputIt->Index());
     point[0] *= scaleFactor;
     point[1] *= scaleFactor;
     point[2] *= scaleFactor;
@@ -348,13 +348,13 @@ int FilterMatchingPoints(
   for (fixedPointsIt = fixedPoints->Begin(); fixedPointsIt != fixedPoints->End(); ++fixedPointsIt)
   {
     pointID = fixedPointsIt->Index();
-    fixedPoint = fixedPointsIt->Value();
+    fixedPoint = fixedPointsIn.GetPoint(pointID);
 
     for (movingPointsIt = movingPoints->Begin(); movingPointsIt != movingPoints->End(); ++movingPointsIt)
     {
       if (movingPointsIt->Index() == pointID)
       {
-        movingPoint = movingPointsIt->Value();
+        movingPoint = movingPointsIn.GetPoint(pointID);
 
         fixedPointsOut.InsertPoint(pointID, fixedPoint);
         movingPointsOut.InsertPoint(pointID, movingPoint);
@@ -387,7 +387,7 @@ int RemoveNaNPoints(
   for (pointsIt = points->Begin(); pointsIt != points->End(); ++pointsIt)
   {
     pointID = pointsIt->Index();
-    point = pointsIt->Value();
+    point = pointsIn.GetPoint(pointID);
 
 
     if ( CheckForNaNPoint(point) )
@@ -429,7 +429,7 @@ mitk::Point3D ComputeCentroid(const mitk::PointSet& input)
 
     for (pointsIt = points->Begin(); pointsIt != points->End(); ++pointsIt)
     {
-      point = pointsIt->Value();
+      point = input.GetPoint(pointsIt->Index());
       average[0] += point[0];
       average[1] += point[1];
       average[2] += point[2];
