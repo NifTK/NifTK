@@ -45,46 +45,6 @@
 namespace niftk
 {
 
-/// The renderer directions give information about how the geometries of the individual renderers
-/// should be created when the viewer is initialised with a 'reference' geometry. The direction
-/// of the first two dimensions (right and bottom vectors) are fixed for each renderer and changing
-/// them would mirror the displayed image. The third dimension (normal vector), however, is
-/// orthogonal to the rendered plane, and can go either ways. Reverting its direction reverts
-/// the order of slice indexes in the slice navigation controller of the renderer.
-///
-/// The renderer directions string has to contain three letters: 'L' or 'R', 'P' or 'A' and 'I' or
-/// 'S'. The letters mean left, right, posterior, anterior, inferior and superior, respectively.
-///
-/// MITK creates the renderer geometries in "RAI" mode, i.e. the index of the rendered slices in
-/// the sagittal window goes from left to right, in the coronal window from back to front and in
-/// the axial window from top to bottom.
-///
-/// It looks more natural to me to create the renderer geometries in "RAS" mode, that is to number
-/// the slices in the axial renderer from bottom to top. This is more consistent with how world
-/// geometries are constructed in MITK. The origin of world geometries is at the bottom-left-back
-/// corner of their bottom-left-back voxel (non-image geometry). Hence, the world indices go from
-/// left to right, back to front and bottom to top, always.
-///
-/// However, using "RAS" directions needs a patch for MITK. See MITK bug T20180 for details.
-///
-/// Note that since the current renderer directions do not follow neither the image directions nor
-/// the world directions, you must *not* rely on the indices in the slice navigation controller of
-/// the renderers, but you always need to translate world coordinates to index coordinates using
-/// the reference geometry that was used to initialise the viewer, and in case of non-image
-/// geometries, you need to subtract 0.5 from the index coordinates before or after the conversion.
-///
-/// In this sense, it rarely matters in which directions the renderer geometries are created.
-/// However, the image navigator connects to the slice navigation controller of the renderers
-/// directly and displays their slice indices in the sliders on the GUI. In case of the sagittal
-/// and coronal renderers the connection is direct but for the axial renderer it is inverted,
-/// to compensate for the flipped direction in the axial renderer window (see T20180).
-///
-/// If we want to see the original image indices in the image navigator, we need to create the
-/// axial renderer geometry in opposite direction as in the image. This 'trick' or work-around
-/// can be removed when T20180 gets fixed.
-
-const std::string MITK_RENDERER_DIRECTIONS = "RAI";
-
 /**
  * This class is to notify the SingleViewerWidget about the display geometry changes of a render window.
  */
@@ -1300,7 +1260,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
         unsigned int slices = 1;
         mitk::ScalarType viewSpacing = 1;
         bool isFlipped;
-        double distance = 0.5;
 
         // Setting up the width, height, axis orientation.
         switch (viewDirection)
@@ -1320,18 +1279,9 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           normal[0] = permutedSpacing[0] * permutedMatrix[0][0];
           normal[1] = permutedSpacing[0] * permutedMatrix[1][0];
           normal[2] = permutedSpacing[0] * permutedMatrix[2][0];
-          /// If the direction is not the same as the default direction in MITK, we flip the geometry.
-          if ((m_OrientationString.find('R') != -1) != (MITK_RENDERER_DIRECTIONS.find('R') != -1))
-          {
-            distance = permutedBoundingBox[0] - 0.5;
-            normal[0] *= -1;
-            normal[1] *= -1;
-            normal[2] *= -1;
-            isFlipped = !isFlipped;
-          }
-          originOfSlice[0] += distance * permutedSpacing[0] * permutedMatrix[0][0];
-          originOfSlice[1] += distance * permutedSpacing[0] * permutedMatrix[1][0];
-          originOfSlice[2] += distance * permutedSpacing[0] * permutedMatrix[2][0];
+          originOfSlice[0] += 0.5 * permutedSpacing[0] * permutedMatrix[0][0];
+          originOfSlice[1] += 0.5 * permutedSpacing[0] * permutedMatrix[1][0];
+          originOfSlice[2] += 0.5 * permutedSpacing[0] * permutedMatrix[2][0];
           break;
         /// Coronal:
         case mitk::SliceNavigationController::Frontal:
@@ -1349,18 +1299,9 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           normal[0] = permutedSpacing[1] * permutedMatrix[0][1];
           normal[1] = permutedSpacing[1] * permutedMatrix[1][1];
           normal[2] = permutedSpacing[1] * permutedMatrix[2][1];
-          /// If the direction is not the same as the default direction in MITK, we flip the geometry.
-          if ((m_OrientationString.find('A') != -1) != (MITK_RENDERER_DIRECTIONS.find('A') != -1))
-          {
-            distance = permutedBoundingBox[1] - 0.5;
-            normal[0] *= -1;
-            normal[1] *= -1;
-            normal[2] *= -1;
-            isFlipped = !isFlipped;
-          }
-          originOfSlice[0] += distance * permutedSpacing[1] * permutedMatrix[0][1];
-          originOfSlice[1] += distance * permutedSpacing[1] * permutedMatrix[1][1];
-          originOfSlice[2] += distance * permutedSpacing[1] * permutedMatrix[2][1];
+          originOfSlice[0] += 0.5 * permutedSpacing[1] * permutedMatrix[0][1];
+          originOfSlice[1] += 0.5 * permutedSpacing[1] * permutedMatrix[1][1];
+          originOfSlice[2] += 0.5 * permutedSpacing[1] * permutedMatrix[2][1];
           break;
         /// Axial:
         default:
@@ -1368,31 +1309,22 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
           height = permutedBoundingBox[1];
           slices = permutedBoundingBox[2];
           viewSpacing = permutedSpacing[2];
-          isFlipped = true;
+          isFlipped = false;
           rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
           rightDV[1] = permutedSpacing[0] * permutedMatrix[1][0];
           rightDV[2] = permutedSpacing[0] * permutedMatrix[2][0];
           bottomDV[0] = -1.0 * permutedSpacing[1] * permutedMatrix[0][1];
           bottomDV[1] = -1.0 * permutedSpacing[1] * permutedMatrix[1][1];
           bottomDV[2] = -1.0 * permutedSpacing[1] * permutedMatrix[2][1];
-          normal[0] = permutedSpacing[2] * permutedMatrix[0][2];
-          normal[1] = permutedSpacing[2] * permutedMatrix[1][2];
-          normal[2] = permutedSpacing[2] * permutedMatrix[2][2];
-          /// If the direction is not the same as the default direction in MITK, we flip the geometry.
-          if ((m_OrientationString.find('S') != -1) != (MITK_RENDERER_DIRECTIONS.find('S') != -1))
-          {
-            distance = permutedBoundingBox[2] - 0.5;
-            normal[0] *= -1;
-            normal[1] *= -1;
-            normal[2] *= -1;
-            isFlipped = !isFlipped;
-          }
+          normal[0] = -1.0 * permutedSpacing[2] * permutedMatrix[0][2];
+          normal[1] = -1.0 * permutedSpacing[2] * permutedMatrix[1][2];
+          normal[2] = -1.0 * permutedSpacing[2] * permutedMatrix[2][2];
           originOfSlice[0] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[0][1];
           originOfSlice[1] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
           originOfSlice[2] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[2][1];
-          originOfSlice[0] += distance * permutedSpacing[2] * permutedMatrix[0][2];
-          originOfSlice[1] += distance * permutedSpacing[2] * permutedMatrix[1][2];
-          originOfSlice[2] += distance * permutedSpacing[2] * permutedMatrix[2][2];
+          originOfSlice[0] += (permutedBoundingBox[2] - 0.5) * permutedSpacing[2] * permutedMatrix[0][2];
+          originOfSlice[1] += (permutedBoundingBox[2] - 0.5) * permutedSpacing[2] * permutedMatrix[1][2];
+          originOfSlice[2] += (permutedBoundingBox[2] - 0.5) * permutedSpacing[2] * permutedMatrix[2][2];
           break;
         }
 
@@ -1455,18 +1387,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
         {
           // Now geometry is established, set to middle slice.
           int middleSlicePos = sliceNavigationController->GetSlice()->GetSteps() / 2;
-          if (slices % 2 == 0)
-          {
-            if ((viewDirection == AXIAL
-                 && ((m_OrientationString.find('S') != -1) != (MITK_RENDERER_DIRECTIONS.find('S') != -1)))
-                || (viewDirection == SAGITTAL
-                    && ((m_OrientationString.find('R') != -1) != (MITK_RENDERER_DIRECTIONS.find('R') != -1)))
-                || (viewDirection == CORONAL
-                    && ((m_OrientationString.find('A') != -1) != (MITK_RENDERER_DIRECTIONS.find('A') != -1))))
-            {
-              middleSlicePos -= 1;
-            }
-          }
           sliceNavigationController->GetSlice()->SetPos(middleSlicePos);
         }
 
@@ -2418,29 +2338,7 @@ void MultiWindowWidget::UpdatePositionAnnotation(int windowIndex) const
           selectedPositionInVx[i] -= 0.5;
         }
 
-        std::string orientationString = "---";
-
-        if (windowIndex == 0)
-        {
-          // Axial
-          orientationString[0] = 'R';
-          orientationString[1] = 'P';
-          orientationString[2] = (m_OrientationString.find('S') != -1) == (MITK_RENDERER_DIRECTIONS.find('S') != -1) ? 'S' : 'I';
-        }
-        else if (windowIndex == 1)
-        {
-          // Sagittal
-          orientationString[0] = 'A';
-          orientationString[1] = 'S';
-          orientationString[2] = (m_OrientationString.find('R') != -1) == (MITK_RENDERER_DIRECTIONS.find('R') != -1) ? 'R' : 'L';
-        }
-        else if (windowIndex == 2)
-        {
-          // Coronal
-          orientationString[0] = 'R';
-          orientationString[1] = 'S';
-          orientationString[2] = (m_OrientationString.find('A') != -1) == (MITK_RENDERER_DIRECTIONS.find('A') != -1) ? 'A' : 'P';
-        }
+        std::string orientationString = windowIndex == 0 ? "RPI" : windowIndex == 1 ? "ASR" : "RSA";
 
         stream << selectedPositionInVx[0] << ", " << selectedPositionInVx[1] << ", " << selectedPositionInVx[2] << " vx (" << orientationString << ")" << std::endl;
       }
