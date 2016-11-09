@@ -54,6 +54,7 @@ set(CPP_FILES
   DataManagement/niftkLookupTableManager.cxx
   DataManagement/niftkNamedLookupTableProperty.cxx
   DataManagement/niftkVtkLookupTableUtils.cxx
+  DataManagement/niftkVLProperties.cxx
   Rendering/niftkCoordinateAxesVtkMapper3D.cxx
   Rendering/niftkCustomVTKAxesActor.cxx
   Rendering/niftkFastPointSetVtkMapper3D.cxx
