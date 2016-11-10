@@ -1149,24 +1149,8 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     // http://www.na-mic.org/Wiki/index.php/Coordinate_System_Conversion_Between_ITK_and_Slicer3
 
     mitk::AffineTransform3D::ConstPointer affineTransform = m_ReferenceGeometry->GetIndexToWorldTransform();
-    itk::Matrix<double, 3, 3> affineTransformMatrix = affineTransform->GetMatrix();
-    mitk::AffineTransform3D::MatrixType::InternalMatrixType normalisedAffineTransformMatrix;
-    for (unsigned int i=0; i < 3; i++)
-    {
-      for (unsigned int j = 0; j < 3; j++)
-      {
-        normalisedAffineTransformMatrix[i][j] = affineTransformMatrix[i][j];
-      }
-    }
-    normalisedAffineTransformMatrix.normalize_columns();
-    for (unsigned int i=0; i < 3; i++)
-    {
-      for (unsigned int j = 0; j < 3; j++)
-      {
-        affineTransformMatrix[i][j] = normalisedAffineTransformMatrix[i][j];
-      }
-    }
-
+    mitk::AffineTransform3D::MatrixType affineTransformMatrix = affineTransform->GetMatrix();
+    affineTransformMatrix.GetVnlMatrix().normalize_columns();
     mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
 
     int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0],inverseTransformMatrix[1][0],inverseTransformMatrix[2][0]);
