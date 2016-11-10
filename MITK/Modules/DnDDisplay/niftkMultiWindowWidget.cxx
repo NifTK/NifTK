@@ -1385,10 +1385,25 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
         // For 2D mappers only, set to middle slice (the 3D mapper simply follows by event listening).
         if (renderer->GetMapperID() == 1)
         {
-          // Now geometry is established, set to middle slice.
-          int middleSlicePos = sliceNavigationController->GetSlice()->GetSteps() / 2;
-          sliceNavigationController->GetSlice()->SetPos(middleSlicePos);
+          /// Now that the geometry is established, we set to middle slice. In case of image geometry
+          /// and even slice numbers, the selected position must be in the centre, returned by
+          /// `m_ReferenceGeometry->GetCenter()`.
+          /// Note that the slice numbering in the slice navigation controllers always to from
+          /// left to right in the sagittal SNC, back to front in the coronal SNC and top to
+          /// bottom (!) in the axial SNC, for compatibility with MITK. If this direction is
+          /// different than the up direction of the corresponding reference geometry axis, we
+          /// need to invert the position. Since we are in the centre, this means subtracting one.
+          int middleSlice = slices / 2;
+          if ((viewDirection == mitk::SliceNavigationController::Sagittal && m_UpDirections[0] < 0)
+              || (viewDirection == mitk::SliceNavigationController::Frontal && m_UpDirections[1] < 0)
+              || (viewDirection == mitk::SliceNavigationController::Axial && m_UpDirections[2] > 0))
+          {
+            --middleSlice;
+          }
+          sliceNavigationController->GetSlice()->SetPos(middleSlice);
         }
+        mitk::Point3D centre = m_ReferenceGeometry->GetCenter();
+        m_ReferenceGeometry->WorldToIndex(centre, centre);
 
         renderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
 
@@ -2065,7 +2080,8 @@ int MultiWindowWidget::GetSelectedSlice(int windowIndex) const
       selectedPositionInVx[axis] -= 0.5;
     }
 
-    /// Round it to the closest integer.
+    /// It should already be a round number, if not, it is a bug.
+    /// Anyway, let's round it to the closest integer to avoid precision errors.
     selectedSlice = static_cast<int>(selectedPositionInVx[axis] + 0.5);
   }
 
