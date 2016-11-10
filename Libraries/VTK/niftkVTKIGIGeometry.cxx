@@ -33,17 +33,30 @@
 #include <cassert>
 
 namespace niftk
-{ 
+{
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string RigidBodyFilename,
-    std::string LeftHandeyeFilename , std::string RightHandeyeFilename, 
-    std::string CentreHandeyeFilename, bool AddCrossHairs , float TrackerMarkerRadius, float LensAngle, float BodyLength ) 
+    std::string LeftHandeyeFilename , std::string RightHandeyeFilename,
+    std::string CentreHandeyeFilename, bool AddCrossHairs , float TrackerMarkerRadius, float LensAngle, float BodyLength )
 {
-  float channelBodyLength = BodyLength/4.0;
   std::vector < std::vector <float> > positions = this->ReadRigidBodyDefinitionFile(RigidBodyFilename);
   vtkSmartPointer<vtkMatrix4x4> lefthandeye = LoadMatrix4x4FromFile(LeftHandeyeFilename, false);
+  vtkSmartPointer<vtkMatrix4x4> righthandeye = LoadMatrix4x4FromFile(RightHandeyeFilename, false);
+  vtkSmartPointer<vtkMatrix4x4> centrehandeye = LoadMatrix4x4FromFile(CentreHandeyeFilename, false);
+
+  return this->MakeLaparoscope (positions , lefthandeye, righthandeye, centrehandeye,
+      AddCrossHairs, TrackerMarkerRadius,  LensAngle, BodyLength);
+}
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( const std::vector < std::vector <float> >& IREDPositions,
+    const vtkSmartPointer<vtkMatrix4x4> leftHandeye, const  vtkSmartPointer<vtkMatrix4x4> rightHandeye,
+    const vtkSmartPointer<vtkMatrix4x4> centreHandeye ,
+    const bool& AddCrossHairs , const float& trackerMarkerRadius , const float& LensAngle ,const float& BodyLength )
+{
+  float channelBodyLength = BodyLength/4.0;
   vtkSmartPointer<vtkTransform> lefttransform = vtkSmartPointer<vtkTransform>::New();
-  lefttransform->SetMatrix(lefthandeye);
+  lefttransform->SetMatrix(leftHandeye);
 
   vtkSmartPointer<vtkPolyData> leftLensCowl = vtkSmartPointer<vtkPolyData>::New();
 
@@ -63,10 +76,9 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
 
   TranslatePolyData(leftLensCowl,leftTipTransform);
   TranslatePolyData(leftLensCowl,lefttransform);
- 
-  vtkSmartPointer<vtkMatrix4x4> righthandeye = LoadMatrix4x4FromFile(RightHandeyeFilename, false);
+
   vtkSmartPointer<vtkTransform> righttransform = vtkSmartPointer<vtkTransform>::New();
-  righttransform->SetMatrix(righthandeye);
+  righttransform->SetMatrix(rightHandeye);
 
   vtkSmartPointer<vtkPolyData> rightLensCowl = vtkSmartPointer<vtkPolyData>::New();
 
@@ -83,19 +95,18 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   vtkSmartPointer<vtkTransform> rightTipTransform = vtkSmartPointer<vtkTransform>::New();
   rightTipTransform->RotateX(180 + (90 + LensAngle) );
   rightTipTransform->Translate(0,channelBodyLength/2,0);
-  
+
   TranslatePolyData(rightLensCowl,rightTipTransform);
   TranslatePolyData(rightLensCowl,righttransform);
- 
-  vtkSmartPointer<vtkMatrix4x4> centrehandeye = LoadMatrix4x4FromFile(CentreHandeyeFilename, false);
+
   float z = -BodyLength * cos ( LensAngle * NIFTK_PI / 180);
   float y = BodyLength * sin ( LensAngle * NIFTK_PI / 180);
   float lapEnd[4] = {0,y,z,1.0};
   float movedLapEnd [4];
-  centrehandeye->MultiplyPoint(lapEnd, movedLapEnd);
+  centreHandeye->MultiplyPoint(lapEnd, movedLapEnd);
 
   vtkSmartPointer<vtkTransform> centretransform = vtkSmartPointer<vtkTransform>::New();
-  centretransform->SetMatrix(centrehandeye);
+  centretransform->SetMatrix(centreHandeye);
 
   vtkSmartPointer<vtkPolyData> centreLensCowl = vtkSmartPointer<vtkPolyData>::New();
 
@@ -115,20 +126,20 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
 
   TranslatePolyData(centreLensCowl,centreTipTransform);
   TranslatePolyData(centreLensCowl,centretransform);
- 
-  vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(positions , TrackerMarkerRadius );
 
-  std::vector < float > lensOrigin; 
-  lensOrigin.push_back(centrehandeye->GetElement(0,3));
-  lensOrigin.push_back(centrehandeye->GetElement(1,3));
-  lensOrigin.push_back(centrehandeye->GetElement(2,3));
+  vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(IREDPositions , trackerMarkerRadius );
 
-  std::vector < float > vlapEnd; 
+  std::vector < float > lensOrigin;
+  lensOrigin.push_back(centreHandeye->GetElement(0,3));
+  lensOrigin.push_back(centreHandeye->GetElement(1,3));
+  lensOrigin.push_back(centreHandeye->GetElement(2,3));
+
+  std::vector < float > vlapEnd;
   vlapEnd.push_back(movedLapEnd[0]);
   vlapEnd.push_back(movedLapEnd[1]);
   vlapEnd.push_back(movedLapEnd[2]);
-  std::vector< std::vector < float > > axis; 
-  axis.push_back(this->Centroid(positions));
+  std::vector< std::vector < float > > axis;
+  axis.push_back(this->Centroid(IREDPositions));
   axis.push_back(vlapEnd);
   vtkSmartPointer<vtkAppendPolyData> LapAppenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
@@ -144,7 +155,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   float *normal = new float [4];
   normal [0] = 0.0 ; normal [1] = 0.0 ; normal [2] = -1.0 ; normal [3] = 0.0;
   float  *movedNormal = new float [4];
-  centrehandeye->MultiplyPoint(normal, movedNormal);
+  centreHandeye->MultiplyPoint(normal, movedNormal);
   lensClippingPlane->SetNormal(movedNormal[0],movedNormal[1],movedNormal[2]);
 
   planeCollection->AddItem (lensClippingPlane);
@@ -159,17 +170,17 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   appenderer->AddInputData(clipper->GetOutput());
   appenderer->AddInputData(ireds);
   appenderer->AddInputData(this->ConnectIREDs(axis, false, 3.0));
-  if ( positions.size() == 3 )
+  if ( IREDPositions.size() == 3 )
   {
-    appenderer->AddInputData(this->ConnectIREDsToCentroid(positions));
+    appenderer->AddInputData(this->ConnectIREDsToCentroid(IREDPositions));
   }
-  if ( AddCrossHairs ) 
+  if ( AddCrossHairs )
   {
     vtkSmartPointer<vtkArcSource> leftTopArc = vtkSmartPointer<vtkArcSource>::New();
     vtkSmartPointer<vtkArcSource> leftBottomArc = vtkSmartPointer<vtkArcSource>::New();
     vtkSmartPointer<vtkArcSource> rightTopArc = vtkSmartPointer<vtkArcSource>::New();
     vtkSmartPointer<vtkArcSource> rightBottomArc = vtkSmartPointer<vtkArcSource>::New();
-    
+
     vtkSmartPointer<vtkLineSource> leftX = vtkSmartPointer<vtkLineSource>::New();
     vtkSmartPointer<vtkLineSource> leftY = vtkSmartPointer<vtkLineSource>::New();
     vtkSmartPointer<vtkLineSource> rightX = vtkSmartPointer<vtkLineSource>::New();
@@ -216,12 +227,12 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
     vtkSmartPointer<vtkAppendPolyData> rightCrossApp = vtkSmartPointer<vtkAppendPolyData>::New();
     vtkSmartPointer<vtkPolyData> leftCross = vtkSmartPointer<vtkPolyData>::New();
     vtkSmartPointer<vtkPolyData> rightCross = vtkSmartPointer<vtkPolyData>::New();
-    
+
     leftCrossApp->AddInputData(leftTopArc->GetOutput());
     leftCrossApp->AddInputData(leftBottomArc->GetOutput());
     leftCrossApp->AddInputData(leftX->GetOutput());
     leftCrossApp->AddInputData(leftY->GetOutput());
-     
+
     rightCrossApp->AddInputData(rightTopArc->GetOutput());
     rightCrossApp->AddInputData(rightBottomArc->GetOutput());
     rightCrossApp->AddInputData(rightX->GetOutput());
@@ -244,8 +255,47 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeLaparoscope ( std::string Rigid
   return appenderer->GetOutput();
 }
 
+
+
+
+
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBodyFilename, std::string handeyeFilename ) 
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeInvariantPoint (const std::vector < std::vector <float> >& pointPositions,
+  const float& sphereRadius)
+{
+  vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
+  for ( int i = 0 ; i < pointPositions.size() ; i ++ )
+  {
+    std::cerr << "Making invariant point at " <<  pointPositions[i][0] << "," << pointPositions[i][1] << "," << pointPositions[i][2];
+    assert ( pointPositions[i].size() == 3 );
+    vtkSmartPointer<vtkSphereSource> innerSphere = vtkSmartPointer<vtkSphereSource>::New();
+    innerSphere->SetRadius(1.0);
+    innerSphere->SetThetaResolution(20);
+    innerSphere->SetPhiResolution(20);
+    innerSphere->SetCenter(pointPositions[i][0],pointPositions[i][1],pointPositions[i][2]);
+    innerSphere->Update();
+    vtkSmartPointer<vtkSphereSource> outerSphere = vtkSmartPointer<vtkSphereSource>::New();
+    outerSphere->SetRadius(10.0);
+    outerSphere->SetThetaResolution(12);
+    outerSphere->SetPhiResolution(12);
+    outerSphere->SetCenter(pointPositions[i][0],pointPositions[i][1],pointPositions[i][2]);
+    outerSphere->Update();
+
+#if VTK_MAJOR_VERSION <= 5
+    appenderer->AddInput(innerSphere->GetOutput());
+    appenderer->AddInput(outerSphere->GetOutput());
+#else
+    appenderer->AddInputData(innerSphere->GetOutput());
+    appenderer->AddInputData(outerSphere->GetOutput());
+#endif
+    appenderer->Update();
+  }
+
+  return appenderer->GetOutput();
+}
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBodyFilename, std::string handeyeFilename )
 {
   std::vector < std::vector <float> > positions = this->ReadRigidBodyDefinitionFile(rigidBodyFilename);
   vtkSmartPointer<vtkMatrix4x4> handeye = LoadMatrix4x4FromFile(handeyeFilename, false);
@@ -254,12 +304,12 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBody
 
   vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(positions);
 
-  std::vector < float > tip; 
+  std::vector < float > tip;
   tip.push_back(handeye->GetElement(0,3));
   tip.push_back(handeye->GetElement(1,3));
   tip.push_back(handeye->GetElement(2,3));
 
-  std::vector< std::vector < float > > axis; 
+  std::vector< std::vector < float > > axis;
   axis.push_back(tip);
   vtkSmartPointer<vtkPolyData> tipBall = this->MakeIREDs(axis,1.5);
 
@@ -286,13 +336,13 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakePointer ( std::string rigidBody
 }
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReference ( std::string rigidBodyFilename, std::string handeyeFilename ) 
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReference ( std::string rigidBodyFilename, std::string handeyeFilename )
 {
   return this->MakePointer(rigidBodyFilename, handeyeFilename);
 }
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReferencePolaris ( std::string rigidBodyFilename, std::string handeyeFilename ) 
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReferencePolaris ( std::string rigidBodyFilename, std::string handeyeFilename )
 {
   std::vector < std::vector <float> > positions = this->ReadRigidBodyDefinitionFile(rigidBodyFilename);
   vtkSmartPointer<vtkMatrix4x4> handeye = LoadMatrix4x4FromFile(handeyeFilename, false);
@@ -301,12 +351,12 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReferencePolaris ( std::string 
 
   vtkSmartPointer<vtkPolyData> ireds = this->MakeIREDs(positions, 7.5);
 
-  std::vector < float > tip; 
+  std::vector < float > tip;
   tip.push_back(handeye->GetElement(0,3));
   tip.push_back(handeye->GetElement(1,3));
   tip.push_back(handeye->GetElement(2,3));
 
-  std::vector< std::vector < float > > axis; 
+  std::vector< std::vector < float > > axis;
   axis.push_back(tip);
   vtkSmartPointer<vtkPolyData> tipBall = this->MakeIREDs(axis,1.5);
 
@@ -333,9 +383,9 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeReferencePolaris ( std::string 
 
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeAWall ( const int& whichwall, const float& size, 
-   const float& xOffset,  const float& yOffset,  const float& zOffset , 
-   const float& thickness ) 
+vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeAWall ( const int& whichwall, const float& size,
+   const float& xOffset,  const float& yOffset,  const float& zOffset ,
+   const float& thickness )
 {
   vtkSmartPointer<vtkCubeSource> wall =  vtkSmartPointer<vtkCubeSource>::New();
 
@@ -346,7 +396,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeAWall ( const int& whichwall, c
       wall->SetXLength(size);
       wall->SetYLength(size);
       wall->SetZLength(thickness);
-      wall->SetCenter(size * xOffset, size * yOffset, 
+      wall->SetCenter(size * xOffset, size * yOffset,
           size * zOffset + size * 0.5 + thickness * 0.5);
       break;
     }
@@ -364,7 +414,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeAWall ( const int& whichwall, c
       wall->SetXLength(size);
       wall->SetYLength(size);
       wall->SetZLength(thickness);
-      wall->SetCenter(size * xOffset, size * yOffset, 
+      wall->SetCenter(size * xOffset, size * yOffset,
           size * zOffset - size * 0.5 - thickness * 0.5);
       break;
     }
@@ -440,7 +490,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeYAxes( const float& length , co
   }
 
   Axis->SetPoint2(0,length,0);
-  
+
   Axis->Update();
   return Axis->GetOutput();
 }
@@ -459,7 +509,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeZAxes( const float& length , co
   }
 
   Axis->SetPoint2(0,0,length);
-  
+
   Axis->Update();
   return Axis->GetOutput();
 }
@@ -573,7 +623,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeOptotrak( const float & width, 
   }
   neckTransform->Translate(0,150,0);
   eyeTransform->RotateX(90);
-  
+
   TranslatePolyData(topBar1->GetOutput(),topBar1Transform);
   TranslatePolyData(topBar2->GetOutput(),topBar2Transform);
   TranslatePolyData(neck->GetOutput(),neckTransform);
@@ -617,7 +667,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeTransrectalUSProbe(std::string 
   body->SetResolution(40);
   body->CappingOn();
   body->Update();
-  
+
   cowl->SetRadius(16.17);
   cowl->SetHeight(20.0);
   cowl->SetCenter(45.696,-8.085, 0.0);
@@ -634,7 +684,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeTransrectalUSProbe(std::string 
   projection1->SetPoint1(45.696, 0.0, 0.0);
   projection1->SetPoint2(0.0, 45.696, 0.0);
   projection1->Update();
-  
+
   projection2->SetPoint1(45.696, 0.0, 0.0);
   projection2->SetPoint2(91.392, 45.696, 0.0);
   projection2->Update();
@@ -685,8 +735,8 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeMonitor()
   stick->SetXLength(100);
   stick->SetYLength(340);
   stick->SetZLength(20);
-  stick->SetCenter(0,-160,-15); 
-  
+  stick->SetCenter(0,-160,-15);
+
   base->SetRadius(160);
   base->SetHeight(20.0);
   base->SetCenter(0.0,-340,-15);
@@ -696,7 +746,7 @@ vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeMonitor()
   screen->SetXLength(640);
   screen->SetYLength(480);
   screen->SetZLength(10);
-  screen->SetCenter(0,0,-5.0); 
+  screen->SetCenter(0,0,-5.0);
 
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
 
@@ -714,7 +764,7 @@ std::vector<std::vector <float > > VTKIGIGeometry::ReadRigidBodyDefinitionFile(s
   std::vector < std::vector <float > > returnVector;
   ifstream fin;
   fin.open(rigidBodyFilename.c_str());
-  if ( ! fin ) 
+  if ( ! fin )
   {
     std::cerr << "Failed to open " << rigidBodyFilename;
     return returnVector;
@@ -727,7 +777,7 @@ std::vector<std::vector <float > > VTKIGIGeometry::ReadRigidBodyDefinitionFile(s
   }
   unsigned int counter;
   int views;
-  while ( getline(fin,line) ) 
+  while ( getline(fin,line) )
   {
     std::stringstream linestream(line);
     linestream >> counter >> position[0] >> position[1] >> position[2] >> views;
@@ -749,7 +799,7 @@ std::vector<std::vector <float > > VTKIGIGeometry::ReadRigidBodyDefinitionFile(s
 vtkSmartPointer<vtkPolyData> VTKIGIGeometry::MakeIREDs(std::vector < std::vector <float> > IREDPositions, float Radius, int ThetaRes, int PhiRes )
 {
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
-  for ( int i = 0 ; i < IREDPositions.size() ; i ++ ) 
+  for ( int i = 0 ; i < IREDPositions.size() ; i ++ )
   {
     assert ( IREDPositions[i].size() == 3 );
     vtkSmartPointer<vtkSphereSource> sphere = vtkSmartPointer<vtkSphereSource>::New();
@@ -776,18 +826,18 @@ std::vector <float>  VTKIGIGeometry::Centroid(std::vector < std::vector <float> 
 
   unsigned int dimension = positions[0].size();
   std::vector <float> centroid;
-  for ( unsigned int i = 0 ; i < dimension ; i ++ ) 
+  for ( unsigned int i = 0 ; i < dimension ; i ++ )
   {
     centroid.push_back(0.0);
   }
 
-  for ( unsigned int d = 0 ; d < dimension ; d ++ ) 
+  for ( unsigned int d = 0 ; d < dimension ; d ++ )
   {
-    for ( unsigned int i = 0 ; i < positions.size() ; i ++ ) 
+    for ( unsigned int i = 0 ; i < positions.size() ; i ++ )
     {
       centroid[d] += positions[i][d];
     }
-    
+
     centroid[d] /= static_cast<float> (positions.size());
   }
 
@@ -801,15 +851,15 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
   assert ( IREDPositions.size() > 1 );
   assert ( IREDPositions[0].size() == 3 );
-  if ( ! isPointer ) 
+  if ( ! isPointer )
   {
-    for ( unsigned int i = 0 ; i < IREDPositions.size () - 1 ; i ++ ) 
+    for ( unsigned int i = 0 ; i < IREDPositions.size () - 1 ; i ++ )
     {
       vtkSmartPointer<vtkLineSource> join = vtkSmartPointer<vtkLineSource>::New();
       join->SetPoint1 ( IREDPositions[i][0], IREDPositions[i][1], IREDPositions[i][2]);
       join->SetPoint2 ( IREDPositions[i+1][0], IREDPositions[i+1][1], IREDPositions[i+1][2]);
       join->Update();
-      if ( width > 0.0 ) 
+      if ( width > 0.0 )
       {
         vtkSmartPointer<vtkTubeFilter> tube = vtkSmartPointer<vtkTubeFilter>::New();
         tube->SetInputConnection (join->GetOutputPort());
@@ -849,15 +899,15 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
     join2->SetPoint1 ( IREDPositions[3][0], IREDPositions[3][1], IREDPositions[3][2]);
     join2->SetPoint2 ( IREDPositions[4][0], IREDPositions[4][1], IREDPositions[4][2]);
     join2->Update();
-    
+
     join3->SetPoint1 ( IREDPositions[0][0], IREDPositions[0][1], IREDPositions[0][2]);
     join3->SetPoint2 ( IREDPositions[4][0], IREDPositions[4][1], IREDPositions[4][2]);
     join3->Update();
-    
+
     join4->SetPoint1 ( IREDPositions[1][0], IREDPositions[1][1], IREDPositions[1][2]);
     join4->SetPoint2 ( IREDPositions[3][0], IREDPositions[3][1], IREDPositions[3][2]);
     join4->Update();
-      
+
 #if VTK_MAJOR_VERSION <= 5
     appenderer->AddInput(join1->GetOutput());
     appenderer->AddInput(join2->GetOutput());
@@ -872,7 +922,7 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDs(std::vector < std::ve
   }
   appenderer->Update();
   return appenderer->GetOutput();
-} 
+}
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDsToCentroid(std::vector < std::vector <float> > IREDPositions )
 {
@@ -880,11 +930,11 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDsToCentroid(std::vector
   vtkSmartPointer<vtkAppendPolyData> appenderer = vtkSmartPointer<vtkAppendPolyData>::New();
   assert ( IREDPositions.size() > 1 );
   assert ( IREDPositions[0].size() == 3 );
-    
-  std::vector < float >  centroid; 
+
+  std::vector < float >  centroid;
 
   centroid = this->Centroid(IREDPositions);
- 
+
   for ( unsigned int i = 0 ; i < IREDPositions.size() ; i ++ )
   {
 
@@ -892,7 +942,7 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDsToCentroid(std::vector
 
     join->SetPoint1 ( IREDPositions[i][0], IREDPositions[i][1], IREDPositions[i][2]);
     join->SetPoint2 ( centroid[0], centroid[1], centroid[2]);
-    
+
     vtkSmartPointer<vtkTubeFilter> tube = vtkSmartPointer<vtkTubeFilter>::New();
     tube->SetInputConnection (join->GetOutputPort());
     tube->SetRadius(3.0);
@@ -906,6 +956,6 @@ vtkSmartPointer<vtkPolyData>  VTKIGIGeometry::ConnectIREDsToCentroid(std::vector
     appenderer->Update();
   }
   return appenderer->GetOutput();
-} 
+}
 
 } //end namespace niftk
