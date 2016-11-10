@@ -18,7 +18,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkTransform.h>
 
-#include <mitkPointSetReader.h>
+#include <mitkIOUtil.h>
 #include <mitkSTLFileReader.h>
 #include <mitkSurface.h>
 
@@ -36,12 +36,8 @@ int main(int argc, char** argv)
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
   //Read Fixed Points
-  mitk::PointSetReader::Pointer  PointReader = mitk::PointSetReader::New();
-  PointReader->SetFileName(target);
-  mitk::PointSet::Pointer FixedPoints = mitk::PointSet::New();
+  mitk::PointSet::Pointer FixedPoints = mitk::IOUtil::LoadPointSet(target);
   mitk::Surface::Pointer FixedSurface = mitk::Surface::New();
-  PointReader->Update();
-  FixedPoints = PointReader->GetOutput();
 
   int numberOfPoints = FixedPoints->GetSize();
   if ( numberOfPoints == 0  )
