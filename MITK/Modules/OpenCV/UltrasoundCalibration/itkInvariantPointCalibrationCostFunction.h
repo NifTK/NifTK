@@ -67,7 +67,7 @@ public:
 
   itkSetMacro(TimingLag, double);
   itkGetConstMacro(TimingLag, double);
-  
+
   itkSetMacro(AllowableTimingError, TimeStampType);
   itkGetConstMacro(AllowableTimingError, TimeStampType);
 
@@ -79,6 +79,9 @@ public:
 
   itkSetMacro(Verbose, bool);
   itkGetConstMacro(Verbose, bool);
+
+  itkSetMacro(Interrupt, bool);
+  itkGetConstMacro(Interrupt, bool);
 
   void SetRigidTransformation(const cv::Matx44d& rigidBodyTrans);
   cv::Matx44d GetRigidTransformation() const;
@@ -194,6 +197,7 @@ protected:
   std::vector< std::pair<TimeStampType, cv::Point3d> > *m_PointData;
   mitk::TrackingAndTimeStampsContainer                 *m_TrackingData;
   bool                                                  m_Verbose;
+  bool                                                  m_Interrupt;
 };
 
 } // end namespace

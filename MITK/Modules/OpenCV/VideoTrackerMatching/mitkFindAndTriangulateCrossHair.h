@@ -128,7 +128,10 @@ private:
   CvVideoWriter*                m_Writer;
 
   cv::Size                      m_BlurKernel;      // For blurring
- 
+
+  int                           m_CannyLowThreshold; //For the canny edge filter
+  int                           m_CannyHighThreshold; //For the canny edge filter
+  int                           m_CannyKernel;        //For the canny edge filter
   double                        m_HoughRho;        // For the hough filter
   double                        m_HoughTheta;      // For the hough filter
   int                           m_HoughThreshold;  // For the hough filter

@@ -65,6 +65,9 @@ public:
   void SetVerbose(const bool&);
   bool GetVerbose() const;
 
+  void SetInterrupt(const bool&);
+  bool GetInterrupt() const;
+
   /**
    * \brief Loads a 4x4 matrix for the initial guess of the rigid part of the transformation.
    */

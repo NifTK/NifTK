@@ -51,6 +51,9 @@ FindAndTriangulateCrossHair::FindAndTriangulateCrossHair()
 , m_HaltOnVideoReadFail(true)
 , m_Writer(NULL)
 , m_BlurKernel (cv::Size (3,3))
+, m_CannyLowThreshold(20)
+, m_CannyHighThreshold(70)
+, m_CannyKernel(3)
 , m_HoughRho (1.0)
 , m_HoughTheta(CV_PI/(180))
 , m_HoughThreshold(50)
@@ -216,19 +219,16 @@ void FindAndTriangulateCrossHair::Triangulate()
     }
     else
     {
-      int lowThreshold=20;
-      int highThreshold = 70;
-      int kernel = 3;
       cv::vector <cv::Vec4i> linesleft;
       cv::vector <cv::Vec4i> linesright;
 
       screenPoints.m_Left = mitk::FindCrosshairCentre ( leftFrame,
-        lowThreshold, highThreshold, kernel, 
+        m_CannyLowThreshold, m_CannyHighThreshold, m_CannyKernel, 
         m_HoughRho, m_HoughTheta, m_HoughThreshold , m_HoughLineLength, m_HoughLineGap, 
         linesleft);
 
       screenPoints.m_Right = mitk::FindCrosshairCentre ( rightFrame,
-        lowThreshold, highThreshold, kernel, 
+        m_CannyLowThreshold, m_CannyHighThreshold, m_CannyKernel, 
         m_HoughRho, m_HoughTheta, m_HoughThreshold , m_HoughLineLength, m_HoughLineGap,
         linesright);
 

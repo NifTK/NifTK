@@ -204,5 +204,20 @@ bool InvariantPointCalibration::GetVerbose() const
   return m_CostFunction->GetVerbose();
 }
 
+
+
+//-----------------------------------------------------------------------------
+void InvariantPointCalibration::SetInterrupt(const bool& interrupt )
+{
+  m_CostFunction->SetInterrupt(interrupt);
+  this->Modified();
+}
+
+//-----------------------------------------------------------------------------
+bool InvariantPointCalibration::GetInterrupt() const
+{
+  return m_CostFunction->GetInterrupt();
+}
+
 //-----------------------------------------------------------------------------
 } // end namespace
