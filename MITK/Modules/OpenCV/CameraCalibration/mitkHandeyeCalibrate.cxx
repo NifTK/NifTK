@@ -183,8 +183,12 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
   {
     m_GridToWorld = gridToWorld;
     MITK_INFO << "Average Grid to World Transform" << std::endl << m_GridToWorld;
+
     std::ofstream gridCornersStream;
     gridCornersStream.open((outputDirectory + "calib.gridcorners.txt").c_str());
+    std::ofstream gridCornersMPSStream;
+    gridCornersMPSStream.open((outputDirectory + "calib.gridcorners.mps").c_str());
+    gridCornersMPSStream << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><point_set_file><file_version>0.1</file_version><point_set><time_series><time_series_id>0</time_series_id>" << std::endl;
     if ( gridCornersStream )
     {
       for ( int i = 0 ; i < 2 ; i ++ ) 
@@ -196,10 +200,13 @@ std::vector<double> HandeyeCalibrate::Calibrate(const std::string& TrackingFileD
               j*(m_SquareSizeInMillimetres * (static_cast<double>(m_NumberCornersHeight-1))),
               0.0 );
           cv::Point3d y = m_GridToWorld * x;
-          gridCornersStream << y.x << " " << y.y << " " << y.z << std::endl ;
+          gridCornersStream << y.x << " " << y.y << " " << y.z << std::endl;
+          gridCornersMPSStream << "<point><id>" << (i * 2 + j) << "</id><specification>0</specification><x>" << y.x << "</x><y>" << y.y << "</y><z>" << y.z << "</z></point>" << std::endl;
         }
       }
       gridCornersStream.close();
+      gridCornersMPSStream << "</time_series></point_set></point_set_file>";
+      gridCornersMPSStream.close();
     }
   }
   if ( GroundTruthSolution.length() > 0  )
