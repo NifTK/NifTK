@@ -600,15 +600,8 @@ void SingleViewerWidgetTestClass::initTestCase()
 
   d->WorldUpDirections = Self::GetWorldUpDirections(d->Image->GetGeometry());
 
-  /// The DnD Display should create the renderer geometries in the same direction as in the
-  /// reference (input) geometry. However, MITK likes to flip the axial axis in the axial
-  /// renderer. Therefore, so that the image navigator shows correct axial indices, we keep
-  /// the original up direction in the axes that MITK does not flip, and we flip the direction
-  /// where MITK flips it.
-  for (int i = 0; i < 3; ++i)
-  {
-    d->RendererUpDirections[i] = d->WorldUpDirections[i] * niftk::SingleViewerWidgetTestClass::s_MITKRendererUpDirections[i];
-  }
+  /// The DnD Display should create the renderer geometries in the same direction as MITK.
+  d->RendererUpDirections = niftk::SingleViewerWidgetTestClass::s_MITKRendererUpDirections;
 
   d->WorldAxes = Self::GetWorldAxes(d->Image->GetGeometry());
 
@@ -2076,13 +2069,13 @@ void SingleViewerWidgetTestClass::testGetSelectedSlice()
   int expectedSagittalSlice = sagittalSlice;
   int expectedCoronalSlice = coronalSlice;
 
-  unsigned expectedAxialSliceInSnc = d->RendererUpDirections[2] > 0
+  unsigned expectedAxialSliceInSnc = d->WorldUpDirections[2] * d->RendererUpDirections[2] > 0
       ? axialSlice
       : d->WorldExtents[2] - 1 - axialSlice;
-  unsigned expectedSagittalSliceInSnc = d->RendererUpDirections[0] > 0
+  unsigned expectedSagittalSliceInSnc = d->WorldUpDirections[0] * d->RendererUpDirections[0] > 0
       ? sagittalSlice
       : d->WorldExtents[0] - 1 - sagittalSlice;
-  unsigned expectedCoronalSliceInSnc = d->RendererUpDirections[1] > 0
+  unsigned expectedCoronalSliceInSnc = d->WorldUpDirections[1] * d->RendererUpDirections[1] > 0
       ? coronalSlice
       : d->WorldExtents[1] - 1 - coronalSlice;
 
@@ -2144,13 +2137,13 @@ void SingleViewerWidgetTestClass::testSetSelectedSlice()
   int expectedSagittalSlice = sagittalSlice;
   int expectedCoronalSlice = coronalSlice;
 
-  unsigned expectedAxialSliceInSnc = d->RendererUpDirections[2] > 0
+  unsigned expectedAxialSliceInSnc = d->WorldUpDirections[2] * d->RendererUpDirections[2] > 0
       ? axialSlice
       : d->WorldExtents[2] - 1 - axialSlice;
-  unsigned expectedSagittalSliceInSnc = d->RendererUpDirections[0] > 0
+  unsigned expectedSagittalSliceInSnc = d->WorldUpDirections[0] * d->RendererUpDirections[0] > 0
       ? sagittalSlice
       : d->WorldExtents[0] - 1 - sagittalSlice;
-  unsigned expectedCoronalSliceInSnc = d->RendererUpDirections[1] > 0
+  unsigned expectedCoronalSliceInSnc = d->WorldUpDirections[1] * d->RendererUpDirections[1] > 0
       ? coronalSlice
       : d->WorldExtents[1] - 1 - coronalSlice;
 
@@ -2160,8 +2153,8 @@ void SingleViewerWidgetTestClass::testSetSelectedSlice()
 
   coronalSlice += delta;
 
-  expectedCoronalSlice += d->WorldUpDirections[CoronalAxis] * delta;
-  expectedCoronalSliceInSnc += d->RendererUpDirections[CoronalAxis] * delta;
+  expectedCoronalSlice += delta;
+  expectedCoronalSliceInSnc += d->WorldUpDirections[CoronalAxis] * d->RendererUpDirections[CoronalAxis] * delta;
   expectedSelectedPosition[CoronalAxis] += delta * d->WorldSpacings[CoronalAxis];
 
   d->Viewer->SetSelectedSlice(WINDOW_ORIENTATION_CORONAL, coronalSlice);
@@ -2173,8 +2166,8 @@ void SingleViewerWidgetTestClass::testSetSelectedSlice()
 
   axialSlice += delta;
 
-  expectedAxialSlice += d->WorldUpDirections[AxialAxis] * delta;
-  expectedAxialSliceInSnc += d->RendererUpDirections[AxialAxis] * delta;
+  expectedAxialSlice += delta;
+  expectedAxialSliceInSnc += d->WorldUpDirections[AxialAxis] * d->RendererUpDirections[AxialAxis] * delta;
   expectedSelectedPosition[AxialAxis] += delta * d->WorldSpacings[AxialAxis];
 
   d->Viewer->SetSelectedSlice(WINDOW_ORIENTATION_AXIAL, axialSlice);
@@ -2186,8 +2179,8 @@ void SingleViewerWidgetTestClass::testSetSelectedSlice()
 
   sagittalSlice += delta;
 
-  expectedSagittalSlice += d->WorldUpDirections[SagittalAxis] * delta;
-  expectedSagittalSliceInSnc += d->RendererUpDirections[SagittalAxis] * delta;
+  expectedSagittalSlice += delta;
+  expectedSagittalSliceInSnc += d->WorldUpDirections[SagittalAxis] *  d->RendererUpDirections[SagittalAxis] * delta;
   expectedSelectedPosition[SagittalAxis] += delta * d->WorldSpacings[SagittalAxis];
 
   d->Viewer->SetSelectedSlice(WINDOW_ORIENTATION_SAGITTAL, sagittalSlice);
@@ -3801,7 +3794,7 @@ void SingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationControlle
 
   axialSliceDelta = +2;
   axialSncPos += axialSliceDelta;
-  expectedAxialSlice += d->RendererUpDirections[AxialAxis] * axialSliceDelta;
+  expectedAxialSlice += d->WorldUpDirections[AxialAxis] * d->RendererUpDirections[AxialAxis] * axialSliceDelta;
   expectedSelectedPosition[AxialAxis] += d->RendererUpDirections[AxialAxis] * axialSliceDelta * d->WorldSpacings[AxialAxis];
 
   d->AxialSnc->GetSlice()->SetPos(axialSncPos);
@@ -3813,7 +3806,7 @@ void SingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationControlle
 
   sagittalSliceDelta = -3;
   sagittalSncPos += sagittalSliceDelta;
-  expectedSagittalSlice += d->RendererUpDirections[SagittalAxis] * sagittalSliceDelta;
+  expectedSagittalSlice += d->WorldUpDirections[SagittalAxis] * d->RendererUpDirections[SagittalAxis] * sagittalSliceDelta;
   expectedSelectedPosition[SagittalAxis] += d->RendererUpDirections[SagittalAxis] * sagittalSliceDelta * d->WorldSpacings[SagittalAxis];
 
   d->SagittalSnc->GetSlice()->SetPos(sagittalSncPos);
@@ -3825,7 +3818,7 @@ void SingleViewerWidgetTestClass::testSelectSliceThroughSliceNavigationControlle
 
   coronalSliceDelta = +5;
   coronalSncPos += coronalSliceDelta;
-  expectedCoronalSlice += d->RendererUpDirections[CoronalAxis] * coronalSliceDelta;
+  expectedCoronalSlice += d->WorldUpDirections[CoronalAxis] * d->RendererUpDirections[CoronalAxis] * coronalSliceDelta;
   expectedSelectedPosition[CoronalAxis] += d->RendererUpDirections[CoronalAxis] * coronalSliceDelta * d->WorldSpacings[CoronalAxis];
 
   d->CoronalSnc->GetSlice()->SetPos(coronalSncPos);
@@ -3857,9 +3850,9 @@ void SingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationContro
   int expectedSagittalSlice = expectedSelectedIndex[d->WorldAxes[0]];
   int expectedCoronalSlice = expectedSelectedIndex[d->WorldAxes[1]];
 
-  unsigned expectedAxialSncPos = d->RendererUpDirections[2] > 0 ? expectedAxialSlice : d->AxialSnc->GetSlice()->GetSteps() - 1 - expectedAxialSlice;
-  unsigned expectedSagittalSncPos = d->RendererUpDirections[0] > 0 ? expectedSagittalSlice : d->SagittalSnc->GetSlice()->GetSteps() - 1 - expectedSagittalSlice;
-  unsigned expectedCoronalSncPos = d->RendererUpDirections[1] > 0 ? expectedCoronalSlice: d->CoronalSnc->GetSlice()->GetSteps() - 1 - expectedCoronalSlice;
+  unsigned expectedAxialSncPos = d->WorldUpDirections[2] * d->RendererUpDirections[2] > 0 ? expectedAxialSlice : d->AxialSnc->GetSlice()->GetSteps() - 1 - expectedAxialSlice;
+  unsigned expectedSagittalSncPos = d->WorldUpDirections[0] * d->RendererUpDirections[0] > 0 ? expectedSagittalSlice : d->SagittalSnc->GetSlice()->GetSteps() - 1 - expectedSagittalSlice;
+  unsigned expectedCoronalSncPos = d->WorldUpDirections[1] * d->RendererUpDirections[1] > 0 ? expectedCoronalSlice: d->CoronalSnc->GetSlice()->GetSteps() - 1 - expectedCoronalSlice;
 
   d->AxialSnc->SelectSliceByPoint(expectedSelectedPosition);
 
@@ -3873,7 +3866,7 @@ void SingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationContro
   worldGeometry->WorldToIndex(expectedSelectedPosition, expectedSelectedIndex);
 
   expectedSagittalSlice = expectedSelectedIndex[d->WorldAxes[0]];
-  expectedSagittalSncPos = d->RendererUpDirections[0] > 0 ? expectedSagittalSlice : d->SagittalSnc->GetSlice()->GetSteps() - 1 - expectedSagittalSlice;
+  expectedSagittalSncPos = d->WorldUpDirections[0] * d->RendererUpDirections[0] > 0 ? expectedSagittalSlice : d->SagittalSnc->GetSlice()->GetSteps() - 1 - expectedSagittalSlice;
 
   d->SagittalSnc->SelectSliceByPoint(expectedSelectedPosition);
 
@@ -3887,7 +3880,7 @@ void SingleViewerWidgetTestClass::testSelectPositionThroughSliceNavigationContro
   worldGeometry->WorldToIndex(expectedSelectedPosition, expectedSelectedIndex);
 
   expectedCoronalSlice = expectedSelectedIndex[d->WorldAxes[1]];
-  expectedCoronalSncPos = d->RendererUpDirections[1] > 0 ? expectedCoronalSlice: d->CoronalSnc->GetSlice()->GetSteps() - 1 - expectedCoronalSlice;
+  expectedCoronalSncPos = d->WorldUpDirections[1] * d->RendererUpDirections[1] > 0 ? expectedCoronalSlice: d->CoronalSnc->GetSlice()->GetSteps() - 1 - expectedCoronalSlice;
 
   d->CoronalSnc->SelectSliceByPoint(expectedSelectedPosition);
 
