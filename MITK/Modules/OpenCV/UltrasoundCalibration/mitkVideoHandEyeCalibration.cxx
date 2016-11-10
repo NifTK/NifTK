@@ -69,8 +69,14 @@ double VideoHandEyeCalibration::Calibrate()
 //-----------------------------------------------------------------------------
 double VideoHandEyeCalibration::DoCalibration()
 {
-  assert(m_PointData);
-  assert(m_TrackingData);
+  if ( m_PointData == NULL )
+  {
+    mitkThrow() << "mitkVideoHandeyeCalibration::DoCalibration(): No point data available";
+  }
+  if ( m_TrackingData == NULL )
+  {
+    mitkThrow() << "mitkVideoHandeyeCalibration::DoCalibration(): No tracking data available";
+  }
 
   double residualError = 0;
 
@@ -141,8 +147,8 @@ double VideoHandEyeCalibration::DoCalibration()
     scaleFactorsForParameterSizes[parameters.GetSize() -1] = 0.1;
   }
 
-  std::cout << "VideoHandEyeCalibration:Start parameters = " << parameters << std::endl;
-  std::cout << "VideoHandEyeCalibration:Optimising " << m_PointData->size() << " points and " << m_TrackingData->GetSize() << " matrices " << std::endl;
+  MITK_INFO << "VideoHandEyeCalibration:Start parameters = " << parameters << std::endl;
+  MITK_INFO << "VideoHandEyeCalibration:Optimising " << m_PointData->size() << " points and " << m_TrackingData->GetSize() << " matrices " << std::endl;
 
   m_DownCastCostFunction->SetPointData(m_PointData);
   m_DownCastCostFunction->SetTrackingData(m_TrackingData);
@@ -165,7 +171,7 @@ double VideoHandEyeCalibration::DoCalibration()
   itk::VideoHandEyeCalibrationCostFunction::MeasureType values = m_DownCastCostFunction->GetValue(parameters);
   residualError = m_DownCastCostFunction->GetResidual(values);
 
-  std::cout << "Stop condition:" << optimizer->GetStopConditionDescription();
+  MITK_INFO << "Stop condition:" << optimizer->GetStopConditionDescription();
 
   if (this->GetOptimiseRigidTransformation())
   {
@@ -191,6 +197,23 @@ double VideoHandEyeCalibration::DoCalibration()
     double timeStamp = parameters[parameters.GetSize() -1];
     this->SetTimingLag(timeStamp);
   }
+
+  std::cout << "Calibration Summary:"
+            << m_PointData->size() << ", "
+            << residualError << ", "
+            << parameters[0] << ", "
+            << parameters[1] << ", "
+            << parameters[2] << ", "
+            << parameters[3] << ", "
+            << parameters[4] << ", "
+            << parameters[5] << ", ";
+  if (this->GetOptimiseInvariantPoint())
+  {
+    std::cout << parameters[6] << ", "
+              << parameters[7] << ", "
+              << parameters[8] << ", " ;
+  }
+  std::cout << std::endl;
 
   return residualError;
 }

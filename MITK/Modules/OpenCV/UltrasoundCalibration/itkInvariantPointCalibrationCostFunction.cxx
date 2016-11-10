@@ -31,6 +31,7 @@ InvariantPointCalibrationCostFunction::InvariantPointCalibrationCostFunction()
 , m_PointData(NULL)
 , m_TrackingData(NULL)
 , m_Verbose(false)
+, m_Interrupt(false)
 {
   m_InvariantPoint[0] = 0;
   m_InvariantPoint[1] = 0;
@@ -323,6 +324,13 @@ void InvariantPointCalibrationCostFunction::SetTrackingData(mitk::TrackingAndTim
 //-----------------------------------------------------------------------------
 void InvariantPointCalibrationCostFunction::SetPointData(std::vector< std::pair<unsigned long long, cv::Point3d> >* pointData)
 {
+  for ( unsigned int i = 0 ; i < pointData->size() ; i ++ )
+  {
+    if ( ! mitk::IsNotNaNorInf ( (*pointData)[i].second ) )
+    {
+      mitkThrow() << "InvariantPointCalibrationCostFunction::SetPointData : there are NaN or inf values in the point data aborting.";
+    }
+  }
   m_PointData = pointData;
   m_NumberOfValues = pointData->size() * 3;
   this->Modified();
@@ -383,19 +391,21 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
   TimeStampType timeStamp = 0;
   long long timingError = 0;
   bool inBounds;
-  
+
   unsigned int valuesDropped = 0;
   for (unsigned int i = 0; i < this->m_PointData->size(); i++)
   {
+
     timeStamp = (*this->m_PointData)[i].first;
     timeStamp -= lagInNanoSeconds;
-    
+
     cv::Matx44d trackingTransformation = m_TrackingData->InterpolateMatrix(timeStamp, timingError, inBounds );
     cv::Matx44d combinedTransformation = translationTransformation * (trackingTransformation * (similarityTransformation));
 
     cv::Matx41d point;
     cv::Matx41d residual;
     cv::Matx41d pointInWorld;
+
 
     point(0,0) = (*this->m_PointData)[i].second.x;
     point(1,0) = (*this->m_PointData)[i].second.y;
@@ -404,8 +414,8 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
 
     pointInWorld = (trackingTransformation * similarityTransformation) * point;
     residual = translationTransformation * pointInWorld;
- 
-    if ( std::abs(timingError) < m_AllowableTimingError ) 
+
+    if ((! m_Interrupt ) && ( std::abs(timingError) < m_AllowableTimingError ) )
     {
       value[i*3 + 0] = residual(0, 0);
       value[i*3 + 1] = residual(1, 0);
@@ -414,8 +424,8 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
     else
     {
       //excessive timing error, discard the value. I would much prefer
-      //to fill these with NaN or change the size of the value array, 
-      //however I haven't found a way to do this that works with itk's 
+      //to fill these with NaN or change the size of the value array,
+      //however I haven't found a way to do this that works with itk's
       //solver. Filling with zeros should be OK but might lead to bugs when
       //optimising the timingLag
       value[i*3 + 0] = 0.0;
@@ -428,17 +438,19 @@ InvariantPointCalibrationCostFunction::MeasureType InvariantPointCalibrationCost
   if (m_Verbose)
   {
     double residual = this->GetResidual(value);
-    std::cout << "InvariantPointCalibrationCostFunction::GetValue [ " << value.GetSize() << 
+    std::stringstream myout;
+    myout << "InvariantPointCalibrationCostFunction::GetValue [ " << value.GetSize() <<
       " , " << valuesDropped << " ] (";
     for (int j = 0; j < parameters.GetSize(); j++)
     {
-      std::cout << parameters[j];
+     myout << parameters[j];
       if (j != (parameters.GetSize() -1))
       {
-        std::cout << ", ";
+        myout << ", ";
       }
     }
-    std::cout << ") = " << residual << std::endl;
+    myout << ") = " << residual << std::endl;
+    MITK_INFO << myout.str();
   }
 
   return value;
