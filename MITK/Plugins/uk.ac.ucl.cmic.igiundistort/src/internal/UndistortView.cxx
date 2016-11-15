@@ -539,6 +539,8 @@ void UndistortView::OnBackgroundProcessFinished()
     outputNode->SetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName,  m_BackgroundWorker.m_Queue[i].m_OutputImage->GetProperty(niftk::Undistortion::s_CameraCalibrationPropertyName));
     outputNode->SetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName, m_BackgroundWorker.m_Queue[i].m_OutputImage->GetProperty(niftk::Undistortion::s_ImageIsUndistortedPropertyName));
     outputNode->Modified();
+    mitk::Image* image = dynamic_cast<mitk::Image*>(outputNode->GetData());
+    image->GetVtkImageData()->Modified();
   }
 
   m_BackgroundWorker.m_Queue.clear();
