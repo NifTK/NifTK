@@ -14,19 +14,35 @@ REM   See LICENSE.txt in the top level directory for details.
 REM 
 REM =============================================================================*/
 
+SETLOCAL ENABLEDELAYEDEXPANSION
+
 SET BATCH_SCRIPT_FOLDER_PATHNAME="%~dp0"
 SET UP_ONE_DIRECTORY="%BATCH_SCRIPT_FOLDER_PATHNAME%\..\"
 
-REM Throw the first parameter away and retain remainder
-
-SET params=%1
+REM Loop round a character at a time, splitting words only on space.
+SET params=
+SET word=
+SET terminator=@
+SET cl=%*%terminator%
 
 :LOOP
-SHIFT
-IF [%1]==[] GOTO AFTERLOOP
-SET params=%params% %1
+SET char=%cl:~0,1%
+SET cl=%cl:~1%
+
+IF "%char%" == "%terminator%" GOTO AFTERLOOP
+IF "%char%" == " " (
+  IF "!word!" NEQ "" (
+    SET params=%params% "!word!"
+    SET word=
+  )
+) ELSE (
+  SET word=!word!%char%
+)
 GOTO LOOP
+
 :AFTERLOOP
+
+IF "!word!" NEQ "" SET params=%params% "!word!"
 
 "%UP_ONE_DIRECTORY%\@FULL_APP_NAME@" %params%
 
