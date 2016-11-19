@@ -16,6 +16,7 @@
 #include "deviceimpl.h"
 #include <video/device.h>
 #include <video/sdiinput.h>
+#include <algorithm>
 
 
 static std::ostream& operator<<(std::ostream& os, const SYSTEMTIME& s)

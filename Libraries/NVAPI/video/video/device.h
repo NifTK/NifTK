@@ -27,7 +27,7 @@ namespace video
 
 class SDIDeviceImpl;
 class SDIDevice;
-class LIBVIDEO_DLL_EXPORTS SDIDevice
+class /*LIBVIDEO_DLL_EXPORTS*/ SDIDevice
 {
 public:
     enum Type
