@@ -14,14 +14,20 @@
 
 if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
 
+  if(NOT (CUDA_VERSION_MAJOR LESS 7))
+	include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/nv7)
+	ADD_DEFINITIONS(-DUSE_NV_7)
+	ADD_DEFINITIONS(-DGLEW_STATIC)
+  endif(NOT (CUDA_VERSION_MAJOR LESS 7)) 
+
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources niftkIGIGui
     PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets
     AUTOLOAD_WITH niftkIGIServices
-  )
-
-  include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/video)
-  include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/glew)
+  )  
+  
+  include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/video)    
+  include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/glew)		  
   include_directories(${QT_QTOPENGL_INCLUDE_DIR})
   include_directories(${CUDA_TOOLKIT_INCLUDE})
 

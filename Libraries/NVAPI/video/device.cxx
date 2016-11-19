@@ -15,6 +15,7 @@
 #include "stdafx.h"
 #include <video/device.h>
 #include "deviceimpl.h"
+#include <algorithm>
 
 
 namespace video

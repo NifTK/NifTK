@@ -41,7 +41,6 @@
 #include <GL/wglew.h>
 
 #include <nvapi.h>
-#include <NVEncoderAPI.h>
 #include <nvcuvid.h>
 #include <cuda.h>
 #include <cuda_gl_interop.h>
