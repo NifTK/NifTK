@@ -1189,8 +1189,8 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
       /// different than the up direction of the corresponding reference geometry axis, we
       /// need to invert the position. Since we are in the centre, this means subtracting one.
       int middleSlice = snc->GetSlice()->GetSteps() / 2;
-      bool referenceGeometryAxisInverted = m_UpDirections[i] < 0;
       int worldAxis = i == 0 ? 2 : i == 1 ? 0 : 1;
+      bool referenceGeometryAxisInverted = m_UpDirections[worldAxis] < 0;
       bool rendererZAxisInverted = snc->GetCurrentGeometry3D()->GetAxisVector(2)[worldAxis] < 0;
       if (referenceGeometryAxisInverted != rendererZAxisInverted)
       {
