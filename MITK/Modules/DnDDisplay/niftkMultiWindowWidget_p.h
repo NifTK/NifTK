@@ -28,7 +28,6 @@
 
 class QGridLayout;
 class QStackedLayout;
-class DisplayGeometryModificationCommand;
 
 class vtkRenderer;
 class vtkSideAnnotation;
@@ -41,6 +40,8 @@ class SliceNavigationController;
 
 namespace niftk
 {
+
+class DisplayGeometryModificationCommand;
 
 /**
  * \class MultiWindowWidget
