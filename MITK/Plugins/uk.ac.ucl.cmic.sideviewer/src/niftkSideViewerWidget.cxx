@@ -788,7 +788,7 @@ void SideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderWindow
   /// orientation.
   bool geometryFirstInitialised = false;
 
-  mitk::TimeGeometry* timeGeometry = const_cast<mitk::TimeGeometry*>(mainWindow->GetRenderer()->GetWorldTimeGeometry());
+  const mitk::TimeGeometry* timeGeometry = m_MainWindowSnc->GetInputWorldTimeGeometry();
   if (timeGeometry != m_TimeGeometry)
   {
     if (!m_TimeGeometry)
@@ -1006,14 +1006,27 @@ void SideViewerWidget::OnMagnificationSpinBoxValueChanged(double magnification)
 
 
 //-----------------------------------------------------------------------------
-void SideViewerWidget::SetGeometry(const itk::EventObject& geometrySendEvent)
+void SideViewerWidget::SetGeometry(const itk::EventObject& event)
 {
-  const mitk::SliceNavigationController::GeometrySendEvent* sendEvent =
-      dynamic_cast<const mitk::SliceNavigationController::GeometrySendEvent *>(&geometrySendEvent);
+  const mitk::SliceNavigationController::GeometrySendEvent* geometrySendEvent =
+      dynamic_cast<const mitk::SliceNavigationController::GeometrySendEvent*>(&event);
 
-  assert(sendEvent);
+  assert(geometrySendEvent);
 
-  const mitk::TimeGeometry* timeGeometry = sendEvent->GetTimeGeometry();
+  /// Note:
+  ///
+  /// The geometry event is raised by the slice navigation controller when it is re-initialised.
+  /// The event object contains the new geometry created by the slice navigation controller.
+  /// However, here we need the geometry *based on which* the SNC has been updated, *not* the
+  /// new geometry that it created. Unfortunately, this information cannot be retrieved from
+  /// the event object, and the source (the SNC) of the event cannot be accessed, either.
+  ///
+  /// Luckily, we have a reference to m_MainWindowSnc that must have raised the event, so we
+  /// can access the 'input' or 'reference' geometry through it.
+
+  assert(m_MainWindowSnc->GetCreatedWorldGeometry() == geometrySendEvent->GetTimeGeometry());
+
+  const mitk::TimeGeometry* timeGeometry = m_MainWindowSnc->GetInputWorldTimeGeometry();
 
   assert(timeGeometry);
 

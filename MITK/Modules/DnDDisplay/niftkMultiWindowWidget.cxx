@@ -1087,19 +1087,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     m_TimeGeometry = timeGeometry;
     m_ReferenceGeometry = timeGeometry->GetGeometryForTimeStep(0);
 
-    if (!m_ReferenceGeometry->GetImageGeometry())
-    {
-      /// If the input is from a renderer, we need the geometry that was used to initialise its geometry.
-      /// This can be an image geometry or a manually created world geometry.
-      if (auto slicedGeometry = dynamic_cast<const mitk::SlicedGeometry3D*>(m_ReferenceGeometry))
-      {
-        if (slicedGeometry->HasReferenceGeometry())
-        {
-          m_ReferenceGeometry = slicedGeometry->GetReferenceGeometry();
-        }
-      }
-    }
-
     // Calculating the voxel size. This is needed for the conversion between the
     // magnification and the scale factors.
     for (int axis = 0; axis < 3; ++axis)
@@ -1148,51 +1135,20 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     // Inspired by:
     // http://www.na-mic.org/Wiki/index.php/Coordinate_System_Conversion_Between_ITK_and_Slicer3
 
-    mitk::AffineTransform3D::ConstPointer affineTransform = m_ReferenceGeometry->GetIndexToWorldTransform();
-    mitk::AffineTransform3D::MatrixType affineTransformMatrix = affineTransform->GetMatrix();
-    affineTransformMatrix.GetVnlMatrix().normalize_columns();
-    mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseTransformMatrix = affineTransformMatrix.GetInverse();
+    mitk::AffineTransform3D::MatrixType matrix = m_ReferenceGeometry->GetIndexToWorldTransform()->GetMatrix();
+    matrix.GetVnlMatrix().normalize_columns();
+    mitk::AffineTransform3D::MatrixType::InternalMatrixType inverseMatrix = matrix.GetInverse();
 
-    int dominantAxisRL = itk::Function::Max3(inverseTransformMatrix[0][0],inverseTransformMatrix[1][0],inverseTransformMatrix[2][0]);
-    int signRL = itk::Function::Sign(inverseTransformMatrix[dominantAxisRL][0]);
-    int dominantAxisAP = itk::Function::Max3(inverseTransformMatrix[0][1],inverseTransformMatrix[1][1],inverseTransformMatrix[2][1]);
-    int signAP = itk::Function::Sign(inverseTransformMatrix[dominantAxisAP][1]);
-    int dominantAxisSI = itk::Function::Max3(inverseTransformMatrix[0][2],inverseTransformMatrix[1][2],inverseTransformMatrix[2][2]);
-    int signSI = itk::Function::Sign(inverseTransformMatrix[dominantAxisSI][2]);
-
-    int permutedBoundingBox[3];
-    int permutedAxes[3];
-    double permutedSpacing[3];
-
-    permutedAxes[0] = dominantAxisRL;
-    permutedAxes[1] = dominantAxisAP;
-    permutedAxes[2] = dominantAxisSI;
+    int dominantAxisRL = itk::Function::Max3(inverseMatrix[0][0], inverseMatrix[1][0], inverseMatrix[2][0]);
+    int signRL = itk::Function::Sign(inverseMatrix[dominantAxisRL][0]);
+    int dominantAxisAP = itk::Function::Max3(inverseMatrix[0][1], inverseMatrix[1][1], inverseMatrix[2][1]);
+    int signAP = itk::Function::Sign(inverseMatrix[dominantAxisAP][1]);
+    int dominantAxisSI = itk::Function::Max3(inverseMatrix[0][2], inverseMatrix[1][2], inverseMatrix[2][2]);
+    int signSI = itk::Function::Sign(inverseMatrix[dominantAxisSI][2]);
 
     m_UpDirections[0] = signRL;
     m_UpDirections[1] = signAP;
     m_UpDirections[2] = signSI;
-
-    permutedBoundingBox[0] = static_cast<int>(m_ReferenceGeometry->GetExtent(dominantAxisRL));
-    permutedBoundingBox[1] = static_cast<int>(m_ReferenceGeometry->GetExtent(dominantAxisAP));
-    permutedBoundingBox[2] = static_cast<int>(m_ReferenceGeometry->GetExtent(dominantAxisSI));
-
-    permutedSpacing[0] = m_ReferenceGeometry->GetSpacing()[permutedAxes[0]];
-    permutedSpacing[1] = m_ReferenceGeometry->GetSpacing()[permutedAxes[1]];
-    permutedSpacing[2] = m_ReferenceGeometry->GetSpacing()[permutedAxes[2]];
-
-    mitk::AffineTransform3D::MatrixType::InternalMatrixType permutedMatrix;
-    permutedMatrix.set_identity();
-
-    // permutedMatrix(column) = inverseTransformMatrix(row) * flippedAxes
-    permutedMatrix[0][0] = inverseTransformMatrix[permutedAxes[0]][0] * m_UpDirections[0];
-    permutedMatrix[1][0] = inverseTransformMatrix[permutedAxes[0]][1] * m_UpDirections[0];
-    permutedMatrix[2][0] = inverseTransformMatrix[permutedAxes[0]][2] * m_UpDirections[0];
-    permutedMatrix[0][1] = inverseTransformMatrix[permutedAxes[1]][0] * m_UpDirections[1];
-    permutedMatrix[1][1] = inverseTransformMatrix[permutedAxes[1]][1] * m_UpDirections[1];
-    permutedMatrix[2][1] = inverseTransformMatrix[permutedAxes[1]][2] * m_UpDirections[1];
-    permutedMatrix[0][2] = inverseTransformMatrix[permutedAxes[2]][0] * m_UpDirections[2];
-    permutedMatrix[1][2] = inverseTransformMatrix[permutedAxes[2]][1] * m_UpDirections[2];
-    permutedMatrix[2][2] = inverseTransformMatrix[permutedAxes[2]][2] * m_UpDirections[2];
 
     m_OrientationAxes[AXIAL] = dominantAxisSI;
     m_OrientationAxes[SAGITTAL] = dominantAxisRL;
@@ -1201,24 +1157,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     m_OrientationString[dominantAxisSI] = signSI > 0 ? 'S' : 'I';
     m_OrientationString[dominantAxisRL] = signRL > 0 ? 'R' : 'L';
     m_OrientationString[dominantAxisAP] = signAP > 0 ? 'A' : 'P';
-
-    mitk::Point3D worldBottomLeftBackCorner = m_ReferenceGeometry->GetOrigin();
-
-    for (int i = 0; i < 3; ++i)
-    {
-      /// The distance of the origin from the bottom left back corner in voxels.
-      double distance = m_UpDirections[i] > 0 ? 0.0 : permutedBoundingBox[i];
-
-      if (m_ReferenceGeometry->GetImageGeometry())
-      {
-        distance += m_UpDirections[i] * 0.5;
-      }
-
-      for (int j = 0; j < 3; ++j)
-      {
-        worldBottomLeftBackCorner[j] -= distance * permutedSpacing[i] * permutedMatrix[j][i];
-      }
-    }
 
     /// We create a timed geometry for each 2D renderer. The sliced geometries must be created
     /// in the same way as MITK does it, so that the viewer stays compatible with the MITK Display
@@ -1237,165 +1175,28 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
       mitk::BaseRenderer* renderer = m_RenderWindows[i]->GetRenderer();
 
       // Get access to slice navigation controller, as this sorts out most of the process.
-      mitk::SliceNavigationController* sliceNavigationController = renderer->GetSliceNavigationController();
-      sliceNavigationController->SetViewDirectionToDefault();
+      mitk::SliceNavigationController* snc = renderer->GetSliceNavigationController();
+      snc->SetViewDirectionToDefault();
+      snc->SetInputWorldTimeGeometry(m_TimeGeometry);
+      snc->Update();
 
-      // Get the view/orientation flags.
-      mitk::SliceNavigationController::ViewDirection viewDirection = sliceNavigationController->GetViewDirection();
-
-      mitk::Point3D originOfSlice = worldBottomLeftBackCorner;
-      mitk::VnlVector rightDV(3);
-      mitk::VnlVector bottomDV(3);
-      mitk::VnlVector normal(3);
-      int width = 1;
-      int height = 1;
-      unsigned int slices = 1;
-      mitk::ScalarType viewSpacing = 1;
-      bool isFlipped;
-
-      // Setting up the width, height, axis orientation.
-      switch (viewDirection)
+      /// Now that the geometry is established, we set to middle slice. In case of image geometry
+      /// and even slice numbers, the selected position must be in the centre, returned by
+      /// `m_ReferenceGeometry->GetCenter()`.
+      /// Note that the slice numbering in the slice navigation controllers always goes from
+      /// left to right in the sagittal SNC, from back to front in the coronal SNC and from top
+      /// to bottom (!) in the axial SNC, for compatibility with MITK. If this direction is
+      /// different than the up direction of the corresponding reference geometry axis, we
+      /// need to invert the position. Since we are in the centre, this means subtracting one.
+      int middleSlice = snc->GetSlice()->GetSteps() / 2;
+      bool referenceGeometryAxisInverted = m_UpDirections[i] < 0;
+      int worldAxis = i == 0 ? 2 : i == 1 ? 0 : 1;
+      bool rendererZAxisInverted = snc->GetCurrentGeometry3D()->GetAxisVector(2)[worldAxis] < 0;
+      if (referenceGeometryAxisInverted != rendererZAxisInverted)
       {
-      case mitk::SliceNavigationController::Sagittal:
-        width  = permutedBoundingBox[1];
-        height = permutedBoundingBox[2];
-        slices = permutedBoundingBox[0];
-        viewSpacing = permutedSpacing[0];
-        isFlipped = false;
-        rightDV[0] = permutedSpacing[1] * permutedMatrix[0][1];
-        rightDV[1] = permutedSpacing[1] * permutedMatrix[1][1];
-        rightDV[2] = permutedSpacing[1] * permutedMatrix[2][1];
-        bottomDV[0] = permutedSpacing[2] * permutedMatrix[0][2];
-        bottomDV[1] = permutedSpacing[2] * permutedMatrix[1][2];
-        bottomDV[2] = permutedSpacing[2] * permutedMatrix[2][2];
-        normal[0] = permutedSpacing[0] * permutedMatrix[0][0];
-        normal[1] = permutedSpacing[0] * permutedMatrix[1][0];
-        normal[2] = permutedSpacing[0] * permutedMatrix[2][0];
-        originOfSlice[0] += 0.5 * permutedSpacing[0] * permutedMatrix[0][0];
-        originOfSlice[1] += 0.5 * permutedSpacing[0] * permutedMatrix[1][0];
-        originOfSlice[2] += 0.5 * permutedSpacing[0] * permutedMatrix[2][0];
-        break;
-      /// Coronal:
-      case mitk::SliceNavigationController::Frontal:
-        width  = permutedBoundingBox[0];
-        height = permutedBoundingBox[2];
-        slices = permutedBoundingBox[1];
-        viewSpacing = permutedSpacing[1];
-        isFlipped = true;
-        rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
-        rightDV[1] = permutedSpacing[0] * permutedMatrix[1][0];
-        rightDV[2] = permutedSpacing[0] * permutedMatrix[2][0];
-        bottomDV[0] = permutedSpacing[2] * permutedMatrix[0][2];
-        bottomDV[1] = permutedSpacing[2] * permutedMatrix[1][2];
-        bottomDV[2] = permutedSpacing[2] * permutedMatrix[2][2];
-        normal[0] = permutedSpacing[1] * permutedMatrix[0][1];
-        normal[1] = permutedSpacing[1] * permutedMatrix[1][1];
-        normal[2] = permutedSpacing[1] * permutedMatrix[2][1];
-        originOfSlice[0] += 0.5 * permutedSpacing[1] * permutedMatrix[0][1];
-        originOfSlice[1] += 0.5 * permutedSpacing[1] * permutedMatrix[1][1];
-        originOfSlice[2] += 0.5 * permutedSpacing[1] * permutedMatrix[2][1];
-        break;
-      /// Axial:
-      default:
-        width  = permutedBoundingBox[0];
-        height = permutedBoundingBox[1];
-        slices = permutedBoundingBox[2];
-        viewSpacing = permutedSpacing[2];
-        isFlipped = false;
-        rightDV[0] = permutedSpacing[0] * permutedMatrix[0][0];
-        rightDV[1] = permutedSpacing[0] * permutedMatrix[1][0];
-        rightDV[2] = permutedSpacing[0] * permutedMatrix[2][0];
-        bottomDV[0] = -1.0 * permutedSpacing[1] * permutedMatrix[0][1];
-        bottomDV[1] = -1.0 * permutedSpacing[1] * permutedMatrix[1][1];
-        bottomDV[2] = -1.0 * permutedSpacing[1] * permutedMatrix[2][1];
-        normal[0] = -1.0 * permutedSpacing[2] * permutedMatrix[0][2];
-        normal[1] = -1.0 * permutedSpacing[2] * permutedMatrix[1][2];
-        normal[2] = -1.0 * permutedSpacing[2] * permutedMatrix[2][2];
-        originOfSlice[0] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[0][1];
-        originOfSlice[1] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[1][1];
-        originOfSlice[2] += permutedBoundingBox[1] * permutedSpacing[1] * permutedMatrix[2][1];
-        originOfSlice[0] += (permutedBoundingBox[2] - 0.5) * permutedSpacing[2] * permutedMatrix[0][2];
-        originOfSlice[1] += (permutedBoundingBox[2] - 0.5) * permutedSpacing[2] * permutedMatrix[1][2];
-        originOfSlice[2] += (permutedBoundingBox[2] - 0.5) * permutedSpacing[2] * permutedMatrix[2][2];
-        break;
+        --middleSlice;
       }
-
-      mitk::TimeStepType numberOfTimeSteps = timeGeometry->CountTimeSteps();
-
-      mitk::ProportionalTimeGeometry::Pointer createdTimeGeometry = mitk::ProportionalTimeGeometry::New();
-      createdTimeGeometry->Expand(numberOfTimeSteps);
-
-      // TODO Commented out when migrating to the redesigned MITK geometry framework.
-      // This will definitely not work. Should be fixed.
-
-//        createdTimeGeometry->SetEvenlyTimed(true);
-
-//        if (inputTimeSlicedGeometry.IsNotNull())
-//        {
-//          createdTimeGeometry->SetEvenlyTimed(inputTimeSlicedGeometry->GetEvenlyTimed());
-//          createdTimeGeometry->SetTimeBounds(inputTimeSlicedGeometry->GetTimeBounds());
-//          createdTimeGeometry->SetBounds(inputTimeSlicedGeometry->GetBounds());
-//        }
-
-      // For the PlaneGeometry.
-      mitk::ScalarType bounds[6] = {
-        0,
-        static_cast<mitk::ScalarType>(width),
-        0,
-        static_cast<mitk::ScalarType>(height),
-        0,
-        1
-      };
-
-      // A SlicedGeometry3D is initialised from a 2D PlaneGeometry, plus the number of slices.
-      mitk::PlaneGeometry::Pointer planeGeometry = mitk::PlaneGeometry::New();
-      planeGeometry->SetIdentity();
-      planeGeometry->SetImageGeometry(false);
-      planeGeometry->SetBounds(bounds);
-      planeGeometry->SetOrigin(originOfSlice);
-      planeGeometry->SetMatrixByVectors(rightDV, bottomDV, normal.two_norm());
-
-      for (mitk::TimeStepType timeStep = 0; timeStep < numberOfTimeSteps; timeStep++)
-      {
-        // Then we create the SlicedGeometry3D from an initial plane, and a given number of slices.
-        mitk::SlicedGeometry3D::Pointer slicedGeometry = mitk::SlicedGeometry3D::New();
-        slicedGeometry->SetIdentity();
-        slicedGeometry->SetReferenceGeometry(m_ReferenceGeometry);
-        slicedGeometry->SetImageGeometry(false);
-        slicedGeometry->InitializeEvenlySpaced(planeGeometry, viewSpacing, slices, isFlipped);
-
-        /// TODO The function has been removed in MITK 2014.09.
-//          slicedGeometry->SetTimeBounds(timeGeometry->GetGeometryForTimeStep(timeStep)->GetTimeBounds());
-        createdTimeGeometry->SetTimeStepGeometry(slicedGeometry, timeStep);
-      }
-      createdTimeGeometry->Update();
-
-      sliceNavigationController->SetInputWorldTimeGeometry(createdTimeGeometry);
-      sliceNavigationController->Update(mitk::SliceNavigationController::Original, true, true, false);
-      sliceNavigationController->SetViewDirection(viewDirection);
-
-      // For 2D mappers only, set to middle slice (the 3D mapper simply follows by event listening).
-      if (renderer->GetMapperID() == 1)
-      {
-        /// Now that the geometry is established, we set to middle slice. In case of image geometry
-        /// and even slice numbers, the selected position must be in the centre, returned by
-        /// `m_ReferenceGeometry->GetCenter()`.
-        /// Note that the slice numbering in the slice navigation controllers always to from
-        /// left to right in the sagittal SNC, back to front in the coronal SNC and top to
-        /// bottom (!) in the axial SNC, for compatibility with MITK. If this direction is
-        /// different than the up direction of the corresponding reference geometry axis, we
-        /// need to invert the position. Since we are in the centre, this means subtracting one.
-        int middleSlice = slices / 2;
-        if ((viewDirection == mitk::SliceNavigationController::Sagittal && m_UpDirections[0] < 0)
-            || (viewDirection == mitk::SliceNavigationController::Frontal && m_UpDirections[1] < 0)
-            || (viewDirection == mitk::SliceNavigationController::Axial && m_UpDirections[2] > 0))
-        {
-          --middleSlice;
-        }
-        sliceNavigationController->GetSlice()->SetPos(middleSlice);
-      }
-      mitk::Point3D centre = m_ReferenceGeometry->GetCenter();
-      m_ReferenceGeometry->WorldToIndex(centre, centre);
+      snc->GetSlice()->SetPos(middleSlice);
 
       renderer->GetDisplayGeometry()->SetConstrainZoomingAndPanning(false);
 
@@ -1412,7 +1213,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
       /// Note also that the SNCs' Update function clones the input world geometry, therefore
       /// here we should not use the reference to 'createdTimeGeometry' but have to get
       /// it from the SNC.
-      renderer->SetWorldTimeGeometry(sliceNavigationController->GetCreatedWorldGeometry());
+      renderer->SetWorldTimeGeometry(snc->GetCreatedWorldGeometry());
     }
 
     /// Although we created time geometries for each renderers and they have their own 'slice'
