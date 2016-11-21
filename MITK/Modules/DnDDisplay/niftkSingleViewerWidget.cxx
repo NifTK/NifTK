@@ -546,33 +546,36 @@ const mitk::TimeGeometry* SingleViewerWidget::GetTimeGeometry() const
 void SingleViewerWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   assert(timeGeometry);
-  m_TimeGeometry = timeGeometry;
-  m_GeometryInitialised = false;
-
-  if (!m_IsBoundTimeGeometryActive)
+  if (timeGeometry != m_TimeGeometry)
   {
-    bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
+    m_TimeGeometry = timeGeometry;
+    m_GeometryInitialised = false;
 
-    m_MultiWidget->SetTimeGeometry(timeGeometry);
-
-    if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
+    if (!m_IsBoundTimeGeometryActive)
     {
-      this->ResetLastPositions();
-      m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
-    }
+      bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
 
-    for (int otherWindowLayout = 0; otherWindowLayout < WINDOW_LAYOUT_NUMBER; otherWindowLayout++)
-    {
-      if (otherWindowLayout != m_WindowLayout)
+      m_MultiWidget->SetTimeGeometry(timeGeometry);
+
+      if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
       {
-        m_WindowLayoutInitialised[Index(otherWindowLayout)] = false;
+        this->ResetLastPositions();
+        m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
       }
+
+      for (int otherWindowLayout = 0; otherWindowLayout < WINDOW_LAYOUT_NUMBER; otherWindowLayout++)
+      {
+        if (otherWindowLayout != m_WindowLayout)
+        {
+          m_WindowLayoutInitialised[Index(otherWindowLayout)] = false;
+        }
+      }
+
+      m_MultiWidget->BlockUpdate(updateWasBlocked);
     }
 
-    m_MultiWidget->BlockUpdate(updateWasBlocked);
+    emit TimeGeometryChanged(timeGeometry);
   }
-
-  emit TimeGeometryChanged(timeGeometry);
 }
 
 
