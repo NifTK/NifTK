@@ -1078,7 +1078,9 @@ void MultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor)
 //-----------------------------------------------------------------------------
 void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
-  if (timeGeometry != NULL)
+  /// We only do a nullptr check but no equality check so that the user can
+  /// reinitialise the viewer by dragging and dropping the same image.
+  if (timeGeometry)
   {
     bool updateWasBlocked = this->BlockUpdate(true);
 
@@ -1227,14 +1229,22 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 
     m_GeometryHasChanged = true;
 
-    m_SelectedPosition = this->GetCrossPosition();
-    for (int i = 0; i < 3; ++i)
+    mitk::Point3D selectedPosition = this->GetCrossPosition();
+    if (selectedPosition != m_SelectedPosition)
     {
-      m_SelectedSliceHasChanged[i] = true;
+      m_SelectedPosition = selectedPosition;
+      for (int i = 0; i < 3; ++i)
+      {
+        m_SelectedSliceHasChanged[i] = true;
+      }
     }
 
-    m_TimeStep = 0;
-    m_TimeStepHasChanged = true;
+    int timeStep = 0;
+    if (timeStep != m_TimeStep)
+    {
+      m_TimeStep = timeStep;
+      m_TimeStepHasChanged = true;
+    }
 
     if (m_SelectedWindowIndex < 3)
     {

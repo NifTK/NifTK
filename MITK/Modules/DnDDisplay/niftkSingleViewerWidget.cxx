@@ -546,34 +546,45 @@ const mitk::TimeGeometry* SingleViewerWidget::GetTimeGeometry() const
 void SingleViewerWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   assert(timeGeometry);
+
+  /// We only do a nullptr check but no equality check so that the user can
+  /// reinitialise the viewer by dragging and dropping the same image.
+  /// However, we do not signal the TimeGeometryChanged event, if the time
+  /// geometry has not changed.
+
+  bool timeGeometryHasChanged = false;
   if (timeGeometry != m_TimeGeometry)
   {
     m_TimeGeometry = timeGeometry;
+    timeGeometryHasChanged = true;
     m_GeometryInitialised = false;
+  }
 
-    if (!m_IsBoundTimeGeometryActive)
+  if (!m_IsBoundTimeGeometryActive)
+  {
+    bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
+
+    m_MultiWidget->SetTimeGeometry(timeGeometry);
+
+    if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
-      bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
-
-      m_MultiWidget->SetTimeGeometry(timeGeometry);
-
-      if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
-      {
-        this->ResetLastPositions();
-        m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
-      }
-
-      for (int otherWindowLayout = 0; otherWindowLayout < WINDOW_LAYOUT_NUMBER; otherWindowLayout++)
-      {
-        if (otherWindowLayout != m_WindowLayout)
-        {
-          m_WindowLayoutInitialised[Index(otherWindowLayout)] = false;
-        }
-      }
-
-      m_MultiWidget->BlockUpdate(updateWasBlocked);
+      this->ResetLastPositions();
+      m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
 
+    for (int otherWindowLayout = 0; otherWindowLayout < WINDOW_LAYOUT_NUMBER; otherWindowLayout++)
+    {
+      if (otherWindowLayout != m_WindowLayout)
+      {
+        m_WindowLayoutInitialised[Index(otherWindowLayout)] = false;
+      }
+    }
+
+    m_MultiWidget->BlockUpdate(updateWasBlocked);
+  }
+
+  if (timeGeometryHasChanged)
+  {
     emit TimeGeometryChanged(timeGeometry);
   }
 }
