@@ -1087,19 +1087,6 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     m_TimeGeometry = timeGeometry;
     m_ReferenceGeometry = timeGeometry->GetGeometryForTimeStep(0);
 
-    if (!m_ReferenceGeometry->GetImageGeometry())
-    {
-      /// If the input is from a renderer, we need the geometry that was used to initialise its geometry.
-      /// This can be an image geometry or a manually created world geometry.
-      if (auto slicedGeometry = dynamic_cast<const mitk::SlicedGeometry3D*>(m_ReferenceGeometry))
-      {
-        if (slicedGeometry->HasReferenceGeometry())
-        {
-          m_ReferenceGeometry = slicedGeometry->GetReferenceGeometry();
-        }
-      }
-    }
-
     // Calculating the voxel size. This is needed for the conversion between the
     // magnification and the scale factors.
     for (int axis = 0; axis < 3; ++axis)
