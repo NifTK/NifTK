@@ -246,7 +246,6 @@ namespace niftk
 			{
 				// we have one second worth of ringbuffer.
 				int   ringbufferslots = format.get_refreshrate();
-				qDebug() << "In thread[2]: " << QThread::currentThreadId();
 				sdiin = new video::SDIInput(sdidev, m_FieldMode, ringbufferslots);
 
 				m_CaptureWidth = sdiin->get_width();
@@ -313,10 +312,11 @@ namespace niftk
 
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, m_ReadbackPBOs[slot]);
 		check_oglerror("Cannot bind buffer object to be mapped.");
-		const char* data = (const char*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+		const char* data = (const char*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);		
 		check_oglerror("Cannot map buffer object.");
 		assert(data != 0);
 
+		
 		// note: this would not work with fieldmode set the STACK_FIELDS.
 		// but we dont support that anymore, so no problem.
 		IplImage  subimgInput;
@@ -371,10 +371,11 @@ namespace niftk
 			if (height - (i * m_CaptureHeight) < m_CaptureHeight)
 				return;
 
-			char*   subbuf = &buffer[i * m_CaptureHeight * bufferpitch];
+			char* subbuf = &buffer[i * m_CaptureHeight * bufferpitch];
 
 			glBindTexture(GL_TEXTURE_2D, texid);
 			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, subbuf);
+
 			assert(glGetError() == GL_NO_ERROR);
 		}
 	}
@@ -538,6 +539,17 @@ namespace niftk
 	void NVidiaSDIDataSourceImpl::run()
 	{	
 		m_Cookie = 0;
+		if (!oglshare) {
+			// hack to get context sharing to work while the capture thread is cracking away
+			oglshare = new QGLWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
+			oglshare->hide();
+			assert(oglshare->isValid());
+			assert(oglwin->isSharing());
+
+			// we need to activate our capture context once for cuda setup			
+			//oglwin->makeCurrent();
+			oglshare->makeCurrent();
+		}
 		
 		// it's possible for someone else to start and stop our thread.
 		// just make sure we start clean if that happens.
@@ -598,21 +610,7 @@ namespace niftk
 	//-----------------------------------------------------------------------------
 	void NVidiaSDIDataSourceImpl::OnTimeoutImpl()
 	{
-		QMutexLocker    l(&lock);		
-
-		if (!oglshare) {			
-
-			// hack to get context sharing to work while the capture thread is cracking away
-			oglshare = new QGLWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
-			oglshare->hide();
-			assert(oglshare->isValid());
-			assert(oglwin->isSharing());
-
-			// we need to activate our capture context once for cuda setup			
-			//oglwin->makeCurrent();
-			oglshare->makeCurrent();
-		}
-
+		QMutexLocker    l(&lock);
 		if (current_state == NVidiaSDIDataSourceImpl::FAILED)
 		{
 			return;
@@ -857,6 +855,7 @@ namespace niftk
 			try
 			{
 				ok &= decoder->decompress(sequencenumber + i, subimg, (*img)->widthStep * h, (*img)->widthStep);
+				// PANKAJ Need to do a flip here
 			}
 			catch (const std::exception& e)
 			{
