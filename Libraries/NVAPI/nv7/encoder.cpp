@@ -70,7 +70,7 @@ bool Encoder::initialize_encoder(uint32_t width, uint32_t height,
     encode_config_.b_quant_offset = DEFAULT_B_QOFFSET;
     encode_config_.preset_GUID = NV_ENC_PRESET_HP_GUID;
     encode_config_.pic_struct = NV_ENC_PIC_STRUCT_FRAME;
-    encode_config_.input_format = NV_ENC_BUFFER_FORMAT_ARGB;
+    encode_config_.input_format = NV_ENC_BUFFER_FORMAT_ABGR;
 
     // Create the encoder.
     status = hw_encoder_->CreateEncoder(&encode_config_);
