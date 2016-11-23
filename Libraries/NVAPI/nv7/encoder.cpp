@@ -36,7 +36,7 @@ bool Encoder::initialize_encoder(uint32_t width, uint32_t height,
                                  const std::string & output_file)
 {
     if (width <= 0 || height <= 0) { return false; }
-
+	
     // Set the width and height
     width_ = width;
     height_ = height;
@@ -68,7 +68,7 @@ bool Encoder::initialize_encoder(uint32_t width, uint32_t height,
     encode_config_.b_quant_factor = DEFAULT_B_QFACTOR;
     encode_config_.i_quant_offset = DEFAULT_I_QOFFSET;
     encode_config_.b_quant_offset = DEFAULT_B_QOFFSET;
-    encode_config_.preset_GUID = NV_ENC_PRESET_HP_GUID;
+    encode_config_.preset_GUID = NV_ENC_PRESET_LOW_LATENCY_DEFAULT_GUID;
     encode_config_.pic_struct = NV_ENC_PIC_STRUCT_FRAME;
     encode_config_.input_format = NV_ENC_BUFFER_FORMAT_ABGR;
 
@@ -342,10 +342,10 @@ bool Encoder::encode_frame(unsigned char *argb)
 
 //------------------------------------------------------------------------------
 bool Encoder::flush_encoder()
-{
+{		
     // Sanity checks
     if (!hw_encoder_ || width_ <= 0 || height_ <= 0 || !alive_) {
-        return false ;
+        return false;
     }
 
     alive_ = false;
@@ -368,16 +368,17 @@ bool Encoder::flush_encoder()
             output_nal_.push_back(std::make_pair(std::get<1>(result),
                 std::get<2>(result)));
         }
-    }
+    }	
 
-#if defined(NV_WINDOWS)
-    if (encode_config_.enable_async_mode) {
+	
+#if defined(NV_WINDOWS)	
+    if (encode_config_.enable_async_mode) {		
         if (WaitForSingleObject(eos_output_buffer_.output_event, 5000)
                 != WAIT_OBJECT_0) {
             return false;
         }
     }
-#endif
+#endif 
     //hw_encoder_->flush();
     return true;
 }

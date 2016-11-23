@@ -114,6 +114,12 @@ namespace niftk
 		oglwin = new QGLWidget(0, 0, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
 		oglwin->hide();
 		assert(oglwin->isValid());
+		// hack to get context sharing to work while the capture thread is cracking away
+		oglshare = new GLHiddenWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
+		oglshare->hide();
+		assert(oglshare->isValid());
+		assert(oglwin->isSharing());		
+		oglwin->makeCurrent();
 		
 		// Find out which gpu is rendering our window.
 		// We need to know because this is where the video comes in
@@ -126,6 +132,11 @@ namespace niftk
 		{
 			device_id = cudadevices[0];
 		}	
+		
+		oglwin->doneCurrent();
+		oglshare->context()->moveToThread(this);
+		oglshare->moveToThread(this);
+
 
 		// we want signal/slot processing to happen on our background thread.
 		// for that to work we need to explicitly move this object because
@@ -151,14 +162,12 @@ namespace niftk
 		{
 			// we need the capture context for proper cleanup
 			oglwin->makeCurrent();
-
 			// final attempt to not loose data.
 			DumpNALIndex();			
 
 			delete decoder;
 			delete encoder;
 
-			delete sdiin;
 			// we do not own sdidev!
 			sdidev = 0;
 
@@ -172,13 +181,16 @@ namespace niftk
 				ctx->makeCurrent();
 			else
 				oglwin->doneCurrent();
+			
 		}
 		catch (...)
 		{
 			std::cerr << "sdi cleanup threw exception" << std::endl;
 		}
 		
+		delete oglshare;
 		delete oglwin;
+		
 
 		// they'll get cleaned up now
 		// if someone else is currently waiting on these
@@ -301,8 +313,7 @@ namespace niftk
 
 	//-----------------------------------------------------------------------------
 	void NVidiaSDIDataSourceImpl::ReadbackViaPBO(char* buffer, std::size_t bufferpitch, int width, int height, int slot)
-	{		
-		oglwin->makeCurrent();		
+	{	
 		assert(sdiin != 0);
 		assert(bufferpitch >= width * 4);
 
@@ -538,33 +549,20 @@ namespace niftk
 	//-----------------------------------------------------------------------------
 	void NVidiaSDIDataSourceImpl::run()
 	{	
-		m_Cookie = 0;
-		if (!oglshare) {
-			// hack to get context sharing to work while the capture thread is cracking away
-			oglshare = new QGLWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
-			oglshare->hide();
-			assert(oglshare->isValid());
-			assert(oglwin->isSharing());
-
-			// we need to activate our capture context once for cuda setup			
-			//oglwin->makeCurrent();
-			oglshare->makeCurrent();
-		}
-		
+		m_Cookie = 0;				
 		// it's possible for someone else to start and stop our thread.
 		// just make sure we start clean if that happens.
+		oglshare->makeCurrent();
 		Reset();
 
-		bool ok = connect(this, SIGNAL(SignalBump()), this, SLOT(DoWakeUp()), Qt::DirectConnection);
+		bool ok = connect(this, SIGNAL(SignalBump()), this, SLOT(DoWakeUp()), Qt::QueuedConnection);
 		assert(ok);
-		ok = connect(this, SIGNAL(SignalCompress(unsigned int, unsigned int*)), this, SLOT(DoCompressFrame(unsigned int, unsigned int*)), 
-			Qt::BlockingQueuedConnection);
+		ok = connect(this, SIGNAL(SignalCompress(unsigned int, unsigned int*)), this, SLOT(DoCompressFrame(unsigned int, unsigned int*)), Qt::BlockingQueuedConnection);
 		assert(ok);
-		ok = connect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()), 
-			Qt::BlockingQueuedConnection);
+		ok = connect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()), Qt::BlockingQueuedConnection);
 		assert(ok);
 		ok = connect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)), 
-			Qt::DirectConnection);
+			Qt::BlockingQueuedConnection);
 		assert(ok);
 		ok = connect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)), 
 			Qt::DirectConnection);
@@ -594,9 +592,9 @@ namespace niftk
 		ok = disconnect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)));
 		assert(ok);
 
-		// Delete here in this thread
-		delete oglshare;
-		oglshare = NULL;
+		oglshare->makeCurrent();
+		delete sdiin;
+		sdiin = 0;
 	}
 
 
@@ -611,6 +609,7 @@ namespace niftk
 	void NVidiaSDIDataSourceImpl::OnTimeoutImpl()
 	{
 		QMutexLocker    l(&lock);
+
 		if (current_state == NVidiaSDIDataSourceImpl::FAILED)
 		{
 			return;
@@ -629,7 +628,7 @@ namespace niftk
 
 		if (current_state == NVidiaSDIDataSourceImpl::PRE_INIT)
 		{
-			//oglwin->makeCurrent();
+			//oglwin->makeCurrent();			
 			oglshare->makeCurrent();
 			current_state = NVidiaSDIDataSourceImpl::HW_ENUM;
 
@@ -641,7 +640,7 @@ namespace niftk
 
 		// make sure nobody messes around with contexts
 		//assert(QGLContext::currentContext() == oglwin->context());
-		assert(QGLContext::currentContext() == oglshare->context());
+		//assert(QGLContext::currentContext() == oglshare->context());
 		
 		if (current_state == NVidiaSDIDataSourceImpl::HW_ENUM)
 		{
@@ -828,7 +827,7 @@ namespace niftk
 			return;
 		}
 
-		// these are display dimenions (what we are interested in).
+		// these are display dimenions (what we are interested in).bl
 		std::pair<int, int> dims = decoder->get_dims();
 		int w = dims.first;
 		int h = dims.second;
@@ -855,7 +854,12 @@ namespace niftk
 			try
 			{
 				ok &= decoder->decompress(sequencenumber + i, subimg, (*img)->widthStep * h, (*img)->widthStep);
-				// PANKAJ Need to do a flip here
+				if (ok) {
+					IplImage  subimgInput;
+					cvInitImageHeader(&subimgInput, cvSize((*img)->widthStep, h), IPL_DEPTH_1U, 1);
+					cvSetData(&subimgInput, (void*)subimg, (*img)->widthStep);
+					cvFlip(&subimgInput, NULL);
+				}				
 			}
 			catch (const std::exception& e)
 			{
@@ -911,7 +915,7 @@ namespace niftk
 		// this is necessary because otherwise there could be a race condition between this-sdi-thread
 		// and gui-update where gui-update tries a GetRGBAImage() before sdi-thread has had a chance to 
 		// check for InitVideo() with the corresponding ogl-make-current.
-		assert(QGLContext::currentContext() == oglwin->context());
+		//assert(QGLContext::currentContext() == oglwin->context());
 
 		int w = sdiin->get_width();
 		int h = sdiin->get_height();
@@ -964,11 +968,12 @@ namespace niftk
 
 				// when we get a new compressor we want to start counting from zero again
 				m_NumFramesCompressed = 0;
+
 				encoder = new Encoder();
-				if (!encoder->initialize_encoder(sdiin->get_width(), sdiin->get_height(), device_id, format.refreshrate * streamcount,
+				if (!encoder->initialize_encoder(sdiin->get_width(), sdiin->get_height(), device_id, (int)(format.refreshrate * streamcount / 1000.0),
 					m_CompressionOutputFilename)) {
-					throw std::runtime_error("Could not create the encoder");
-				}
+					throw std::runtime_error("Could not create the encoder");					
+				}			
 
 				frame_data = std::vector<char>(sdiin->get_width() * sdiin->get_height() * 4);								
 			}
@@ -987,7 +992,6 @@ namespace niftk
 				{
 					int tid = sdiin->get_texture_id(i, sloti->second);
 					assert(tid != 0);
-
 					
 					int w = sdiin->get_width();
 					int h = sdiin->get_height();						

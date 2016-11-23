@@ -600,7 +600,7 @@ SDIInput::~SDIInput()
 {
     if (pimpl)
     {
-        assert(wglGetCurrentContext() == pimpl->oglrc);
+        assert(wglGetCurrentContext() == pimpl->oglrc);		
 
         glEndVideoCaptureNV(pimpl->videoslot);
         if (!wglBindVideoCaptureDeviceNV(pimpl->videoslot, 0))

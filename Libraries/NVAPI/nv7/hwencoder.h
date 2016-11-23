@@ -88,7 +88,7 @@ struct EncodeConfig
         i_quant_factor = b_quant_factor = i_quant_offset = b_quant_offset = 0.f;
         intra_ref_enable = intra_ref_period = intra_ref_dur = 0;
         enable_async_mode = enable_temp_AQ = 0;
-        enable_async_mode = 1;
+        enable_async_mode = 0;
         invalidate_ref_frames = 0;
         input_format = NV_ENC_BUFFER_FORMAT_ARGB;
         codec = CodecType::NV_ENC_H264;
