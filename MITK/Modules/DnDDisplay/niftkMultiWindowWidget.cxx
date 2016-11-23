@@ -1925,18 +1925,39 @@ void MultiWindowWidget::MoveSlice(int windowIndex, int slices, bool restart)
 
     int slice = this->GetSelectedSlice(windowIndex);
 
+    /// This function is used for navigating through slices, e.g. when scrolling
+    /// with the mouse. Therefore, the direction of the navigation should reflect
+    /// how the image is oriented in the renderer. Scrolling up should mean going
+    /// to the slice behind the current one (previous slice), and scrolling down
+    /// should go to the slice ahead the current one (next slice).
+    ///
+    /// For example, the coronal window shows the patient facing towards us.
+    /// Scrolling up should go to the slice behind, that is the next slice
+    /// towards the patient's back, but this slice is closer to the world origin.
+    /// In sagittal window we see the patient from his left, so scrolling up
+    /// has to go towards his right, that is we are moving away from the world
+    /// origin.
+    ///
+    /// So, even if the plus and minus ones below look kind of arbitrary, they
+    /// are not. However, they assume that the renderer geometries are initialised
+    /// following a certain convention.
+    ///
+    /// Now we could use the slice navigation controller index here, that would
+    /// be probably simpler and more flexible. However, the renderer initialisation
+    /// suffered from a few bugs in the past and we could not rely on the SNC indices.
+
     int upDirection;
     if (windowIndex == AXIAL)
     {
-      upDirection = m_UpDirections[2];
+      upDirection = -1 * m_UpDirections[2];
     }
     else if (windowIndex == SAGITTAL)
     {
-      upDirection = m_UpDirections[0];
+      upDirection = +1 * m_UpDirections[0];
     }
     else if (windowIndex == CORONAL)
     {
-      upDirection = m_UpDirections[1];
+      upDirection = -1 * m_UpDirections[1];
     }
 
     int nextSlice = slice + upDirection * slices;
