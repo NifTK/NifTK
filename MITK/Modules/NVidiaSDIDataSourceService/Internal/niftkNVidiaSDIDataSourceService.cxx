@@ -721,7 +721,7 @@ void NVidiaSDIDataSourceService::StartCapturing()
   assert(m_Pimpl);
   m_Pimpl->start();
 
-  m_DataGrabbingThread->SetInterval(50); // 20 fps
+  m_DataGrabbingThread->SetInterval(50); // 20 fps  
   m_DataGrabbingThread->start();
 }
 
