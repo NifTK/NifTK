@@ -125,7 +125,7 @@ SingleViewerWidgetTestClass::SingleViewerWidgetTestClass()
   Q_D(SingleViewerWidgetTestClass);
 
   SingleViewerWidgetTestClass::s_MITKRendererUpDirections[0] = 1;
-  SingleViewerWidgetTestClass::s_MITKRendererUpDirections[1] = 1;
+  SingleViewerWidgetTestClass::s_MITKRendererUpDirections[1] = -1;
   SingleViewerWidgetTestClass::s_MITKRendererUpDirections[2] = -1;
 
   d->ImageNode = 0;
