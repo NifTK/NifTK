@@ -103,6 +103,8 @@ if(NOT DEFINED ITK_DIR)
     )
   endif()
 
+  set(n4_utility_patch COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/ITK-4.7.1-n4.patch)
+
   ExternalProject_Add(${proj}
     LIST_SEPARATOR ^^
     PREFIX ${proj_CONFIG}
@@ -115,6 +117,7 @@ if(NOT DEFINED ITK_DIR)
      PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/ITK-4.7.1.patch
                    ${vcl_constexpr_patch}
                    ${vcl_gcc5_patch}
+#                   ${n4_utility_patch}
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${EP_COMMON_ARGS}
