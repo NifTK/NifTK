@@ -1,0 +1,1545 @@
+diff --git a/Modules/Core/Common/CMake/itkCheckBuiltins.cmake b/Modules/Core/Common/CMake/itkCheckBuiltins.cmake
+new file mode 100644
+index 0000000..c3facab
+--- /dev/null
++++ b/Modules/Core/Common/CMake/itkCheckBuiltins.cmake
+@@ -0,0 +1,27 @@
++# check for gcc/clang atomic builtins like __sync_add_and_fetch
++if(NOT WIN32 OR MINGW)
++  if(EMSCRIPTEN)
++    set(ITK_HAVE_SYNC_BUILTINS 0 CACHE INTERNAL "For __sync atomic builtins.")
++  elseif(NOT DEFINED ITK_HAVE_SYNC_BUILTINS)
++    message(STATUS "Checking for builtin __sync_add_and_fetch")
++    try_compile(ITK_TEST_SYNC_BUILTINS_COMPILED
++      ${ITK_BINARY_DIR}/CMakeTmp
++      ${CMAKE_CURRENT_SOURCE_DIR}/CMake/itkCheckSyncBuiltins.cxx
++      OUTPUT_VARIABLE OUTPUT)
++    if(ITK_TEST_SYNC_BUILTINS_COMPILED)
++      message(STATUS "Checking for builtin __sync_add_and_fetch -- success")
++      set(ITK_HAVE_SYNC_BUILTINS 1 CACHE INTERNAL "For __sync atomic builtins.")
++      file(APPEND ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeOutput.log
++        "Determining if the C++ compiler supports __sync_add_and_fetch builtin "
++        "passed with the following output:\n"
++        "${OUTPUT}\n")
++    else()
++      message(STATUS "Checking for builtin __sync_add_and_fetch -- failed")
++      set(ITK_HAVE_SYNC_BUILTINS 0 CACHE INTERNAL "For __sync atomic builtins.")
++      file(APPEND ${CMAKE_BINARY_DIR}/CMakeFiles/CMakeOutput.log
++        "Determining if the C++ compiler supports __sync_add_and_fetch builtin "
++        "failed with the following output:\n"
++        "${OUTPUT}\n")
++    endif()
++  endif()
++endif()
+diff --git a/Modules/Core/Common/CMake/itkCheckSyncBuiltins.cxx b/Modules/Core/Common/CMake/itkCheckSyncBuiltins.cxx
+new file mode 100644
+index 0000000..ed6cb2a
+--- /dev/null
++++ b/Modules/Core/Common/CMake/itkCheckSyncBuiltins.cxx
+@@ -0,0 +1,17 @@
++#include <stdio.h>
++#include <cstdlib>
++
++int main()
++{
++  /* Test whether gcc/clang __sync_ builtins are defined */
++  /* These are for gcc >= 4.1.2 and for clang >= 2.0.1 */
++  /* Only certain platforms support them intrinsically */
++  /* (guaranteed support on x86_64, ia64, mips, alpha) */
++
++  static volatile unsigned long v = 0;
++  unsigned long u = __sync_add_and_fetch(&v, 1);
++
++  if (u - 1 == 0) { return 0; }
++
++  return 1;
++}
+diff --git a/Modules/Core/Common/CMakeLists.txt b/Modules/Core/Common/CMakeLists.txt
+index f869b94..41e4b7f 100644
+--- a/Modules/Core/Common/CMakeLists.txt
++++ b/Modules/Core/Common/CMakeLists.txt
+@@ -45,6 +45,16 @@ check_include_files("sys/types.h" HAVE_SYS_TYPES_H)
+ include(CheckSupportForSSERounding)
+ 
+ 
++# Test for atomics and other compiler intrinsics
++include(itkCheckBuiltins)
++
++
++# Check for atomic functions
++include(CheckSymbolExists)
++if (WIN32)
++  check_symbol_exists(InterlockedAdd "windows.h" ITK_HAS_INTERLOCKEDADD)
++endif()
++
+ 
+ # Check for the new C++11 alignas type specifier for future portable alignment
+ try_compile( ITK_HAS_CPP11_ALIGNAS
+diff --git a/Modules/Core/Common/include/itkAtomicInt.h b/Modules/Core/Common/include/itkAtomicInt.h
+new file mode 100644
+index 0000000..ea8bd59
+--- /dev/null
++++ b/Modules/Core/Common/include/itkAtomicInt.h
+@@ -0,0 +1,298 @@
++/*=========================================================================
++ *
++ *  Copyright Insight Software Consortium
++ *
++ *  Licensed under the Apache License, Version 2.0 (the "License");
++ *  you may not use this file except in compliance with the License.
++ *  You may obtain a copy of the License at
++ *
++ *         http://www.apache.org/licenses/LICENSE-2.0.txt
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ *
++ *=========================================================================*/
++/*=========================================================================
++ *
++ * Program:   Visualization Toolkit
++ * Module:    vtkAtomicInt.h
++ *
++ *  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
++ *  All rights reserved.
++ *  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
++ *
++ *     This software is distributed WITHOUT ANY WARRANTY; without even
++ *     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++ *     PURPOSE.  See the above copyright notice for more information.
++ *
++ *=========================================================================*/
++
++#ifndef itkAtomicInt_h
++#define itkAtomicInt_h
++
++#include "itkMacro.h"
++#include "itkIntTypes.h"
++#include "itkConceptChecking.h"
++#include <cstddef>
++#include <limits>
++
++#include "itkAtomicIntDetail.h"
++
++namespace itk
++{
++
++/** \class AtomicInt
++ *  \brief Provides support for atomic integers
++ *
++ *
++ * Objects of atomic types are C++ objects that are free from data races;
++ * that is, if one thread writes to an atomic object while another thread
++ * reads from it, the behavior is well-defined. AtomicInt provides
++ * a subset of the std::atomic API and implementation, for 32 bit and 64 bit
++ * integers and pointer types. For these types, AtomicInt defines a
++ * number of operations that happen atomically - without interruption
++ * by another thread. Furthermore, these operations happen in a
++ * sequentially-consistent way and use full memory fences. This means
++ * that operations relating to atomic variables happen in the specified
++ * order and the results are made visible to other processing cores to
++ * guarantee proper sequential operation. Other memory access patterns
++ * supported by std::atomic are not currently supported.
++ *
++ * Note that when atomic operations are not available on a particular
++ * platform or compiler, mutexes, which are significantly slower, are used
++ * as a fallback.
++ *
++ * \ingroup ITKCommon
++ */
++template <typename T>
++class AtomicInt
++{
++private:
++  typedef Detail::AtomicOps<sizeof(T)> Impl;
++  itkConceptMacro( SupportedInteger, ( Detail::IsAtomicSupportedIntegralType<T> ) );
++public:
++  AtomicInt() : m_Object(0)
++  {
++  }
++
++  AtomicInt(T val)
++    : m_Object(static_cast<typename Impl::ValueType>(val))
++  {
++  }
++
++  AtomicInt(const AtomicInt<T> &ai)
++    : m_Object(static_cast<typename Impl::ValueType>(ai.load()))
++  {
++  }
++
++  T operator++()
++  {
++    return static_cast<T>(Impl::PreIncrement(&this->m_Object));
++  }
++
++  T operator++(int)
++  {
++    return static_cast<T>(Impl::PostIncrement(&this->m_Object));
++  }
++
++  T operator--()
++  {
++    return static_cast<T>(Impl::PreDecrement(&this->m_Object));
++  }
++
++  T operator--(int)
++  {
++    return static_cast<T>(Impl::PostDecrement(&this->m_Object));
++  }
++
++  T operator+=(T val)
++  {
++    return static_cast<T>(Impl::AddAndFetch(&this->m_Object,
++      static_cast<typename Impl::ValueType>(val)));
++  }
++
++  T operator-=(T val)
++  {
++    return static_cast<T>(Impl::SubAndFetch(&this->m_Object,
++      static_cast<typename Impl::ValueType>(val)));
++  }
++
++  operator T() const
++  {
++    return static_cast<T>(Impl::Load(&this->m_Object));
++  }
++
++  T operator=(T val)
++  {
++    Impl::Store(&this->m_Object, static_cast<typename Impl::ValueType>(val));
++    return val;
++  }
++
++  AtomicInt<T>& operator=(const AtomicInt<T> &ai)
++  {
++    this->store(ai.load());
++    return *this;
++  }
++
++  T load() const
++  {
++    return static_cast<T>(Impl::Load(&this->m_Object));
++  }
++
++  void store(T val)
++  {
++    Impl::Store(&this->m_Object, static_cast<typename Impl::ValueType>(val));
++  }
++
++private:
++  typename Impl::AtomicType m_Object;
++};
++
++
++template <typename T>
++class AtomicInt<T*>
++{
++private:
++  typedef Detail::AtomicOps<sizeof(T*)> Impl;
++
++public:
++  AtomicInt() : m_Object(0)
++  {
++  }
++
++  AtomicInt(T* val)
++    : m_Object(reinterpret_cast<typename Impl::ValueType>(val))
++  {
++  }
++
++  AtomicInt(const AtomicInt<T*> &ai)
++    : m_Object(reinterpret_cast<typename Impl::ValueType>(ai.load()))
++  {
++  }
++
++  T* operator++()
++  {
++    return reinterpret_cast<T*>(Impl::AddAndFetch(&this->m_Object, sizeof(T)));
++  }
++
++  T* operator++(int)
++  {
++    T* val = reinterpret_cast<T*>(Impl::AddAndFetch(&this->m_Object, sizeof(T)));
++    return --val;
++  }
++
++  T* operator--()
++  {
++    return reinterpret_cast<T*>(Impl::SubAndFetch(&this->m_Object, sizeof(T)));
++  }
++
++  T* operator--(int)
++  {
++    T* val = reinterpret_cast<T*>(Impl::AddAndFetch(&this->m_Object, sizeof(T)));
++    return ++val;
++  }
++
++  T* operator+=(std::ptrdiff_t val)
++  {
++    return reinterpret_cast<T*>(Impl::AddAndFetch(&this->m_Object,
++                                                  val * sizeof(T)));
++  }
++
++  T* operator-=(std::ptrdiff_t val)
++  {
++    return reinterpret_cast<T*>(Impl::SubAndFetch(&this->m_Object,
++                                                  val * sizeof(T)));
++  }
++
++  operator T*() const
++  {
++    return reinterpret_cast<T*>(Impl::Load(&this->m_Object));
++  }
++
++  T* operator=(T* val)
++  {
++    Impl::Store(&this->m_Object,
++                reinterpret_cast<typename Impl::ValueType>(val));
++    return val;
++  }
++
++  AtomicInt<T*>& operator=(const AtomicInt<T*> &ai)
++  {
++    this->store(ai.load());
++    return *this;
++  }
++
++  T* load() const
++  {
++    return reinterpret_cast<T*>(Impl::Load(&this->m_Object));
++  }
++
++  void store(T* val)
++  {
++    Impl::Store(&this->m_Object,
++                reinterpret_cast<typename Impl::ValueType>(val));
++  }
++
++private:
++  typename Impl::AtomicType m_Object;
++};
++
++
++template <> class AtomicInt<void*>
++{
++private:
++  typedef Detail::AtomicOps<sizeof(void*)> Impl;
++
++public:
++  AtomicInt() : m_Object(0)
++  {
++  }
++
++  AtomicInt(void* val)
++    : m_Object(reinterpret_cast<Impl::ValueType>(val))
++  {
++  }
++
++  AtomicInt(const AtomicInt<void*> &ai)
++    : m_Object(reinterpret_cast<Impl::ValueType>(ai.load()))
++  {
++  }
++
++  operator void*() const
++  {
++    return reinterpret_cast<void*>(Impl::Load(&this->m_Object));
++  }
++
++  void* operator=(void* val)
++  {
++    Impl::Store(&this->m_Object,
++                reinterpret_cast<Impl::ValueType>(val));
++    return val;
++  }
++
++  AtomicInt<void*>& operator=(const AtomicInt<void*> &ai)
++  {
++    this->store(ai.load());
++    return *this;
++  }
++
++  void* load() const
++  {
++    return reinterpret_cast<void*>(Impl::Load(&this->m_Object));
++  }
++
++  void store(void* val)
++  {
++    Impl::Store(&this->m_Object,
++                reinterpret_cast<Impl::ValueType>(val));
++  }
++
++private:
++  Impl::AtomicType m_Object;
++};
++
++} // end namespace itk
++#endif
+diff --git a/Modules/Core/Common/include/itkAtomicIntDetail.h b/Modules/Core/Common/include/itkAtomicIntDetail.h
+new file mode 100644
+index 0000000..0e32dd5
+--- /dev/null
++++ b/Modules/Core/Common/include/itkAtomicIntDetail.h
+@@ -0,0 +1,330 @@
++/*=========================================================================
++ *
++ *  Copyright Insight Software Consortium
++ *
++ *  Licensed under the Apache License, Version 2.0 (the "License");
++ *  you may not use this file except in compliance with the License.
++ *  You may obtain a copy of the License at
++ *
++ *         http://www.apache.org/licenses/LICENSE-2.0.txt
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ *
++ *=========================================================================*/
++/*=========================================================================
++ *
++ * Program:   Visualization Toolkit
++ * Module:    vtkAtomicInt.h
++ *
++ *  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
++ *  All rights reserved.
++ *  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
++ *
++ *     This software is distributed WITHOUT ANY WARRANTY; without even
++ *     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++ *     PURPOSE.  See the above copyright notice for more information.
++ *
++ *=========================================================================*/
++
++#ifndef itkAtomicIntDetail_h
++#define itkAtomicIntDetail_h
++
++#include "itkMacro.h"
++#include "itkIntTypes.h"
++#include "itkSimpleFastMutexLock.h"
++#include "itkConceptChecking.h"
++
++
++// Assume 64-bit atomic operations are not available on 32 bit platforms
++#if defined(ITK_HAVE_SYNC_BUILTINS)
++# define ITK_GCC_ATOMICS_32
++# define ITK_GCC_ATOMICS_64
++#elif defined(__APPLE__)
++# include <libkern/OSAtomic.h>
++# define ITK_APPLE_ATOMICS_32
++# if ITK_SIZEOF_VOID_P == 8 || defined(__i386__)
++#   define ITK_APPLE_ATOMICS_64
++# endif
++#elif defined(_WIN32) && defined(_MSC_VER)
++# define ITK_WINDOWS_ATOMICS_32
++# if ITK_SIZEOF_VOID_P == 8
++#   define ITK_WINDOWS_ATOMICS_64
++# endif
++#endif
++
++
++namespace itk
++{
++
++namespace Detail
++{
++
++template <size_t VSize> class AtomicOps;
++
++#if defined ITK_HAVE_SYNC_BUILTINS
++
++template <size_t VSize> struct BaseType;
++
++template <size_t VSize> class AtomicOps
++{
++public:
++  typedef typename BaseType<VSize>::Type AtomicType;
++  typedef typename BaseType<VSize>::Type ValueType;
++
++  static ValueType AddAndFetch(ValueType *ref, ValueType val)
++  {
++    return __sync_add_and_fetch(ref, val);
++  }
++
++  static ValueType SubAndFetch(ValueType *ref, ValueType val)
++  {
++    return __sync_sub_and_fetch(ref, val);
++  }
++
++  static ValueType PreIncrement(ValueType *ref)
++  {
++    return __sync_add_and_fetch(ref, 1);
++  }
++
++  static ValueType PreDecrement(ValueType *ref)
++  {
++    return __sync_sub_and_fetch(ref, 1);
++  }
++
++  static ValueType PostIncrement(ValueType *ref)
++  {
++    return __sync_fetch_and_add(ref, 1);
++  }
++
++  static ValueType PostDecrement(ValueType *ref)
++  {
++    return __sync_fetch_and_sub(ref, 1);
++  }
++
++  static ValueType Load(const ValueType *ref)
++  {
++    __sync_synchronize();
++    return *static_cast<const volatile ValueType *>(ref);
++  }
++
++  static void Store(ValueType *ref, ValueType val)
++  {
++    *static_cast<volatile ValueType*>(ref) = val;
++    __sync_synchronize();
++  }
++};
++
++#endif // defined ITK_HAVE_SYNC_BUILTINS
++
++#if defined(ITK_GCC_ATOMICS_64)
++template<> struct BaseType<8>
++{
++  itkAlignedTypedef( 8, int64_t, Type );
++};
++
++#elif defined(ITK_APPLE_ATOMICS_64)
++template <> class AtomicOps<8>
++{
++public:
++  itkAlignedTypedef( 8, int64_t, AtomicType );
++  typedef int64_t ValueType;
++
++  static int64_t AddAndFetch(int64_t *ref, int64_t val)
++  {
++    return OSAtomicAdd64Barrier(val, ref);
++  }
++
++  static int64_t SubAndFetch(int64_t *ref, int64_t val)
++  {
++    return OSAtomicAdd64Barrier(-val, ref);
++  }
++
++  static int64_t PreIncrement(int64_t *ref)
++  {
++    return OSAtomicIncrement64Barrier(ref);
++  }
++
++  static int64_t PreDecrement(int64_t *ref)
++  {
++    return OSAtomicDecrement64Barrier(ref);
++  }
++
++  static int64_t PostIncrement(int64_t *ref)
++  {
++    int64_t val = OSAtomicIncrement64Barrier(ref);
++    return --val;
++  }
++
++  static int64_t PostDecrement(int64_t *ref)
++  {
++    int64_t val = OSAtomicDecrement64Barrier(ref);
++    return ++val;
++  }
++
++  static int64_t Load(const int64_t *ref);
++  {
++    OSMemoryBarrier();
++    return *static_cast<const volatile int64_t*>(ref);
++  }
++
++  static void Store(int64_t *ref, int64_t val);
++  {
++    *static_cast<volatile int64_t*>(ref) = val;
++    OSMemoryBarrier();
++  }
++};
++
++#else
++
++template <> class ITKCommon_EXPORT AtomicOps<8>
++{
++public:
++#if defined(ITK_WINDOWS_ATOMICS_64)
++  itkAlignedTypedef( 8, int64_t, AtomicType );
++
++#else
++  struct ITKCommon_EXPORT AtomicType
++  {
++    int64_t var;
++    SimpleFastMutexLock *mutex;
++
++    AtomicType(int64_t init);
++    ~AtomicType();
++  };
++#endif
++  typedef int64_t ValueType;
++
++  static int64_t AddAndFetch(AtomicType *ref, int64_t val);
++  static int64_t SubAndFetch(AtomicType *ref, int64_t val);
++  static int64_t PreIncrement(AtomicType *ref);
++  static int64_t PreDecrement(AtomicType *ref);
++  static int64_t PostIncrement(AtomicType *ref);
++  static int64_t PostDecrement(AtomicType *ref);
++  static int64_t Load(const AtomicType *ref);
++  static void Store(AtomicType *ref, int64_t val);
++};
++
++#endif
++
++#if defined(ITK_GCC_ATOMICS_32)
++template<> struct BaseType<4>
++{
++  itkAlignedTypedef( 4, int32_t, Type );
++};
++
++#elif defined(ITK_APPLE_ATOMICS_32)
++template <> class AtomicOps<4>
++{
++public:
++  itkAlignedTypedef( 4, int32_t, AtomicType );
++  typedef int32_t ValueType;
++
++  static int32_t AddAndFetch(int32_t *ref, int32_t val)
++  {
++    return OSAtomicAdd32Barrier(val, ref);
++  }
++
++  static int32_t SubAndFetch(int32_t *ref, int32_t val)
++  {
++    return OSAtomicAdd32Barrier(-val, ref);
++  }
++
++  static int32_t PreIncrement(int32_t *ref)
++  {
++    return OSAtomicIncrement32Barrier(ref);
++  }
++
++  static int32_t PreDecrement(int32_t *ref)
++  {
++    return OSAtomicDecrement32Barrier(ref);
++  }
++
++  static int32_t PostIncrement(int32_t *ref)
++  {
++    int32_t val = OSAtomicIncrement32Barrier(ref);
++    return --val;
++  }
++
++  static int32_t PostDecrement(int32_t *ref)
++  {
++    int32_t val = OSAtomicDecrement32Barrier(ref);
++    return ++val;
++  }
++
++  static int32_t Load(const int32_t *ref);
++  {
++    OSMemoryBarrier();
++    return *static_cast<const volatile int32_t*>(ref);
++  }
++
++  static void Store(int32_t *ref, int32_t val);
++  {
++    *static_cast<volatile int32_t*>(ref) = val;
++    OSMemoryBarrier();
++  }
++};
++
++#else
++
++template <> class ITKCommon_EXPORT AtomicOps<4>
++{
++public:
++#if defined(ITK_WINDOWS_ATOMICS_32)
++    itkAlignedTypedef( 4, int32_t, AtomicType );
++#else
++  struct ITKCommon_EXPORT AtomicType
++  {
++    int32_t var;
++    SimpleFastMutexLock *mutex;
++
++    AtomicType(int32_t init);
++    ~AtomicType();
++  };
++#endif
++  typedef int32_t ValueType;
++
++  static int32_t AddAndFetch(AtomicType *ref, int32_t val);
++  static int32_t SubAndFetch(AtomicType *ref, int32_t val);
++  static int32_t PreIncrement(AtomicType *ref);
++  static int32_t PreDecrement(AtomicType *ref);
++  static int32_t PostIncrement(AtomicType *ref);
++  static int32_t PostDecrement(AtomicType *ref);
++  static int32_t Load(const AtomicType *ref);
++  static void Store(AtomicType *ref, int32_t val);
++};
++
++#endif
++
++template <typename T>
++struct IsAtomicSupportedIntegralType
++{
++  typedef IsAtomicSupportedIntegralType Self;
++  struct Constraints {
++    typedef Concept::Detail::UniqueType_bool< true >                  TrueT;
++    typedef Concept::Detail::UniqueType_bool< NumericTraits<T>::is_specialized > SpecializedT;
++    typedef Concept::Detail::UniqueType_bool< NumericTraits<T>::is_integer >     IntegralT;
++    typedef Concept::Detail::UniqueType_bool <sizeof(T) == 4 || sizeof(T) == 8 >  SizeT;
++    void constraints()
++    {
++      IntegralT a = TrueT();
++      IntegralT b = TrueT();
++      IntegralT c = TrueT();
++
++      IgnoreUnusedVariable(a);
++      IgnoreUnusedVariable(b);
++      IgnoreUnusedVariable(c);
++    }
++  };
++
++
++  itkConceptConstraintsMacro();
++};
++
++} // end namespace Detail
++} // end namespace itk
++
++#endif
+diff --git a/Modules/Core/Common/include/itkLightObject.h b/Modules/Core/Common/include/itkLightObject.h
+index 0fcf870..0b19c89 100644
+--- a/Modules/Core/Common/include/itkLightObject.h
++++ b/Modules/Core/Common/include/itkLightObject.h
+@@ -22,7 +22,7 @@
+ #include "itkSmartPointer.h"
+ #include "itkTimeStamp.h"
+ #include "itkIndent.h"
+-#include "itkSimpleFastMutexLock.h"
++#include "itkAtomicInt.h"
+ 
+ #include <iostream>
+ #include <typeinfo>
+@@ -110,7 +110,7 @@ public:
+ 
+   /** Gets the reference count on this object. */
+   virtual int GetReferenceCount() const
+-  { return static_cast< int >( m_ReferenceCount ); }
++  { return m_ReferenceCount; }
+ 
+   /** Sets the reference count on this object. This is a dangerous
+    * method, use it with care. */
+@@ -136,27 +136,9 @@ protected:
+    */
+   virtual LightObject::Pointer InternalClone() const;
+ 
+-  /** Define the type of the reference count according to the
+-      target. This allows the use of atomic operations */
+-#if ( defined( WIN32 ) || defined( _WIN32 ) )
+-  typedef LONG InternalReferenceCountType;
+-#elif defined( __APPLE__ ) && ( MAC_OS_X_VERSION_MIN_REQUIRED >= 1050 )
+- #if defined ( __LP64__ ) && __LP64__
+-  typedef volatile int64_t InternalReferenceCountType;
+- #else
+-  typedef volatile int32_t InternalReferenceCountType;
+- #endif
+-#elif defined( __GLIBCPP__ ) || defined( __GLIBCXX__ )
+-  typedef _Atomic_word InternalReferenceCountType;
+-#else
+-  typedef int InternalReferenceCountType;
+-#endif
+-
+   /** Number of uses of this object by other objects. */
+-  mutable InternalReferenceCountType m_ReferenceCount;
++  mutable AtomicInt<int> m_ReferenceCount;
+ 
+-  /** Mutex lock to protect modification to the reference count */
+-  mutable SimpleFastMutexLock m_ReferenceCountLock;
+ 
+ private:
+   LightObject(const Self &);    //purposely not implemented
+diff --git a/Modules/Core/Common/include/itkMacro.h b/Modules/Core/Common/include/itkMacro.h
+index 9a2a125..3b53960 100644
+--- a/Modules/Core/Common/include/itkMacro.h
++++ b/Modules/Core/Common/include/itkMacro.h
+@@ -514,7 +514,7 @@ itkTypeMacro(newexcp, parentexcp);
+   typedef oldtype newtype __attribute__((aligned(alignment)))
+ #elif defined ( _MSC_VER )
+ # define itkAlignedTypedef( alignment, oldtype, newtype )   \
+-  typedef __declspec(align( alignment )) struct oldtype newtype
++  typedef __declspec(align( alignment )) oldtype newtype
+ #else
+ # define itkAlignedTypedef( alignment, oldtype, newtype )        \
+   typedef oldtype newtype
+diff --git a/Modules/Core/Common/src/CMakeLists.txt b/Modules/Core/Common/src/CMakeLists.txt
+index 2dbf02b..0d8ebee 100644
+--- a/Modules/Core/Common/src/CMakeLists.txt
++++ b/Modules/Core/Common/src/CMakeLists.txt
+@@ -82,6 +82,7 @@ itkArrayOutputSpecialization.cxx
+ itkNumberToString.cxx
+ itkSmartPointerForwardReferenceProcessObject.cxx
+ itkThreadPool.cxx
++itkAtomicInt.cxx
+ )
+ 
+ if(WIN32)
+diff --git a/Modules/Core/Common/src/itkAtomicInt.cxx b/Modules/Core/Common/src/itkAtomicInt.cxx
+new file mode 100644
+index 0000000..444b659
+--- /dev/null
++++ b/Modules/Core/Common/src/itkAtomicInt.cxx
+@@ -0,0 +1,279 @@
++/*=========================================================================
++ *
++ *  Copyright Insight Software Consortium
++ *
++ *  Licensed under the Apache License, Version 2.0 (the "License");
++ *  you may not use this file except in compliance with the License.
++ *  You may obtain a copy of the License at
++ *
++ *         http://www.apache.org/licenses/LICENSE-2.0.txt
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ *
++ *=========================================================================*/
++/*=========================================================================
++
++  Program:   Visualization Toolkit
++  Module:    vtkAtomicInt.cxx
++
++  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
++  All rights reserved.
++  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
++
++     This software is distributed WITHOUT ANY WARRANTY; without even
++     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++     PURPOSE.  See the above copyright notice for more information.
++
++=========================================================================*/
++
++#include "itkAtomicInt.h"
++#include "itkMutexLockHolder.h"
++
++
++#if !defined(ITK_GCC_ATOMICS_32) && !defined(ITK_APPLE_ATOMICS_32) &&\
++    !defined(ITK_WINDOWS_ATOMICS_32)
++# define ITK_LOCK_BASED_ATOMICS_32
++#endif
++
++#if !defined(ITK_GCC_ATOMICS_64) && !defined(ITK_APPLE_ATOMICS_64) &&\
++    !defined(ITK_WINDOWS_ATOMICS_64)
++# define ITK_LOCK_BASED_ATOMICS_64
++#endif
++
++namespace itk
++{
++
++#if defined(ITK_LOCK_BASED_ATOMICS_32) || defined(ITK_LOCK_BASED_ATOMICS_64)
++
++#if defined(ITK_LOCK_BASED_ATOMICS_64)
++Detail::AtomicOps<8>::AtomicType::AtomicType(int64_t init)
++  : var(init),
++    mutex( new SimpleFastMutexLock )
++{
++}
++
++Detail::AtomicOps<8>::AtomicType::~AtomicType()
++{
++  delete mutex;
++}
++#endif
++
++#if defined(ITK_LOCK_BASED_ATOMICS_32)
++Detail::AtomicOps<4>::AtomicType::AtomicType(int32_t init)
++  : var(init),
++  mutex( new SimpleFastMutexLock )
++{
++}
++
++Detail::AtomicOps<4>::AtomicType::~AtomicType()
++{
++  delete mutex;
++}
++#endif
++
++#endif // ITK_LOCK_BASED_ATOMICS
++
++
++namespace Detail
++{
++
++#if defined(ITK_WINDOWS_ATOMICS_64) || defined(ITK_LOCK_BASED_ATOMICS_64)
++
++int64_t AtomicOps<8>::AddAndFetch(AtomicType *ref, int64_t val)
++{
++#if defined(ITK_WINDOWS_ATOMICS_64)
++# if defined(ITK_HAS_INTERLOCKEDADD)
++  return InterlockedAdd64(ref, val);
++# else
++  return InterlockedExchangeAdd64(ref, val) + val;
++# endif
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return ref->var += val;
++#endif
++}
++
++int64_t AtomicOps<8>::SubAndFetch(AtomicType *ref, int64_t val)
++{
++#if defined(ITK_WINDOWS_ATOMICS_64)
++# if defined(ITK_HAS_INTERLOCKEDADD)
++  return InterlockedAdd64(ref, -val);
++# else
++  return InterlockedExchangeAdd64(ref, -val) - val;
++# endif
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return ref->var -= val;
++#endif
++}
++
++int64_t AtomicOps<8>::PreIncrement(AtomicType *ref)
++{
++#if defined(ITK_WINDOWS_ATOMICS_64)
++  return InterlockedIncrement64(ref);
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return ++(ref->var);
++#endif
++}
++
++int64_t AtomicOps<8>::PreDecrement(AtomicType *ref)
++{
++#if defined(ITK_WINDOWS_ATOMICS_64)
++  return InterlockedDecrement64(ref);
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return --(ref->var);
++#endif
++}
++
++int64_t AtomicOps<8>::PostIncrement(AtomicType *ref)
++{
++#if defined(ITK_WINDOWS_ATOMICS_64)
++  int64_t val = InterlockedIncrement64(ref);
++  return --val;
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return (ref->var)++;
++#endif
++}
++
++int64_t AtomicOps<8>::PostDecrement(AtomicType *ref)
++{
++#if defined(ITK_WINDOWS_ATOMICS_64)
++  int64_t val = InterlockedDecrement64(ref);
++  return ++val;
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return (ref->var)--;
++#endif
++}
++
++int64_t AtomicOps<8>::Load(const AtomicType *ref)
++{
++#if defined(ITK_WINDOWS_ATOMICS_64)
++  int64_t val;
++  InterlockedExchange64(&val, *ref);
++  return val;
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return ref->var;
++#endif
++}
++
++void AtomicOps<8>::Store(AtomicType *ref, int64_t val)
++{
++#if defined(ITK_WINDOWS_ATOMICS_64)
++  InterlockedExchange64(ref, val);
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  ref->var = val;
++#endif
++}
++
++#endif // defined(ITK_WINDOWS_ATOMICS_64) || defined(ITK_LOCK_BASED_ATOMICS_64)
++
++
++#if defined(ITK_WINDOWS_ATOMICS_32) || defined(ITK_LOCK_BASED_ATOMICS_32)
++
++int32_t AtomicOps<4>::AddAndFetch(AtomicType *ref, int32_t val)
++{
++#if defined(ITK_WINDOWS_ATOMICS_32)
++# if defined(ITK_HAS_INTERLOCKEDADD)
++  return InterlockedAdd(reinterpret_cast<long*>(ref), val);
++# else
++  return InterlockedExchangeAdd(reinterpret_cast<long*>(ref), val) + val;
++# endif
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return ref->var += val;
++#endif
++}
++
++int32_t AtomicOps<4>::SubAndFetch(AtomicType *ref, int32_t val)
++{
++#if defined(ITK_WINDOWS_ATOMICS_32)
++# if defined(ITK_HAS_INTERLOCKEDADD)
++  return InterlockedAdd(reinterpret_cast<long*>(ref), -val);
++# else
++  return InterlockedExchangeAdd(reinterpret_cast<long*>(ref), -val) - val;
++# endif
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return ref->var -= val;
++#endif
++}
++
++int32_t AtomicOps<4>::PreIncrement(AtomicType *ref)
++{
++#if defined(ITK_WINDOWS_ATOMICS_32)
++  return InterlockedIncrement(reinterpret_cast<long*>(ref));
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return ++(ref->var);
++#endif
++}
++
++int32_t AtomicOps<4>::PreDecrement(AtomicType *ref)
++{
++#if defined(ITK_WINDOWS_ATOMICS_32)
++  return InterlockedDecrement(reinterpret_cast<long*>(ref));
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return --(ref->var);
++#endif
++}
++
++int32_t AtomicOps<4>::PostIncrement(AtomicType *ref)
++{
++#if defined(ITK_WINDOWS_ATOMICS_32)
++  int32_t val = InterlockedIncrement(reinterpret_cast<long*>(ref));
++  return --val;
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return (ref->var)++;
++#endif
++}
++
++int32_t AtomicOps<4>::PostDecrement(AtomicType *ref)
++{
++#if defined(ITK_WINDOWS_ATOMICS_32)
++  int32_t val = InterlockedDecrement(reinterpret_cast<long*>(ref));
++  return ++val;
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return (ref->var)--;
++#endif
++}
++
++int32_t AtomicOps<4>::Load(const AtomicType *ref)
++{
++#if defined(ITK_WINDOWS_ATOMICS_32)
++  long val;
++  InterlockedExchange(&val, *ref);
++  return val;
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  return ref->var;
++#endif
++}
++
++void AtomicOps<4>::Store(AtomicType *ref, int32_t val)
++{
++#if defined(ITK_WINDOWS_ATOMICS_32)
++  InterlockedExchange(reinterpret_cast<long*>(ref), val);
++#else
++  MutexLockHolder<SimpleFastMutexLock> mutexHolder(*ref->mutex);
++  ref->var = val;
++#endif
++}
++
++#endif // defined(ITK_WINDOWS_ATOMICS_32) || defined(ITK_LOCK_BASED_ATOMICS_32)
++
++} // namespace Detail
++
++} // namespace itk
+diff --git a/Modules/Core/Common/src/itkConfigure.h.in b/Modules/Core/Common/src/itkConfigure.h.in
+index d35dc8c..3899fd3 100644
+--- a/Modules/Core/Common/src/itkConfigure.h.in
++++ b/Modules/Core/Common/src/itkConfigure.h.in
+@@ -40,6 +40,12 @@
+   #define ITK_WORDS_BIGENDIAN
+ #endif
+ 
++#define ITK_SIZEOF_VOID_P @CMAKE_SIZEOF_VOID_P@
++
++/* Atomic operations */
++#cmakedefine ITK_HAVE_SYNC_BUILTINS
++#cmakedefine ITK_HAS_INTERLOCKEDADD
++
+ /* what threading system are we using */
+ #cmakedefine ITK_USE_PTHREADS
+ #cmakedefine ITK_HP_PTHREADS
+diff --git a/Modules/Core/Common/src/itkLightObject.cxx b/Modules/Core/Common/src/itkLightObject.cxx
+index e79407a..10df5f5 100644
+--- a/Modules/Core/Common/src/itkLightObject.cxx
++++ b/Modules/Core/Common/src/itkLightObject.cxx
+@@ -17,7 +17,6 @@
+  *=========================================================================*/
+ #include "itkFastMutexLock.h"
+ 
+-
+ // Better name demanging for gcc
+ #if __GNUC__ > 3 || ( __GNUC__ == 3 && __GNUC_MINOR__ > 0 )
+ #define GCC_USEDEMANGLE
+@@ -28,29 +27,9 @@
+ #include <cxxabi.h>
+ #endif
+ 
+-#if defined( __APPLE__ )
+-// OSAtomic.h optimizations only used in 10.5 and later
+-  #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
+-    #include <libkern/OSAtomic.h>
+-  #endif
+-
+-#elif defined( __GLIBCPP__ ) || defined( __GLIBCXX__ )
+-  #if ( __GNUC__ > 4 ) || ( ( __GNUC__ == 4 ) && ( __GNUC_MINOR__ >= 2 ) )
+-  #include <ext/atomicity.h>
+-  #else
+-  #include <bits/atomicity.h>
+-  #endif
+-
+-#endif
+ 
+ namespace itk
+ {
+-#if defined( __GLIBCXX__ ) // g++ 3.4+
+-
+-using __gnu_cxx::__atomic_add;
+-using __gnu_cxx::__exchange_and_add;
+-
+-#endif
+ 
+ LightObject::Pointer
+ LightObject::New()
+@@ -157,28 +136,7 @@ void
+ LightObject
+ ::Register() const
+ {
+-  // Windows optimization
+-#if ( defined( WIN32 ) || defined( _WIN32 ) )
+-  InterlockedIncrement(&m_ReferenceCount);
+-
+-  // Mac optimization
+-#elif defined( __APPLE__ ) && ( MAC_OS_X_VERSION_MIN_REQUIRED >= 1050 )
+- #if defined ( __LP64__ ) && __LP64__
+-  OSAtomicIncrement64Barrier(&m_ReferenceCount);
+- #else
+-  OSAtomicIncrement32Barrier(&m_ReferenceCount);
+- #endif
+-
+-  // gcc optimization
+-#elif defined( __GLIBCPP__ ) || defined( __GLIBCXX__ )
+-  __atomic_add(&m_ReferenceCount, 1);
+-
+-  // General case
+-#else
+-  m_ReferenceCountLock.Lock();
+-  m_ReferenceCount++;
+-  m_ReferenceCountLock.Unlock();
+-#endif
++  ++m_ReferenceCount;
+ }
+ 
+ /**
+@@ -191,45 +149,10 @@ LightObject
+   // As ReferenceCount gets unlocked, we may have a race condition
+   // to delete the object.
+ 
+-  // Windows optimization
+-#if ( defined( WIN32 ) || defined( _WIN32 ) )
+-  if ( InterlockedDecrement(&m_ReferenceCount) <= 0 )
+-    {
+-    delete this;
+-    }
+-
+-// Mac optimization
+-#elif defined( __APPLE__ ) && ( MAC_OS_X_VERSION_MIN_REQUIRED >= 1050 )
+- #if defined ( __LP64__ ) && __LP64__
+-  if ( OSAtomicDecrement64Barrier(&m_ReferenceCount) <= 0 )
+-    {
+-    delete this;
+-    }
+- #else
+-  if ( OSAtomicDecrement32Barrier(&m_ReferenceCount) <= 0 )
+-    {
+-    delete this;
+-    }
+- #endif
+-
+-// gcc optimization
+-#elif defined( __GLIBCPP__ ) || defined( __GLIBCXX__ )
+-  if ( __exchange_and_add(&m_ReferenceCount, -1) <= 1 )
++  if (  --m_ReferenceCount <= 0 )
+     {
+     delete this;
+     }
+-
+-// General case
+-#else
+-  m_ReferenceCountLock.Lock();
+-  InternalReferenceCountType tmpReferenceCount = --m_ReferenceCount;
+-  m_ReferenceCountLock.Unlock();
+-
+-  if ( tmpReferenceCount <= 0 )
+-    {
+-    delete this;
+-    }
+-#endif
+ }
+ 
+ /**
+@@ -239,9 +162,7 @@ void
+ LightObject
+ ::SetReferenceCount(int ref)
+ {
+-  m_ReferenceCountLock.Lock();
+-  m_ReferenceCount = static_cast< InternalReferenceCountType >( ref );
+-  m_ReferenceCountLock.Unlock();
++  m_ReferenceCount = ref;
+ 
+   if ( ref <= 0 )
+     {
+diff --git a/Modules/Core/Common/src/itkTimeStamp.cxx b/Modules/Core/Common/src/itkTimeStamp.cxx
+index b5bc79c..e18e90e 100644
+--- a/Modules/Core/Common/src/itkTimeStamp.cxx
++++ b/Modules/Core/Common/src/itkTimeStamp.cxx
+@@ -25,34 +25,11 @@
+  *  please refer to the NOTICE file at the top of the ITK source tree.
+  *
+  *=========================================================================*/
+-#include "itkFastMutexLock.h"
+-
+-#if defined( _WIN32 )
+-  #include "itkWindows.h"
+-
+-#elif defined( __APPLE__ )
+-// OSAtomic.h optimizations only used in 10.5 and later
+-  #include <AvailabilityMacros.h>
+-  #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1050
+-    #include <libkern/OSAtomic.h>
+-  #endif
+-
+-#elif defined( __GLIBCPP__ ) || defined( __GLIBCXX__ )
+-  #if ( __GNUC__ > 4 ) || ( ( __GNUC__ == 4 ) && ( __GNUC_MINOR__ >= 2 ) )
+-  #include <ext/atomicity.h>
+-  #else
+-  #include <bits/atomicity.h>
+-  #endif
+-
+-#endif
++#include "itkTimeStamp.h"
++#include "itkAtomicInt.h"
+ 
+ namespace itk
+ {
+-#if defined( __GLIBCXX__ ) // g++ 3.4+
+-
+-using __gnu_cxx::__exchange_and_add;
+-
+-#endif
+ 
+ /**
+  * Instance creation.
+@@ -81,46 +58,8 @@ void
+ TimeStamp
+ ::Modified()
+ {
+-  // Windows optimization
+-#if defined( WIN32 ) || defined( _WIN32 )
+-  static LONG itkTimeStampTime = 0;
+-  m_ModifiedTime = (ModifiedTimeType)InterlockedIncrement(&itkTimeStampTime);
+-
+-  // Mac optimization
+-#elif defined( __APPLE__ ) && ( MAC_OS_X_VERSION_MIN_REQUIRED >= 1050 )
+- #if __LP64__
+-  // "m_ModifiedTime" is "unsigned long", a type that changess sizes
+-  // depending on architecture.  The atomic increment is safe, since it
+-  // operates on a variable of the exact type needed.  The cast does not
+-  // change the size, but does change signedness, which is not ideal.
+-  static volatile int64_t itkTimeStampTime = 0;
+-  m_ModifiedTime = (ModifiedTimeType)OSAtomicIncrement64Barrier(&itkTimeStampTime);
+- #else
+-  static volatile int32_t itkTimeStampTime = 0;
+-  m_ModifiedTime = (ModifiedTimeType)OSAtomicIncrement32Barrier(&itkTimeStampTime);
+- #endif
+-
+-// gcc optimization
+-#elif defined( __GLIBCPP__ ) || defined( __GLIBCXX__ )
+-  // We start from 1 since __exchange_and_add returns the old (non-incremented)
+-  // value. This is not really necessary but will make the absolute value of the
+-  // timestamp more consistent across platforms.
+-  static volatile _Atomic_word itkTimeStampTime = 1;
+-  m_ModifiedTime = (ModifiedTimeType)__exchange_and_add(&itkTimeStampTime, 1);
+-
+-// General case
+-#else
+-  /**
+-   * Initialize static member
+-   */
+-  static ModifiedTimeType itkTimeStampTime = 0;
+-
+-  /** Used for mutex locking */
+-  static SimpleFastMutexLock TimeStampMutex;
++  static AtomicInt<ModifiedTimeType> GlobalTimeStamp(0);
+ 
+-  TimeStampMutex.Lock();
+-  m_ModifiedTime = ++itkTimeStampTime;
+-  TimeStampMutex.Unlock();
+-#endif
++  this->m_ModifiedTime = ++GlobalTimeStamp;
+ }
+ } // end namespace itk
+diff --git a/Modules/Core/Common/test/CMakeLists.txt b/Modules/Core/Common/test/CMakeLists.txt
+index 83e8bd6..29ba357 100644
+--- a/Modules/Core/Common/test/CMakeLists.txt
++++ b/Modules/Core/Common/test/CMakeLists.txt
+@@ -176,6 +176,7 @@ itkSimpleFastMutexLockTest.cxx
+ itkMetaDataObjectTest.cxx
+ # itkVectorMultiplyTest.cxx
+ itkThreadPoolTest.cxx
++itkAtomicIntTest.cxx
+ )
+ 
+ CreateTestDriver(ITKCommon1 "${ITKCommon_LIBRARIES}" "${ITKCommon1Tests}" itkFloatingPointExceptionsExtern.cxx)
+@@ -500,6 +501,8 @@ itk_add_test(NAME itkMetaDataObjectTest COMMAND ITKCommon2TestDriver itkMetaData
+ 
+ itk_add_test(NAME itkThreadPoolTest COMMAND ITKCommon2TestDriver itkThreadPoolTest 100)
+ 
++itk_add_test(NAME itkAtomicIntTest COMMAND ITKCommon2TestDriver itkAtomicIntTest)
++
+ # This test doesn't compile.  It exercises the bug I ran into if you multiply 2 vector images; if you
+ # try to compile it the compile fails.
+ # itk_add_test(NAME itkVectorMultiplyTest COMMAND ITKCommon2TestDriver itkVectorMultiplyTest)
+diff --git a/Modules/Core/Common/test/itkAtomicIntTest.cxx b/Modules/Core/Common/test/itkAtomicIntTest.cxx
+new file mode 100644
+index 0000000..de9fd63
+--- /dev/null
++++ b/Modules/Core/Common/test/itkAtomicIntTest.cxx
+@@ -0,0 +1,203 @@
++/*=========================================================================
++ *
++ *  Copyright Insight Software Consortium
++ *
++ *  Licensed under the Apache License, Version 2.0 (the "License");
++ *  you may not use this file except in compliance with the License.
++ *  You may obtain a copy of the License at
++ *
++ *         http://www.apache.org/licenses/LICENSE-2.0.txt
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ *
++ *=========================================================================*/
++/*=========================================================================
++
++  Program:   Visualization Toolkit
++  Module:    TestAtomic.cxx
++
++  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
++  All rights reserved.
++  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
++
++     This software is distributed WITHOUT ANY WARRANTY; without even
++     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++     PURPOSE.  See the above copyright notice for more information.
++
++=========================================================================*/
++#include "itkAtomicInt.h"
++#include "itkMultiThreader.h"
++#include "itkObject.h"
++#include <iostream>
++
++namespace
++{
++
++int Total = 0;
++itk::uint64_t Total64 = 0;
++itk::AtomicInt<itk::uint32_t> TotalAtomic(0);
++itk::AtomicInt<itk::uint64_t> TotalAtomic64(0);
++const int Target = 1000000;
++int Values32[Target+2];
++int Values64[Target+2];
++int NumThreads = 5;
++
++itk::Object::Pointer AnObject;
++}
++
++
++ITK_THREAD_RETURN_TYPE MyFunction(void *)
++{
++  for (int i=0; i<Target/NumThreads; i++)
++    {
++    Total++;
++    int idx = ++TotalAtomic;
++    Values32[idx] = 1;
++
++    Total64++;
++    idx = ++TotalAtomic64;
++    Values64[idx] = 1;
++
++    AnObject->Modified();
++    }
++
++  return ITK_THREAD_RETURN_VALUE;
++}
++
++ITK_THREAD_RETURN_TYPE MyFunction2(void *)
++{
++  for (int i=0; i<Target/NumThreads; i++)
++    {
++    --TotalAtomic;
++
++    --TotalAtomic64;
++    }
++
++  return ITK_THREAD_RETURN_VALUE;
++}
++
++ITK_THREAD_RETURN_TYPE MyFunction3(void *)
++{
++  for (int i=0; i<Target/NumThreads; i++)
++    {
++    int idx = TotalAtomic += 1;
++    Values32[idx]++;
++
++    idx = TotalAtomic64 += 1;
++    Values64[idx]++;
++    }
++
++  return ITK_THREAD_RETURN_VALUE;
++}
++
++ITK_THREAD_RETURN_TYPE MyFunction4(void *)
++{
++  for (int i=0; i<Target/NumThreads; i++)
++    {
++    TotalAtomic++;
++    TotalAtomic += 1;
++    TotalAtomic--;
++    TotalAtomic -= 1;
++
++    TotalAtomic64++;
++    TotalAtomic64 += 1;
++    TotalAtomic64--;
++    TotalAtomic64 -= 1;
++    }
++
++  return ITK_THREAD_RETURN_VALUE;
++}
++
++int itkAtomicIntTest(int, char*[])
++{
++  Total = 0;
++  TotalAtomic = 0;
++  Total64 = 0;
++  TotalAtomic64 = 0;
++
++  AnObject = itk::Object::New();
++
++  int beforeMTime = AnObject->GetMTime();
++
++  for (int i=0; i<Target; i++)
++    {
++    Values32[i] = 0;
++    Values64[i] = 0;
++    }
++
++  itk::MultiThreader::Pointer mt = itk::MultiThreader::New();
++  mt->SetSingleMethod(MyFunction, NULL);
++  mt->SetNumberOfThreads(NumThreads);
++  mt->SingleMethodExecute();
++
++  mt->SetSingleMethod(MyFunction2, NULL);
++  mt->SingleMethodExecute();
++
++  mt->SetSingleMethod(MyFunction3, NULL);
++  mt->SingleMethodExecute();
++
++  // Making sure that atomic incr returned unique
++  // values each time. We expect all numbers from
++  // 1 to Target-1 to be 2.
++  if (Values32[0] != 0)
++    {
++    std::cout << "Expecting Values32[0] to be 0. Got "
++              << Values32[0] << std::endl;
++    return 1;
++    }
++  if (Values64[0] != 0)
++    {
++    std::cout << "Expecting Values64[0] to be 0. Got "
++              << Values64[0] << std::endl;
++    return 1;
++    }
++  for (int i=1; i<Target; i++)
++    {
++    if (Values32[i] != 2)
++      {
++      std::cout << "Expecting Values32[" << i << "] to be 2. Got "
++                << Values32[i] << std::endl;
++      return 1;
++      }
++    if (Values64[i] != 2)
++      {
++      std::cout << "Expecting Values64[" << i << "] to be 2. Got "
++                << Values64[i] << std::endl;
++      return 1;
++      }
++    }
++
++  mt->SetSingleMethod(MyFunction4, NULL);
++  mt->SingleMethodExecute();
++
++  std::cout << Total << " " << TotalAtomic.load() << std::endl;
++  std::cout << Total64 << " " << TotalAtomic64.load() << std::endl;
++
++  std::cout << "MTime: " << AnObject->GetMTime() << std::endl;
++
++  if (TotalAtomic.load() != Target)
++    {
++    return 1;
++    }
++
++  if (TotalAtomic64.load() != Target)
++    {
++    return 1;
++    }
++
++  if (AnObject->GetReferenceCount() != 1)
++    {
++    return 1;
++    }
++
++  if ((int)AnObject->GetMTime() != Target + beforeMTime + 2)
++    {
++    return 1;
++    }
++
++  return 0;
++}
