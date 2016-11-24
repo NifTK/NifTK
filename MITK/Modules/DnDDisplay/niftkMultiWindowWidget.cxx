@@ -170,9 +170,12 @@ MultiWindowWidget::MultiWindowWidget(
   m_PlaneNode1->SetVisibility(false);
   m_PlaneNode2->SetVisibility(false);
   m_PlaneNode3->SetVisibility(false);
-  m_PlaneNode1->SetIntProperty("Crosshair.Gap Size", 8, 0);
-  m_PlaneNode2->SetIntProperty("Crosshair.Gap Size", 8, 0);
-  m_PlaneNode3->SetIntProperty("Crosshair.Gap Size", 8, 0);
+  m_PlaneNode1->SetIntProperty("Crosshair.Gap Size", 2, 0);
+  m_PlaneNode2->SetStringProperty("Crosshair.Gap Unit", "vx", 0);
+  m_PlaneNode3->SetIntProperty("Crosshair.Gap Size", 2, 0);
+  m_PlaneNode1->SetStringProperty("Crosshair.Gap Unit", "vx", 0);
+  m_PlaneNode2->SetIntProperty("Crosshair.Gap Size", 2, 0);
+  m_PlaneNode3->SetStringProperty("Crosshair.Gap Unit", "vx", 0);
 
   this->SetCursorVisible(false);
   this->SetWidgetPlanesLocked(true);
