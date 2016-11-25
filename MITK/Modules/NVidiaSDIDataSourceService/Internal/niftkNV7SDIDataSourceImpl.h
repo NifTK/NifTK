@@ -177,8 +177,8 @@ private:
   //  all the time! so we just create a dummy context that shares with capture-context but itself
   //  is never ever current to any thread and hence can be shared with new widgets while capture-context
   //  is happily working away. and tada it works :)
-  QGLWidget*              oglshare;  
-  //GLHiddenWidget *			oglshare;
+  //QGLWidget*              oglshare;  
+  GLHiddenWidget *			oglshare;
 
   CaptureState            current_state;
   std::string             state_message;
@@ -202,6 +202,7 @@ private:
   Encoder *				  encoder;
   Decoder *				  decoder;  
   int					  device_id;
+  GLuint				  pbo;
   std::vector<char>		  frame_data;
 
   struct SequenceNumberComparator
