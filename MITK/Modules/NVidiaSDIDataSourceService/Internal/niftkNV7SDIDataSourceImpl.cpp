@@ -26,6 +26,10 @@ See LICENSE.txt in the top level directory for details.
 #include <NiftyLinkUtils.h>
 #include <fstream>
 
+#ifndef GL_BUFFER_OFFSET
+#define GL_BUFFER_OFFSET(x)   ((GLvoid*)(((uint8_t*)NULL)+(x)))
+#endif
+
 namespace niftk
 {
 
@@ -93,7 +97,7 @@ namespace niftk
 		current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0), wireformat(""),
 		m_CaptureWidth(0), m_CaptureHeight(0),
 		m_Cookie(0),
-		state_message("Starting up")
+		state_message("Starting up"), pbo(0)
 	{
 		// check whether cuda dlls are available
 		if (!CUDADelayLoadCheck())
@@ -135,7 +139,7 @@ namespace niftk
 		
 		oglwin->doneCurrent();
 		oglshare->context()->moveToThread(this);
-		oglshare->moveToThread(this);
+		//oglshare->moveToThread(this);
 
 
 		// we want signal/slot processing to happen on our background thread.
@@ -595,6 +599,9 @@ namespace niftk
 		oglshare->makeCurrent();
 		delete sdiin;
 		sdiin = 0;
+
+		glDeleteBuffers(1, &pbo);
+		pbo = 0;
 	}
 
 
@@ -976,6 +983,14 @@ namespace niftk
 				}			
 
 				frame_data = std::vector<char>(sdiin->get_width() * sdiin->get_height() * 4);								
+
+				// Do the PBO allocation
+				glGenBuffers(1, &pbo);
+				check_oglerror("Could not generate the PBO");
+				glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+				check_oglerror("Could not bind buffer for PBO");
+				glBufferData(GL_PIXEL_PACK_BUFFER, sdiin->get_width() * sdiin->get_height() * 4, NULL, GL_STREAM_READ);
+				check_oglerror("glBufferData failed for PBO");
 			}
 			
 			// find out which ringbuffer slot the request sequence number is in, if any
@@ -996,10 +1011,19 @@ namespace niftk
 					int w = sdiin->get_width();
 					int h = sdiin->get_height();						
 
+					//glBindTexture(GL_TEXTURE_2D, tid);
+					//glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, &frame_data[0]);					
+					//check_oglerror("Could not copy texture");
+
+					glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
 					glBindTexture(GL_TEXTURE_2D, tid);
-					glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, &frame_data[0]);					
-					check_oglerror("Could not copy texture");
-					encoder->encode_frame((unsigned char *)(&frame_data[0]));
+					glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, GL_BUFFER_OFFSET(0));
+					void* mem = glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+					encoder->encode_frame((unsigned char *)(mem));
+					//encoder->encode_frame((unsigned char *)(&frame_data[0]));
+					glUnmapBuffer(GL_PIXEL_PACK_BUFFER_ARB);
+					glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+					
 					m_NumFramesCompressed++;
 				}
 
