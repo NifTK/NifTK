@@ -1,48 +1,46 @@
-@ECHO OFF
+@echo off
 
-REM /*=============================================================================
-REM 
-REM   NifTK: A software platform for medical image computing.
-REM 
-REM   Copyright (c) University College London (UCL). All rights reserved.
-REM 
-REM   This software is distributed WITHOUT ANY WARRANTY; without even
-REM   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-REM   PURPOSE.
-REM 
-REM   See LICENSE.txt in the top level directory for details.
-REM 
-REM =============================================================================*/
+rem /*=============================================================================
+rem
+rem   NifTK: A software platform for medical image computing.
+rem
+rem   Copyright (c) University College London (UCL). All rights reserved.
+rem
+rem   This software is distributed WITHOUT ANY WARRANTY; without even
+rem   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+rem   PURPOSE.
+rem
+rem   See LICENSE.txt in the top level directory for details.
+rem
+rem =============================================================================*/
 
-SETLOCAL ENABLEDELAYEDEXPANSION
+setlocal enabledelayedexpansion
 
-SET BATCH_SCRIPT_FOLDER_PATHNAME="%~dp0"
-SET UP_ONE_DIRECTORY="%BATCH_SCRIPT_FOLDER_PATHNAME%\..\"
+set CLI_MODULES_DIR="%~dp0"
 
-REM Loop round a character at a time, splitting words only on space.
-SET params=
-SET word=
-SET terminator=@
-SET cl=%*%terminator%
+rem Loop round a character at a time, splitting words only on space.
+set params=
+set word=
+set terminator=@
+set cl=%*%terminator%
 
-:LOOP
-SET char=%cl:~0,1%
-SET cl=%cl:~1%
+:loop
+set char=%cl:~0,1%
+set cl=%cl:~1%
 
-IF "%char%" == "%terminator%" GOTO AFTERLOOP
-IF "%char%" == " " (
-  IF "!word!" NEQ "" (
-    SET params=%params% "!word!"
-    SET word=
+if "%char%" == "%terminator%" goto afterloop
+if "%char%" == " " (
+  if "!word!" NEQ "" (
+    set params=%params% "!word!"
+    set word=
   )
-) ELSE (
-  SET word=!word!%char%
+) else (
+  set word=!word!%char%
 )
-GOTO LOOP
+goto loop
 
-:AFTERLOOP
+:afterloop
 
-IF "!word!" NEQ "" SET params=%params% "!word!"
+if "!word!" NEQ "" set params=%params% "!word!"
 
-"%UP_ONE_DIRECTORY%\@FULL_APP_NAME@" %params%
-
+"%CLI_MODULES_DIR%\..\@FULL_APP_NAME@.exe" %params%
