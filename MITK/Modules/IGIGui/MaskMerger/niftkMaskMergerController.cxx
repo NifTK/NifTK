@@ -71,22 +71,12 @@ MaskMergerControllerPrivate::MaskMergerControllerPrivate(MaskMergerController* m
 , m_RightResult(nullptr)
 , m_Lock(QMutex::Recursive)
 {
-  Q_Q(MaskMergerController);
 }
 
 
 //-----------------------------------------------------------------------------
 MaskMergerControllerPrivate::~MaskMergerControllerPrivate()
 {
-  /* Do we want this?
-  if (output1.IsNotNull()
-      && q_ptr->GetDataStorage()->Exists(output1)
-      )
-  {
-    q_ptr->GetDataStorage()->Remove(output1);
-    output1 = nullptr;
-  }
-  */
 }
 
 
@@ -169,6 +159,7 @@ void MaskMergerControllerPrivate::UpdateMask(const mitk::DataNode* input1,
       niftk::BinaryMaskAndOperator(im1, im2, op);
       op->GetVtkImageData()->Modified();
       op->Modified();
+	    output1->Modified();
     }
   }
 }
@@ -186,6 +177,20 @@ MaskMergerController::MaskMergerController(IBaseView* view)
 MaskMergerController::~MaskMergerController()
 {
   Q_D(MaskMergerController);
+  QMutexLocker locker(&d->m_Lock);
+
+  bool ok = disconnect(&d->m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  assert(ok);
+  d->m_BackgroundProcessWatcher.waitForFinished();
+
+  if (d->m_LeftResult.IsNotNull())
+  {
+    this->GetDataStorage()->Remove(d->m_LeftResult);
+  }
+  if (d->m_RightResult.IsNotNull())
+  {
+    this->GetDataStorage()->Remove(d->m_RightResult);
+  }
 }
 
 
@@ -208,7 +213,6 @@ void MaskMergerController::SetupGUI(QWidget* parent)
   connect(d->m_GUI, SIGNAL(RightMask1SelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightMask1SelectionChanged(const mitk::DataNode*)));
   connect(d->m_GUI, SIGNAL(RightMask2SelectionChanged(const mitk::DataNode*)), this, SLOT(OnRightMask2SelectionChanged(const mitk::DataNode*)));
   connect(&d->m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
-
 }
 
 
@@ -284,15 +288,18 @@ void MaskMergerController::OnRightMask2SelectionChanged(const mitk::DataNode* no
 void MaskMergerController::Update()
 {
   Q_D(MaskMergerController);
-  QMutexLocker locker(&d->m_Lock);
-
-  d->m_BackgroundProcess = QtConcurrent::run(this, &MaskMergerController::InternalUpdate);
-  d->m_BackgroundProcessWatcher.setFuture(d->m_BackgroundProcess);
+  
+  if (!d->m_BackgroundProcess.isRunning())
+  {
+    QMutexLocker locker(&d->m_Lock);
+    d->m_BackgroundProcess = QtConcurrent::run(this, &MaskMergerController::InternalUpdateBackground);
+    d->m_BackgroundProcessWatcher.setFuture(d->m_BackgroundProcess);
+  }
 }
 
 
 //-----------------------------------------------------------------------------
-bool MaskMergerController::InternalUpdate()
+bool MaskMergerController::InternalUpdateBackground()
 {
   Q_D(MaskMergerController);
   QMutexLocker locker(&d->m_Lock);
@@ -308,7 +315,6 @@ bool MaskMergerController::InternalUpdate()
 void MaskMergerController::OnBackgroundProcessFinished()
 {
   Q_D(MaskMergerController);
-  QMutexLocker locker(&d->m_Lock);
 
   // Nothing to do right now - placeholder.
 }
