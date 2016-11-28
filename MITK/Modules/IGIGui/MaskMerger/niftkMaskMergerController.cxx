@@ -167,6 +167,7 @@ void MaskMergerControllerPrivate::UpdateMask(const mitk::DataNode* input1,
     if (im1 != nullptr && im2 != nullptr && op.IsNotNull() && im1 != im2)
     {
       niftk::BinaryMaskAndOperator(im1, im2, op);
+      op->GetVtkImageData()->Modified();
       op->Modified();
     }
   }
