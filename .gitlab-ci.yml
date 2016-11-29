@@ -48,6 +48,8 @@ Linux continuous build:
 
   only:
   - branches
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, continuous
@@ -148,6 +150,8 @@ Mac continuous build:
 
   only:
   - branches
+  except:
+   - /^4590-.*$/
 
   tags:
   - mac, continuous
@@ -195,7 +199,7 @@ Windows continuous build:
   - mkdir -p ${sb_dir}
   - mkdir -p ${ep_dir}
   - cd ${sb_dir}
-  - /c/CB/slowrunner.exe -v -2 -e "c:\CB\NifTKContinuousBuild.bat"
+  - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
 
   only:
   - branches
@@ -210,7 +214,7 @@ Windows continuous test:
 
   script:
   - cd ${pb_dir}
-#  - ctest -E CTE-Stream -S CTestContinuous.cmake -V
+  - ${src_dir}/Utilities/NifTKContinuousTest.bat
 
   only:
   - branches
