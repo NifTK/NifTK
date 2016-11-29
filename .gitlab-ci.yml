@@ -67,6 +67,8 @@ Linux continuous test:
 
   only:
   - branches
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, continuous
@@ -122,6 +124,8 @@ Linux continuous clean up:
 
   only:
   - branches
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, continuous
@@ -169,6 +173,8 @@ Mac continuous test:
 
   only:
   - branches
+  except:
+   - /^4590-.*$/
 
   tags:
   - mac, continuous
@@ -186,6 +192,8 @@ Mac continuous clean up:
 
   only:
   - branches
+  except:
+   - /^4590-.*$/
 
   tags:
   - mac, continuous
