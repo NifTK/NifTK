@@ -268,6 +268,7 @@ Ubuntu 14.04 release build:
         -DBUILD_CAFFE:BOOL=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
         ${src_dir}
   - make -j 8
 
@@ -293,6 +294,7 @@ CentOS 7 release build:
         -DBUILD_CAFFE:BOOL=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
         ${src_dir}
   - make -j 8
 
@@ -323,6 +325,7 @@ CentOS 6 release build:
         -DOPENCV_WITH_FFMPEG:BOOL=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
         ${src_dir}
   - make
 
@@ -348,6 +351,7 @@ Mac release build:
         -DBUILD_CAFFE:BOOL=ON
         -DNIFTK_Apps/NiftyView:BOOL=ON
         -DNIFTK_Apps/NiftyIGI:BOOL=ON
+        -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
         ${src_dir}
   - make -j 4
 
@@ -356,6 +360,23 @@ Mac release build:
 
   tags:
   - mac, release
+
+
+Windows release build:
+
+  stage: build
+
+  script:
+  - mkdir -p ${sb_dir}
+  - mkdir -p ${ep_dir}
+  - cd ${sb_dir}
+  - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
+
+  only:
+  - tags
+
+  tags:
+  - windows, continuous
 
 
 # Dummy test jobs to prevent that deploy job is preceded by clean job.
@@ -369,6 +390,8 @@ Ubuntu 14.04 release test:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, ubuntu-14.04, release
@@ -383,6 +406,8 @@ CentOS 7 release test:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, centos-7, release
@@ -397,13 +422,30 @@ CentOS 6 release test:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, centos-6, release
 
 
-# Dummy test job to prevent that deploy job is preceded by clean job.
 Mac release test:
+
+  stage: test
+
+  script:
+  - echo
+
+  only:
+  - tags
+  except:
+   - /^4590-.*$/
+
+  tags:
+  - mac, release
+
+
+Windows release test:
 
   stage: test
 
@@ -414,7 +456,7 @@ Mac release test:
   - tags
 
   tags:
-  - mac, release
+  - windows, release
 
 
 # Generating documentation pages for tagged releases
@@ -448,6 +490,8 @@ Release docs:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, ubuntu-14.04, release
@@ -471,6 +515,8 @@ Ubuntu 14.04 release installer:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, ubuntu-14.04, release
@@ -510,6 +556,8 @@ CentOS 7 release installer:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, centos-7, release
@@ -550,6 +598,8 @@ CentOS 6 release installer:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, centos-6, release
@@ -566,6 +616,29 @@ Mac release installer:
   - cpack --config CPackConfig.cmake
   - installer_file="niftk-${version}-mac-10.10.dmg"
   - mv niftk-${niftk_version_string}.dmg ${installer_file}
+  - "# Upload the installer image"
+  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+
+  only:
+  - tags
+  except:
+   - /^4590-.*$/
+
+  tags:
+  - mac, release
+
+
+Windows release installer:
+
+  stage: deploy
+
+  script:
+  - version=${CI_BUILD_TAG}
+  - cd ${pb_dir}
+  - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
+  - cpack --config CPackConfig.cmake
+  - installer_file="niftk-${version}-win-7-x64.exe"
+  - mv niftk-${niftk_version_string}.exe ${installer_file}
   - "# Upload the installer image"
   - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
 
@@ -593,6 +666,8 @@ Ubuntu 14.04 release clean up:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, ubuntu-14.04, release
@@ -610,6 +685,8 @@ CentOS 7 release clean up:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, centos-7, release
@@ -627,6 +704,8 @@ CentOS 6 release clean up:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - linux, centos-6, release
@@ -644,6 +723,8 @@ Mac release clean up:
 
   only:
   - tags
+  except:
+   - /^4590-.*$/
 
   tags:
   - mac, release
