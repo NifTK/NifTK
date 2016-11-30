@@ -63,6 +63,9 @@ set BCONF=Release
 set "VS_CONF=%BCONF%^|%BTYPE%"
 echo Visual Studio config:   %VS_CONF%
 
+set CL=/D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
+set LINK=/LARGEADDRESSAWARE
+
 rem The git usr/bin directory is needed for the 'tee' command.
 set "PATH=%CMAKE_DIR%/bin;c:/Program Files/Git/usr/bin;%QT_DIR%/bin;%OPENSSL_DIR%/bin;%VS_DIR%/Common7/IDE;%PATH%"
 echo PATH:                   %PATH%
