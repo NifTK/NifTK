@@ -22,9 +22,6 @@ set "QTDIR=%QT_DIR%"
 
 set GIT_SSL_NO_VERIFY=1
 
-set "BTYPE=x64"
-rem set "BTYPE=Win32"
-
 set "VS_COMMAND=devenv.com"
 rem set "VS_COMMAND=VCExpress.exe"
 
@@ -52,7 +49,12 @@ rem stop visual studio recycling already running instances of msbuild.exe. we wa
 rem http://stackoverflow.com/questions/12174877/visual-studio-2012-rtm-has-msbuild-exe-in-memory-after-close
 set MSBUILDDISABLENODEREUSE=1
 
-if ["%BTYPE%"] == ["x64"] (
+rem Allowed values of BTYPE are "x64" and "Win32"
+if "%BTYPE%" == "" (
+  set BTYPE=x64
+)
+
+if "%BTYPE%" == "x64" (
   call "%VS_DIR%/VC/bin/amd64/vcvars64.bat"
 ) else (
   call "%VS_DIR%/VC/bin/vcvars32.bat"

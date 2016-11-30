@@ -248,6 +248,72 @@ Windows continuous clean up:
   - windows, continuous
 
 
+#Windows 32 bit continuous build:
+#
+#  stage: build
+#
+#  script:
+#  - export ep_dir="${ep_dir}-32bit"
+#  - export sb_dir="${sb_dir}-32bit"
+#  - export pb_dir="${sb_dir}/NifTK-build"
+#  - echo "External projects - ${ep_dir}"
+#  - echo "Superbuild - ${sb_dir}"
+#  - echo "Project build - ${pb_dir}"
+#  - mkdir -p ${sb_dir}
+#  - mkdir -p ${ep_dir}
+#  - cd ${sb_dir}
+#  - export BTYPE=Win32
+#  - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
+#
+#  only:
+#  - branches
+#
+#  tags:
+#  - windows-32bit, continuous
+
+
+#Windows 32 bit continuous test:
+#
+#  stage: test
+#
+#  script:
+#  - export ep_dir="${ep_dir}-32bit"
+#  - export sb_dir="${sb_dir}-32bit"
+#  - export pb_dir="${sb_dir}/NifTK-build"
+#  - echo "External projects - ${ep_dir}"
+#  - echo "Superbuild - ${sb_dir}"
+#  - echo "Project build - ${pb_dir}"
+#  - cd ${pb_dir}
+#  - ${src_dir}/Utilities/NifTKContinuousTest.bat
+#
+#  only:
+#  - branches
+#
+#  tags:
+#  - windows-32bit, continuous
+
+
+#Windows 32 bit continuous clean up:
+#
+#  stage: cleanup
+#
+#  script:
+#  - export ep_dir="${ep_dir}-32bit"
+#  - export sb_dir="${sb_dir}-32bit"
+#  - echo "External projects - ${ep_dir}"
+#  - echo "Superbuild - ${sb_dir}"
+#  - rm -rf ${sb_dir}
+#  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+#
+#  when: always
+#
+#  only:
+#  - branches
+#
+#  tags:
+#  - windows-32bit, continuous
+
+
 ##########################################
 # Jobs for deploying tagged releases
 ##########################################
@@ -379,6 +445,30 @@ Windows release build:
   - windows, continuous
 
 
+#Windows 32 bit release build:
+#
+#  stage: build
+#
+#  script:
+#  - export ep_dir="${ep_dir}-32bit"
+#  - export sb_dir="${sb_dir}-32bit"
+#  - export pb_dir="${sb_dir}/NifTK-build"
+#  - echo "External projects - ${ep_dir}"
+#  - echo "Superbuild - ${sb_dir}"
+#  - echo "Project build - ${pb_dir}"
+#  - mkdir -p ${sb_dir}
+#  - mkdir -p ${ep_dir}
+#  - cd ${sb_dir}
+#  - export BTYPE=Win32
+#  - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
+#
+#  only:
+#  - tags
+#
+#  tags:
+#  - windows-32bit, continuous
+
+
 # Dummy test jobs to prevent that deploy job is preceded by clean job.
 
 Ubuntu 14.04 release test:
@@ -457,6 +547,20 @@ Windows release test:
 
   tags:
   - windows, release
+
+
+#Windows 32 bit release test:
+#
+#  stage: test
+#
+#  script:
+#  - echo
+#
+#  only:
+#  - tags
+#
+#  tags:
+#  - windows-32bit, release
 
 
 # Generating documentation pages for tagged releases
@@ -646,7 +750,28 @@ Windows release installer:
   - tags
 
   tags:
-  - mac, release
+  - windows, release
+
+
+#Windows 32 bit release installer:
+#
+#  stage: deploy
+#
+#  script:
+#  - version=${CI_BUILD_TAG}
+#  - cd ${pb_dir}
+#  - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
+#  - cpack --config CPackConfig.cmake
+#  - installer_file="niftk-${version}-win-7-x86.exe"
+#  - mv niftk-${niftk_version_string}.exe ${installer_file}
+#  - "# Upload the installer image"
+#  - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+#
+#  only:
+#  - tags
+#
+#  tags:
+#  - windows-32bit, release
 
 
 ##########################################
@@ -745,3 +870,24 @@ Mac release clean up:
 #
 #  tags:
 #  - windows, release
+
+
+#Windows 32 bit release clean up:
+#
+#  stage: cleanup
+#
+#  script:
+#  - export ep_dir="${ep_dir}-32bit"
+#  - export sb_dir="${sb_dir}-32bit"
+#  - echo "External projects - ${ep_dir}"
+#  - echo "Superbuild - ${sb_dir}"
+#  - rm -rf ${sb_dir}
+#  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+#
+#  when: always
+#
+#  only:
+#  - tags
+#
+#  tags:
+#  - windows-32bit, release
