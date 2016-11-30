@@ -14,10 +14,21 @@ rem The script builds NifTK in release mode with testing on.
 rem Enable command extensions to allow checking exit status of commands.
 setlocal EnableExtensions 
 
+rem Allowed values of BTYPE are "x64" and "Win32"
+if "%BTYPE%" == "" (
+  set BTYPE=x64
+)
+
 set "VS_DIR=c:/Program Files (x86)/Microsoft Visual Studio 11.0"
 set "CMAKE_DIR=c:/Program Files/CMake"
-set "OPENSSL_DIR=c:/OpenSSL-Win64"
-set "QT_DIR=c:/Qt/4.8.7"
+
+if "%BTYPE%" == "x64" (
+  set "OPENSSL_DIR=c:/OpenSSL-Win64"
+  set "QT_DIR=c:/Qt/4.8.7"
+) else (
+  set "OPENSSL_DIR=d:/OpenSSL-Win32"
+  set "QT_DIR=d:/Qt/qt-4.8.7-x86-vs11"
+)
 set "QTDIR=%QT_DIR%"
 
 set GIT_SSL_NO_VERIFY=1
@@ -48,11 +59,6 @@ echo CMake generator:        %CMAKE_GENERATOR%
 rem stop visual studio recycling already running instances of msbuild.exe. we want clean ones.
 rem http://stackoverflow.com/questions/12174877/visual-studio-2012-rtm-has-msbuild-exe-in-memory-after-close
 set MSBUILDDISABLENODEREUSE=1
-
-rem Allowed values of BTYPE are "x64" and "Win32"
-if "%BTYPE%" == "" (
-  set BTYPE=x64
-)
 
 if "%BTYPE%" == "x64" (
   call "%VS_DIR%/VC/bin/amd64/vcvars64.bat"

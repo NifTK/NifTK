@@ -14,7 +14,6 @@ rem The script runs the test for a NifTK release mode build.
 setlocal EnableExtensions 
 
 set "CMAKE_DIR=c:/Program Files/CMake"
-set "OPENSSL_DIR=c:/OpenSSL-Win64"
 
 echo CMake folder:           %CMAKE_DIR%
 echo Project build folder:   %pb_dir%
@@ -53,7 +52,7 @@ set PATHSTRING2=%var2:/=\%
 set PATHSTRING2=%PATHSTRING2:PATH=%
 set PATHSTRING2=%PATHSTRING2:~1,-2%
 
-set PATH=%PATHSTRING2%%PATHSTRING1%%SystemRoot%;%SystemRoot%/system32;%SystemRoot%/System32/Wbem;%OPENSSL_DIR%/bin
+set PATH=%PATHSTRING2%%PATHSTRING1%%SystemRoot%;%SystemRoot%/system32;%SystemRoot%/System32/Wbem
 
 if defined CUDA_PATH (
   set PATH=%PATH%;%CUDA_PATH%/bin
