@@ -445,7 +445,7 @@ Windows release build:
   - mkdir -p ${sb_dir}
   - mkdir -p ${ep_dir}
   - cd ${sb_dir}
-  - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
+#  - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
 
   only:
   - tags
@@ -749,7 +749,7 @@ Windows release installer:
   - version=${CI_BUILD_TAG}
   - cd ${pb_dir}
   - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
-  - cpack --config CPackConfig.cmake
+  - ${src_dir}/Utilities/NifTKReleaseDeploy.bat
   - installer_file="niftk-${version}-win-7-x64.exe"
   - mv niftk-${niftk_version_string}.exe ${installer_file}
   - "# Upload the installer image"
@@ -767,10 +767,16 @@ Windows release installer:
 #  stage: deploy
 #
 #  script:
+#  - export ep_dir="${ep_dir}-32bit"
+#  - export sb_dir="${sb_dir}-32bit"
+#  - export pb_dir="${sb_dir}/NifTK-build"
+#  - echo "External projects - ${ep_dir}"
+#  - echo "Superbuild - ${sb_dir}"
+#  - echo "Project build - ${pb_dir}"
 #  - version=${CI_BUILD_TAG}
 #  - cd ${pb_dir}
 #  - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
-#  - cpack --config CPackConfig.cmake
+#  - ${src_dir}/Utilities/NifTKReleaseDeploy.bat
 #  - installer_file="niftk-${version}-win-7-x86.exe"
 #  - mv niftk-${niftk_version_string}.exe ${installer_file}
 #  - "# Upload the installer image"
