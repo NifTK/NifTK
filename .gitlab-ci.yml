@@ -451,7 +451,7 @@ Windows release build:
   - tags
 
   tags:
-  - windows, continuous
+  - windows, release
 
 
 #Windows 32 bit release build:
