@@ -20,7 +20,6 @@
 #include <QWaitCondition>
 #include <QGLWidget>
 #include "dynlink_cuda.h"
-#include "niftkglhiddenwidget.h"
 #include <video/sdiinput.h>
 #include <encoder.h>
 #include <decoder.h>
@@ -177,8 +176,7 @@ private:
   //  all the time! so we just create a dummy context that shares with capture-context but itself
   //  is never ever current to any thread and hence can be shared with new widgets while capture-context
   //  is happily working away. and tada it works :)
-  //QGLWidget*              oglshare;  
-  GLHiddenWidget *			oglshare;
+  QGLWidget*              oglshare;  
 
   CaptureState            current_state;
   std::string             state_message;

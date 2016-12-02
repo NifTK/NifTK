@@ -19,7 +19,6 @@ set(CPP_FILES
   Internal/niftkNVidiaSDIDataSourceActivator.cxx  
   Internal/niftkNVidiaSDIDataSourceService.cxx
   Internal/niftkNVidiaSDIDataType.cxx
-  Internal/niftkglhiddenwidget.cpp
 )
 
 if (CUDA_VERSION_MAJOR LESS 7)
@@ -34,7 +33,6 @@ set(MOC_H_FILES
   Internal/niftkNVidiaSDIConfigDialog.h
   #Internal/niftkNVidiaSDIDataSourceImpl.h
   Internal/niftkNVidiaSDIDataSourceService.h
-  Internal/niftkglhiddenwidget.h
 )
 
 

@@ -59,7 +59,7 @@ namespace niftk
 			result = cuvidInit(0);
 			if (result != CUDA_SUCCESS) {
 				return false;
-			}
+			}     
 
 			int cudadevices[10];
 			unsigned int  actualcudadevices = 0;
@@ -96,7 +96,7 @@ namespace niftk
 		lock(QMutex::Recursive), 
 		current_state(PRE_INIT), m_LastSuccessfulFrame(0), m_NumFramesCompressed(0), wireformat(""),
 		m_CaptureWidth(0), m_CaptureHeight(0),
-		m_Cookie(0),
+    m_Cookie(0), device_id(-1), 
 		state_message("Starting up"), pbo(0)
 	{
 		// check whether cuda dlls are available
@@ -115,15 +115,17 @@ namespace niftk
 		// we create the opengl widget on the ui thread once
 		// and then never modify or signal/etc again
 
-		oglwin = new QGLWidget(0, 0, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
-		oglwin->hide();
-		assert(oglwin->isValid());
-		// hack to get context sharing to work while the capture thread is cracking away
-		oglshare = new GLHiddenWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
-		oglshare->hide();
-		assert(oglshare->isValid());
-		assert(oglwin->isSharing());		
-		oglwin->makeCurrent();
+    oglwin = new QGLWidget(0, 0, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
+    oglwin->hide();
+    assert(oglwin->isValid());
+
+    // hack to get context sharing to work while the capture thread is cracking away
+    oglshare = new QGLWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
+    oglshare->hide();
+    assert(oglshare->isValid());
+    assert(oglwin->isSharing());
+
+    oglwin->makeCurrent();
 		
 		// Find out which gpu is rendering our window.
 		// We need to know because this is where the video comes in
@@ -134,20 +136,18 @@ namespace niftk
 		std::memset(&cudadevices[0], -1, sizeof(cudadevices));
 		if (cudaGLGetDevices(&actualcudadevices, &cudadevices[0], sizeof(cudadevices) / sizeof(cudadevices[0]), cudaGLDeviceListAll) == cudaSuccess)
 		{
-			device_id = cudadevices[0];
+			device_id = cudadevices[0];    
 		}	
 		
-		oglwin->doneCurrent();
-		oglshare->context()->moveToThread(this);
-		//oglshare->moveToThread(this);
-
+		oglwin->doneCurrent();    
 
 		// we want signal/slot processing to happen on our background thread.
 		// for that to work we need to explicitly move this object because
 		// it is currently owned by the gui thread.
 		// beware: i wonder how well that works with start() and quit(). our thread instance stays
 		// the same so it should be ok?				
-		this->moveToThread(this);		
+	  this->moveToThread(this);		
+    
 	}
 
 
@@ -171,6 +171,7 @@ namespace niftk
 
 			delete decoder;
 			delete encoder;
+      delete sdiin;
 
 			// we do not own sdidev!
 			sdidev = 0;
@@ -206,6 +207,9 @@ namespace niftk
 	//-----------------------------------------------------------------------------
 	void NVidiaSDIDataSourceImpl::InitVideo()
 	{		
+    // make sure nobody messes around with contexts
+    assert(QGLContext::currentContext() == oglwin->context());
+
 		// we do not own the device!
 		sdidev = 0;
 		// but we gotta clear up this one
@@ -213,6 +217,7 @@ namespace niftk
 		sdiin = 0;
 		format = video::StreamFormat();
 		// try not to loose any still compressing info
+
 		DumpNALIndex();
 		
 		delete encoder;
@@ -308,7 +313,7 @@ namespace niftk
 				m_Cookie = (unsigned int)((((std::size_t) ((void*)sdiin)) >> 4) & 0xFFFFFFFF);
 
 			}
-		}
+		}    
 
 		// assuming everything went fine
 		//  we now have texture objects that will receive video data everytime we call capture()
@@ -363,8 +368,6 @@ namespace niftk
 		assert(bufferpitch >= width * 4);
 
 		assert(m_CaptureWidth <= width);
-
-
 		// fortunately we have 4 bytes per pixel
 		glPixelStorei(GL_PACK_ALIGNMENT, 4);
 		// row length is in pixels
@@ -552,56 +555,52 @@ namespace niftk
 
 	//-----------------------------------------------------------------------------
 	void NVidiaSDIDataSourceImpl::run()
-	{	
-		m_Cookie = 0;				
-		// it's possible for someone else to start and stop our thread.
-		// just make sure we start clean if that happens.
-		oglshare->makeCurrent();
-		Reset();
+	{	    
+    // reset the libvideo cookie so that in-flight IGINVidiaDataType get rejected early
+    m_Cookie = 0;
 
-		bool ok = connect(this, SIGNAL(SignalBump()), this, SLOT(DoWakeUp()), Qt::QueuedConnection);
-		assert(ok);
-		ok = connect(this, SIGNAL(SignalCompress(unsigned int, unsigned int*)), this, SLOT(DoCompressFrame(unsigned int, unsigned int*)), Qt::BlockingQueuedConnection);
-		assert(ok);
-		ok = connect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()), Qt::BlockingQueuedConnection);
-		assert(ok);
-		ok = connect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)), 
-			Qt::BlockingQueuedConnection);
-		assert(ok);
-		ok = connect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)), 
-			Qt::DirectConnection);
-		assert(ok);
+    // make sure the correct opengl context is active.
+    // in OnTimeoutImpl() there's another make-current, but there were circumstances in which that was too late.
+    oglwin->makeCurrent();
+
+    // it's possible for someone else to start and stop our thread.
+    // just make sure we start clean if that happens.
+    Reset();
+
+    bool ok = connect(this, SIGNAL(SignalBump()), this, SLOT(DoWakeUp()), Qt::QueuedConnection);
+    assert(ok);
+    ok = connect(this, SIGNAL(SignalCompress(unsigned int, unsigned int*)), this, SLOT(DoCompressFrame(unsigned int, unsigned int*)), Qt::BlockingQueuedConnection);
+    assert(ok);
+    ok = connect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()), Qt::DirectConnection);
+    assert(ok);
+    ok = connect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)), Qt::BlockingQueuedConnection);
+    assert(ok);
+    ok = connect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)), Qt::DirectConnection);
+    assert(ok);
 
 
-		// current_state is reset by Reset() called above.
-		// but is this a requirement for our message loop to run properly?
-		// i think it is: whenever somebody (re-)starts our sdi thread we can assume
-		// that our previous capture-setup is now dead/stale.
-		assert(current_state == PRE_INIT);
+    // current_state is reset by Reset() called above.
+    // but is this a requirement for our message loop to run properly?
+    // i think it is: whenever somebody (re-)starts our sdi thread we can assume
+    // that our previous capture-setup is now dead/stale.
+    assert(current_state == PRE_INIT);
 
-		// let base class deal with timer and event loop and stuff
-		IGITimerBasedThread::run();		
+    // let base class deal with timer and event loop and stuff
+    IGITimerBasedThread::run();
 
-		// reset the libvideo cookie so that in-flight IGINVidiaDataType get rejected early
-		m_Cookie = 0;
+    // reset the libvideo cookie so that in-flight IGINVidiaDataType get rejected early
+    m_Cookie = 0;
 
-		ok = disconnect(this, SIGNAL(SignalBump()), this, SLOT(DoWakeUp()));
-		assert(ok);
-		ok = disconnect(this, SIGNAL(SignalCompress(unsigned int, unsigned int*)), this, SLOT(DoCompressFrame(unsigned int, unsigned int*)));
-		assert(ok);
-		ok = disconnect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()));
-		assert(ok);
-		ok = disconnect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)));
-		assert(ok);
-		ok = disconnect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)));
-		assert(ok);
-
-		oglshare->makeCurrent();
-		delete sdiin;
-		sdiin = 0;
-
-		glDeleteBuffers(1, &pbo);
-		pbo = 0;
+    ok = disconnect(this, SIGNAL(SignalBump()), this, SLOT(DoWakeUp()));
+    assert(ok);
+    ok = disconnect(this, SIGNAL(SignalCompress(unsigned int, unsigned int*)), this, SLOT(DoCompressFrame(unsigned int, unsigned int*)));
+    assert(ok);
+    ok = disconnect(this, SIGNAL(SignalStopCompression()), this, SLOT(DoStopCompression()));
+    assert(ok);
+    ok = disconnect(this, SIGNAL(SignalGetRGBAImage(unsigned int, IplImage**, unsigned int*)), this, SLOT(DoGetRGBAImage(unsigned int, IplImage**, unsigned int*)));
+    assert(ok);
+    ok = disconnect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)));
+    assert(ok);
 	}
 
 
@@ -614,194 +613,191 @@ namespace niftk
 
 	//-----------------------------------------------------------------------------
 	void NVidiaSDIDataSourceImpl::OnTimeoutImpl()
-	{
-		QMutexLocker    l(&lock);
+	{     
+    QMutexLocker    l(&lock);
 
-		if (current_state == NVidiaSDIDataSourceImpl::FAILED)
-		{
-			return;
-		}
-		if (current_state == NVidiaSDIDataSourceImpl::DEAD)
-		{
-			return;
-		}
+    if (current_state == NVidiaSDIDataSourceImpl::FAILED)
+    {
+      return;
+    }
+    if (current_state == NVidiaSDIDataSourceImpl::DEAD)
+    {
+      return;
+    }
 
-		// not much to do in case of playback.
-		// it's all triggered by GetRGBAImage().
-		if (current_state == PLAYBACK)
-		{
-			return;
-		}		
+    // not much to do in case of playback.
+    // it's all triggered by GetRGBAImage().
+    if (current_state == PLAYBACK)
+    {
+      return;
+    }
 
-		if (current_state == NVidiaSDIDataSourceImpl::PRE_INIT)
-		{
-			//oglwin->makeCurrent();			
-			oglshare->makeCurrent();
-			current_state = NVidiaSDIDataSourceImpl::HW_ENUM;
+    if (current_state == NVidiaSDIDataSourceImpl::PRE_INIT)
+    {
+      oglwin->makeCurrent();
+      current_state = NVidiaSDIDataSourceImpl::HW_ENUM;
 
-			// side note: we could try to avoid a race-condition of PRE_INIT-make-current and signal delivery
-			// by connecting the signals only after HW_ENUM, when we know that it is safe to deliver them.
-			// however, i dont know how well that mixes with signal drop-out recovery and repeated HW_ENUM,
-			// which would then connect signals multiple times.
-		}		
+      // side note: we could try to avoid a race-condition of PRE_INIT-make-current and signal delivery
+      // by connecting the signals only after HW_ENUM, when we know that it is safe to deliver them.
+      // however, i dont know how well that mixes with signal drop-out recovery and repeated HW_ENUM,
+      // which would then connect signals multiple times.
+    }
 
-		// make sure nobody messes around with contexts
-		//assert(QGLContext::currentContext() == oglwin->context());
-		//assert(QGLContext::currentContext() == oglshare->context());
-		
-		if (current_state == NVidiaSDIDataSourceImpl::HW_ENUM)
-		{
-			try
-			{	
-				// libvideo does its own glew init, so we can get cracking straight away
-				InitVideo();
+    // make sure nobody messes around with contexts
+    assert(QGLContext::currentContext() == oglwin->context());
 
-				// once we have an input setup
-				//  grab at least one frame (not quite sure why)
-				if (sdiin)
-				{
-					sdiin->capture();
+    if (current_state == NVidiaSDIDataSourceImpl::HW_ENUM)
+    {
+      try
+      {
+        // libvideo does its own glew init, so we can get cracking straight away
+        InitVideo();
 
-					// make sure we are checking with twice the frame rate.
-					// sampling theorem and stuff
-					SetInterval((unsigned int)std::max(1, (int)(500.0f / format.get_refreshrate())));
-				}
-			}
-			// getting an exception means something is broken
-			// during normal operation this should never happen
-			//  even if there's no hardware or signal
-			catch (const std::exception& e)
-			{
-				state_message = std::string("Failed: ") + e.what();
-				current_state = NVidiaSDIDataSourceImpl::FAILED;
-				// no point trying check often, it's not going to recover
-				SetInterval(1000);
-				return;
-			}
-			catch (...)
-			{
-				state_message = "Failed";
-				current_state = NVidiaSDIDataSourceImpl::FAILED;
-				// no point trying check often, it's not going to recover
-				SetInterval(1000);
-				return;
-			}
-		}
+        // once we have an input setup
+        //  grab at least one frame (not quite sure why)
+        if (sdiin)
+        {
+          sdiin->capture();
 
-		if (!HasHardware())
-		{
-			state_message = "No SDI hardware";
-			// no hardware then nothing to do
-			current_state = NVidiaSDIDataSourceImpl::DEAD;
-			// no point trying check often, it's not going to recover
-			SetInterval(1000);
-			return;
-		}
+          // make sure we are checking with twice the frame rate.
+          // sampling theorem and stuff
+          SetInterval((unsigned int)std::max(1, (int)(500.0f / format.get_refreshrate())));
+        }
+      }
+      // getting an exception means something is broken
+      // during normal operation this should never happen
+      //  even if there's no hardware or signal
+      catch (const std::exception& e)
+      {
+        state_message = std::string("Failed: ") + e.what();
+        current_state = NVidiaSDIDataSourceImpl::FAILED;
+        // no point trying check often, it's not going to recover
+        SetInterval(1000);
+        return;
+      }
+      catch (...)
+      {
+        state_message = "Failed";
+        current_state = NVidiaSDIDataSourceImpl::FAILED;
+        // no point trying check often, it's not going to recover
+        SetInterval(1000);
+        return;
+      }
+    }
 
-		if (!HasInput())
-		{
-			state_message = "No input signal";
-			// no signal, try again next round
-			current_state = NVidiaSDIDataSourceImpl::HW_ENUM;
-			// dont re-setup too quickly
-			SetInterval(500);
-			return;
-		}
+    if (!HasHardware())
+    {
+      state_message = "No SDI hardware";
+      // no hardware then nothing to do
+      current_state = NVidiaSDIDataSourceImpl::DEAD;
+      // no point trying check often, it's not going to recover
+      SetInterval(1000);
+      return;
+    }
 
-		// if we get to here then we should be good to go!
-		current_state = NVidiaSDIDataSourceImpl::RUNNING;
+    if (!HasInput())
+    {
+      state_message = "No input signal";
+      // no signal, try again next round
+      current_state = NVidiaSDIDataSourceImpl::HW_ENUM;
+      // dont re-setup too quickly
+      SetInterval(500);
+      return;
+    }
 
-		
-		try
-		{
-			bool hasframe = sdiin->has_frame();
-			// note: has_frame() will not throw an exception in case setup is broken
+    // if we get to here then we should be good to go!
+    current_state = NVidiaSDIDataSourceImpl::RUNNING;
 
-			// make sure we try to capture a frame if the previous one was too long ago.
-			// that will check for errors and throw an exception if necessary, which will then allow us to restart.
-			if ((timeGetTime() - m_LastSuccessfulFrame) > 1000)
-				hasframe = true;
+    try
+    {
+      bool hasframe = sdiin->has_frame();
+      // note: has_frame() will not throw an exception in case setup is broken
 
-			if (hasframe)
-			{
-				// note: capture() will block for a frame to arrive
-				// that's why we have hasframe above
-				video::FrameInfo fi = sdiin->capture();
-				// in case of partial transfers we'll get the zero sequence number.
-				if (fi.sequence_number != 0)
-				{
-					m_LastSuccessfulFrame = timeGetTime();
+      // make sure we try to capture a frame if the previous one was too long ago.
+      // that will check for errors and throw an exception if necessary, which will then allow us to restart.
+      if ((timeGetTime() - m_LastSuccessfulFrame) > 1000)
+        hasframe = true;
 
-					// keep the most recent set of texture ids around
-					// this is mainly for the preview window.
-					// and for the pbo bits below.
-					for (int i = 0; i < 4; ++i)
-					{
-						textureids[i] = sdiin->get_texture_id(i, -1);
-					}
+      if (hasframe)
+      {
+        // note: capture() will block for a frame to arrive
+        // that's why we have hasframe above
+        video::FrameInfo fi = sdiin->capture();
+        // in case of partial transfers we'll get the zero sequence number.
+        if (fi.sequence_number != 0)
+        {
+          m_LastSuccessfulFrame = timeGetTime();
 
-					igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
-					timeCreated->GetTime();
-					fi.id = timeCreated->GetTimeStampInNanoseconds();
+          // keep the most recent set of texture ids around
+          // this is mainly for the preview window.
+          // and for the pbo bits below.
+          for (int i = 0; i < 4; ++i)
+          {
+            textureids[i] = sdiin->get_texture_id(i, -1);
+          }
 
-					int newest_slot = sdiin->get_current_ringbuffer_slot();
-					// whatever we had in this slot is now obsolete
-					auto oldsni = slot2sn_map.find(newest_slot);
-					if (oldsni != slot2sn_map.end())
-					{
-						auto oldsloti = sn2slot_map.find(oldsni->second);
-						if (oldsloti != sn2slot_map.end())
-						{
-							sn2slot_map.erase(oldsloti);
-						}
-						slot2sn_map.erase(oldsni);
-					}
-					slot2sn_map[newest_slot] = fi;
-					sn2slot_map[fi] = newest_slot;
+          igtl::TimeStamp::Pointer timeCreated = igtl::TimeStamp::New();
+          timeCreated->GetTime();
+          fi.id = timeCreated->GetTimeStampInNanoseconds();
 
-					// queue a copy to pbo (that we can map later on).
-					glBindBuffer(GL_PIXEL_PACK_BUFFER, m_ReadbackPBOs[newest_slot]);
-					check_oglerror("Failed binding readback PBO");
+          int newest_slot = sdiin->get_current_ringbuffer_slot();
+          // whatever we had in this slot is now obsolete
+          auto oldsni = slot2sn_map.find(newest_slot);
+          if (oldsni != slot2sn_map.end())
+          {
+            auto oldsloti = sn2slot_map.find(oldsni->second);
+            if (oldsloti != sn2slot_map.end())
+            {
+              sn2slot_map.erase(oldsloti);
+            }
+            slot2sn_map.erase(oldsni);
+          }
+          slot2sn_map[newest_slot] = fi;
+          sn2slot_map[fi] = newest_slot;
 
-					// each stream/channel has its own texture, but we copy all into one giant pbo.
-					// the address is relative to the bound pbo (if there is a pbo bound, that is).
-					ReadbackRGBA((char*)0, m_CaptureWidth * 4, m_CaptureWidth, m_CaptureHeight * streamcount, newest_slot);
-					glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+          // queue a copy to pbo (that we can map later on).
+          glBindBuffer(GL_PIXEL_PACK_BUFFER, m_ReadbackPBOs[newest_slot]);
+          check_oglerror("Failed binding readback PBO");
 
-					state_message = "Grabbing";
-				}
-				else
-				{
-					// in case of partial captures hasframe will be true but we wont get new sequence numbers.
-					// this is effectively a brown-out. not sure how to handle it actually.
-					// because we'd want the capture bits to recover with the original number of streams. unless of course
-					// there was a genuine change of camera etc.
-					if ((timeGetTime() - m_LastSuccessfulFrame) > 2000)
-						throw "trigger handler below";
-				}
-			}
-		}
-		// capture() might throw if the capture setup has become invalid
-		// e.g. a mode change or signal lost
-		catch (...)
-		{
-			state_message = "Glitched out";
-			// mark our source as failed! otherwise we run the risk of silently corrupting a
-			// recording session where (due to flaky cable) one stream drops out, source recovers
-			// but enums only one channel, and recording just continues.
-			current_state = NVidiaSDIDataSourceImpl::FAILED;
-			// dont re-setup too quickly
-			SetInterval(500);
-			// whatever sequence numbers we had in the ringbuffer are now obsolete.
-			// if we dont explicitly delete these then QmitkIGINVidiaDataSource::GrabData() will get mightily confused.
-			sn2slot_map.clear();
-			slot2sn_map.clear();
+          // each stream/channel has its own texture, but we copy all into one giant pbo.
+          // the address is relative to the bound pbo (if there is a pbo bound, that is).
+          ReadbackRGBA((char*)0, m_CaptureWidth * 4, m_CaptureWidth, m_CaptureHeight * streamcount, newest_slot);
+          glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-			glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+          state_message = "Grabbing";
+        }
+        else
+        {
+          // in case of partial captures hasframe will be true but we wont get new sequence numbers.
+          // this is effectively a brown-out. not sure how to handle it actually.
+          // because we'd want the capture bits to recover with the original number of streams. unless of course
+          // there was a genuine change of camera etc.
+          if ((timeGetTime() - m_LastSuccessfulFrame) > 2000)
+            throw "trigger handler below";
+        }
+      }
+    }
+    // capture() might throw if the capture setup has become invalid
+    // e.g. a mode change or signal lost
+    catch (...)
+    {
+      state_message = "Glitched out";
+      // mark our source as failed! otherwise we run the risk of silently corrupting a
+      // recording session where (due to flaky cable) one stream drops out, source recovers
+      // but enums only one channel, and recording just continues.
+      current_state = NVidiaSDIDataSourceImpl::FAILED;
+      // dont re-setup too quickly
+      SetInterval(500);
+      // whatever sequence numbers we had in the ringbuffer are now obsolete.
+      // if we dont explicitly delete these then QmitkIGINVidiaDataSource::GrabData() will get mightily confused.
+      sn2slot_map.clear();
+      slot2sn_map.clear();
 
-			emit SignalFatalError(QString("SDI capture setup failed! Try to remove and add it again."));
-			return;
-		}
+      glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+      emit SignalFatalError(QString("SDI capture setup failed! Try to remove and add it again."));
+      return;
+    }
 	}
 
 
@@ -959,6 +955,9 @@ namespace niftk
 	void NVidiaSDIDataSourceImpl::DoCompressFrame(unsigned int sequencenumber, unsigned int* frameindex)
 	{
 		QMutexLocker    l(&lock);
+
+    // make sure nobody messes around with contexts
+    assert(QGLContext::currentContext() == oglwin->context());
 		
 		// it's unlikely that we'll ever catch an exception here.
 		// all the other bits around the sdi data source would start failing earlier
@@ -1063,6 +1062,8 @@ namespace niftk
 	void NVidiaSDIDataSourceImpl::DoStopCompression()
 	{
 		QMutexLocker    l(&lock);
+    // make sure nobody messes around with contexts
+    assert(QGLContext::currentContext() == oglwin->context());
 		sdiin->flush_log();
 		if (!encoder->flush_encoder()) {
 			throw std::runtime_error("Could not flush encoder.");
