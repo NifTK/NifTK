@@ -176,6 +176,8 @@ namespace niftk
 			// we do not own sdidev!
 			sdidev = 0;
 
+      glDeleteBuffers(1, &pbo);
+
 			for (int i = m_ReadbackPBOs.size() - 1; i >= 0; --i)
 			{
 				glDeleteBuffers(1, (GLuint*)&m_ReadbackPBOs[i]);
