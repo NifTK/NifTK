@@ -46,14 +46,11 @@ rem Visual Studio 11 Win64      = Generates Visual Studio 11 Win64 project files
 rem Visual Studio 12            = Generates Visual Studio 12 project files. Corresponding to Visual Studio 2013.
 rem Visual Studio 12 Win64      = Generates Visual Studio 12 Win64 project files. Corresponding to Visual Studio 2013.
 
-set "build_log=%sb_dir%/build.log"
-
 echo Visual Studio folder:   %VS_DIR%
 echo Visual Studio command:  %VS_COMMAND%
 echo CMake folder:           %CMAKE_DIR%
 echo Source folder:          %src_dir%
 echo Build folder:           %sb_dir%
-echo Build log:              %build_log%
 echo CMake generator:        %CMAKE_GENERATOR%
 
 rem stop visual studio recycling already running instances of msbuild.exe. we want clean ones.
@@ -98,10 +95,5 @@ call cmake.exe ^
     -G "%CMAKE_GENERATOR%" "%src_dir%"
 if %ERRORLEVEL% NEQ 0 exit /B 1
 
-%VS_COMMAND% /build %BCONF% /project ALL_BUILD /projectconfig %VS_CONF% %sb_dir%/NIFTK-superbuild.sln | tee %build_log% 2>&1
+%VS_COMMAND% /build %BCONF% /project ALL_BUILD /projectconfig %VS_CONF% %sb_dir%/NIFTK-superbuild.sln | tee %sb_dir%/build.log 2>&1
 if %ERRORLEVEL% NEQ 0 exit /B 2
-
-setlocal EnableDelayedExpansion
-set "search=^.*Build.FAILED.*$"
-findstr /r /c:"!search!" "%build_log%" >nul
-if %ERRORLEVEL% EQU 0 exit /B 2

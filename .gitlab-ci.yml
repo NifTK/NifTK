@@ -208,6 +208,7 @@ Windows continuous build:
   - mkdir -p ${ep_dir}
   - cd ${sb_dir}
   - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
+  - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
 
   only:
   - branches
@@ -265,6 +266,7 @@ Windows continuous clean up:
 #  - cd ${sb_dir}
 #  - export BTYPE=Win32
 #  - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
+#  - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
 #
 #  only:
 #  - branches
@@ -445,7 +447,9 @@ Windows release build:
   - mkdir -p ${sb_dir}
   - mkdir -p ${ep_dir}
   - cd ${sb_dir}
-#  - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
+  - export build_log=${sb_dir}/build.log
+  - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
+  - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
 
   only:
   - tags
@@ -470,6 +474,7 @@ Windows release build:
 #  - cd ${sb_dir}
 #  - export BTYPE=Win32
 #  - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
+#  - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
 #
 #  only:
 #  - tags

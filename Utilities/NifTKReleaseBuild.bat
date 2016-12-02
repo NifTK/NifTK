@@ -38,14 +38,11 @@ rem Visual Studio 11 Win64      = Generates Visual Studio 11 Win64 project files
 rem Visual Studio 12            = Generates Visual Studio 12 project files. Corresponding to Visual Studio 2013.
 rem Visual Studio 12 Win64      = Generates Visual Studio 12 Win64 project files. Corresponding to Visual Studio 2013.
 
-set "build_log=%sb_dir%/build.log"
-
 echo Visual Studio folder:   %VS_DIR%
 echo Visual Studio command:  %VS_COMMAND%
 echo CMake folder:           %CMAKE_DIR%
 echo Source folder:          %src_dir%
 echo Build folder:           %sb_dir%
-echo Build log:              %build_log%
 echo CMake generator:        %CMAKE_GENERATOR%
 
 rem stop visual studio recycling already running instances of msbuild.exe. we want clean ones.
@@ -72,28 +69,20 @@ echo PATH:                   %PATH%
 
 call cmake.exe ^
     -DCMAKE_BUILD_TYPE:STRING=%BCONF% ^
-    -DEP_BASE:PATH=%ep_dir% ^
-    -DEP_DIRECTORY_PER_VERSION:BOOL=OFF ^
-    -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF ^
     -DDESIRED_QT_VERSION:STRING=4 ^
     -DOPENCV_WITH_FFMPEG:BOOL=OFF ^
-    -DNIFTK_Apps/NiftyView:BOOL=ON ^
-    -DNIFTK_Apps/NiftyIGI:BOOL=ON ^
-    -DNIFTK_Apps/NiftyMIDAS:BOOL=ON ^
     -DNIFTK_USE_CUDA:BOOL=OFF ^
     -DBUILD_TESTING:BOOL=OFF ^
-    -DBUILD_Python:BOOL=ON ^
     -DBUILD_COMMAND_LINE_PROGRAMS:BOOL=ON ^
     -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=ON ^
     -DNIFTK_GENERATE_DOXYGEN_HELP:BOOL=ON ^
-    -DNIFTYLINK_CHECK_COVERAGE:BOOL=ON ^
+    -DBUILD_Python:BOOL=ON ^
+    -DBUILD_CAFFE:BOOL=ON ^
+    -DNIFTK_Apps/NiftyView:BOOL=ON ^
+    -DNIFTK_Apps/NiftyIGI:BOOL=ON ^
+    -DNIFTK_Apps/NiftyMIDAS:BOOL=ON ^
     -G "%CMAKE_GENERATOR%" "%src_dir%"
 if %ERRORLEVEL% NEQ 0 exit /B 1
 
-%VS_COMMAND% /build %BCONF% /project ALL_BUILD /projectconfig %VS_CONF% %sb_dir%/NIFTK-superbuild.sln | tee %build_log% 2>&1
+%VS_COMMAND% /build %BCONF% /project ALL_BUILD /projectconfig %VS_CONF% %sb_dir%/NIFTK-superbuild.sln | tee %sb_dir%/build.log 2>&1
 if %ERRORLEVEL% NEQ 0 exit /B 2
-
-setlocal EnableDelayedExpansion
-set "search=^.*Build.FAILED.*$"
-findstr /r /c:"!search!" "%build_log%" >nul
-if %ERRORLEVEL% EQU 0 exit /B 2
