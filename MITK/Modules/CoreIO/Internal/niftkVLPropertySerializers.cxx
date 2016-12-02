@@ -99,4 +99,3 @@ VL_Surface_Mode_PropertySerializer::~VL_Surface_Mode_PropertySerializer()
 }
 
 }
-
