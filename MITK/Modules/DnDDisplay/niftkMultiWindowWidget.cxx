@@ -39,7 +39,7 @@
 
 #include <vtkMitkRectangleProp.h>
 
-#include "vtkSideAnnotation_p.h"
+#include <vtkSideAnnotation_p.h>
 
 
 namespace niftk

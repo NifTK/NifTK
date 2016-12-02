@@ -24,7 +24,6 @@ set(CPP_FILES
   niftkMultiViewerControls.cxx
   niftkSingleViewerControls.cxx
   niftkSingleViewerWidget.cxx
-  vtkSideAnnotation.cxx
   Interactions/niftkDnDDisplayInteractor.cxx
 )
 

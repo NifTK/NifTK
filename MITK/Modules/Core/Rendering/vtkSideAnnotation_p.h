@@ -12,9 +12,10 @@
 
 =============================================================================*/
 
-#ifndef vtkSideAnnotation_p_h
-#define vtkSideAnnotation_p_h
+#ifndef vtkSideAnnotation_h
+#define vtkSideAnnotation_h
 
+#include "niftkCoreExports.h"
 #include "vtkCornerAnnotation.h"
 
 /**
@@ -25,7 +26,7 @@
  *
  * The sides are numbered from 0 to 3 in the following order: top, right, bottom, left.
  */
-class vtkSideAnnotation : public vtkCornerAnnotation
+class NIFTKCORE_EXPORT vtkSideAnnotation : public vtkCornerAnnotation
 {
 public:
   vtkTypeMacro(vtkSideAnnotation, vtkCornerAnnotation);
