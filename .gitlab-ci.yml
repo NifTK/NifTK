@@ -254,13 +254,22 @@ Windows continuous clean up:
 #
 #  stage: build
 #
-#  script:
-#  - export ep_dir="${ep_dir}-32bit"
-#  - export sb_dir="${sb_dir}-32bit"
+#  before_script:
+#  - export src_dir=${CI_PROJECT_DIR}
+#  - export git_hash=${CI_BUILD_REF:0:6}
+#  - export ep_dir="${CI_PROJECT_DIR}-ep-x86"
+#  - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}"
 #  - export pb_dir="${sb_dir}/NifTK-build"
+#  - hostname
+#  - whoami
+#  - pwd
+#  - echo "Sources - ${src_dir}"
+#  - echo "Commit - ${git_hash}"
 #  - echo "External projects - ${ep_dir}"
 #  - echo "Superbuild - ${sb_dir}"
 #  - echo "Project build - ${pb_dir}"
+#
+#  script:
 #  - mkdir -p ${sb_dir}
 #  - mkdir -p ${ep_dir}
 #  - cd ${sb_dir}
@@ -279,13 +288,22 @@ Windows continuous clean up:
 #
 #  stage: test
 #
-#  script:
-#  - export ep_dir="${ep_dir}-32bit"
-#  - export sb_dir="${sb_dir}-32bit"
+#  before_script:
+#  - export src_dir=${CI_PROJECT_DIR}
+#  - export git_hash=${CI_BUILD_REF:0:6}
+#  - export ep_dir="${CI_PROJECT_DIR}-ep-x86"
+#  - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}"
 #  - export pb_dir="${sb_dir}/NifTK-build"
+#  - hostname
+#  - whoami
+#  - pwd
+#  - echo "Sources - ${src_dir}"
+#  - echo "Commit - ${git_hash}"
 #  - echo "External projects - ${ep_dir}"
 #  - echo "Superbuild - ${sb_dir}"
 #  - echo "Project build - ${pb_dir}"
+#
+#  script:
 #  - cd ${pb_dir}
 #  - ${src_dir}/Utilities/NifTKContinuousTest.bat
 #
@@ -300,11 +318,22 @@ Windows continuous clean up:
 #
 #  stage: cleanup
 #
-#  script:
-#  - export ep_dir="${ep_dir}-32bit"
-#  - export sb_dir="${sb_dir}-32bit"
+#  before_script:
+#  - export src_dir=${CI_PROJECT_DIR}
+#  - export git_hash=${CI_BUILD_REF:0:6}
+#  - export ep_dir="${CI_PROJECT_DIR}-ep-x86"
+#  - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}"
+#  - export pb_dir="${sb_dir}/NifTK-build"
+#  - hostname
+#  - whoami
+#  - pwd
+#  - echo "Sources - ${src_dir}"
+#  - echo "Commit - ${git_hash}"
 #  - echo "External projects - ${ep_dir}"
 #  - echo "Superbuild - ${sb_dir}"
+#  - echo "Project build - ${pb_dir}"
+#
+#  script:
 #  - rm -rf ${sb_dir}
 #  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 #
@@ -461,13 +490,22 @@ Windows release build:
 #
 #  stage: build
 #
-#  script:
-#  - export ep_dir="${ep_dir}-32bit"
-#  - export sb_dir="${sb_dir}-32bit"
+#  before_script:
+#  - export src_dir=${CI_PROJECT_DIR}
+#  - export git_hash=${CI_BUILD_REF:0:6}
+#  - export ep_dir="${CI_PROJECT_DIR}-ep-x86"
+#  - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}"
 #  - export pb_dir="${sb_dir}/NifTK-build"
+#  - hostname
+#  - whoami
+#  - pwd
+#  - echo "Sources - ${src_dir}"
+#  - echo "Commit - ${git_hash}"
 #  - echo "External projects - ${ep_dir}"
 #  - echo "Superbuild - ${sb_dir}"
 #  - echo "Project build - ${pb_dir}"
+#
+#  script:
 #  - mkdir -p ${sb_dir}
 #  - mkdir -p ${ep_dir}
 #  - cd ${sb_dir}
@@ -770,13 +808,22 @@ Windows release installer:
 #
 #  stage: deploy
 #
-#  script:
-#  - export ep_dir="${ep_dir}-32bit"
-#  - export sb_dir="${sb_dir}-32bit"
+#  before_script:
+#  - export src_dir=${CI_PROJECT_DIR}
+#  - export git_hash=${CI_BUILD_REF:0:6}
+#  - export ep_dir="${CI_PROJECT_DIR}-ep-x86"
+#  - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}"
 #  - export pb_dir="${sb_dir}/NifTK-build"
+#  - hostname
+#  - whoami
+#  - pwd
+#  - echo "Sources - ${src_dir}"
+#  - echo "Commit - ${git_hash}"
 #  - echo "External projects - ${ep_dir}"
 #  - echo "Superbuild - ${sb_dir}"
 #  - echo "Project build - ${pb_dir}"
+#
+#  script:
 #  - version=${CI_BUILD_TAG}
 #  - cd ${pb_dir}
 #  - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
@@ -895,11 +942,22 @@ Mac release clean up:
 #
 #  stage: cleanup
 #
-#  script:
-#  - export ep_dir="${ep_dir}-32bit"
-#  - export sb_dir="${sb_dir}-32bit"
+#  before_script:
+#  - export src_dir=${CI_PROJECT_DIR}
+#  - export git_hash=${CI_BUILD_REF:0:6}
+#  - export ep_dir="${CI_PROJECT_DIR}-ep-x86"
+#  - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}"
+#  - export pb_dir="${sb_dir}/NifTK-build"
+#  - hostname
+#  - whoami
+#  - pwd
+#  - echo "Sources - ${src_dir}"
+#  - echo "Commit - ${git_hash}"
 #  - echo "External projects - ${ep_dir}"
 #  - echo "Superbuild - ${sb_dir}"
+#  - echo "Project build - ${pb_dir}"
+#
+#  script:
 #  - rm -rf ${sb_dir}
 #  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 #
