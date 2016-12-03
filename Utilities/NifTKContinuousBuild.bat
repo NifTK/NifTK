@@ -73,6 +73,8 @@ rem The git usr/bin directory is needed for the 'tee' command.
 set "PATH=%CMAKE_DIR%/bin;c:/Program Files/Git/usr/bin;%QT_DIR%/bin;%OPENSSL_DIR%/bin;%VS_DIR%/Common7/IDE;%PATH%"
 echo PATH:                   %PATH%
 
+@echo on
+
 call cmake.exe ^
     -DCMAKE_BUILD_TYPE:STRING=%BCONF% ^
     -DEP_BASE:PATH=%ep_dir% ^

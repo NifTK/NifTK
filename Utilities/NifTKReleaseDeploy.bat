@@ -59,5 +59,7 @@ if defined CUDA_PATH (
 
 echo PATH: %PATH%
 
+@echo on
+
 "%CMAKE_DIR%/bin/cpack.exe" --config CPackConfig.cmake
 if %ERRORLEVEL% NEQ 0 exit /B 4

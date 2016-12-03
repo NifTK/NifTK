@@ -60,5 +60,7 @@ if defined CUDA_PATH (
 
 echo PATH: %PATH%
 
+@echo on
+
 "%CMAKE_DIR%/bin/ctest.exe" -S CTestContinuous.cmake -V
 if %ERRORLEVEL% NEQ 0 exit /B 4
