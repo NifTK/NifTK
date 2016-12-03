@@ -13,7 +13,7 @@ rem The script runs the test for a NifTK release mode build.
 
 setlocal EnableExtensions 
 
-set "CMAKE_DIR=c:/Program Files/CMake"
+set "CMAKE_DIR=c:/CMake/CMake-3.6.3"
 
 echo CMake folder:           %CMAKE_DIR%
 echo Project build folder:   %pb_dir%
