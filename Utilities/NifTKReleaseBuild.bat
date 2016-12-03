@@ -12,31 +12,43 @@ rem
 rem The script builds NifTK in release mode with testing on.
 
 rem Enable command extensions to allow checking exit status of commands.
-setlocal EnableExtensions 
+setlocal EnableExtensions
 
-set "VS_DIR=c:/Program Files (x86)/Microsoft Visual Studio 11.0"
-set "CMAKE_DIR=c:/Program Files/CMake"
-set "OPENSSL_DIR=c:/OpenSSL-Win64"
-set "QT_DIR=c:/Qt/4.8.7"
-set "QTDIR=%QT_DIR%"
+rem Allowed values of BTYPE are "x64" and "Win32"
+if "%BTYPE%" == "" (
+  set BTYPE=x64
+)
 
-set GIT_SSL_NO_VERIFY=1
+set "VS_DIR=c:/Program Files (x86)/Microsoft Visual Studio 12.0"
+set "CMAKE_DIR=c:/CMake/CMake-3.6.3"
 
-set "BTYPE=x64"
-rem set "BTYPE=Win32"
-
-set "VS_COMMAND=devenv.com"
-rem set "VS_COMMAND=VCExpress.exe"
-
-set "CMAKE_GENERATOR=Visual Studio 11 Win64"
-
-rem Possible options are the following:
+rem Possible CMake generator options are the following:
 rem NMake Makefiles             = Generates NMake makefiles.
 rem NMake Makefiles JOM         = Generates JOM makefiles.
 rem Visual Studio 11            = Generates Visual Studio 11 project files. Corresponding to Visual Studio 2012.
 rem Visual Studio 11 Win64      = Generates Visual Studio 11 Win64 project files. Corresponding to Visual Studio 2012.
 rem Visual Studio 12            = Generates Visual Studio 12 project files. Corresponding to Visual Studio 2013.
 rem Visual Studio 12 Win64      = Generates Visual Studio 12 Win64 project files. Corresponding to Visual Studio 2013.
+
+if "%BTYPE%" == "x64" (
+  set "OPENSSL_DIR=d:/OpenSSL/openssl-1.0.1u-vs12-x64"
+  set "QT_DIR=d:/Qt/qt-4.8.7-vs12-x64"
+  set "CMAKE_GENERATOR=Visual Studio 12 Win64"
+
+  call "%VS_DIR%/VC/bin/amd64/vcvars64.bat"
+) else (
+  set "OPENSSL_DIR=d:/OpenSSL/openssl-1.0.1u-vs12-x86"
+  set "QT_DIR=d:/Qt/qt-4.8.7-vs12-x86"
+  set "CMAKE_GENERATOR=Visual Studio 12"
+
+  call "%VS_DIR%/VC/bin/vcvars32.bat"
+)
+set "QTDIR=%QT_DIR%"
+
+set GIT_SSL_NO_VERIFY=1
+
+set "VS_COMMAND=devenv.com"
+rem set "VS_COMMAND=VCExpress.exe"
 
 echo Visual Studio folder:   %VS_DIR%
 echo Visual Studio command:  %VS_COMMAND%
@@ -48,12 +60,6 @@ echo CMake generator:        %CMAKE_GENERATOR%
 rem stop visual studio recycling already running instances of msbuild.exe. we want clean ones.
 rem http://stackoverflow.com/questions/12174877/visual-studio-2012-rtm-has-msbuild-exe-in-memory-after-close
 set MSBUILDDISABLENODEREUSE=1
-
-if ["%BTYPE%"] == ["x64"] (
-  call "%VS_DIR%/VC/bin/amd64/vcvars64.bat"
-) else (
-  call "%VS_DIR%/VC/bin/vcvars32.bat"
-)
 
 set BCONF=Release
 

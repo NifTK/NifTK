@@ -447,7 +447,6 @@ Windows release build:
   - mkdir -p ${sb_dir}
   - mkdir -p ${ep_dir}
   - cd ${sb_dir}
-  - export build_log=${sb_dir}/build.log
   - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
   - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
 
