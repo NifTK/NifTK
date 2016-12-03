@@ -20,8 +20,9 @@ before_script:
   - echo "Superbuild - ${sb_dir}"
   - echo "Project build - ${pb_dir}"
 
+
 ##########################################
-# Jobs for continuous testing
+# Continuous build jobs
 ##########################################
 
 Linux continuous build:
@@ -45,82 +46,6 @@ Linux continuous build:
         -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
         ${src_dir}
   - make -j 8
-
-  only:
-  - branches
-  except:
-   - /^4590-.*$/
-
-  tags:
-  - linux, continuous
-
-
-Linux continuous test:
-
-  stage: test
-
-  script:
-  - cd ${pb_dir}
-  - export NIFTK_DRC_ANALYZE=ON
-  - export DISPLAY=mespak3.cs.ucl.ac.uk:1
-  - ctest -S CTestContinuous.cmake -V
-
-  only:
-  - branches
-  except:
-   - /^4590-.*$/
-
-  tags:
-  - linux, continuous
-
-
-Continuous docs:
-
-  stage: deploy
-
-  script:
-  - version=`git describe`
-  - cd ${pb_dir}
-  - rm -rf Doxygen/html
-  - chmod a+rx bin/GenerateCommandLineDoxygen
-  - bin/GenerateCommandLineDoxygen
-  - chmod a+rx bin/GenerateTestingReports
-  - bin/GenerateTestingReports
-  - doxygen doxygen.config
-  - cd Doxygen
-  - find html -type f -exec chmod 644 {} \;
-  - find html -type d -exec chmod 755 {} \;
-  - rm -rf niftk-${version}-docs
-  - mv html niftk-${version}-docs
-  - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
-  - echo "API reference documentation generated:"
-  - "# Upload the tarball"
-  - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
-  - "# Extract the tarball and replace the old files"
-  - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
-        rm -rf `readlink -f niftk-master-docs.tar.bz2` `readlink -f master` ;
-        rm niftk-master-docs.tar.bz2 master ;
-        tar xfj niftk-${version}-docs.tar.bz2 ;
-        mv niftk-${version}-docs ${version} ;
-        ln -s niftk-${version}-docs.tar.bz2 niftk-master-docs.tar.bz2 ;
-        ln -s ${version} master"
-
-  only:
-  - master
-
-  tags:
-  - linux, continuous
-
-
-Linux continuous clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
 
   only:
   - branches
@@ -161,44 +86,6 @@ Mac continuous build:
   - mac, continuous
 
 
-Mac continuous test:
-
-  stage: test
-
-  script:
-  - cd ${pb_dir}
-  - export NIFTK_DRC_ANALYZE=ON
-  - export DISPLAY=mespak3.cs.ucl.ac.uk:1
-  - ctest -S CTestContinuous.cmake -V
-
-  only:
-  - branches
-  except:
-   - /^4590-.*$/
-
-  tags:
-  - mac, continuous
-
-
-Mac continuous clean up:
-
-  stage: cleanup
-
-  script:
-  - rm -rf ${sb_dir}
-  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-  - branches
-  except:
-   - /^4590-.*$/
-
-  tags:
-  - mac, continuous
-
-
 Windows continuous build:
 
   stage: build
@@ -209,39 +96,6 @@ Windows continuous build:
   - cd ${sb_dir}
   - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
   - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
-
-  only:
-  - branches
-
-  tags:
-  - windows, continuous
-
-
-Windows continuous test:
-
-  stage: test
-
-  script:
-  - cd ${pb_dir}
-  - ${src_dir}/Utilities/NifTKContinuousTest.bat
-
-  only:
-  - branches
-
-  tags:
-  - windows, continuous
-
-
-Windows continuous clean up:
-
-  stage: cleanup
-
-  script:
-   - echo
-#  - rm -rf ${sb_dir}
-#  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
 
   only:
   - branches
@@ -284,6 +138,63 @@ Windows continuous clean up:
 #  - windows-32bit, continuous
 
 
+##########################################
+# Continuous test jobs
+##########################################
+
+Linux continuous test:
+
+  stage: test
+
+  script:
+  - cd ${pb_dir}
+  - export NIFTK_DRC_ANALYZE=ON
+  - export DISPLAY=mespak3.cs.ucl.ac.uk:1
+  - ctest -S CTestContinuous.cmake -V
+
+  only:
+  - branches
+  except:
+   - /^4590-.*$/
+
+  tags:
+  - linux, continuous
+
+
+Mac continuous test:
+
+  stage: test
+
+  script:
+  - cd ${pb_dir}
+  - export NIFTK_DRC_ANALYZE=ON
+  - export DISPLAY=mespak3.cs.ucl.ac.uk:1
+  - ctest -S CTestContinuous.cmake -V
+
+  only:
+  - branches
+  except:
+   - /^4590-.*$/
+
+  tags:
+  - mac, continuous
+
+
+Windows continuous test:
+
+  stage: test
+
+  script:
+  - cd ${pb_dir}
+  - ${src_dir}/Utilities/NifTKContinuousTest.bat
+
+  only:
+  - branches
+
+  tags:
+  - windows, continuous
+
+
 #Windows 32 bit continuous test:
 #
 #  stage: test
@@ -312,6 +223,108 @@ Windows continuous clean up:
 #
 #  tags:
 #  - windows-32bit, continuous
+
+
+##########################################
+# Continuous deploy jobs
+##########################################
+
+Continuous docs:
+
+  stage: deploy
+
+  script:
+  - version=`git describe`
+  - cd ${pb_dir}
+  - rm -rf Doxygen/html
+  - chmod a+rx bin/GenerateCommandLineDoxygen
+  - bin/GenerateCommandLineDoxygen
+  - chmod a+rx bin/GenerateTestingReports
+  - bin/GenerateTestingReports
+  - doxygen doxygen.config
+  - cd Doxygen
+  - find html -type f -exec chmod 644 {} \;
+  - find html -type d -exec chmod 755 {} \;
+  - rm -rf niftk-${version}-docs
+  - mv html niftk-${version}-docs
+  - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
+  - echo "API reference documentation generated:"
+  - "# Upload the tarball"
+  - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
+  - "# Extract the tarball and replace the old files"
+  - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
+        rm -rf `readlink -f niftk-master-docs.tar.bz2` `readlink -f master` ;
+        rm niftk-master-docs.tar.bz2 master ;
+        tar xfj niftk-${version}-docs.tar.bz2 ;
+        mv niftk-${version}-docs ${version} ;
+        ln -s niftk-${version}-docs.tar.bz2 niftk-master-docs.tar.bz2 ;
+        ln -s ${version} master"
+
+  only:
+  - master
+
+  tags:
+  - linux, continuous
+
+
+##########################################
+# Continuous clean up jobs
+##########################################
+
+Linux continuous clean up:
+
+  stage: cleanup
+
+  script:
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  only:
+  - branches
+  except:
+   - /^4590-.*$/
+
+  tags:
+  - linux, continuous
+
+
+Mac continuous clean up:
+
+  stage: cleanup
+
+  script:
+  - rm -rf ${sb_dir}
+  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  only:
+  - branches
+  except:
+   - /^4590-.*$/
+
+  tags:
+  - mac, continuous
+
+
+Windows continuous clean up:
+
+  stage: cleanup
+
+  script:
+   - echo
+#  - rm -rf ${sb_dir}
+#  - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+
+  when: always
+
+  only:
+  - branches
+
+  tags:
+  - windows, continuous
 
 
 #Windows 32 bit continuous clean up:
@@ -347,9 +360,8 @@ Windows continuous clean up:
 
 
 ##########################################
-# Jobs for deploying tagged releases
+# Release build jobs
 ##########################################
-
 
 Ubuntu 14.04 release build:
 
@@ -520,6 +532,10 @@ Windows release build:
 #  - windows-32bit, continuous
 
 
+##########################################
+# Release test jobs
+##########################################
+
 # Dummy test jobs to prevent that deploy job is preceded by clean job.
 
 Ubuntu 14.04 release test:
@@ -613,6 +629,10 @@ Windows release test:
 #  tags:
 #  - windows-32bit, release
 
+
+##########################################
+# Release deploy jobs
+##########################################
 
 # Generating documentation pages for tagged releases
 Release docs:
@@ -841,9 +861,8 @@ Windows release installer:
 
 
 ##########################################
-# Jobs for cleaning up
+# Release clean up jobs
 ##########################################
-
 
 Ubuntu 14.04 release clean up:
 
