@@ -104,38 +104,23 @@ Windows continuous build:
     - windows, continuous
 
 
-#Windows 32 bit continuous build:
-#
-#  stage: build
-#
-#  before_script:
-#    - export src_dir=${CI_PROJECT_DIR}
-#    - export git_hash=${CI_BUILD_REF:0:6}
-#    - export ep_dir="${CI_PROJECT_DIR}-ep-x86"
-#    - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}-x86"
-#    - export pb_dir="${sb_dir}/NifTK-build"
-#    - hostname
-#    - whoami
-#    - pwd
-#    - echo "Sources - ${src_dir}"
-#    - echo "Commit - ${git_hash}"
-#    - echo "External projects - ${ep_dir}"
-#    - echo "Superbuild - ${sb_dir}"
-#    - echo "Project build - ${pb_dir}"
-#
-#  script:
-#    - mkdir -p ${sb_dir}
-#    - mkdir -p ${ep_dir}
-#    - cd ${sb_dir}
-#    - export BTYPE=Win32
-#    - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
-#    - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
-#
-#  only:
-#    - branches
-#
-#  tags:
-#    - windows-32bit, continuous
+Windows 32 bit continuous build:
+
+  stage: build
+
+  script:
+    - mkdir -p ${sb_dir}
+    - mkdir -p ${ep_dir}
+    - cd ${sb_dir}
+    - export BTYPE=Win32
+    - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
+    - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
+
+  only:
+    - branches
+
+  tags:
+    - windows-32bit, continuous
 
 
 ##########################################
@@ -195,34 +180,19 @@ Windows continuous test:
     - windows, continuous
 
 
-#Windows 32 bit continuous test:
-#
-#  stage: test
-#
-#  before_script:
-#    - export src_dir=${CI_PROJECT_DIR}
-#    - export git_hash=${CI_BUILD_REF:0:6}
-#    - export ep_dir="${CI_PROJECT_DIR}-ep-x86"
-#    - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}-x86"
-#    - export pb_dir="${sb_dir}/NifTK-build"
-#    - hostname
-#    - whoami
-#    - pwd
-#    - echo "Sources - ${src_dir}"
-#    - echo "Commit - ${git_hash}"
-#    - echo "External projects - ${ep_dir}"
-#    - echo "Superbuild - ${sb_dir}"
-#    - echo "Project build - ${pb_dir}"
-#
-#  script:
-#    - cd ${pb_dir}
-#    - ${src_dir}/Utilities/NifTKContinuousTest.bat
-#
-#  only:
-#    - branches
-#
-#  tags:
-#    - windows-32bit, continuous
+Windows 32 bit continuous test:
+
+  stage: test
+
+  script:
+    - cd ${pb_dir}
+    - ${src_dir}/Utilities/NifTKContinuousTest.bat
+
+  only:
+    - branches
+
+  tags:
+    - windows-32bit, continuous
 
 
 ##########################################
@@ -327,36 +297,22 @@ Windows continuous clean up:
   - windows, continuous
 
 
-#Windows 32 bit continuous clean up:
-#
-#  stage: cleanup
-#
-#  before_script:
-#    - export src_dir=${CI_PROJECT_DIR}
-#    - export git_hash=${CI_BUILD_REF:0:6}
-#    - export ep_dir="${CI_PROJECT_DIR}-ep-x86"
-#    - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}-x86"
-#    - export pb_dir="${sb_dir}/NifTK-build"
-#    - hostname
-#    - whoami
-#    - pwd
-#    - echo "Sources - ${src_dir}"
-#    - echo "Commit - ${git_hash}"
-#    - echo "External projects - ${ep_dir}"
-#    - echo "Superbuild - ${sb_dir}"
-#    - echo "Project build - ${pb_dir}"
-#
-#  script:
+Windows 32 bit continuous clean up:
+
+  stage: cleanup
+
+  script:
+    - echo
 #    - rm -rf ${sb_dir}
 #    - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-#
-#  when: always
-#
-#  only:
-#    - branches
-#
-#  tags:
-#    - windows-32bit, continuous
+
+  when: always
+
+  only:
+    - branches
+
+  tags:
+    - windows-32bit, continuous
 
 
 ##########################################
@@ -497,35 +453,22 @@ Windows release build:
     - windows, release
 
 
-#Windows 32 bit release build:
-#
-#  stage: build
-#
-#  before_script:
-#    - export src_dir=${CI_PROJECT_DIR}
-#    - export git_hash=${CI_BUILD_REF:0:6}
-#    - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}-x86"
-#    - export pb_dir="${sb_dir}/NifTK-build"
-#    - hostname
-#    - whoami
-#    - pwd
-#    - echo "Sources - ${src_dir}"
-#    - echo "Commit - ${git_hash}"
-#    - echo "Superbuild - ${sb_dir}"
-#    - echo "Project build - ${pb_dir}"
-#
-#  script:
-#    - mkdir -p ${sb_dir}
-#    - cd ${sb_dir}
-#    - export BTYPE=Win32
-#    - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
-#    - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - windows-32bit, continuous
+Windows 32 bit release build:
+
+  stage: build
+
+  script:
+    - mkdir -p ${sb_dir}
+    - cd ${sb_dir}
+    - export BTYPE=Win32
+    - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
+    - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
+
+  only:
+    - tags
+
+  tags:
+    - windows-32bit, continuous
 
 
 ##########################################
@@ -612,18 +555,18 @@ Windows release test:
     - windows, release
 
 
-#Windows 32 bit release test:
-#
-#  stage: test
-#
-#  script:
-#    - echo
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - windows-32bit, release
+Windows 32 bit release test:
+
+  stage: test
+
+  script:
+    - echo
+
+  only:
+    - tags
+
+  tags:
+    - windows-32bit, release
 
 
 ##########################################
@@ -820,38 +763,25 @@ Windows release installer:
     - windows, release
 
 
-#Windows 32 bit release installer:
-#
-#  stage: deploy
-#
-#  before_script:
-#    - export src_dir=${CI_PROJECT_DIR}
-#    - export git_hash=${CI_BUILD_REF:0:6}
-#    - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}-x86"
-#    - export pb_dir="${sb_dir}/NifTK-build"
-#    - hostname
-#    - whoami
-#    - pwd
-#    - echo "Sources - ${src_dir}"
-#    - echo "Commit - ${git_hash}"
-#    - echo "Superbuild - ${sb_dir}"
-#    - echo "Project build - ${pb_dir}"
-#
-#  script:
-#    - version=${CI_BUILD_TAG}
-#    - cd ${pb_dir}
-#    - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
-#    - ${src_dir}/Utilities/NifTKReleaseDeploy.bat
-#    - installer_file="niftk-${version}-win-7-x86.exe"
-#    - mv niftk-${niftk_version_string}.exe ${installer_file}
-#    - "# Upload the installer image"
-#    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - windows-32bit, release
+Windows 32 bit release installer:
+
+  stage: deploy
+
+  script:
+    - version=${CI_BUILD_TAG}
+    - cd ${pb_dir}
+    - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
+    - ${src_dir}/Utilities/NifTKReleaseDeploy.bat
+    - installer_file="niftk-${version}-win-7-x86.exe"
+    - mv niftk-${niftk_version_string}.exe ${installer_file}
+    - "# Upload the installer image"
+    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+
+  only:
+    - tags
+
+  tags:
+    - windows-32bit, release
 
 
 ##########################################
@@ -930,46 +860,35 @@ Mac release clean up:
     - mac, release
 
 
-#Windows release clean up:
-#
-#  stage: cleanup
-#
-#  script:
+Windows release clean up:
+
+  stage: cleanup
+
+  script:
+    - echo
 #    - rm -rf ${sb_dir}
-#
-#  when: always
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - windows, release
+
+  when: always
+
+  only:
+    - tags
+
+  tags:
+    - windows, release
 
 
-#Windows 32 bit release clean up:
-#
-#  stage: cleanup
-#
-#  before_script:
-#    - export src_dir=${CI_PROJECT_DIR}
-#    - export git_hash=${CI_BUILD_REF:0:6}
-#    - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}-x86"
-#    - export pb_dir="${sb_dir}/NifTK-build"
-#    - hostname
-#    - whoami
-#    - pwd
-#    - echo "Sources - ${src_dir}"
-#    - echo "Commit - ${git_hash}"
-#    - echo "Superbuild - ${sb_dir}"
-#    - echo "Project build - ${pb_dir}"
-#
-#  script:
+Windows 32 bit release clean up:
+
+  stage: cleanup
+
+  script:
+    - echo
 #    - rm -rf ${sb_dir}
-#
-#  when: always
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - windows-32bit, release
+
+  when: always
+
+  only:
+    - tags
+
+  tags:
+    - windows-32bit, release
