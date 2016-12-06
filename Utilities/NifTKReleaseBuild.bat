@@ -2,13 +2,13 @@
 
 rem The script is invoked from the gitlab-ci.yml job without arguments.
 rem The script assumes that the following environment variables are set:
-rem
+rem 
 rem   - src_dir: points to the NifTK source folder
 rem   - ep_dir: points to the folder where the external projects are (to be) built
 rem   - sb_dir: points to the folder where NifTK is to be built (superbuild folder)
-rem
+rem 
 rem The script also assumes that the current directory is %sb_dir%
-rem
+rem 
 rem The script builds NifTK in release mode with testing on.
 
 rem Enable command extensions to allow checking exit status of commands.
