@@ -170,6 +170,7 @@ if(NOT APPLE AND BUILD_NiftyIGI)
   option(BUILD_VL "Build VisualizationLibrary - Experimental." ON)
 else()
   option(BUILD_VL "Build VisualizationLibrary - Experimental." OFF)
+  set(BUILD_VL OFF CACHE BOOL "Build VisualizationLibrary - Experimental." FORCE)
 endif()
 
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
