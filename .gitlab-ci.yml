@@ -324,6 +324,7 @@ Ubuntu 14.04 release build:
   stage: build
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - cmake -DBUILD_TESTING:BOOL=OFF
@@ -352,6 +353,7 @@ CentOS 7 release build:
   stage: build
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - cmake -DBUILD_TESTING:BOOL=OFF
@@ -380,6 +382,7 @@ CentOS 6 release build:
   stage: build
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
     - export X264_DIR=/share/apps/cmic/niftk/x264
     - export FFMPEG_DIR=/share/apps/cmic/niftk/ffmpeg-2.1.8
     - export PATH="${FFMPEG_DIR}/bin:${PATH}"
@@ -413,6 +416,7 @@ Mac release build:
   stage: build
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - cmake -DBUILD_TESTING:BOOL=OFF
@@ -441,6 +445,7 @@ Windows release build:
   stage: build
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
@@ -458,6 +463,7 @@ Windows 32 bit release build:
   stage: build
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - export BTYPE=Win32
@@ -579,6 +585,8 @@ Release docs:
   stage: deploy
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
+    - export pb_dir="${sb_dir}/NifTK-build"
     - version=${CI_BUILD_TAG}
     - cd ${pb_dir}
     - rm -rf Doxygen/html
@@ -616,6 +624,8 @@ Ubuntu 14.04 release installer:
   stage: deploy
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
+    - export pb_dir="${sb_dir}/NifTK-build"
     - version=${CI_BUILD_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
@@ -641,6 +651,8 @@ CentOS 7 release installer:
   stage: deploy
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
+    - export pb_dir="${sb_dir}/NifTK-build"
     - version=${CI_BUILD_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
@@ -682,6 +694,8 @@ CentOS 6 release installer:
   stage: deploy
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
+    - export pb_dir="${sb_dir}/NifTK-build"
     - export X264_DIR=/share/apps/cmic/niftk/x264
     - export FFMPEG_DIR=/share/apps/cmic/niftk/ffmpeg-2.1.8
     - export PATH="${FFMPEG_DIR}/bin:${PATH}"
@@ -724,6 +738,8 @@ Mac release installer:
   stage: deploy
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
+    - export pb_dir="${sb_dir}/NifTK-build"
     - version=${CI_BUILD_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
@@ -747,6 +763,8 @@ Windows release installer:
   stage: deploy
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
+    - export pb_dir="${sb_dir}/NifTK-build"
     - version=${CI_BUILD_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
@@ -768,6 +786,8 @@ Windows 32 bit release installer:
   stage: deploy
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
+    - export pb_dir="${sb_dir}/NifTK-build"
     - version=${CI_BUILD_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
@@ -793,6 +813,7 @@ Ubuntu 14.04 release clean up:
   stage: cleanup
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
     - rm -rf ${sb_dir}
 
   when: always
@@ -811,6 +832,7 @@ CentOS 7 release clean up:
   stage: cleanup
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
     - rm -rf ${sb_dir}
 
   when: always
@@ -829,6 +851,7 @@ CentOS 6 release clean up:
   stage: cleanup
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
     - rm -rf ${sb_dir}
 
   when: always
@@ -847,6 +870,7 @@ Mac release clean up:
   stage: cleanup
 
   script:
+    - export sb_dir="${sb_dir:0:4}-R"
     - rm -rf ${sb_dir}
 
   when: always
@@ -865,7 +889,7 @@ Windows release clean up:
   stage: cleanup
 
   script:
-    - echo
+    - export sb_dir="${sb_dir:0:4}-R"
 #    - rm -rf ${sb_dir}
 
   when: always
@@ -882,7 +906,7 @@ Windows 32 bit release clean up:
   stage: cleanup
 
   script:
-    - echo
+    - export sb_dir="${sb_dir:0:4}-R"
 #    - rm -rf ${sb_dir}
 
   when: always
