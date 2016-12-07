@@ -21,29 +21,18 @@ set(CPP_FILES
   Internal/niftkNVidiaSDIDataType.cxx
 )
 
-if (CUDA_VERSION_MAJOR LESS 7)
-	
-else()
-	LIST(APPEND CPP_FILES Internal/niftkNV7SDIDataSourceImpl.cpp)
-endif()
-
-
 set(MOC_H_FILES
   Internal/niftkNVidiaSDIInitDialog.h
   Internal/niftkNVidiaSDIConfigDialog.h
-  #Internal/niftkNVidiaSDIDataSourceImpl.h
   Internal/niftkNVidiaSDIDataSourceService.h
 )
 
-
-
 if (CUDA_VERSION_MAJOR LESS 7)	
-	LIST (APPEND CPP_FILES Internal/niftkNVidiaSDIDataSourceImpl.cxx)
-	LIST (MOC_H_FILES Internal/niftkNVidiaSDIDataSourceImpl.h)
-
+  list(APPEND CPP_FILES   Internal/niftkNVidiaSDIDataSourceImpl.cxx)
+  list(APPEND MOC_H_FILES Internal/niftkNVidiaSDIDataSourceImpl.h)
 else()
-	LIST(APPEND MOC_H_FILES Internal/niftkNV7SDIDataSourceImpl.h)
-	LIST(APPEND CPP_FILES Internal/niftkNV7SDIDataSourceImpl.cpp)	
+  list(APPEND CPP_FILES   Internal/niftkNV7SDIDataSourceImpl.cxx)
+  list(APPEND MOC_H_FILES Internal/niftkNV7SDIDataSourceImpl.h)
 endif()
 
 set(UI_FILES
