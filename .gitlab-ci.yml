@@ -104,23 +104,23 @@ Windows continuous build:
     - windows, continuous
 
 
-Windows 32 bit continuous build:
-
-  stage: build
-
-  script:
-    - mkdir -p ${sb_dir}
-    - mkdir -p ${ep_dir}
-    - cd ${sb_dir}
-    - export BTYPE=Win32
-    - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
-    - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
-
-  only:
-    - branches
-
-  tags:
-    - windows-32bit, continuous
+#Windows 32 bit continuous build:
+#
+#  stage: build
+#
+#  script:
+#    - mkdir -p ${sb_dir}
+#    - mkdir -p ${ep_dir}
+#    - cd ${sb_dir}
+#    - export BTYPE=Win32
+#    - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
+#    - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
+#
+#  only:
+#    - branches
+#
+#  tags:
+#    - windows-32bit, continuous
 
 
 ##########################################
@@ -180,19 +180,19 @@ Windows continuous test:
     - windows, continuous
 
 
-Windows 32 bit continuous test:
-
-  stage: test
-
-  script:
-    - cd ${pb_dir}
-    - ${src_dir}/Utilities/NifTKContinuousTest.bat
-
-  only:
-    - branches
-
-  tags:
-    - windows-32bit, continuous
+#Windows 32 bit continuous test:
+#
+#  stage: test
+#
+#  script:
+#    - cd ${pb_dir}
+#    - ${src_dir}/Utilities/NifTKContinuousTest.bat
+#
+#  only:
+#    - branches
+#
+#  tags:
+#    - windows-32bit, continuous
 
 
 ##########################################
@@ -296,21 +296,21 @@ Windows continuous clean up:
   - windows, continuous
 
 
-Windows 32 bit continuous clean up:
-
-  stage: cleanup
-
-  script:
-    - rm -rf ${sb_dir}
-    - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
-
-  when: always
-
-  only:
-    - branches
-
-  tags:
-    - windows-32bit, continuous
+#Windows 32 bit continuous clean up:
+#
+#  stage: cleanup
+#
+#  script:
+#    - rm -rf ${sb_dir}
+#    - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+#
+#  when: always
+#
+#  only:
+#    - branches
+#
+#  tags:
+#    - windows-32bit, continuous
 
 
 ##########################################
