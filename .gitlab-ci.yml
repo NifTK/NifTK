@@ -472,7 +472,7 @@ Windows 32 bit release build:
     - tags
 
   tags:
-    - windows-32bit, continuous
+    - windows-32bit, release
 
 
 ##########################################
