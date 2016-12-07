@@ -288,6 +288,7 @@ mark_as_advanced(BUILD_SHARED_LIBS)
 mark_as_advanced(NIFTK_RESOLVE_COMMAND_LINE_DEPENDENCIES)
 mark_as_advanced(BUILD_CAMINO)
 mark_as_advanced(BUILD_PCL)
+mark_as_advanced(BUILD_VL)
 mark_as_advanced(BUILD_RTK)
 mark_as_advanced(BUILD_MESHING)
 
