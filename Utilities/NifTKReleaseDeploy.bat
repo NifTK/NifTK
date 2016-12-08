@@ -28,6 +28,7 @@ setlocal EnableDelayedExpansion
 set "BATFILEPATH=%pb_dir%/bin/startNiftyView_%BCONF%.bat"
 set PATHSTRING1=" "
 set PATHSTRING2=" "
+set PATHSTRING3=" "
 
 echo Reading %BATFILEPATH%....
 
@@ -52,7 +53,11 @@ set PATHSTRING2=%var2:/=\%
 set PATHSTRING2=%PATHSTRING2:PATH=%
 set PATHSTRING2=%PATHSTRING2:~1,-2%
 
-set PATH=%PATHSTRING2%%PATHSTRING1%%SystemRoot%;%SystemRoot%/system32;%SystemRoot%/System32/Wbem
+set PATHSTRING3=%var3:/=\%
+set PATHSTRING3=%PATHSTRING3:PATH=%
+set PATHSTRING3=%PATHSTRING3:~1,-2%
+
+set PATH=%PATHSTRING3%%PATHSTRING2%%PATHSTRING1%%SystemRoot%;%SystemRoot%/system32;%SystemRoot%/System32/Wbem
 
 if defined CUDA_PATH (
   set PATH=%PATH%;%CUDA_PATH%/bin
