@@ -220,9 +220,9 @@ Continuous docs:
     - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
     - echo "API reference documentation generated:"
     - "# Upload the tarball"
-    - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
+    - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/docs/
     - "# Extract the tarball and replace the old files"
-    - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
+    - ssh cmiclab "cd /cs/research/medic/cmiclab/deploy/CMIC/NifTK/docs ;
           rm -rf `readlink -f niftk-master-docs.tar.bz2` `readlink -f master` ;
           rm niftk-master-docs.tar.bz2 master ;
           tar xfj niftk-${version}-docs.tar.bz2 ;
@@ -599,9 +599,9 @@ Release docs:
     - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
     - echo "API reference documentation generated:"
     - "# Upload the tarball"
-    - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs/
+    - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/docs/
     - "# Extract the tarball and replace the old files"
-    - ssh cmiclab "cd /cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/docs ;
+    - ssh cmiclab "cd /cs/research/medic/cmiclab/deploy/CMIC/NifTK/docs ;
           rm niftk-latest-docs.tar.bz2 latest ;
           tar xfj niftk-${version}-docs.tar.bz2 ;
           mv niftk-${version}-docs ${version} ;
@@ -633,7 +633,7 @@ Ubuntu 14.04 release installer:
     - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
     - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
     - "# Upload the tarball"
-    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/
 
   only:
     - tags
@@ -660,7 +660,7 @@ CentOS 7 release installer:
     - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
     - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
     - "# Upload the tarball"
-    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/
     - "# Install on managed machines"
     - install_prefix=/cs/research/medic/common2/paramedic/share/cmic/niftk-scientific/niftk-${niftk_version_string}
     - install_tmp_dir="${install_prefix}-tmp"
@@ -706,7 +706,7 @@ CentOS 6 release installer:
     - installer_file="niftk-${version}-linux-${os_version}-x64.tar.bz2"
     - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
     - "# Upload the tarball"
-    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/
     - "# Install on cluster"
     - install_prefix=/share/apps/cmic/niftk/niftk-${niftk_version_string}
     - install_tmp_dir="${install_prefix}-tmp"
@@ -745,7 +745,7 @@ Mac release installer:
     - installer_file="niftk-${version}-mac-10.10.dmg"
     - mv niftk-${niftk_version_string}.dmg ${installer_file}
     - "# Upload the installer image"
-    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/
 
   only:
     - tags
@@ -770,7 +770,7 @@ Windows release installer:
     - installer_file="niftk-${version}-win-7-x64.exe"
     - mv niftk-${niftk_version_string}.exe ${installer_file}
     - "# Upload the installer image"
-    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/
 
   only:
     - tags
@@ -793,7 +793,7 @@ Windows release installer:
 #    - installer_file="niftk-${version}-win-7-x86.exe"
 #    - mv niftk-${niftk_version_string}.exe ${installer_file}
 #    - "# Upload the installer image"
-#    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/gitlab/deploy/CMIC/NifTK/install/
+#    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/
 #
 #  only:
 #    - tags
