@@ -17,7 +17,7 @@ if (UltrasonixUlterius_FOUND)
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources niftkQImageConversion
     PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets
-    AUTOLOAD_WITH niftkIGIServices
+    AUTOLOAD_WITH niftkIGIDataSources
   )
 
   include_directories(${Ultrasonix_ULTERIUS_INCLUDE_DIR})
