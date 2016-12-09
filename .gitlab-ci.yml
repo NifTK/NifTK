@@ -49,8 +49,6 @@ Linux continuous build:
 
   only:
     - branches
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, continuous
@@ -79,8 +77,6 @@ Mac continuous build:
 
   only:
     - branches
-  except:
-    - /^4590-.*$/
 
   tags:
     - mac, continuous
@@ -139,8 +135,6 @@ Linux continuous test:
 
   only:
     - branches
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, continuous
@@ -158,8 +152,6 @@ Mac continuous test:
 
   only:
     - branches
-  except:
-    - /^4590-.*$/
 
   tags:
     - mac, continuous
@@ -253,8 +245,6 @@ Linux continuous clean up:
 
   only:
     - branches
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, continuous
@@ -272,8 +262,6 @@ Mac continuous clean up:
 
   only:
     - branches
-  except:
-    - /^4590-.*$/
 
   tags:
     - mac, continuous
@@ -339,8 +327,6 @@ Ubuntu 14.04 release build:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, ubuntu-14.04, release
@@ -368,8 +354,6 @@ CentOS 7 release build:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, centos-7, release
@@ -402,8 +386,6 @@ CentOS 6 release build:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, centos-6, release
@@ -431,8 +413,6 @@ Mac release build:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
    - mac, release
@@ -490,8 +470,6 @@ Ubuntu 14.04 release test:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, ubuntu-14.04, release
@@ -506,8 +484,6 @@ CentOS 7 release test:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, centos-7, release
@@ -522,8 +498,6 @@ CentOS 6 release test:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, centos-6, release
@@ -538,8 +512,6 @@ Mac release test:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - mac, release
@@ -610,8 +582,6 @@ Release docs:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, ubuntu-14.04, release
@@ -637,8 +607,6 @@ Ubuntu 14.04 release installer:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, ubuntu-14.04, release
@@ -680,8 +648,6 @@ CentOS 7 release installer:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, centos-7, release
@@ -724,8 +690,6 @@ CentOS 6 release installer:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, centos-6, release
@@ -749,8 +713,6 @@ Mac release installer:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - mac, release
@@ -818,8 +780,6 @@ Ubuntu 14.04 release clean up:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, ubuntu-14.04, release
@@ -837,8 +797,6 @@ CentOS 7 release clean up:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, centos-7, release
@@ -856,8 +814,6 @@ CentOS 6 release clean up:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - linux, centos-6, release
@@ -875,8 +831,6 @@ Mac release clean up:
 
   only:
     - tags
-  except:
-    - /^4590-.*$/
 
   tags:
     - mac, release
@@ -888,7 +842,7 @@ Windows release clean up:
 
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-#    - rm -rf ${sb_dir}
+    - rm -rf ${sb_dir}
 
   when: always
 
@@ -905,7 +859,7 @@ Windows release clean up:
 #
 #  script:
 #    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-##    - rm -rf ${sb_dir}
+#    - rm -rf ${sb_dir}
 #
 #  when: always
 #
