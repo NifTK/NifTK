@@ -153,9 +153,11 @@ if (APPLE)
 endif()
 
 ctest_start(Continuous TRACK ${group_name})
-ctest_test(EXCLUDE "${tests_to_exclude}" RETURN_VALUE exitCode)
-ctest_submit()
+ctest_test(EXCLUDE "${tests_to_exclude}" RETURN_VALUE testExitCode)
+ctest_submit(RETRY_COUNT 10 RETRY_DELAY 60 RETURN_VALUE submissionExitCode)
 
-if (exitCode)
-  message(SEND_ERROR "Some unit tests failed. CTest exit code: ${exitCode}")
+if (testExitCode)
+
+  message(SEND_ERROR "Some unit tests failed. CTest exit code: ${testExitCode}")
+
 endif()
