@@ -18,7 +18,7 @@ if (NiftyLink_FOUND)
   MITK_CREATE_MODULE(
     DEPENDS niftkCore niftkIGIDataSources niftkQImageConversion
     PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets+Network NiftyLink
-    AUTOLOAD_WITH niftkIGIServices
+    AUTOLOAD_WITH niftkIGIDataSources
   )
 
   if (NIFTK_USE_COTIRE AND COMMAND cotire)

@@ -1,32 +1,72 @@
-@ECHO OFF
+@echo off
 
-REM /*=============================================================================
-REM 
-REM   NifTK: A software platform for medical image computing.
-REM 
-REM   Copyright (c) University College London (UCL). All rights reserved.
-REM 
-REM   This software is distributed WITHOUT ANY WARRANTY; without even
-REM   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-REM   PURPOSE.
-REM 
-REM   See LICENSE.txt in the top level directory for details.
-REM 
-REM =============================================================================*/
+rem /*=============================================================================
+rem
+rem   NifTK: A software platform for medical image computing.
+rem
+rem   Copyright (c) University College London (UCL). All rights reserved.
+rem
+rem   This software is distributed WITHOUT ANY WARRANTY; without even
+rem   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+rem   PURPOSE.
+rem
+rem   See LICENSE.txt in the top level directory for details.
+rem
+rem =============================================================================*/
 
-SET BATCH_SCRIPT_FOLDER_PATHNAME="%~dp0"
-SET UP_ONE_DIRECTORY="%BATCH_SCRIPT_FOLDER_PATHNAME%\..\"
+setlocal EnableDelayedExpansion
 
-REM Throw the first parameter away and retain remainder
+set CLI_MODULES_DIR=%~dp0
 
-SET params=%1
+rem In batch scripts commas are considered as delimiters on the argument list.
+rem When you refer to an argument as e.g. %5 or 'shift' the argument list, the
+rem arguments that contain commas (or some other special characters) will be
+rem taken apart, unless they are surrounded by double quotes. To avoid this, we
+rem parse the argument list ourselves here, looping round a character at a time,
+rem splitting args only on space and skipping args protected by double quotes.
+rem We do this by a simplistic state machine.
+rem States can be:
+rem   - 0: not within an argument
+rem   - 1: within a not quoted argument
+rem   - 2: within a quoted argument
 
-:LOOP
-SHIFT
-IF [%1]==[] GOTO AFTERLOOP
-SET params=%params% %1
-GOTO LOOP
-:AFTERLOOP
+set state=0
 
-"%UP_ONE_DIRECTORY%\@FULL_APP_NAME@" %params%
+rem The original argument list as passed to this batch file. Not tokenised.
+set input=%*
+rem The new argument list that we are preparing.
+set output=
 
+:loop
+if not "!input!" == "" (
+  set char=!input:~0,1!
+  set input=!input:~1!
+
+  if "!char!" == """" (
+    set output=!output!!char!
+    if !state! EQU 0 (
+      set state=2
+    ) else if !state! EQU 1 (
+      rem Not sure if this is a valid situation.
+    ) else (
+      set state=0
+    )
+  ) else if "!char!" == " " (
+    if !state! EQU 0 (
+      rem Do nothing.
+    ) else if !state! EQU 1 (
+      set output=!output!!char!
+      set state=0
+    ) else (
+      set output=!output!!char!
+    )
+  ) else (
+    set output=!output!!char!
+    if !state! EQU 0 (
+      set state=1
+    )
+  )
+  goto loop
+)
+
+"%CLI_MODULES_DIR%..\@FULL_APP_NAME@.exe" %output%

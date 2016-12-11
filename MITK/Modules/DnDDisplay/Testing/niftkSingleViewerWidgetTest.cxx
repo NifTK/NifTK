@@ -125,7 +125,7 @@ SingleViewerWidgetTestClass::SingleViewerWidgetTestClass()
   Q_D(SingleViewerWidgetTestClass);
 
   SingleViewerWidgetTestClass::s_MITKRendererUpDirections[0] = 1;
-  SingleViewerWidgetTestClass::s_MITKRendererUpDirections[1] = 1;
+  SingleViewerWidgetTestClass::s_MITKRendererUpDirections[1] = -1;
   SingleViewerWidgetTestClass::s_MITKRendererUpDirections[2] = -1;
 
   d->ImageNode = 0;
@@ -1283,15 +1283,18 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
   mitk::BaseRenderer* sagittalRenderer = d->SagittalWindow->GetRenderer();
   mitk::BaseRenderer* coronalRenderer = d->CoronalWindow->GetRenderer();
 
-  const mitk::TimeGeometry::Pointer axialTimeGeometry = axialRenderer->GetWorldTimeGeometry()->Clone();
-  const mitk::TimeGeometry::Pointer sagittalTimeGeometry = sagittalRenderer->GetWorldTimeGeometry()->Clone();
-  const mitk::TimeGeometry::Pointer coronalTimeGeometry = coronalRenderer->GetWorldTimeGeometry()->Clone();
+  const mitk::TimeGeometry* axialInputWorldTimeGeometry =
+      axialRenderer->GetSliceNavigationController()->GetInputWorldTimeGeometry();
+  const mitk::TimeGeometry* sagittalInputWorldTimeGeometry =
+      sagittalRenderer->GetSliceNavigationController()->GetInputWorldTimeGeometry();
+  const mitk::TimeGeometry* coronalInputWorldTimeGeometry =
+      coronalRenderer->GetSliceNavigationController()->GetInputWorldTimeGeometry();
 
-//  MITK_INFO << "axial time geometry: " << axialTimeGeometry;
-//  MITK_INFO << "sagittal time geometry: " << sagittalTimeGeometry;
-//  MITK_INFO << "coronal time geometry: " << coronalTimeGeometry;
+//  MITK_INFO << "axial input world time geometry: " << axialInputWorldTimeGeometry;
+//  MITK_INFO << "sagittal input world time geometry: " << sagittalInputWorldTimeGeometry;
+//  MITK_INFO << "coronal input world time geometry: " << coronalInputWorldTimeGeometry;
 
-//  MITK_INFO << "Viewer initialised with the world geometry from an image geometry: ";
+//  MITK_INFO << "Viewer initialised with an image geometry: ";
 
   const mitk::BaseGeometry* axialGeometry = axialRenderer->GetWorldGeometry();
   const mitk::BaseGeometry* sagittalGeometry = sagittalRenderer->GetWorldGeometry();
@@ -1499,7 +1502,7 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 
   d->StateTester->Clear();
 
-  d->Viewer->SetTimeGeometry(axialTimeGeometry);
+  d->Viewer->SetTimeGeometry(axialInputWorldTimeGeometry);
 
   axialGeometry = axialRenderer->GetWorldGeometry();
   sagittalGeometry = sagittalRenderer->GetWorldGeometry();
@@ -1600,7 +1603,7 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 
   d->StateTester->Clear();
 
-  d->Viewer->SetTimeGeometry(sagittalTimeGeometry);
+  d->Viewer->SetTimeGeometry(sagittalInputWorldTimeGeometry);
 
   axialGeometry = axialRenderer->GetWorldGeometry();
   sagittalGeometry = sagittalRenderer->GetWorldGeometry();
@@ -1701,7 +1704,7 @@ void SingleViewerWidgetTestClass::testSetTimeGeometry()
 
   d->StateTester->Clear();
 
-  d->Viewer->SetTimeGeometry(coronalTimeGeometry);
+  d->Viewer->SetTimeGeometry(coronalInputWorldTimeGeometry);
 
   axialGeometry = axialRenderer->GetWorldGeometry();
   sagittalGeometry = sagittalRenderer->GetWorldGeometry();
@@ -3626,6 +3629,11 @@ void SingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
   /// of the QWheelEvent. See the QWheelEvent API documentation for details.
   int delta;
 
+  /// Note that we are in the coronal window where the scrolling direction is
+  /// *against* the world direction because the patient is facing towards us.
+  /// Therefore, we have to multiply the delta by -1. In axial we would need
+  /// to do the same, but in sagittal not.
+
   d->StateTester->Clear();
 
   /// ---------------------------------------------------------------------------
@@ -3650,8 +3658,8 @@ void SingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
   expectedCoronalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_CORONAL);
 
   delta = +1;
-  expectedCoronalSlice += d->WorldUpDirections[CoronalAxis] * delta;
-  expectedSelectedPosition[CoronalAxis] += delta * d->WorldSpacings[CoronalAxis];
+  expectedCoronalSlice += -1 * d->WorldUpDirections[CoronalAxis] * delta;
+  expectedSelectedPosition[CoronalAxis] += -1 * delta * d->WorldSpacings[CoronalAxis];
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   d->StateTester->SetExpectedState(expectedState);
 
@@ -3670,8 +3678,8 @@ void SingleViewerWidgetTestClass::testChangeSliceByMouseInteraction()
   d->StateTester->Clear();
 
   delta = -1;
-  expectedCoronalSlice += d->WorldUpDirections[CoronalAxis] * delta;
-  expectedSelectedPosition[CoronalAxis] += delta * d->WorldSpacings[CoronalAxis];
+  expectedCoronalSlice += -1 * d->WorldUpDirections[CoronalAxis] * delta;
+  expectedSelectedPosition[CoronalAxis] += -1 * delta * d->WorldSpacings[CoronalAxis];
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   d->StateTester->SetExpectedState(expectedState);
 
@@ -3709,6 +3717,11 @@ void SingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
   /// with hitting the 'Z' key, while the 'A' key is for stepping backwards.
   int delta;
 
+  /// Note that we are in the coronal window where the scrolling direction is
+  /// *against* the world direction because the patient is facing towards us.
+  /// Therefore, we have to multiply the delta by -1. In axial we would need
+  /// to do the same, but in sagittal not.
+
   d->StateTester->Clear();
 
   /// ---------------------------------------------------------------------------
@@ -3733,8 +3746,8 @@ void SingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
   expectedCoronalSlice = d->Viewer->GetSelectedSlice(WINDOW_ORIENTATION_CORONAL);
 
   delta = +1;
-  expectedCoronalSlice += d->WorldUpDirections[CoronalAxis] * delta;
-  expectedSelectedPosition[CoronalAxis] += delta * d->WorldSpacings[CoronalAxis];
+  expectedCoronalSlice += -1 * d->WorldUpDirections[CoronalAxis] * delta;
+  expectedSelectedPosition[CoronalAxis] += -1 * delta * d->WorldSpacings[CoronalAxis];
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   d->StateTester->SetExpectedState(expectedState);
 
@@ -3753,8 +3766,8 @@ void SingleViewerWidgetTestClass::testChangeSliceByKeyInteraction()
   d->StateTester->Clear();
 
   delta = -1;
-  expectedCoronalSlice += d->WorldUpDirections[CoronalAxis] * delta;
-  expectedSelectedPosition[CoronalAxis] += delta * d->WorldSpacings[CoronalAxis];
+  expectedCoronalSlice += -1 * d->WorldUpDirections[CoronalAxis] * delta;
+  expectedSelectedPosition[CoronalAxis] += -1 * delta * d->WorldSpacings[CoronalAxis];
   expectedState->SetSelectedPosition(expectedSelectedPosition);
   d->StateTester->SetExpectedState(expectedState);
 

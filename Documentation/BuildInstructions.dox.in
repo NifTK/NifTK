@@ -242,7 +242,7 @@ where XXXX is the Visual Studio version you'd like to use.
 The next step is to configure Qt for the build:
 \verbatim
 cd /D C:\Qt\4.8.7-build
-configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -nomake examples -nomake tests -debug-and-release -shared -mp -script -openssl -opensource -confirm-license -platform win32-msvc2012 -prefix c:\Qt\4.8.7 -I c:\OpenSSL-Win64\include -L c:\OpenSSL-Win64\lib
+configure -no-dbus -no-phonon -no-phonon-backend -no-accessibility -no-sql-mysql -no-sql-psql -no-sql-oci -no-sql-odbc -no-sql-tds -no-sql-db2 -no-sql-sqlite2 -no-sql-ibase -no-qt3support -webkit -nomake examples -nomake tests -nomake demos -debug-and-release -shared -mp -script -openssl -opensource -confirm-license -platform win32-msvc2012 -prefix c:\Qt\4.8.7 -I c:\OpenSSL-Win64\include -L c:\OpenSSL-Win64\lib
 \endverbatim
 
 The last four parameters have to be adjusted. Set "-platform win32-msvcXXXX" to match the desired Visual

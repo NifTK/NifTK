@@ -19,7 +19,7 @@ if (BKMedical_FOUND)
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources niftkQImageConversion
     PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets
-    AUTOLOAD_WITH niftkIGIServices
+    AUTOLOAD_WITH niftkIGIDataSources
   )
 
   if (NIFTK_USE_COTIRE AND COMMAND cotire)

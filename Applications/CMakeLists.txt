@@ -142,7 +142,7 @@ set(_applications
   JacobianStatistics
   KmeansClassifier
   KMeansWindowBSI
-  KMeansWindowWithLinearRegressionNormalisationBSI
+  KMeansWindowLinRegNormBSI
   KNDoubleWindowBSI
   LandmarkBasedRegistration
   LinearSubdivisionPolyDataFilter
