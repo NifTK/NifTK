@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Analysis</category>
   <title>Get Matched Tracking Matrix</title>
   <description><![CDATA[Interogates a tracking and video directory for tracking data and a .framemap.log file, returns the tracking matrix for a passed frame number]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

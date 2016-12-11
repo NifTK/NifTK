@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Calibration</category>
   <title>Ultrasound Point Clicker</title>
   <description><![CDATA[Enables the user to scroll through images, and click on a single point per image.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

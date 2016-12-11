@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Video</category>
   <title>Split Video and Framemap File</title>
   <description><![CDATA[Looks for a suitably named video and framemap.log file and makes a smaller file according to the passed parameters]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

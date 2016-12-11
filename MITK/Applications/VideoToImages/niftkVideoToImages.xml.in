@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Video</category>
   <title>Convert Video To Images</title>
   <description><![CDATA[Converts and video file and framemap.log file to a set of timestamped images]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

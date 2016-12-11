@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Calibration</category>
   <title>Ultrasound Transform and Image Merger (for PLUS)</title>
   <description><![CDATA[Merges a directory of ultrasound images (*.nii) and tracking data (*.txt) into a .mhd file]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

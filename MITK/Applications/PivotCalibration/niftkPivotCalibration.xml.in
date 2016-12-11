@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Calibration</category>
   <title>Pivot Calibration</title>
   <description><![CDATA[Calibrates a Pointer Device using a single point, pivot calibration method.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

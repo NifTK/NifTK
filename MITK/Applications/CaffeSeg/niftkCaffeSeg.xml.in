@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Segmentation</category>
   <title>Caffe Segmentation</title>
   <description><![CDATA[Segments an image into fore/background using Caffe.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

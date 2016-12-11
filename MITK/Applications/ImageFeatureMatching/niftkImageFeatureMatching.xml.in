@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Reconstruction</category>
   <title>Sequential CPU Stereo Matching</title>
   <description><![CDATA[Runs stereo matching with a Seqpential CPU algorithm.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
