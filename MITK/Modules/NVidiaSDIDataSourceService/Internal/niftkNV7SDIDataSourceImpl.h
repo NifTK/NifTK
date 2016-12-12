@@ -199,9 +199,8 @@ private:
 
   Encoder *				  encoder;
   Decoder *				  decoder;  
-  int					  device_id;
-  GLuint				  pbo;
-  std::vector<char>		  frame_data;
+  int					      device_id;
+  GLuint				    pbo;
 
   struct SequenceNumberComparator
   {

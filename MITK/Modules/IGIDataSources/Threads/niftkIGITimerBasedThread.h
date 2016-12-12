@@ -36,7 +36,7 @@ class NIFTKIGIDATASOURCES_EXPORT IGITimerBasedThread : public QThread
 public:
 
   IGITimerBasedThread(QObject *parent);
-  ~IGITimerBasedThread();
+  virtual ~IGITimerBasedThread();
 
   /**
   * \brief Set the interval on the timer, and this can be changed as the thread is running.

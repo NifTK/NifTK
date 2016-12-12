@@ -103,8 +103,7 @@ void Encoder::deinitialize_encoder()
     }
 
     if (device_ptr_) {
-        CUresult cuResult = CUDA_SUCCESS;
-        cuResult = cuCtxDestroy((CUcontext)device_ptr_);
+        CUresult cuResult = cuCtxDestroy((CUcontext)device_ptr_);
         device_ptr_ = NULL;
     }
 }

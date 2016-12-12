@@ -167,7 +167,7 @@ namespace niftk
       // we need the capture context for proper cleanup
       oglwin->makeCurrent();
       // final attempt to not loose data.
-      DumpNALIndex();			
+      DumpNALIndex();		
 
       delete decoder;
       delete encoder;
@@ -194,11 +194,9 @@ namespace niftk
     {
       std::cerr << "sdi cleanup threw exception" << std::endl;
     }
-    
+
     delete oglshare;
     delete oglwin;
-    
-
     // they'll get cleaned up now
     // if someone else is currently waiting on these
     //  deleting but not unlocking does what to their waiting?
@@ -981,9 +979,7 @@ namespace niftk
         if (!encoder->initialize_encoder(sdiin->get_width(), sdiin->get_height(), device_id, (int)(format.refreshrate * streamcount / 1000.0),
           m_CompressionOutputFilename)) {
           throw std::runtime_error("Could not create the encoder");					
-        }			
-
-        frame_data = std::vector<char>(sdiin->get_width() * sdiin->get_height() * 4);								
+        }										
 
         // Do the PBO allocation
         glGenBuffers(1, &pbo);
