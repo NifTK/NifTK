@@ -23,7 +23,7 @@ if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources niftkIGIGui
     PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets
-    AUTOLOAD_WITH niftkIGIServices
+    AUTOLOAD_WITH niftkIGIDataSources
   )  
   
   include_directories(${CMAKE_SOURCE_DIR}/Libraries/NVAPI/video)    
