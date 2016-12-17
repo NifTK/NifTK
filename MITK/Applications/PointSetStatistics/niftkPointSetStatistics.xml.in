@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Points</category>
   <title>Calculate Point Set Statistics</title>
   <description><![CDATA[Reads an MITK point set and outputs some statistics]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Calibration</category>
   <title>Average Stationary Chessboards</title>
   <description><![CDATA[Takes a two directories of images, extracts chessboards, averages corners and triangulates to 3D.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

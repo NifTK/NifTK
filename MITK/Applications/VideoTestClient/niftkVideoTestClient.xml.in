@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Video</category>
   <title>NiftyLink Video Client</title>
   <description><![CDATA[Grabs video via OpenCV and sends via NiftyLink.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

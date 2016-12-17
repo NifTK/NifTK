@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Calibration</category>
   <title>Camera Calibration</title>
   <description><![CDATA[Calibrates a video camera from a directory containing images of a planar chess board style of calibration object.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

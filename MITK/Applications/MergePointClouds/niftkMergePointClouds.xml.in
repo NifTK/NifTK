@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Points</category>
   <title>Merge Point Clouds</title>
   <description><![CDATA[Merges separate point clouds into one.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Laparoscopic Demo</category>
+  <category>Smart Liver.Models</category>
   <title>Make Grid of 2D Images</title>
   <description><![CDATA[Takes filename prefix and suffix, searches for matching images, and tiles them into a grid pattern.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
