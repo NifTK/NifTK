@@ -28,7 +28,11 @@ namespace video
 
 /** @brief Holds nvapi related stuff, pimpl'd to avoid header pollution. */
 class SDIInputImpl;
+#ifdef USE_NV_7
+class SDIInput
+#else
 class LIBVIDEO_DLL_EXPORTS SDIInput
+#endif
 {
 private:
 

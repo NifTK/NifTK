@@ -30,7 +30,7 @@ class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceGrabbingThread : public IGITimerBa
 {
 public:
   IGIDataSourceGrabbingThread(QObject *parent, IGILocalDataSourceI *source);
-  ~IGIDataSourceGrabbingThread();
+  virtual ~IGIDataSourceGrabbingThread();
 
   /**
   * \see IGITimerBasedThread::OnTimeoutImpl()

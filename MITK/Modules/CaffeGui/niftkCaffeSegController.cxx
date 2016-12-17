@@ -19,6 +19,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QFuture>
+#include <QFutureWatcher>
 #include <QtConcurrentRun>
 #include <QMessageBox>
 
@@ -45,6 +46,7 @@ public:
   bool                              m_IsUpdatingManually;
   QMutex                            m_Lock;
   QFuture<void>                     m_BackgroundProcess;
+  QFutureWatcher<void>              m_BackgroundProcessWatcher;
 
   niftk::CaffeFCNSegmentor::Pointer m_Segmentors[2];
   mitk::DataNode*                   m_DataNodes[2];
@@ -88,6 +90,10 @@ CaffeSegController::~CaffeSegController()
   Q_D(CaffeSegController);
   QMutexLocker locker(&d->m_Lock);
 
+  bool ok = disconnect(&d->m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
+  assert(ok);
+  d->m_BackgroundProcessWatcher.waitForFinished();
+
   for (int i = 0; i < 2; i++)
   {
     if (d->m_SegmentedNodes[i].IsNotNull())
@@ -117,6 +123,7 @@ void CaffeSegController::SetupGUI(QWidget* parent)
   connect(d->m_GUI, SIGNAL(OnDoItNowPressed()), this, SLOT(OnDoItNowPressed()));
   connect(d->m_GUI, SIGNAL(OnManualUpdateClicked(bool)), this, SLOT(OnManualUpdateClicked(bool)));
   connect(d->m_GUI, SIGNAL(OnAutomaticUpdateClicked(bool)), this, SLOT(OnAutomaticUpdateClicked(bool)));
+  connect(&d->m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
 }
 
 
@@ -204,7 +211,6 @@ void CaffeSegController::OnAutomaticUpdateClicked(bool isChecked)
 void CaffeSegController::OnDoItNowPressed()
 {
   Q_D(CaffeSegController);
-  QMutexLocker locker(&d->m_Lock);
 
   if (d->m_IsUpdatingManually)
   {
@@ -217,7 +223,6 @@ void CaffeSegController::OnDoItNowPressed()
 void CaffeSegController::Update()
 {
   Q_D(CaffeSegController);
-  QMutexLocker locker(&d->m_Lock);
 
   if (!d->m_IsUpdatingManually)
   {
@@ -334,10 +339,10 @@ void CaffeSegController::OnRightSelectionChanged(const mitk::DataNode* node)
 void CaffeSegController::InternalUpdate()
 {
   Q_D(CaffeSegController);
-  QMutexLocker locker(&d->m_Lock);
 
   if (!d->m_BackgroundProcess.isRunning())
   {
+    QMutexLocker locker(&d->m_Lock);
     d->m_BackgroundProcess = QtConcurrent::run(this, &niftk::CaffeSegController::InternalUpdateBackground);
   }
 }
@@ -349,7 +354,6 @@ void CaffeSegController::InternalUpdateBackground()
   Q_D(CaffeSegController);
   QMutexLocker locker(&d->m_Lock);
 
-#pragma omp for schedule(static,1)
   for (int i = 0; i < 2; i++)
   {
     if (   d->m_Segmentors[i].IsNotNull()
@@ -365,7 +369,15 @@ void CaffeSegController::InternalUpdateBackground()
       }
     }
   }
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
+}
+
+
+//-----------------------------------------------------------------------------
+void CaffeSegController::OnBackgroundProcessFinished()
+{
+  Q_D(CaffeSegController);
+
+  // Nothing to do right now - placeholder.
 }
 
 } // end namespace

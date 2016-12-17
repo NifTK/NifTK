@@ -24,19 +24,14 @@ IGITimerBasedThread::IGITimerBasedThread(QObject *parent) : QThread(parent)
 , m_Timer(NULL)
 {
   this->setObjectName("IGITimerBasedThread");
-  this->m_TimerInterval = 100;
+  this->m_TimerInterval = 40;
 }
 
 
 //-----------------------------------------------------------------------------
 IGITimerBasedThread::~IGITimerBasedThread()
 {
-  if (m_Timer != NULL)
-  {
-    m_Timer->stop();
-    delete m_Timer;
-    m_Timer = NULL;
-  }
+  //this->ForciblyStop();
 }
 
 
@@ -54,6 +49,7 @@ void IGITimerBasedThread::ForciblyStop()
   {
     qDebug() << "Forcibly terminating an IGITimerBasedThread";
     this->terminate();
+    this->wait();
   }
 }
 

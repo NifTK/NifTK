@@ -16,6 +16,7 @@
 #include "deviceimpl.h"
 #include <video/device.h>
 #include <video/sdiinput.h>
+#include <algorithm>
 
 
 static std::ostream& operator<<(std::ostream& os, const SYSTEMTIME& s)
@@ -599,7 +600,7 @@ SDIInput::~SDIInput()
 {
     if (pimpl)
     {
-        assert(wglGetCurrentContext() == pimpl->oglrc);
+        assert(wglGetCurrentContext() == pimpl->oglrc);		
 
         glEndVideoCaptureNV(pimpl->videoslot);
         if (!wglBindVideoCaptureDeviceNV(pimpl->videoslot, 0))

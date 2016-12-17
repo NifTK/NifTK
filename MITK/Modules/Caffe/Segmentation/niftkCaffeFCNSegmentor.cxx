@@ -209,15 +209,25 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
       boost::dynamic_pointer_cast <caffe::MemoryDataLayer<float> >(m_Net->layer_by_name(m_InputLayerName));
 
   cv::Mat wrappedImage = niftk::MitkImageToOpenCVMat(inputImage);
+  cv::Mat tempRGBImage;
+
+  if (wrappedImage.channels() == 4)
+  {
+    cv::cvtColor(wrappedImage, tempRGBImage, CV_BGRA2BGR);
+  }
+  else
+  {
+    tempRGBImage = wrappedImage.clone();
+  }
 
   if (m_IsTransposing)
   {
-    cv::transpose(wrappedImage, m_TransposedInputImage);
+    cv::transpose(tempRGBImage, m_TransposedInputImage);
     cv::resize(m_TransposedInputImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
   }
   else
   {
-    cv::resize(wrappedImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
+    cv::resize(tempRGBImage, m_ResizedInputImage, cv::Size(memoryLayer->width(), memoryLayer->height()));
   }
 
   std::vector<cv::Mat> dv;
@@ -312,6 +322,7 @@ void CaffeFCNSegmentorPrivate::Segment(const mitk::Image::Pointer& inputImage,
   mitk::ImageWriteAccessor writeAccess(outputImage);
   void* vPointer = writeAccess.GetData();
   memcpy(vPointer, m_ResizedOutputImage.data, m_ResizedOutputImage.rows * m_ResizedOutputImage.cols);
+  outputImage->GetVtkImageData()->Modified();
   outputImage->Modified();
 }
 

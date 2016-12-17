@@ -26,7 +26,7 @@ if(MITK_USE_Caffe)
 
   # Microsoft Caffe Windows branch, forked from https://github.com/BVLC/caffe,
   # with Eli's mods (SPIE 2017) merged in, and fixes to get working on Windows, Linux and Mac.
-  set(version "7c758f5630")
+  set(version "a7d36b0b2e")
 
   set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
 

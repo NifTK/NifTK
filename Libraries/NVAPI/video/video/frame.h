@@ -22,8 +22,11 @@
 namespace video
 {
 
-
+#ifdef USE_NV_7
+struct StreamFormat
+#else
 struct LIBVIDEO_DLL_EXPORTS StreamFormat
+#endif
 {
     enum PictureFormat
     {

@@ -61,7 +61,7 @@ protected:
 
   virtual void OnNodeRemoved(const mitk::DataNode* node);
 
-protected slots:
+private slots:
 
   void OnBackgroundProcessFinished();
 
@@ -70,7 +70,7 @@ private:
   QScopedPointer<MaskMergerControllerPrivate> d_ptr;
   Q_DECLARE_PRIVATE(MaskMergerController);
 
-  bool InternalUpdate();
+  bool InternalUpdateBackground();
 
 };
 

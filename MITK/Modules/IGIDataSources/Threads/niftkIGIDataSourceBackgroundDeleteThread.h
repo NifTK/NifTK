@@ -30,7 +30,7 @@ class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceBackgroundDeleteThread : public IG
 {
 public:
   IGIDataSourceBackgroundDeleteThread(QObject *parent, IGICleanableDataSourceI *source);
-  ~IGIDataSourceBackgroundDeleteThread();
+  virtual ~IGIDataSourceBackgroundDeleteThread();
 
   /**
   * \see IGITimerBasedThread::OnTimeoutImpl()

@@ -73,7 +73,9 @@ protected:
 
   virtual void OnNodeRemoved(const mitk::DataNode* node);
 
-protected slots:
+private slots:
+
+  void OnBackgroundProcessFinished();
 
 private:
 

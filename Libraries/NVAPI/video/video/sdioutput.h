@@ -25,7 +25,11 @@ namespace video
 
 
 class SDIOutputImpl;
+#ifdef USE_NV_7
+class SDIOutput
+#else
 class LIBVIDEO_DLL_EXPORTS SDIOutput
+#endif
 {
 protected:
     SDIOutputImpl*      pimpl;

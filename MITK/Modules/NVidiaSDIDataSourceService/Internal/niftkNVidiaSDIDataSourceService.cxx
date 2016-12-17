@@ -721,7 +721,10 @@ void NVidiaSDIDataSourceService::StartCapturing()
   assert(m_Pimpl);
   m_Pimpl->start();
 
-  m_DataGrabbingThread->SetInterval(50); // 20 fps
+  int intervalInMilliseconds = 50; // 20 fps. Matt: "I don't know why Johannes picked 20".
+
+  this->SetTimeStampTolerance(intervalInMilliseconds * 10000000 * 2);
+  m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
   m_DataGrabbingThread->start();
 }
 

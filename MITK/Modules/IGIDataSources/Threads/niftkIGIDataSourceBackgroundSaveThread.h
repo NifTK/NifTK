@@ -30,7 +30,7 @@ class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceBackgroundSaveThread : public IGIT
 {
 public:
   IGIDataSourceBackgroundSaveThread(QObject *parent, IGISaveableDataSourceI *source);
-  ~IGIDataSourceBackgroundSaveThread();
+  virtual ~IGIDataSourceBackgroundSaveThread();
 
   /**
   * \see IGITimerBasedThread::OnTimeoutImpl()
