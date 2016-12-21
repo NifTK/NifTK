@@ -436,23 +436,23 @@ Windows release build:
     - windows, release
 
 
-#Windows 32 bit release build:
-#
-#  stage: build
-#
-#  script:
-#    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-#    - mkdir -p ${sb_dir}
-#    - cd ${sb_dir}
-#    - export BTYPE=Win32
-#    - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
-#    - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - windows-32bit, release
+Windows 32 bit release build:
+
+  stage: build
+
+  script:
+    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - mkdir -p ${sb_dir}
+    - cd ${sb_dir}
+    - export BTYPE=Win32
+    - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
+    - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
+
+  only:
+    - tags
+
+  tags:
+    - windows-32bit, release
 
 
 ##########################################
@@ -531,18 +531,18 @@ Windows release test:
     - windows, release
 
 
-#Windows 32 bit release test:
-#
-#  stage: test
-#
-#  script:
-#    - echo
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - windows-32bit, release
+Windows 32 bit release test:
+
+  stage: test
+
+  script:
+    - echo
+
+  only:
+    - tags
+
+  tags:
+    - windows-32bit, release
 
 
 ##########################################
@@ -741,27 +741,27 @@ Windows release installer:
     - windows, release
 
 
-#Windows 32 bit release installer:
-#
-#  stage: deploy
-#
-#  script:
-#    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-#    - export pb_dir="${sb_dir}/NifTK-build"
-#    - version=${CI_BUILD_TAG}
-#    - cd ${pb_dir}
-#    - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
-#    - ${src_dir}/Utilities/NifTKReleaseDeploy.bat
-#    - installer_file="niftk-${version}-win-7-x86.exe"
-#    - mv niftk-${niftk_version_string}.exe ${installer_file}
-#    - "# Upload the installer image"
-#    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - windows-32bit, release
+Windows 32 bit release installer:
+
+  stage: deploy
+
+  script:
+    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export pb_dir="${sb_dir}/NifTK-build"
+    - version=${CI_BUILD_TAG}
+    - cd ${pb_dir}
+    - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
+    - ${src_dir}/Utilities/NifTKReleaseDeploy.bat
+    - installer_file="niftk-${version}-win-7-x86.exe"
+    - mv niftk-${niftk_version_string}.exe ${installer_file}
+    - "# Upload the installer image"
+    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/
+
+  only:
+    - tags
+
+  tags:
+    - windows-32bit, release
 
 
 ##########################################
@@ -853,18 +853,18 @@ Windows release clean up:
     - windows, release
 
 
-#Windows 32 bit release clean up:
-#
-#  stage: cleanup
-#
-#  script:
-#    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-#    - rm -rf ${sb_dir}
-#
-#  when: always
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - windows-32bit, release
+Windows 32 bit release clean up:
+
+  stage: cleanup
+
+  script:
+    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - rm -rf ${sb_dir}
+
+  when: always
+
+  only:
+    - tags
+
+  tags:
+    - windows-32bit, release
