@@ -75,22 +75,49 @@ echo PATH:                   %PATH%
 
 @echo on
 
-call cmake.exe ^
-    -DCMAKE_BUILD_TYPE:STRING=%BCONF% ^
-    -DDESIRED_QT_VERSION:STRING=4 ^
-    -DOPENCV_WITH_FFMPEG:BOOL=OFF ^
-    -DNIFTK_USE_CUDA:BOOL=OFF ^
-    -DBUILD_TESTING:BOOL=OFF ^
-    -DBUILD_COMMAND_LINE_PROGRAMS:BOOL=ON ^
-    -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=ON ^
-    -DNIFTK_GENERATE_DOXYGEN_HELP:BOOL=ON ^
-    -DBUILD_Python:BOOL=ON ^
-    -DBUILD_CAFFE:BOOL=ON ^
-    -DNIFTK_Apps/NiftyView:BOOL=ON ^
-    -DNIFTK_Apps/NiftyIGI:BOOL=ON ^
-    -DNIFTK_Apps/NiftyMIDAS:BOOL=ON ^
-    -G "%CMAKE_GENERATOR%" "%src_dir%"
-if %ERRORLEVEL% NEQ 0 exit /B 1
+if "%BTYPE%" == "x64" (
+
+  call cmake.exe ^
+      -DCMAKE_BUILD_TYPE:STRING=%BCONF% ^
+      -DDESIRED_QT_VERSION:STRING=4 ^
+      -DOPENCV_WITH_FFMPEG:BOOL=OFF ^
+      -DNIFTK_USE_CUDA:BOOL=OFF ^
+      -DBUILD_TESTING:BOOL=OFF ^
+      -DBUILD_COMMAND_LINE_PROGRAMS:BOOL=ON ^
+      -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=ON ^
+      -DNIFTK_GENERATE_DOXYGEN_HELP:BOOL=ON ^
+      -DBUILD_Python:BOOL=ON ^
+      -DBUILD_CAFFE:BOOL=ON ^
+      -DNIFTK_Apps/NiftyView:BOOL=ON ^
+      -DNIFTK_Apps/NiftyIGI:BOOL=ON ^
+      -DNIFTK_Apps/NiftyMIDAS:BOOL=ON ^
+      -G "%CMAKE_GENERATOR%" "%src_dir%"
+
+  if %ERRORLEVEL% NEQ 0 exit /B 1
+
+) else (
+
+  rem We switch off Python and Caffe for the 32bit build. They are not supported on 32bit.
+
+  call cmake.exe ^
+      -DCMAKE_BUILD_TYPE:STRING=%BCONF% ^
+      -DDESIRED_QT_VERSION:STRING=4 ^
+      -DOPENCV_WITH_FFMPEG:BOOL=OFF ^
+      -DNIFTK_USE_CUDA:BOOL=OFF ^
+      -DBUILD_TESTING:BOOL=OFF ^
+      -DBUILD_COMMAND_LINE_PROGRAMS:BOOL=ON ^
+      -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=ON ^
+      -DNIFTK_GENERATE_DOXYGEN_HELP:BOOL=ON ^
+      -DBUILD_Python:BOOL=OFF ^
+      -DBUILD_CAFFE:BOOL=OFF ^
+      -DNIFTK_Apps/NiftyView:BOOL=ON ^
+      -DNIFTK_Apps/NiftyIGI:BOOL=ON ^
+      -DNIFTK_Apps/NiftyMIDAS:BOOL=ON ^
+      -G "%CMAKE_GENERATOR%" "%src_dir%"
+
+  if %ERRORLEVEL% NEQ 0 exit /B 1
+
+)
 
 %VS_COMMAND% /build %BCONF% /project ALL_BUILD /projectconfig %VS_CONF% %sb_dir%/NIFTK-superbuild.sln | tee %sb_dir%/build.log 2>&1
 if %ERRORLEVEL% NEQ 0 exit /B 2
