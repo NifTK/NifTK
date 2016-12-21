@@ -98,6 +98,13 @@ public:
   /// we may have to manually ask each viewer to re-render.
   void RequestUpdateAll();
 
+  /// \brief Gets the display convention of the viewer.
+  int GetDisplayConvention() const;
+
+  /// \brief Sets the display convention of the viewer.
+  /// This changes the convention of the current viewers and default convention for the new viewers as well.
+  void SetDisplayConvention(int displayConvention);
+
   /// \brief Gets the number of rows of viewers.
   int GetNumberOfRows() const;
 
@@ -406,6 +413,8 @@ private:
   // Widgets
   QToolButton* m_PinButton;
   ctkPopupWidget* m_PopupWidget;
+
+  int m_DisplayConvention;
 
   // This determines the maximum number of viewers.
   static const int m_MaxViewerRows = 5;

@@ -19,13 +19,11 @@
 namespace niftk
 {
 
-/*!
- * \enum WindowOrientation
- * \brief Describes the different types of orientation, axial, sagittal, coronal,
- * that can be achieved in the Drag&Drop Display windows. This is different from
- * the WindowLayout. The orientation might be used to refer to the axis of an image,
- * so an image can ONLY be sampled in AXIAL, SAGITTAL and CORONAL direction.
- */
+/// \enum WindowOrientation
+/// \brief Describes the different types of orientation, axial, sagittal, coronal,
+/// that can be achieved in the Drag&Drop Display windows. This is different from
+/// the WindowLayout. The orientation might be used to refer to the axis of an image,
+/// so an image can ONLY be sampled in AXIAL, SAGITTAL and CORONAL direction.
 enum WindowOrientation
 {
   WINDOW_ORIENTATION_AXIAL = 0,
@@ -34,18 +32,56 @@ enum WindowOrientation
   WINDOW_ORIENTATION_UNKNOWN = 3
 };
 
-/*!
- * \brief The number of the possible orientations.
- */
+/// \brief The number of the possible orientations.
 const int WINDOW_ORIENTATION_NUMBER = 4;
 
-/*!
- * \enum WindowLayout
- * \brief Describes the different render window layouts. So one WindowLayout could have
- * multiple windows of different orientations, but most often will contain either axial,
- * coronal or sagittal. This is different to the WindowLayout as a layout
- * can contain multiple orientations.
- */
+
+/// \enum DisplayConvention
+/// \brief The display convention determines the view point and whether the slice
+///  is mirrored or rotated on the display.
+///
+/// 'Top', 'frontside' and 'rotated' refers to the parameters of `mitk::SlicedGeometry3D::Update()`.
+///
+/// If 'top' is false then the z axis is flipped. If 'frontside' is false then
+/// the x axis is flipped. If 'rotated' is true then the x and the y axes is
+/// flipped. There is no flag to flip only the y axis, but `frontsize == false`
+/// and `rotated == true` together has the same effect.
+// There is a gap between the flag value ranges of the individual orientations,
+// in case new flags would be introduced later, e.g. for swapping the x and y
+// axes that is currently not possible.
+enum DisplayConvention
+{
+  DISPLAY_CONVENTION_SAGITTAL_TOP = 1 << 0,
+  DISPLAY_CONVENTION_SAGITTAL_FRONTSIDE = 1 << 1,
+  DISPLAY_CONVENTION_SAGITTAL_ROTATED = 1 << 2,
+  DISPLAY_CONVENTION_CORONAL_TOP = 1 << 8,
+  DISPLAY_CONVENTION_CORONAL_FRONTSIDE = 1 << 9,
+  DISPLAY_CONVENTION_CORONAL_ROTATED = 1 << 10,
+  DISPLAY_CONVENTION_AXIAL_TOP = 1 << 16,
+  DISPLAY_CONVENTION_AXIAL_FRONTSIDE = 1 << 17,
+  DISPLAY_CONVENTION_AXIAL_ROTATED = 1 << 18,
+};
+
+const int DISPLAY_CONVENTION_RADIO =
+    DISPLAY_CONVENTION_SAGITTAL_TOP | DISPLAY_CONVENTION_SAGITTAL_FRONTSIDE |
+    DISPLAY_CONVENTION_CORONAL_FRONTSIDE |
+    DISPLAY_CONVENTION_AXIAL_ROTATED;
+
+const int DISPLAY_CONVENTION_NEURO =
+    DISPLAY_CONVENTION_SAGITTAL_FRONTSIDE |
+    DISPLAY_CONVENTION_CORONAL_TOP |
+    DISPLAY_CONVENTION_AXIAL_TOP | DISPLAY_CONVENTION_AXIAL_FRONTSIDE | DISPLAY_CONVENTION_AXIAL_ROTATED;
+
+const int DISPLAY_CONVENTION_RADIO_X_FLIPPED =
+    DISPLAY_CONVENTION_SAGITTAL_TOP | DISPLAY_CONVENTION_SAGITTAL_FRONTSIDE |
+    DISPLAY_CONVENTION_AXIAL_FRONTSIDE | DISPLAY_CONVENTION_AXIAL_ROTATED;
+
+
+/// \enum WindowLayout
+/// \brief Describes the different render window layouts. So one WindowLayout could have
+/// multiple windows of different orientations, but most often will contain either axial,
+/// coronal or sagittal. This is different to the WindowLayout as a layout
+/// can contain multiple orientations.
 enum WindowLayout
 {
   WINDOW_LAYOUT_AXIAL = 0,
@@ -67,9 +103,7 @@ enum WindowLayout
 };
 
 
-/*!
- * \brief Returns true if the layout contains only one window, otherwise false.
- */
+/// \brief Returns true if the layout contains only one window, otherwise false.
 inline bool IsSingleWindowLayout(WindowLayout layout)
 {
   return layout == WINDOW_LAYOUT_AXIAL
@@ -79,19 +113,16 @@ inline bool IsSingleWindowLayout(WindowLayout layout)
 }
 
 
-/*!
- * \brief Returns true if the layout contains multiple windows, otherwise false.
- */
+/// \brief Returns true if the layout contains multiple windows, otherwise false.
 inline bool IsMultiWindowLayout(WindowLayout layout)
 {
   return !IsSingleWindowLayout(layout);
 }
 
-/*!
- * \brief The number of the possible window layouts.
- */
+/// \brief The number of the possible window layouts.
 const int WINDOW_LAYOUT_NUMBER = 16;
 
+/// \brief Gets the window layout number from the name of the window layout.
 inline WindowLayout GetWindowLayout(const std::string& windowLayoutName)
 {
   WindowLayout windowLayout = WINDOW_LAYOUT_UNKNOWN;
@@ -160,22 +191,23 @@ inline WindowLayout GetWindowLayout(const std::string& windowLayoutName)
   return windowLayout;
 }
 
-/*!
- * \enum DnDDisplayDropType
- * \brief Describes the different modes that can be used when drag and dropping
- * into the DnD Display window.
- */
+
+/// \enum DnDDisplayDropType
+/// \brief Describes the different modes that can be used when drag and dropping
+/// into the DnD Display window.
 enum DnDDisplayDropType
 {
-  DNDDISPLAY_DROP_SINGLE = 0,   /** This means that multiple nodes are dropped into a single window. */
-  DNDDISPLAY_DROP_MULTIPLE = 1, /** This means that multiple nodes are dropped across multiple windows. */
-  DNDDISPLAY_DROP_ALL = 2       /** This means that multiple nodes are dropped across all windows for a thumbnail effect. */
+  /// This means that multiple nodes are dropped into a single window.
+  DNDDISPLAY_DROP_SINGLE = 0,
+  /// This means that multiple nodes are dropped across multiple windows.
+  DNDDISPLAY_DROP_MULTIPLE = 1,
+  /// This means that multiple nodes are dropped across all windows for a thumbnail effect.
+  DNDDISPLAY_DROP_ALL = 2
 };
 
-/*!
- * \enum DnDDisplayInterpolationType
- * \brief Describes what the interpolation type should be set to when an image is dropped.
- */
+
+/// \enum DnDDisplayInterpolationType
+/// \brief Describes what the interpolation type should be set to when an image is dropped.
 enum DnDDisplayInterpolationType
 {
   DNDDISPLAY_NO_INTERPOLATION,

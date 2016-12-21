@@ -60,6 +60,7 @@ MultiViewerWidget::MultiViewerWidget(
 , m_LayoutForRenderWindows(NULL)
 , m_PinButton(NULL)
 , m_PopupWidget(NULL)
+, m_DisplayConvention(DISPLAY_CONVENTION_RADIO)
 , m_VisibilityManager(visibilityManager)
 , m_RenderingManager(renderingManager)
 , m_SelectedViewerIndex(0)
@@ -277,6 +278,27 @@ void MultiViewerWidget::RequestUpdateAll()
     if (viewer->isVisible())
     {
       viewer->RequestUpdate();
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+int MultiViewerWidget::GetDisplayConvention() const
+{
+  return m_DisplayConvention;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::SetDisplayConvention(int displayConvention)
+{
+  if (displayConvention != m_DisplayConvention)
+  {
+    m_DisplayConvention = displayConvention;
+    for (SingleViewerWidget* viewer: m_Viewers)
+    {
+      viewer->SetDisplayConvention(displayConvention);
     }
   }
 }

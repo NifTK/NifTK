@@ -36,6 +36,7 @@ namespace niftk
 //-----------------------------------------------------------------------------
 SingleViewerWidget::SingleViewerWidget(QWidget* parent, mitk::RenderingManager* renderingManager, const QString& name)
 : QWidget(parent)
+, m_DisplayConvention(DISPLAY_CONVENTION_RADIO)
 , m_GridLayout(NULL)
 , m_MultiWidget(NULL)
 , m_IsBoundTimeGeometryActive(false)
@@ -97,6 +98,24 @@ SingleViewerWidget::~SingleViewerWidget()
 {
   // Release the display interactor.
   this->SetDisplayInteractionsEnabled(false);
+}
+
+
+//-----------------------------------------------------------------------------
+int SingleViewerWidget::GetDisplayConvention() const
+{
+  return m_DisplayConvention;
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerWidget::SetDisplayConvention(int displayConvention)
+{
+  if (displayConvention != m_DisplayConvention)
+  {
+    m_DisplayConvention = displayConvention;
+    m_MultiWidget->SetDisplayConvention(displayConvention);
+  }
 }
 
 
