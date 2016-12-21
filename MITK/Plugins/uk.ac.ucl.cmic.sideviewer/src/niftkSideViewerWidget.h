@@ -94,6 +94,9 @@ public:
   /// \param mainWindow The selected render window of the main display.
   void OnMainWindowChanged(mitk::IRenderWindowPart* renderWindowPart, QmitkRenderWindow* mainWindow);
 
+  /// \brief Gets the viewer contained by this widget.
+  SingleViewerWidget* GetViewer() const;
+
 protected slots:
 
   /// \brief Called when the axial window layout radio button is toggled.
