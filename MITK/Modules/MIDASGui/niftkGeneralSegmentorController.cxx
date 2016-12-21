@@ -1008,6 +1008,17 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
           }
         }
       }
+
+      float lowerThreshold;
+      float upperThreshold;
+      if (segmentationImageNode->GetFloatProperty("general segmentor.lower threshold", lowerThreshold))
+      {
+        d->m_GUI->SetLowerThreshold(lowerThreshold);
+      }
+      if (segmentationImageNode->GetFloatProperty("general segmentor.upper threshold", upperThreshold))
+      {
+        d->m_GUI->SetUpperThreshold(upperThreshold);
+      }
     }
   }
 }
@@ -1248,6 +1259,8 @@ void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnThresholdValueChanged()
 {
+  Q_D(GeneralSegmentorController);
+
   this->UpdateRegionGrowing();
 }
 
@@ -1266,6 +1279,10 @@ void GeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
     double lowerThreshold = d->m_GUI->GetLowerThreshold();
     double upperThreshold = d->m_GUI->GetUpperThreshold();
     bool skipUpdate = !isThresholdingOn;
+
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
+    segmentationNode->SetFloatProperty("general segmentor.lower threshold", lowerThreshold);
+    segmentationNode->SetFloatProperty("general segmentor.upper threshold", upperThreshold);
 
     this->UpdateRegionGrowing(isThresholdingOn, sliceAxis, sliceIndex, lowerThreshold, upperThreshold, skipUpdate);
 

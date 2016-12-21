@@ -88,9 +88,17 @@ public:
   /// The lower threshould is the minimum value of the threshold slider.
   double GetLowerThreshold() const;
 
+  /// \brief Sets that lower threshold.
+  /// The lower threshould is the minimum value of the threshold slider.
+  void SetLowerThreshold(double lowerThreshold);
+
   /// \brief Returns that upper threshold.
   /// The upper threshold is the maximum value of the threshold slider.
   double GetUpperThreshold() const;
+
+  /// \brief Sets that upper threshold.
+  /// The upper threshould is the maximum value of the threshold slider.
+  void SetUpperThreshold(double upperThreshold);
 
 signals:
 
