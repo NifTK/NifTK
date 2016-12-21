@@ -42,6 +42,7 @@
 #include <vtkMitkRectangleProp.h>
 
 #include <vtkSideAnnotation.h>
+
 #include <QmitkRenderWindow.h>
 
 
@@ -1939,33 +1940,27 @@ void MultiWindowWidget::MoveSlice(int windowIndex, int slices, bool restart)
     /// to the slice behind the current one (previous slice), and scrolling down
     /// should go to the slice ahead the current one (next slice).
     ///
-    /// For example, the coronal window shows the patient facing towards us.
-    /// Scrolling up should go to the slice behind, that is the next slice
-    /// towards the patient's back, but this slice is closer to the world origin.
-    /// In sagittal window we see the patient from his left, so scrolling up
-    /// has to go towards his right, that is we are moving away from the world
-    /// origin.
+    /// For example, in radiological convention the coronal window shows the
+    /// patient facing towards us. Scrolling up should go to the slice behind,
+    /// that is the next slice towards the patient's back. In sagittal window we
+    /// see the patient from his left, so scrolling up has to go towards his right.
     ///
-    /// So, even if the plus and minus ones below look kind of arbitrary, they
-    /// are not. However, they assume that the renderer geometries are initialised
-    /// following a certain convention.
+    /// In neurological convention the view point is behind the patient, that
+    /// turns the order of the slices. For example in the coronal window scrolling
+    /// up should go to the next slice towards the patient's face.
     ///
     /// Now we could use the slice navigation controller index here, that would
     /// be probably simpler and more flexible. However, the renderer initialisation
     /// suffered from a few bugs in the past and we could not rely on the SNC indices.
 
-    int upDirection;
-    if (windowIndex == AXIAL)
+    int worldAxis = windowIndex == SAGITTAL ? 0 : windowIndex == CORONAL ? 1 : 2;
+    int upDirection = m_UpDirections[worldAxis];
+
+    if ((worldAxis == 0 && !(m_DisplayConvention & DISPLAY_CONVENTION_SAGITTAL_TOP))
+        || (worldAxis == 1 && !(m_DisplayConvention & DISPLAY_CONVENTION_CORONAL_TOP))
+        || (worldAxis == 2 && !(m_DisplayConvention & DISPLAY_CONVENTION_AXIAL_TOP)))
     {
-      upDirection = -1 * m_UpDirections[2];
-    }
-    else if (windowIndex == SAGITTAL)
-    {
-      upDirection = +1 * m_UpDirections[0];
-    }
-    else if (windowIndex == CORONAL)
-    {
-      upDirection = -1 * m_UpDirections[1];
+      upDirection *= -1;
     }
 
     int nextSlice = slice + upDirection * slices;
