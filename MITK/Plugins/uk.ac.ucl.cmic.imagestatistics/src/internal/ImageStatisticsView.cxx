@@ -145,22 +145,26 @@ void ImageStatisticsView::OnSelectionChanged( berry::IWorkbenchPart::Pointer /*s
     if (nodes.count() > 0)
     {
       m_ImageNode = nodes[0];
-      m_Controls.m_ImageNameLabel->setText(QString(m_ImageNode->GetName().c_str()));
+      m_Controls.m_ImageNameLabel->setText(QString::fromStdString(m_ImageNode->GetName()));
+      m_Controls.m_ImageNameLabel->setToolTip(QString::fromStdString(m_ImageNode->GetName()));
     }
     else
     {
       m_Controls.m_ImageNameLabel->setText("please select an image");
+      m_Controls.m_ImageNameLabel->setToolTip("please select an image");
     }
 
     m_MaskNode = NULL;
     if (nodes.size() > 1)
     {
       m_MaskNode = nodes[1];
-      m_Controls.m_MaskNameLabel->setText(QString(m_MaskNode->GetName().c_str()));
+      m_Controls.m_MaskNameLabel->setText(QString::fromStdString(m_MaskNode->GetName()));
+      m_Controls.m_MaskNameLabel->setToolTip(QString::fromStdString(m_MaskNode->GetName()));
     }
     else
     {
       m_Controls.m_MaskNameLabel->setText("please select an image");
+      m_Controls.m_MaskNameLabel->setToolTip("please select an image");
     }
   }
   else
