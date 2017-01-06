@@ -678,7 +678,7 @@ CentOS 6 release installer:
     - install_tmp_dir="${install_prefix}-tmp"
     - mkdir ${install_tmp_dir}
     - cd ${install_tmp_dir}
-    - tar xfj ${installer_file}
+    - tar xfj ${pb_dir}/${installer_file}
     - cd `ls`
     - install_path=`pwd`
     - cd ../..
