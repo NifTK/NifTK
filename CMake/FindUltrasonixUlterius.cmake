@@ -24,7 +24,8 @@ if(WIN32)
       NAMES ulterius.h
 
       # It's a 32 bit library
-      PATHS "C:/Program Files (x86)/sdk_612/ulterius/inc"
+      PATHS "C:/ultrasonix/sdk_612/ulterius/inc"
+            "C:/Program Files (x86)/sdk_612/ulterius/inc"
             "C:/Program Files (x86)/sdk_6.0.4_(00.036.203)/ulterius/inc"
       )
 
@@ -32,7 +33,8 @@ if(WIN32)
       NAMES ulterius_old
 
       # It's a 32 bit library
-      PATHS "C:/Program Files (x86)/sdk_612/ulterius/lib"
+      PATHS "C:/ultrasonix/sdk_612/ulterius/lib"
+            "C:/Program Files (x86)/sdk_612/ulterius/lib"
             "C:/Program Files (x86)/sdk_6.0.4_(00.036.203)/ulterius/lib"
     )
 
@@ -42,7 +44,7 @@ if(WIN32)
       set(Ultrasonix_ULTERIUS_BIN_DIR "${Ultrasonix_ULTERIUS_LIBRARY_DIR}/../../bin")
 
       get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
-      list(APPEND _additional_search_paths "\"${Ultrasonix_ULTERIUS_BIN_DIR}\"")
+      list(APPEND _additional_search_paths "${Ultrasonix_ULTERIUS_BIN_DIR}")
       set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
 
       set(UltrasonixUlterius_FOUND 1)
