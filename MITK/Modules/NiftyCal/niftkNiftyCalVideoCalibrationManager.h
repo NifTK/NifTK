@@ -35,6 +35,8 @@ namespace niftk
  *
  * This one is not an MITK Service as it is stateful. So, it would
  * be more problematic to have a system-wide service, called from multiple threads.
+ *
+ * It's also a bit large now.
  */
 class NIFTKNIFTYCAL_EXPORT NiftyCalVideoCalibrationManager : public itk::Object
 {
