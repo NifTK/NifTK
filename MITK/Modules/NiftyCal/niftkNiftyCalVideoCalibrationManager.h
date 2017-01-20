@@ -175,8 +175,9 @@ public:
   /**
    * \brief Saves a bunch of standard (from a NifTK perspective)
    * calibration files to the output dir, overwriting existing files.
+   * \param subDirName - sub-directory to save into, gets put under OutputPrefixName.
    */
-  void Save();
+  void Save(const std::string& subDirName);
 
   /**
    * \brief To update the camera to world in mitk::DataStorage so

@@ -19,8 +19,8 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
-#include <niftkIGIDataSourceManager.h>
 #include <niftkNiftyCalVideoCalibrationManager.h>
+#include <QmitkIGIUtils.h>
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -378,7 +378,7 @@ void CameraCalViewPreferencePage::Update()
   QString path = m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, "");
   if (path == "")
   {
-    path = niftk::IGIDataSourceManager::GetDefaultPath();
+    path = GetWritablePath();
   }
   m_Ui->m_OutputDirLineEdit->setText(path);
 }

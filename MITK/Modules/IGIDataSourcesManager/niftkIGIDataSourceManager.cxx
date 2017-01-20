@@ -23,6 +23,7 @@
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
 #include <mitkTimeGeometry.h>
+#include <QmitkIGIUtils.h>
 #include <vtkPNGWriter.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
@@ -136,64 +137,7 @@ bool IGIDataSourceManager::IsPlayingBackAutomatically() const
 //-----------------------------------------------------------------------------
 QString IGIDataSourceManager::GetDefaultPath()
 {
-  QString result;
-  QDir directory;
-
-  QString path;
-  QStringList paths;
-
-  // if the user has configured a per-machine default location for igi data.
-  // if that path exist we use it as a default (prefs from uk_ac_ucl_cmic_igidatasources will override it if necessary).
-  QProcessEnvironment   myEnv = QProcessEnvironment::systemEnvironment();
-  path = myEnv.value(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE, "");
-  directory.setPath(path);
-
-  if (!directory.exists())
-  {
-#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
-    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
-#else
-    paths = QStandardPaths::standardLocations(QStandardPaths::DesktopLocation);
-    assert(paths.size() == 1);
-    path = paths[0];
-#endif
-
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
-    path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
-#else
-    paths = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
-    assert(paths.size() == 1);
-    path = paths[0];
-#endif
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
-    path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-#else
-    paths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
-    assert(paths.size() == 1);
-    path = paths[0];
-#endif
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = QDir::currentPath();
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = "";
-  }
-
-  result = path;
-  return result;
+  return GetWritablePath(IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
 }
 
 
@@ -213,10 +157,7 @@ QString IGIDataSourceManager::GetDirectoryName()
   m_TimeStampGenerator->GetTimeStamp(&seconds, &nanoseconds);
   millis = (igtlUint64)seconds*1000 + nanoseconds/1000000;
 
-  QDateTime dateTime;
-  dateTime.setMSecsSinceEpoch(millis);
-
-  QString formattedTime = dateTime.toString("yyyy.MM.dd_hh-mm-ss-zzz");
+  QString formattedTime = FormatDateTime(millis);
   QString directoryName = baseDirectory + QDir::separator() + formattedTime;
 
   return directoryName;

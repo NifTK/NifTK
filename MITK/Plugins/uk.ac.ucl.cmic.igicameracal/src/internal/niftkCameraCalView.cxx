@@ -28,6 +28,8 @@
 #include <service/event/ctkEventConstants.h>
 
 #include <niftkCoordinateAxesData.h>
+#include <niftkSystemTimeServiceRAII.h>
+#include <QmitkIGIUtils.h>
 
 namespace niftk
 {
@@ -602,7 +604,11 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
 
-    m_Manager->Save();
+    niftk::SystemTimeServiceRAII timeService;
+    niftk::SystemTimeServiceI::TimeType timeStamp = timeService.GetSystemTimeInNanoseconds();
+    niftk::SystemTimeServiceI::TimeType timeStampInMillis = timeStamp / 1000000;
+    QString formattedTime = FormatDateTime(timeStampInMillis);
+    m_Manager->Save(formattedTime.toStdString());
   }
 
   m_Manager->Restart();

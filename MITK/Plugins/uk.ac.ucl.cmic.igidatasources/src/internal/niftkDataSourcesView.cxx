@@ -20,6 +20,7 @@
 #include <service/event/ctkEvent.h>
 #include <service/event/ctkEventConstants.h>
 #include <cassert>
+#include <QmitkIGIUtils.h>
 
 namespace niftk
 {

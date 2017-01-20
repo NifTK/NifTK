@@ -16,6 +16,13 @@
 
 #include <QFile>
 #include <QMessageBox>
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
+#include <QDesktopServices>
+#else
+#include <QStandardPaths>
+#endif
+#include <QProcessEnvironment>
+#include <QDateTime>
 
 #include <igtlStringMessage.h>
 
@@ -263,3 +270,79 @@ mitk::Surface::Pointer MakeAWall ( const int& whichwall, const float& size,
   return surface;
 
 }
+
+
+//-----------------------------------------------------------------------------
+QString GetWritablePath(const char* defaultRecordingDir)
+{
+  QString result;
+  QDir directory;
+
+  QString path;
+  QStringList paths;
+
+  // if the user has configured a per-machine default location for igi data.
+  // if that path exist we use it as a default (prefs from uk_ac_ucl_cmic_igidatasources will override it if necessary).
+  QProcessEnvironment   myEnv = QProcessEnvironment::systemEnvironment();
+  path = myEnv.value(defaultRecordingDir, "");
+  directory.setPath(path);
+
+  if (!directory.exists())
+  {
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
+    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
+#else
+    paths = QStandardPaths::standardLocations(QStandardPaths::DesktopLocation);
+    assert(paths.size() == 1);
+    path = paths[0];
+#endif
+
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
+    path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+#else
+    paths = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
+    assert(paths.size() == 1);
+    path = paths[0];
+#endif
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
+    path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
+#else
+    paths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
+    assert(paths.size() == 1);
+    path = paths[0];
+#endif
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = QDir::currentPath();
+    directory.setPath(path);
+  }
+  if (!directory.exists())
+  {
+    path = "";
+  }
+
+  result = path;
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+QString FormatDateTime(const qint64& timeInMillis)
+{
+  QDateTime dateTime;
+  dateTime.setMSecsSinceEpoch(timeInMillis);
+
+  QString formattedTime = dateTime.toString("yyyy.MM.dd_hh-mm-ss-zzz");
+  return formattedTime;
+}
+

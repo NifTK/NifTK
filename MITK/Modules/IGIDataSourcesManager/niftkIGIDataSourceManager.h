@@ -97,11 +97,6 @@ public:
   void StartUpdateTimer();
 
   /**
-  * \brief Returns a default path, to somewhere writable, like the desktop.
-  */
-  static QString GetDefaultPath();
-
-  /**
    * \brief Gets a suitable directory name from a prefix determined by preferences, and a date-time stamp.
    */
   QString GetDirectoryName();
@@ -113,6 +108,8 @@ public:
   * recording session is recorded into a new sub-directory within this directory.
   */
   void SetDirectoryPrefix(const QString& directoryPrefix);
+
+  static QString GetDefaultPath();
 
   /**
   * \brief Sets the update rate, effectively the number of times

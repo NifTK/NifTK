@@ -30,7 +30,6 @@
 #include <niftkOpenCVImageConversion.h>
 #include <niftkCoordinateAxesData.h>
 #include <niftkMatrixUtilities.h>
-#include <niftkSystemTimeServiceRAII.h>
 
 // NiftyCal
 #include <niftkNiftyCalTypes.h>
@@ -1482,7 +1481,7 @@ void NiftyCalVideoCalibrationManager::LoadCalibrationFromDirectory(const std::st
 
 
 //-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::Save()
+void NiftyCalVideoCalibrationManager::Save(const std::string& subDirName)
 {
   if (m_ImageNode[0].IsNull())
   {
@@ -1494,12 +1493,13 @@ void NiftyCalVideoCalibrationManager::Save()
     mitkThrow() << "Empty output directory name.";
   }
 
-  niftk::SystemTimeServiceRAII timeService;
-  niftk::SystemTimeServiceI::TimeType timeInNanoseconds = timeService.GetSystemTimeInNanoseconds();
-  niftk::SystemTimeServiceI::TimeType timeInMilliseconds = timeInNanoseconds/1000000;
+  if (subDirName.empty())
+  {
+    mitkThrow() << "Empty output sub-directory name.";
+  }
 
   std::ostringstream dirName;
-  dirName << m_OutputPrefixName << niftk::GetFileSeparator() << timeInMilliseconds << niftk::GetFileSeparator();
+  dirName << m_OutputPrefixName << niftk::GetFileSeparator() << subDirName << niftk::GetFileSeparator();
   m_OutputDirName = dirName.str();
 
   MITK_INFO << "Saving calibration to:" << m_OutputDirName << ":";

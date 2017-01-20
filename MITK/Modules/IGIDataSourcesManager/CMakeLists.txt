@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  DEPENDS niftkIGIDataSources
+  DEPENDS niftkIGIDataSources niftkIGIGui
   PACKAGE_DEPENDS Qt4|QtGui Qt5|Gui NiftyLink|OpenIGTLink CTK|CTKWidgets
 )
 
