@@ -46,7 +46,7 @@ public:
   /** Stores the name of the node, not the value of the parameters. */
   static const QString DO_ITERATIVE_NODE_NAME;
   static const QString DO_3D_OPTIMISATION_NODE_NAME;
-  static const QString MINIMUM_VIEWS_NODE_NAME;
+  static const QString NUMBER_VIEWS_NODE_NAME;
   static const QString MODEL_NODE_NAME;
   static const QString SCALEX_NODE_NAME;
   static const QString SCALEY_NODE_NAME;
@@ -61,6 +61,7 @@ public:
   static const QString MINIMUM_NUMBER_POINTS_NODE_NAME;
   static const QString TEMPLATE_IMAGE_NODE_NAME;
   static const QString PREVIOUS_CALIBRATION_DIR_NODE_NAME;
+  static const QString OUTPUT_DIR_NODE_NAME;
 
   CameraCalViewPreferencePage();
   CameraCalViewPreferencePage(const CameraCalViewPreferencePage& other);
@@ -99,6 +100,7 @@ private slots:
   void OnReferencePointsButtonPressed();
   void OnTemplateImageButtonPressed();
   void OnPreviousCalibrationDirButtonPressed();
+  void OnOutputDirButtonPressed();
 
 private:
 

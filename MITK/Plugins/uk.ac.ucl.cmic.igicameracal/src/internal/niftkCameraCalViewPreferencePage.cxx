@@ -19,6 +19,7 @@
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
 
+#include <niftkIGIDataSourceManager.h>
 #include <niftkNiftyCalVideoCalibrationManager.h>
 
 #include <QMessageBox>
@@ -28,7 +29,7 @@ namespace niftk
 {
 const QString CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME("iterative");
 const QString CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME("optimise in 3D");
-const QString CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME("minimum number of views");
+const QString CameraCalViewPreferencePage::NUMBER_VIEWS_NODE_NAME("required number of views");
 const QString CameraCalViewPreferencePage::MODEL_NODE_NAME("3D model points");
 const QString CameraCalViewPreferencePage::SCALEX_NODE_NAME("scale factor in x to resize image");
 const QString CameraCalViewPreferencePage::SCALEY_NODE_NAME("scale factor in y to resize image");
@@ -43,6 +44,7 @@ const QString CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME("reference
 const QString CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME("minimum number of points");
 const QString CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME("template image");
 const QString CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME("previous calibration directory");
+const QString CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME("output directory");
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
@@ -119,6 +121,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   ok = connect(m_Ui->m_TemplateImagePushButton, SIGNAL(pressed()), this, SLOT(OnTemplateImageButtonPressed()));
   assert(ok);
   ok = connect(m_Ui->m_PreviousCalibrationDirToolButton, SIGNAL(pressed()), this, SLOT(OnPreviousCalibrationDirButtonPressed()));
+  assert(ok);
+  ok = connect(m_Ui->m_OutputDirToolButton, SIGNAL(pressed()), this, SLOT(OnOutputDirButtonPressed()));
   assert(ok);
   ok = connect(m_Ui->m_IterativeCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnDoIterativeChecked(bool)));
   assert(ok);
@@ -308,12 +312,25 @@ void CameraCalViewPreferencePage::OnPreviousCalibrationDirButtonPressed()
 
 
 //-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnOutputDirButtonPressed()
+{
+  QString dirName = QFileDialog::getExistingDirectory(m_Control,
+      tr("Output Directory"), "");
+
+  if (!dirName.isEmpty())
+  {
+    m_Ui->m_OutputDirLineEdit->setText(dirName);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool CameraCalViewPreferencePage::PerformOk()
 {
   m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME, m_Ui->m_IterativeCheckBox->isChecked());
   m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME, m_Ui->m_Do3DOptimisationCheckBox->isChecked());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_NODE_NAME, m_Ui->m_3DModelLineEdit->text());
-  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME, m_Ui->m_MinimumViewsSpinBox->value());
+  m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::NUMBER_VIEWS_NODE_NAME, m_Ui->m_NumberViewsSpinBox->value());
   m_CameraCalViewPreferencesNode->PutDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, m_Ui->m_ScaleImageInXSpinBox->value());
   m_CameraCalViewPreferencesNode->PutDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, m_Ui->m_ScaleImageInYSpinBox->value());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, m_Ui->m_GridPointsInXSpinBox->value());
@@ -327,6 +344,7 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME, m_Ui->m_MinPointsSpinBox->value());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME, m_Ui->m_TemplateImageLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME, m_Ui->m_PreviousCalibrationDirLineEdit->text());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, m_Ui->m_OutputDirLineEdit->text());
   return true;
 }
 
@@ -343,7 +361,7 @@ void CameraCalViewPreferencePage::Update()
   m_Ui->m_IterativeCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoIterative));
   m_Ui->m_Do3DOptimisationCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation));
   m_Ui->m_3DModelLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, ""));
-  m_Ui->m_MinimumViewsSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating));
+  m_Ui->m_NumberViewsSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::NUMBER_VIEWS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating));
   m_Ui->m_ScaleImageInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorX));
   m_Ui->m_ScaleImageInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorY));
   m_Ui->m_GridPointsInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeX));
@@ -357,7 +375,12 @@ void CameraCalViewPreferencePage::Update()
   m_Ui->m_HandEyeComboBox->setCurrentIndex(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)));
   m_Ui->m_MinPointsSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints));
   m_Ui->m_TemplateImageLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME, ""));
-  m_Ui->m_PreviousCalibrationDirLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME, ""));
+  QString path = m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, "");
+  if (path == "")
+  {
+    path = niftk::IGIDataSourceManager::GetDefaultPath();
+  }
+  m_Ui->m_OutputDirLineEdit->setText(path);
 }
 
 } // end namespace

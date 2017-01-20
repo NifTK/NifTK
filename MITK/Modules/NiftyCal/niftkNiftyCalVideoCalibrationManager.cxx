@@ -51,7 +51,7 @@ namespace niftk
 
 const bool                NiftyCalVideoCalibrationManager::DefaultDoIterative(false);
 const bool                NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation(false);
-const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating(5);
+const unsigned int        NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating(10);
 const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorX(1);
 const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorY(1);
 const unsigned int        NiftyCalVideoCalibrationManager::DefaultGridSizeX(14);
@@ -73,8 +73,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_ReferenceTrackingTransformNode(nullptr)
 , m_DoIterative(NiftyCalVideoCalibrationManager::DefaultDoIterative)
 , m_Do3DOptimisation(NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation)
-, m_MinimumNumberOfSnapshotsForCalibrating(
-    NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating)
+, m_NumberOfSnapshotsForCalibrating(NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating)
 , m_ScaleFactorX(NiftyCalVideoCalibrationManager::DefaultScaleFactorX)
 , m_ScaleFactorY(NiftyCalVideoCalibrationManager::DefaultScaleFactorY)
 , m_GridSizeX(NiftyCalVideoCalibrationManager::DefaultGridSizeX)

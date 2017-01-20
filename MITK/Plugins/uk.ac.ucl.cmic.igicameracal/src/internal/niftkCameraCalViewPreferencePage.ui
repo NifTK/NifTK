@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_9">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
@@ -131,17 +131,17 @@
       </layout>
      </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="m_MinimumViewsLabel">
+      <widget class="QLabel" name="m_NumberViewsLabel">
        <property name="toolTip">
         <string>The minimum before camera calibration starts.</string>
        </property>
        <property name="text">
-        <string>minimum number of views:</string>
+        <string>number of views</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QSpinBox" name="m_MinimumViewsSpinBox">
+      <widget class="QSpinBox" name="m_NumberViewsSpinBox">
        <property name="toolTip">
         <string>The minimum before camera calibration starts.</string>
        </property>
@@ -150,6 +150,9 @@
        </property>
        <property name="singleStep">
         <number>2</number>
+       </property>
+       <property name="value">
+        <number>10</number>
        </property>
       </widget>
      </item>
@@ -400,6 +403,34 @@
        </item>
        <item>
         <widget class="QToolButton" name="m_ModelToTrackerToolButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="15" column="0">
+      <widget class="QLabel" name="m_OutputDirLabel">
+       <property name="toolTip">
+        <string>The minimum before camera calibration starts.</string>
+       </property>
+       <property name="text">
+        <string>output directory:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="15" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_9">
+       <item>
+        <widget class="QLineEdit" name="m_OutputDirLineEdit">
+         <property name="toolTip">
+          <string>Plain text file containing point id and 3D (x, y, z) coordinates, one point per line.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_OutputDirToolButton">
          <property name="text">
           <string>...</string>
          </property>

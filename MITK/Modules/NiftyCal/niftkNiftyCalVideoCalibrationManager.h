@@ -36,7 +36,6 @@ namespace niftk
  * This one is not an MITK Service as it is stateful. So, it would
  * be more problematic to have a system-wide service, called from multiple threads.
  *
- * It's also a bit large now.
  */
 class NIFTKNIFTYCAL_EXPORT NiftyCalVideoCalibrationManager : public itk::Object
 {
@@ -63,7 +62,7 @@ public:
 
   const static bool                DefaultDoIterative;
   const static bool                DefaultDo3DOptimisation;
-  const static unsigned int        DefaultMinimumNumberOfSnapshotsForCalibrating;
+  const static unsigned int        DefaultNumberOfSnapshotsForCalibrating;
   const static double              DefaultScaleFactorX;
   const static double              DefaultScaleFactorY;
   const static unsigned int        DefaultGridSizeX;
@@ -91,8 +90,8 @@ public:
   itkSetMacro(ReferenceTrackingTransformNode, mitk::DataNode::Pointer);
   itkGetMacro(ReferenceTrackingTransformNode, mitk::DataNode::Pointer);
 
-  itkSetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
-  itkGetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
+  itkSetMacro(NumberOfSnapshotsForCalibrating, unsigned int);
+  itkGetMacro(NumberOfSnapshotsForCalibrating, unsigned int);
 
   itkSetMacro(DoIterative, bool);
   itkGetMacro(DoIterative, bool);
@@ -313,7 +312,7 @@ private:
   // Data from preferences.
   bool                                           m_DoIterative;
   bool                                           m_Do3DOptimisation;
-  unsigned int                                   m_MinimumNumberOfSnapshotsForCalibrating;
+  unsigned int                                   m_NumberOfSnapshotsForCalibrating;
   std::string                                    m_ModelFileName;
   double                                         m_ScaleFactorX;
   double                                         m_ScaleFactorY;

@@ -110,7 +110,6 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
     connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUnGrabButtonPressed()));
     connect(m_Controls->m_ClearButton, SIGNAL(pressed()), this, SLOT(OnClearButtonPressed()));
-    connect(m_Controls->m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
 
     // Hook up combo boxes, so we know when user changes node
     connect(m_Controls->m_LeftCameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
@@ -120,7 +119,6 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
 
     // Start these up as disabled, until we have enough images to calibrate.
     m_Controls->m_UndoButton->setEnabled(false);
-    m_Controls->m_SaveButton->setEnabled(false);
     m_Controls->m_ClearButton->setEnabled(false);
 
     // Create manager, before we retrieve preferences which will populate it.
@@ -174,14 +172,11 @@ void CameraCalView::SetButtonsEnabled(bool isEnabled)
   {
     m_Controls->m_ClearButton->setEnabled(m_Manager->GetNumberOfSnapshots() > 0);
     m_Controls->m_UndoButton->setEnabled(m_Manager->GetNumberOfSnapshots() > 0);
-    m_Controls->m_SaveButton->setEnabled(m_Manager->GetNumberOfSnapshots()
-                                         >= m_Manager->GetMinimumNumberOfSnapshotsForCalibrating());
   }
   else
   {
     m_Controls->m_ClearButton->setEnabled(isEnabled);
     m_Controls->m_UndoButton->setEnabled(isEnabled);
-    m_Controls->m_SaveButton->setEnabled(isEnabled);
   }
 }
 
@@ -199,7 +194,7 @@ void CameraCalView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    m_Manager->SetMinimumNumberOfSnapshotsForCalibrating(prefs->GetInt(CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating));
+    m_Manager->SetNumberOfSnapshotsForCalibrating(prefs->GetInt(CameraCalViewPreferencePage::NUMBER_VIEWS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating));
 
     std::string fileName = prefs->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, "").toStdString();
     if (!fileName.empty())
@@ -238,6 +233,12 @@ void CameraCalView::RetrievePreferenceValues()
     {
       QDir dirName(QString::fromStdString(calibrationDir));
       m_Manager->LoadCalibrationFromDirectory(dirName.absolutePath().toStdString());
+    }
+
+    std::string outputDir = prefs->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, "").toStdString();
+    if (!outputDir.empty())
+    {
+      m_Manager->SetOutputDirName(outputDir);
     }
 
     m_Manager->SetCalibrationPattern(
@@ -474,6 +475,11 @@ void CameraCalView::OnBackgroundGrabProcessFinished()
 
   if (successfullyGrabbed)
   {
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
+    m_Controls->m_ImageLabel->setPixmap(image);
+    m_Controls->m_ImageLabel->show();
+
+    // try calibrating - might not have enough images yet.
     this->Calibrate();
   }
   else
@@ -493,8 +499,7 @@ void CameraCalView::OnBackgroundGrabProcessFinished()
 //-----------------------------------------------------------------------------
 void CameraCalView::Calibrate()
 {
-  if (m_Manager->GetNumberOfSnapshots()
-      >= m_Manager->GetMinimumNumberOfSnapshotsForCalibrating())
+  if (m_Manager->GetNumberOfSnapshots() == m_Manager->GetNumberOfSnapshotsForCalibrating())
   {
     if (m_Manager->GetModelFileName().empty())
     {
@@ -519,9 +524,6 @@ void CameraCalView::Calibrate()
   }
   else
   {
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
-    m_Controls->m_ImageLabel->setPixmap(image);
-    m_Controls->m_ImageLabel->show();
     m_Controls->m_ProjectionErrorValue->setText("Too few images.");
   }
 }
@@ -571,7 +573,7 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
   if (m_BackgroundCalibrateProcess.isCanceled()
       || m_BackgroundCalibrateProcess.resultCount() == 0)
   {
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/red-cross-300px.png");
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/thumb-down-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
 
@@ -587,9 +589,11 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
     double rms = m_BackgroundCalibrateProcessWatcher.result();
     m_Controls->m_ProjectionErrorValue->setText(tr("%1 pixels (%2 images).").arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
 
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
+
+    m_Manager->Save();
   }
 
   this->SetButtonsEnabled(true);
@@ -611,25 +615,5 @@ void CameraCalView::OnUnGrabButtonPressed()
     this->SetButtonsEnabled(true);
   }
 }
-
-
-//-----------------------------------------------------------------------------
-void CameraCalView::OnSaveButtonPressed()
-{
-  // should not be able to call/click here if it's still running.
-  assert(!m_BackgroundGrabProcess.isRunning());
-  assert(!m_BackgroundCalibrateProcess.isRunning());
-
-  QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Output Directory"),
-                                                  "",
-                                                  QFileDialog::ShowDirsOnly
-                                                  | QFileDialog::DontResolveSymlinks);
-  if (!dir.isEmpty())
-  {
-    m_Manager->SetOutputDirName(dir.toStdString());
-    m_Manager->Save();
-  }
-}
-
 
 } // end namespace
