@@ -68,13 +68,13 @@ if(BUILD_NiftyIGI)
     ICPReg
     OpenCV
     SurfRecon
-    NiftyCal
     NDITrackers
     IGI
     IGIOverlayEditor
     IGIGui
     IGIServices
     IGIDataSources
+    NiftyCal
 
     # Notice how the IGIDataSourcesManager does NOT know about
     # Each data source. The interface is defined in IGIDataSources (above)

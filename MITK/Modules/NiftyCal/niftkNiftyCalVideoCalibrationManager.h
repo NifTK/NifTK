@@ -129,8 +129,8 @@ public:
   void SetModelFileName(const std::string& fileName);
   itkGetMacro(ModelFileName, std::string);
 
-  void SetOutputDirName(const std::string& dirName);
-  itkGetMacro(OutputDirName, std::string);
+  void SetOutputPrefixName(const std::string& dirName);
+  itkGetMacro(OutputPrefixName, std::string);
 
   void SetReferenceDataFileNames(const std::string& imageFileName,
                                  const std::string& pointsFileName);
@@ -321,6 +321,7 @@ private:
   CalibrationPatterns                            m_CalibrationPattern;
   HandEyeMethod                                  m_HandeyeMethod;
   std::string                                    m_TagFamily;
+  std::string                                    m_OutputPrefixName;
   std::string                                    m_OutputDirName;
   std::string                                    m_ModelToTrackerFileName;
   std::string                                    m_ReferenceImageFileName;

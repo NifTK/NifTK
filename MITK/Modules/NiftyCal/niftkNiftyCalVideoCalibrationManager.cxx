@@ -30,6 +30,7 @@
 #include <niftkOpenCVImageConversion.h>
 #include <niftkCoordinateAxesData.h>
 #include <niftkMatrixUtilities.h>
+#include <niftkSystemTimeServiceRAII.h>
 
 // NiftyCal
 #include <niftkNiftyCalTypes.h>
@@ -320,14 +321,14 @@ void NiftyCalVideoCalibrationManager::SetModelToTrackerFileName(
 
 
 //-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::SetOutputDirName(const std::string& dirName)
+void NiftyCalVideoCalibrationManager::SetOutputPrefixName(const std::string& dirName)
 {
   if (dirName.empty())
   {
     mitkThrow() << "Empty output directory name.";
   }
 
-  m_OutputDirName = (dirName + niftk::GetFileSeparator());
+  m_OutputPrefixName = (dirName + niftk::GetFileSeparator());
   this->Modified();
 }
 
@@ -1488,12 +1489,25 @@ void NiftyCalVideoCalibrationManager::Save()
     mitkThrow() << "Left image should never be NULL.";
   }
 
-  if (m_OutputDirName.empty())
+  if (m_OutputPrefixName.empty())
   {
     mitkThrow() << "Empty output directory name.";
   }
 
+  niftk::SystemTimeServiceRAII timeService;
+  niftk::SystemTimeServiceI::TimeType timeInNanoseconds = timeService.GetSystemTimeInNanoseconds();
+  niftk::SystemTimeServiceI::TimeType timeInMilliseconds = timeInNanoseconds/1000000;
+
+  std::ostringstream dirName;
+  dirName << m_OutputPrefixName << niftk::GetFileSeparator() << timeInMilliseconds << niftk::GetFileSeparator();
+  m_OutputDirName = dirName.str();
+
   MITK_INFO << "Saving calibration to:" << m_OutputDirName << ":";
+
+  if (!niftk::CreateDirAndParents(m_OutputDirName))
+  {
+    mitkThrow() << "Failed to create directory:" << m_OutputDirName;
+  }
 
   niftk::SaveNifTKIntrinsics(m_Intrinsic[0], m_Distortion[0], m_OutputDirName + "calib.left.intrinsic.txt");
   this->SaveImages("calib.left.images.", m_OriginalImages[0]);

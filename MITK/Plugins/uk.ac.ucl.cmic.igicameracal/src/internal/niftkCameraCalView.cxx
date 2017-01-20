@@ -238,7 +238,7 @@ void CameraCalView::RetrievePreferenceValues()
     std::string outputDir = prefs->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, "").toStdString();
     if (!outputDir.empty())
     {
-      m_Manager->SetOutputDirName(outputDir);
+      m_Manager->SetOutputPrefixName(outputDir);
     }
 
     m_Manager->SetCalibrationPattern(
@@ -596,7 +596,7 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
     {
       message.append("s)"); // plural
     }
-    m_Controls->m_ProjectionErrorValue->setText(tr(message).arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
+    m_Controls->m_ProjectionErrorValue->setText(tr(message.toStdString().c_str()).arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
 
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
