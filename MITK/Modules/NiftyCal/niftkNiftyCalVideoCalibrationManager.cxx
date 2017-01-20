@@ -1065,6 +1065,10 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   tmpRMS(0, 0) = 0;
   tmpRMS(1, 0) = 0;
 
+  cv::Point2d sensorDimensions;
+  sensorDimensions.x = 1;
+  sensorDimensions.y = 1;
+
   if (m_ImageNode[0].IsNull())
   {
     mitkThrow() << "Left image should never be NULL.";
@@ -1133,27 +1137,75 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   }
   else
   {
-    rms = niftk::ZhangMonoCameraCalibration(
-      m_ModelPoints,
-      m_Points[0],
-      m_ImageSize,
-      m_Intrinsic[0],
-      m_Distortion[0],
-      m_Rvecs[0],
-      m_Tvecs[0]
-      );
+    if (m_Points[0].size() == 1)
+    {
+      cv::Mat rvecLeft;
+      cv::Mat tvecLeft;
+
+      rms = niftk::TsaiMonoCameraCalibration(m_ModelPoints,
+                                             *(m_Points[0].begin()),
+                                             m_ImageSize,
+                                             sensorDimensions,
+                                             m_Intrinsic[0],
+                                             m_Distortion[0],
+                                             rvecLeft,
+                                             tvecLeft
+                                            );
+
+      m_Rvecs[0].clear();
+      m_Tvecs[0].clear();
+
+      m_Rvecs[0].push_back(rvecLeft);
+      m_Tvecs[0].push_back(tvecLeft);
+    }
+    else
+    {
+      rms = niftk::ZhangMonoCameraCalibration(
+        m_ModelPoints,
+        m_Points[0],
+        m_ImageSize,
+        m_Intrinsic[0],
+        m_Distortion[0],
+        m_Rvecs[0],
+        m_Tvecs[0]
+        );
+    }
 
     if (m_ImageNode[1].IsNotNull())
     {
-      niftk::ZhangMonoCameraCalibration(
-        m_ModelPoints,
-        m_Points[1],
-        m_ImageSize,
-        m_Intrinsic[1],
-        m_Distortion[1],
-        m_Rvecs[1],
-        m_Tvecs[1]
-        );
+      if (m_Points[1].size() == 1)
+      {
+        cv::Mat rvecRight;
+        cv::Mat tvecRight;
+
+        rms = niftk::TsaiMonoCameraCalibration(m_ModelPoints,
+                                               *(m_Points[1].begin()),
+                                               m_ImageSize,
+                                               sensorDimensions,
+                                               m_Intrinsic[1],
+                                               m_Distortion[1],
+                                               rvecRight,
+                                               tvecRight
+                                              );
+
+        m_Rvecs[1].clear();
+        m_Tvecs[1].clear();
+
+        m_Rvecs[1].push_back(rvecRight);
+        m_Tvecs[2].push_back(tvecRight);
+      }
+      else
+      {
+        niftk::ZhangMonoCameraCalibration(
+          m_ModelPoints,
+          m_Points[1],
+          m_ImageSize,
+          m_Intrinsic[1],
+          m_Distortion[1],
+          m_Rvecs[1],
+          m_Tvecs[1]
+          );
+      }
 
       tmpRMS = niftk::StereoCameraCalibration(
         m_ModelPoints,

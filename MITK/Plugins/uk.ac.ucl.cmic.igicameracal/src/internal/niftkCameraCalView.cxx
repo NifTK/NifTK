@@ -587,7 +587,16 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
   else
   {
     double rms = m_BackgroundCalibrateProcessWatcher.result();
-    m_Controls->m_ProjectionErrorValue->setText(tr("%1 pixels (%2 images).").arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
+    QString message("%1 pixels (%2 image");
+    if (m_Manager->GetNumberOfSnapshots() == 1)
+    {
+      message.append(")"); // singular
+    }
+    else
+    {
+      message.append("s)"); // plural
+    }
+    m_Controls->m_ProjectionErrorValue->setText(tr(message).arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
 
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
@@ -596,6 +605,7 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
     m_Manager->Save();
   }
 
+  m_Manager->Restart();
   this->SetButtonsEnabled(true);
 }
 
