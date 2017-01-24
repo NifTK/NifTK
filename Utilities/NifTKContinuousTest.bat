@@ -14,7 +14,7 @@ rem The script runs the test for a NifTK release mode build.
 rem Enable command extensions to allow checking exit status of commands.
 setlocal EnableExtensions
 
-set "CMAKE_DIR=c:/CMake/CMake-3.6.3"
+set "CMAKE_DIR=c:/CMake/CMake-3.7.2"
 
 echo CMake folder:           %CMAKE_DIR%
 echo Project build folder:   %pb_dir%
