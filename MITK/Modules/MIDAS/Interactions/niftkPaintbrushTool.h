@@ -70,8 +70,9 @@ public:
 
   /// \brief Constants that identify the data needed for the morphological edit tools.
   /// They should be used for indexing the vector of working data.
-  enum
+  enum WorkingImage
   {
+    SEGMENTATION,
     EROSIONS_ADDITIONS,
     EROSIONS_SUBTRACTIONS,
     DILATIONS_ADDITIONS,

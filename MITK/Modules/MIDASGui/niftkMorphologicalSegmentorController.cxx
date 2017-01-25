@@ -249,6 +249,8 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     // Set working data. Compare with MIDASGeneralSegmentorView.
     // Note the order:
     //
+    // 0. The Zeroth image is the segmentation image itself. Although it is not used by the paintbrush tool,
+    //    this is assumed by the image selector widget.
     // 1. The First image is the "Additions" image for erosions, that we can manually add data/voxels to.
     // 2. The Second image is the "Subtractions" image for erosions, that is used for connection breaker.
     // 3. The Third image is the "Additions" image for dilations, that we can manually add data/voxels to.
@@ -264,7 +266,8 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     // MORPH_EDITS_DILATIONS_SUBTRACTIONS
     // MORPH_EDITS_DILATIONS_ADDITIONS
 
-    std::vector<mitk::DataNode*> workingData(4);
+    std::vector<mitk::DataNode*> workingData(5);
+    workingData[PaintbrushTool::SEGMENTATION] = newSegmentation;
     workingData[PaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
     workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
     workingData[PaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
@@ -598,7 +601,7 @@ void MorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataN
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
 
   std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
-  if (segmentationNode.IsNotNull() && node == segmentationNode && workingData.size() == 4)
+  if (segmentationNode.IsNotNull() && node == segmentationNode && workingData.size() == 5)
   {
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
 

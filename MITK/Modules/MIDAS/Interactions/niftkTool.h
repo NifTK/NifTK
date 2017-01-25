@@ -75,7 +75,7 @@ public:
 
   /// \brief Constants that identify the data needed for the irregular edit tools.
   /// They should be used to index the vector of working data.
-  enum
+  enum WorkingImage
   {
     SEGMENTATION,
     SEEDS,

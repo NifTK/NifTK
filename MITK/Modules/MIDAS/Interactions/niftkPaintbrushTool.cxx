@@ -463,7 +463,7 @@ int PaintbrushTool::GetDataIndex(bool isLeftMouseButton)
     }
   }
 
-  assert(dataIndex >= 0 && dataIndex <=3);
+  assert(dataIndex != -1);
   return dataIndex;
 }
 
