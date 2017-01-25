@@ -80,6 +80,10 @@ public:
 
   BaseApplication(int argc, char **argv);
 
+  /// Runs the application.
+  /// Like mitk::BaseApplication::run(), but it exits clean after Poco exceptions.
+  int run();
+
 protected:
 
   /// \brief Define command line arguments
