@@ -19,6 +19,7 @@
 #include <sstream>
 
 #include <Poco/Util/HelpFormatter.h>
+#include <Poco/Util/OptionException.h>
 
 #include <QString>
 #include <QStringList>
@@ -37,6 +38,24 @@ BaseApplication::BaseApplication(int argc, char **argv)
   : mitk::BaseApplication(argc, argv)
 {
   this->setOrganizationName("CMIC");
+}
+
+int BaseApplication::run()
+{
+  try {
+    return mitk::BaseApplication::run();
+  }
+  catch (const Poco::Util::UnknownOptionException& exc)
+  {
+    std::cerr << "Unknown command line option: " << exc.message() << std::endl;
+    std::cerr << "Exiting." << std::endl;
+  }
+  catch (const Poco::Exception& exc)
+  {
+    std::cerr << "Unknown error occurred." << std::endl;
+    std::cerr << exc.what() << std::endl;
+    std::cerr << "Exiting." << std::endl;
+  }
 }
 
 void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
