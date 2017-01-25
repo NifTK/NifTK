@@ -287,6 +287,21 @@ bool MorphologicalSegmentorPipelineManager::IsNodeAWorkingImage(const mitk::Data
 
 
 //-----------------------------------------------------------------------------
+bool MorphologicalSegmentorPipelineManager::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) const
+{
+  int tmp;
+  if (node->GetIntProperty("midas.morph.stage", tmp))
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 std::vector<mitk::DataNode*> MorphologicalSegmentorPipelineManager::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode) const
 {
   assert(segmentationNode.IsNotNull());
