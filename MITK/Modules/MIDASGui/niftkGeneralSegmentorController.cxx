@@ -294,27 +294,6 @@ std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingDataFromSegme
 
 
 //-----------------------------------------------------------------------------
-bool GeneralSegmentorController::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
-{
-  bool canRestart = false;
-
-  if (node.IsNotNull() && niftk::IsNodeABinaryImage(node))
-  {
-    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
-    if (parent.IsNotNull())
-    {
-      if (niftk::IsNodeAGreyScaleImage(parent))
-      {
-        canRestart = true;
-      }
-    }
-  }
-
-  return canRestart;
-}
-
-
-//-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 {
   Q_D(GeneralSegmentorController);

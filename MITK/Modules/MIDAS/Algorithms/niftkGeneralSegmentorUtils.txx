@@ -359,6 +359,34 @@ bool ITKSliceDoesHaveSeeds(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+bool ITKImageIsEmpty(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    bool& outputImageIsEmpty
+    )
+{
+  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
+  typedef typename ImageType::RegionType RegionType;
+
+  RegionType region = itkImage->GetLargestPossibleRegion();
+
+  outputImageIsEmpty = true;
+
+  itk::ImageRegionConstIterator<ImageType> iterator(itkImage, region);
+  for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
+  {
+    if (iterator.Get() != 0)
+    {
+      outputImageIsEmpty = false;
+      break;
+    }
+  }
+
+  return outputImageIsEmpty;
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 bool ITKSliceIsEmpty(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     int sliceAxis,

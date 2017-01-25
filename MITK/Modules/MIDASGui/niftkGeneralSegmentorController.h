@@ -168,11 +168,6 @@ protected:
   /// children of the node, looking for the seeds and contours  as described in the class introduction.
   virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) override;
 
-  /// \brief We return true if the segmentation can be "re-started", i.e. you switch between binary images
-  /// in the DataManager, and if the binary image has the correct hidden child nodes, then
-  /// this returns true, indicating that it's a valid "in-progress" segmentation.
-  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
-
   /// \brief Creates the general segmentor widget that holds the GUI components of the view.
   virtual BaseGUI* CreateGUI(QWidget* parent) override;
 

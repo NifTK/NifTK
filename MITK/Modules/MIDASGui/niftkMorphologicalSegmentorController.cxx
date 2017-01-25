@@ -16,6 +16,7 @@
 
 #include <QMessageBox>
 
+#include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
 #include <mitkPlane.h>
 #include <mitkUndoController.h>
@@ -26,6 +27,10 @@
 #include <niftkPaintbrushTool.h>
 
 #include "Internal/niftkMorphologicalSegmentorGUI.h"
+
+/// Two utility functions are used from here to check if an image is empty and to clear it.
+/// They are not specific to the general segmentor.
+#include <niftkGeneralSegmentorUtils.h>
 
 namespace niftk
 {
@@ -119,13 +124,6 @@ mitk::DataNode* MorphologicalSegmentorController::GetSegmentationNodeFromWorking
 
 
 //-----------------------------------------------------------------------------
-bool MorphologicalSegmentorController::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
-{
-  return m_PipelineManager->CanStartSegmentationForBinaryNode(node);
-}
-
-
-//-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
 {
   /// Note:
@@ -162,6 +160,31 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   {
     newSegmentation =  selectedNode;
     isRestarting = true;
+
+    if (!newSegmentation->GetProperty("midas.morph.stage"))
+    {
+      /// The segmentation is started on an already existing binary image, but the pipeline
+      /// has not been performed on this data. The image contents will need to be erased.
+      bool imageIsEmpty;
+      const mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(newSegmentation->GetData());
+      AccessFixedDimensionByItk_1(segmentationImage, ITKImageIsEmpty, 3, imageIsEmpty);
+
+      if (!imageIsEmpty)
+      {
+        QMessageBox::StandardButton answer = QMessageBox::question(this->GetGUI()->GetParent(),
+            "Start morphological segmentation",
+            "You are about to start the morphological segmentation pipeline "
+            "on an existing, non-empty image. The current mask needs to be erased.\n"
+            "\n"
+            "Do you want to start the segmentation and wipe the current image?",
+            QMessageBox::Yes|QMessageBox::No);
+
+        if (answer == QMessageBox::No)
+        {
+          return;
+        }
+      }
+    }
   }
   else
   {
@@ -287,8 +310,23 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     // Set properties, and then the control values to match.
     if (isRestarting)
     {
-      newSegmentation->SetBoolProperty("midas.morph.restarting", true);
-      this->SetControlsFromSegmentationNodeProps();
+      if (newSegmentation->GetProperty("midas.morph.stage"))
+      {
+        /// The morphological segmentor pipeline has already be performed on this data, and the
+        /// pipeline parameters are stored in the data node. We need to relaunch the pipeline
+        /// up to the step where it was finished last time.
+        newSegmentation->SetBoolProperty("midas.morph.restarting", true);
+        this->SetControlsFromSegmentationNodeProps();
+      }
+      else
+      {
+        /// The segmentation is started on an already existing binary image, but the pipeline
+        /// has not been performed on this data. The image contents need to be erased and we
+        /// need to set the initial parameters based on the reference image.
+        mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(newSegmentation->GetData());
+        AccessFixedDimensionByItk(segmentationImage, ITKClearImage, 3);
+        this->SetControlsFromReferenceImage();
+      }
       m_PipelineManager->UpdateSegmentation();
     }
     else

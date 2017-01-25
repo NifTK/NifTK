@@ -148,6 +148,13 @@ bool ITKSliceDoesHaveSeeds(
     int sliceIndex
     );
 
+/// \brief Checks if itkImage is empty and returns true if it is all zero.
+template<typename TPixel, unsigned int VImageDimension>
+bool ITKImageIsEmpty(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    bool& outputImageIsEmpty
+    );
+
 /// \brief Creates a region of interest within itkImage corresponding to the
 /// given slice, and checks if it is empty returning true if it is all zero.
 template<typename TPixel, unsigned int VImageDimension>

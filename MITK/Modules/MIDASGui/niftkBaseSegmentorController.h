@@ -118,8 +118,11 @@ protected:
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
   virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node);
 
-  /// \brief Subclasses decide if they can restart the segmentation for a binary node.
-  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) = 0;
+  /// \brief We return true if the segmentation can either be "re-started", i.e. you switch between binary images
+  /// in the Data Manager, and if the binary image has the correct hidden child nodes, then
+  /// this returns true, indicating that it's a valid "in-progress" segmentation.
+  /// Or, it can be started because a valid binary image is seleted with a valid reference image.
+  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
 
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
   virtual void ApplyDisplayOptions(mitk::DataNode* node);
