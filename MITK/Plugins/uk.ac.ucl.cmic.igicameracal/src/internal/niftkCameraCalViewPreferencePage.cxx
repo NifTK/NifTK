@@ -91,9 +91,10 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_FeaturesComboBox->addItem("OpenCV chess board", QVariant(niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD));
   m_Ui->m_FeaturesComboBox->addItem("OpenCV asymmetric circle grid", QVariant(niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID));
   m_Ui->m_FeaturesComboBox->addItem("April Tags", QVariant(niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS));
-  m_Ui->m_FeaturesComboBox->addItem("Template matching asymmetric circles", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES));
-  m_Ui->m_FeaturesComboBox->addItem("Template matching asymmetric rings", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS));
-
+  m_Ui->m_FeaturesComboBox->addItem("Template matching coplanar asymmetric circles", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES));
+  m_Ui->m_FeaturesComboBox->addItem("Template matching coplanar asymmetric rings", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS));
+  m_Ui->m_FeaturesComboBox->addItem("Template matching non-coplanar asymmetric circles", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES));
+  m_Ui->m_FeaturesComboBox->addItem("Template matching non-coplanar asymmetric rings", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_RINGS));
   m_Ui->m_TagFamilyComboBox->addItem("16h5");
   m_Ui->m_TagFamilyComboBox->addItem("25h7");
   m_Ui->m_TagFamilyComboBox->addItem("25h9");
