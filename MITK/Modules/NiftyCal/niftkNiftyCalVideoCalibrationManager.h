@@ -33,9 +33,12 @@ namespace niftk
  * \class NiftyCalVideoCalibrationManager
  * \brief Manager class to perform video calibration as provided by NiftyCal.
  *
- * This one is not an MITK Service as it is stateful. So, it would
- * be more problematic to have a system-wide service, called from multiple threads.
+ * Note: This class is stateful and not thread safe.
  *
+ * This class was originally intended to work with Zhang's method, which requires
+ * N (typically 5-10) views of a calibration pattern. However, it was modified to
+ * work with Tsai's method (1 view, coplanar or non-coplanar). So, there may
+ * be some residual technical debt to tidy up and simplify.
  */
 class NIFTKNIFTYCAL_EXPORT NiftyCalVideoCalibrationManager : public itk::Object
 {
@@ -301,6 +304,9 @@ private:
    * move the model points to the correct location in space.
    */
   void UpdateDisplayNodes();
+
+  cv::Matx44d GetInitialHandEye(int imageIndex, bool useReference);
+  cv::Matx44d GetInitialModelToWorld(int imageIndex);
 
   typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> > MatrixProperty;
 

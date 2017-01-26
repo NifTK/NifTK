@@ -87,13 +87,16 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 {
   m_ImageNode[0] = nullptr;
   m_ImageNode[1] = nullptr;
-  for (int i = 0; i < 4; i++)                           // 4 different methods - see HandEyeMethod enum
+
+  // 4 different methods - see HandEyeMethod enum
+  for (int i = 0; i < 4; i++)
   {
     m_HandEyeMatrices[0].push_back(cv::Matx44d::eye()); // left
     m_HandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
     m_ReferenceHandEyeMatrices[0].push_back(cv::Matx44d::eye()); // left
     m_ReferenceHandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
   }
+
   m_ModelToWorld = cv::Matx44d::eye();
 
   m_ModelPointsToVisualise = mitk::PointSet::New();
@@ -491,7 +494,7 @@ std::vector<cv::Mat> NiftyCalVideoCalibrationManager::ConvertMatrices(const std:
 
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex, bool useReference)
-{
+{  
   cv::Matx21d residual;
   residual(0, 0) = 0;
   residual(1, 0) = 0;
@@ -499,6 +502,11 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex, bool 
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
+  // This method needs at least 3 camera and tracking matrices,
+  // corresponding to 2 movements, rotating about 2 independent axes.
+  // eg. start, move by Rx, move by Ry = 3 posns.
+
+  // And this method checks the number of tracking and hand matrices.
   cv::Matx44d handEye =
     niftk::CalculateHandEyeUsingTsaisMethod(
       trackingMatrices,
@@ -516,6 +524,8 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex, bool 
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex, bool useReference)
 {
+  // This method itself, can work with only 1 example.
+
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
@@ -540,25 +550,77 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex, bo
 
 
 //-----------------------------------------------------------------------------
+cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialHandEye(int imageIndex, bool useReference)
+{
+  cv::Matx44d handEye;
+  if (m_NumberOfSnapshotsForCalibrating == 1)
+  {
+    if (useReference)
+    {
+      handEye = m_ReferenceHandEyeMatrices[imageIndex][TSAI_1989];
+    }
+    else
+    {
+      handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
+    }
+  }
+  else
+  {
+    if (useReference)
+    {
+      handEye = m_ReferenceHandEyeMatrices[imageIndex][SHAHIDI_2002];
+    }
+    else
+    {
+      handEye = m_HandEyeMatrices[imageIndex][SHAHIDI_2002];
+    }
+  }
+  return handEye;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialModelToWorld(int imageIndex)
+{
+  cv::Matx44d modelToWorld;
+  if (m_NumberOfSnapshotsForCalibrating == 1)
+  {
+    modelToWorld = m_ModelToTracker;
+  }
+  else
+  {
+    modelToWorld = m_ModelToWorld;
+  }
+  return modelToWorld;
+}
+
+
+//-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool useReference)
 {
-  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
+  double reprojectionRMS = 0;
+
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
   // We clone them, so we dont modify the member variables m_Intrinsic, m_Distortion.
   cv::Mat intrinsic = m_Intrinsic[imageIndex].clone();
   cv::Mat distortion = m_Distortion[imageIndex].clone();
 
-  double reprojectionRMS = 0;
+  cv::Matx44d handEye = this->GetInitialModelToWorld(imageIndex);
+  cv::Matx44d modelToWorld = this->GetInitialHandEye(imageIndex, useReference);
 
-  cv::Matx44d handEye = niftk::CalculateHandEyeUsingMaltisMethod(m_ModelPoints,
-                                                                 m_Points[imageIndex],
-                                                                 trackingMatrices,
-                                                                 cameraMatrices,
-                                                                 intrinsic,
-                                                                 distortion,
-                                                                 reprojectionRMS
-                                                                );
+  niftk::CalculateHandEyeUsingMaltisMethod(m_ModelPoints,
+                                           m_Points[imageIndex],
+                                           trackingMatrices,
+                                           intrinsic,
+                                           distortion,
+                                           handEye,
+                                           modelToWorld,
+                                           reprojectionRMS
+                                          );
+
+  // Store optimised result
+  m_HandEyeMatrices[imageIndex][MALTI_2013] = handEye;
 
   std::cout << "Malti 2013, non-linear hand-eye: rms=" << reprojectionRMS << std::endl;
 
@@ -569,19 +631,22 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageIndex, bool useReference)
 {
-  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
-
   double reprojectionRMS = 0;
 
-  cv::Matx44d handEye = niftk::CalculateHandEyeByOptimisingAllExtrinsic(m_ModelPoints,
-                                                                        m_Points[imageIndex],
-                                                                        trackingMatrices,
-                                                                        cameraMatrices,
-                                                                        m_Intrinsic[imageIndex],
-                                                                        m_Distortion[imageIndex],
-                                                                        reprojectionRMS
-                                                                       );
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
+
+  cv::Matx44d handEye = this->GetInitialModelToWorld(imageIndex);
+  cv::Matx44d modelToWorld = this->GetInitialHandEye(imageIndex, useReference);
+
+  niftk::CalculateHandEyeByOptimisingAllExtrinsic(m_ModelPoints,
+                                                  m_Points[imageIndex],
+                                                  trackingMatrices,
+                                                  m_Intrinsic[imageIndex],
+                                                  m_Distortion[imageIndex],
+                                                  handEye,
+                                                  modelToWorld,
+                                                  reprojectionRMS
+                                                 );
 
   std::cout << "Malti 2013, non-linear hand-eye, but with full extrinsic: "
             << "rms=" << reprojectionRMS << std::endl;
@@ -596,27 +661,30 @@ void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d
                                                                      bool useReference
                                                                      )
 {
-  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
-
   double reprojectionRMS = 0;
+
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
   cv::Matx44d stereoExtrinsics = niftk::RotationAndTranslationToMatrix(
         m_LeftToRightRotationMatrix, m_LeftToRightTranslationVector);
 
-  cv::Matx44d handEye = niftk::CalculateHandEyeInStereoByOptimisingAllExtrinsic(m_ModelPoints,
-                                                                                m_Points[0],
-                                                                                m_Intrinsic[0],
-                                                                                m_Distortion[0],
-                                                                                m_Points[1],
-                                                                                m_Intrinsic[1],
-                                                                                m_Distortion[1],
-                                                                                trackingMatrices,
-                                                                                cameraMatrices,
-                                                                                m_Do3DOptimisation,
-                                                                                stereoExtrinsics,
-                                                                                reprojectionRMS
-                                                                               );
+  cv::Matx44d handEye = this->GetInitialModelToWorld(0);
+  cv::Matx44d modelToWorld = this->GetInitialHandEye(0, useReference);
+
+  niftk::CalculateHandEyeInStereoByOptimisingAllExtrinsic(m_ModelPoints,
+                                                          m_Points[0],
+                                                          m_Intrinsic[0],
+                                                          m_Distortion[0],
+                                                          m_Points[1],
+                                                          m_Intrinsic[1],
+                                                          m_Distortion[1],
+                                                          trackingMatrices,
+                                                          m_Do3DOptimisation,
+                                                          handEye,
+                                                          modelToWorld,
+                                                          stereoExtrinsics,
+                                                          reprojectionRMS
+                                                         );
   leftHandEye = handEye;
   rightHandEye = (stereoExtrinsics.inv()) * handEye;
 }
