@@ -63,6 +63,7 @@ void MakeMaskImagesFromStereoVideo::Initialise(std::string directory)
 {
   m_InitOK = false;
   m_Directory = directory;
+  m_OutDirectory = m_Directory + niftk::GetFileSeparator() +  "VideoMasks";
   niftk::LoadTimeStampData(m_TimeStampsFile, m_TimeStampsSet);
   if (m_TimeStampsSet.size() > 0)
   {
@@ -93,6 +94,15 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
     try
     {
       m_Capture = mitk::InitialiseVideoCapture(m_VideoIn, (! m_HaltOnVideoReadFail )); 
+    }
+    catch (std::exception& e)
+    {
+      MITK_ERROR << "Caught exception " << e.what();
+      exit(1);
+    }
+    try
+    {
+      niftk::CreateDirAndParents ( m_OutDirectory );
     }
     catch (std::exception& e)
     {
@@ -151,9 +161,9 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
           {
             MITK_INFO << "Picking contours on frame pair " << framenumber << ", " << framenumber+1 << " [ " << (timeStamp - startTime)/1e9 << " s ], c to make mask image, n for next frame, q to quit";
 
-            std::string leftOutName = boost::lexical_cast<std::string>(timeStamp);
+            std::string leftOutName = m_OutDirectory + niftk::GetFileSeparator() + boost::lexical_cast<std::string>(timeStamp);
             trackerMatcher->GetVideoFrame(framenumber+1, &timeStamp);
-            std::string rightOutName = boost::lexical_cast<std::string>(timeStamp);
+            std::string rightOutName = m_OutDirectory + niftk::GetFileSeparator() + boost::lexical_cast<std::string>(timeStamp);
             bool overWriteLeft = true;
             bool overWriteRight = true;
             key = 0;
