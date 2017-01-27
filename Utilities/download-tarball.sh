@@ -334,7 +334,7 @@ function download_from_sourceforge_git() {
     cd ..
   else
     mkdir $directory
-    git clone git://git.code.sf.net/p/$project_lowercase/$suffix $directory.git
+    git clone git://git.code.sf.net/p/$project_lowercase/$suffix $directory
     cd $directory
     if ! git cat-file -e $version 2> /dev/null
     then
