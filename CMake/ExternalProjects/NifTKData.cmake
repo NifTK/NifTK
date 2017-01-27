@@ -49,12 +49,46 @@ if (BUILD_TESTING)
         GIT_TAG ${proj_VERSION}
       )
     else()
+      set(_download_command
+          # This is a fake download command, but something must be there so that CMake is happy.
+          DOWNLOAD_COMMAND echo Downloading ${proj}...
+      )
+
+      if (NOT EXISTS "${proj_SOURCE}/.git")
+        set(_update_command
+          UPDATE_COMMAND ${GIT_EXECUTABLE} init
+          COMMAND ${GIT_EXECUTABLE} fetch --depth 1 ${proj_LOCATION} ${version_sha1}
+          COMMAND ${GIT_EXECUTABLE} checkout ${version_sha1}
+        )
+      else()
+        # On Windows external projects are re-built even if their version has not changed.
+        # This makes the local NifTKData repository reinitialised and the same commit being
+        # fetched over and over again. Moreover, fetching often fails. To get around this,
+        # we check if the commit has been fetched already, and fetch it again only if it
+        # has not been done yet.
+
+        execute_process(
+          COMMAND ${GIT_EXECUTABLE} cat-file commit ${version_sha1}
+          WORKING_DIRECTORY ${proj_SOURCE}
+          RESULT_VARIABLE _commit_fetched
+          OUTPUT_QUIET
+          ERROR_QUIET
+        )
+        if (NOT ${_commit_fetched} EQUAL 0)
+          set(_update_command
+            UPDATE_COMMAND ${GIT_EXECUTABLE} fetch --depth 1 ${proj_LOCATION} ${version_sha1}
+            COMMAND ${GIT_EXECUTABLE} checkout ${version_sha1}
+          )
+        else()
+          set(_update_command
+            UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${version_sha1}
+          )
+        endif()
+      endif()
+
       set(_download_arguments
-        # This is a fake download command, but something must be there so that CMake is happy.
-        DOWNLOAD_COMMAND echo Downloading ${proj}...
-        UPDATE_COMMAND ${GIT_EXECUTABLE} init
-               COMMAND ${GIT_EXECUTABLE} fetch --depth 1 ${proj_LOCATION} ${version_sha1}
-               COMMAND ${GIT_EXECUTABLE} checkout ${version_sha1}
+        ${_download_command}
+        ${_update_command}
       )
     endif()
 
