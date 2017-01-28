@@ -59,6 +59,8 @@ set(CPP_FILES
   Rendering/niftkCustomVTKAxesActor.cxx
   Rendering/niftkFastPointSetVtkMapper3D.cxx
   Rendering/vtkOpenGLMatrixDrivenCamera.cxx
+  Rendering/vtkSideAnnotation.cxx
+
   Interactions/niftkPointSetUpdate.cxx
   Interactions/niftkAffineTransformDataInteractor3D.cxx
   Interactions/niftkInteractionEventObserverMutex.cxx
