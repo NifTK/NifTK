@@ -554,7 +554,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex, bo
 cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialHandEye(int imageIndex, bool useReference)
 {
   cv::Matx44d handEye;
-  if (m_NumberOfSnapshotsForCalibrating == 1)
+  if (m_TrackingMatrices.size() > 1)
   {
     if (useReference)
     {
@@ -581,16 +581,16 @@ cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialHandEye(int imageIndex, b
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialModelToWorld(int imageIndex)
+cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialModelToWorld()
 {
   cv::Matx44d modelToWorld;
-  if (m_NumberOfSnapshotsForCalibrating == 1)
+  if (m_TrackingMatrices.size() > 1)
   {
-    modelToWorld = m_ModelToTracker;
+    modelToWorld = m_ModelToWorld; // one calculated after averaging
   }
   else
   {
-    modelToWorld = m_ModelToWorld;
+    modelToWorld = m_ModelToTracker; // one loaded from file in preferences.
   }
   return modelToWorld;
 }
@@ -607,7 +607,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool
   cv::Mat intrinsic = m_Intrinsic[imageIndex].clone();
   cv::Mat distortion = m_Distortion[imageIndex].clone();
 
-  cv::Matx44d handEye = this->GetInitialModelToWorld(imageIndex);
+  cv::Matx44d handEye = this->GetInitialModelToWorld();
   cv::Matx44d modelToWorld = this->GetInitialHandEye(imageIndex, useReference);
 
   niftk::CalculateHandEyeUsingMaltisMethod(m_ModelPoints,
@@ -636,7 +636,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageInd
 
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
-  cv::Matx44d handEye = this->GetInitialModelToWorld(imageIndex);
+  cv::Matx44d handEye = this->GetInitialModelToWorld();
   cv::Matx44d modelToWorld = this->GetInitialHandEye(imageIndex, useReference);
 
   niftk::CalculateHandEyeByOptimisingAllExtrinsic(m_ModelPoints,
@@ -669,7 +669,7 @@ void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d
   cv::Matx44d stereoExtrinsics = niftk::RotationAndTranslationToMatrix(
         m_LeftToRightRotationMatrix, m_LeftToRightTranslationVector);
 
-  cv::Matx44d handEye = this->GetInitialModelToWorld(0);
+  cv::Matx44d handEye = this->GetInitialModelToWorld();
   cv::Matx44d modelToWorld = this->GetInitialHandEye(0, useReference);
 
   niftk::CalculateHandEyeInStereoByOptimisingAllExtrinsic(m_ModelPoints,
@@ -1492,8 +1492,14 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   {
     // Don't change the order of these.
     // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
-    m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, false);
-    m_HandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, false);
+    if (m_TrackingMatrices.size() > 1)
+    {
+      m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, false);
+    }
+    else
+    {
+      m_HandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, false);
+    }
     m_HandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0, false);
     if (m_ImageNode[1].IsNull())
     {
@@ -1519,8 +1525,14 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     {
       // Don't change the order of these.
       // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
-      m_ReferenceHandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, true);
-      m_ReferenceHandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, true);
+      if (m_ReferenceTrackingMatrices.size() > 1)
+      {
+        m_ReferenceHandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, true);
+      }
+      else
+      {
+        m_ReferenceHandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, true);
+      }
       m_ReferenceHandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0, true);
       if (m_ImageNode[1].IsNull())
       {
@@ -1531,8 +1543,14 @@ double NiftyCalVideoCalibrationManager::Calibrate()
       {
         // Don't change the order of these.
         // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
-        m_ReferenceHandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, true);
-        m_ReferenceHandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, true);
+        if (m_ReferenceTrackingMatrices.size() > 1)
+        {
+          m_ReferenceHandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, true);
+        }
+        else
+        {
+          m_ReferenceHandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, true);
+        }
         m_ReferenceHandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, true);
 
         DoFullExtrinsicHandEyeInStereo(m_ReferenceHandEyeMatrices[0][NON_LINEAR_EXTRINSIC],

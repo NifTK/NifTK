@@ -308,7 +308,7 @@ private:
   void UpdateDisplayNodes();
 
   cv::Matx44d GetInitialHandEye(int imageIndex, bool useReference);
-  cv::Matx44d GetInitialModelToWorld(int imageIndex);
+  cv::Matx44d GetInitialModelToWorld();
 
   typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> > MatrixProperty;
 

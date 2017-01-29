@@ -151,14 +151,32 @@ QWidget* CameraCalViewPreferencePage::GetQtControl() const
 
 
 //-----------------------------------------------------------------------------
-void CameraCalViewPreferencePage::OnDoIterativeChecked(bool isChecked)
+void CameraCalViewPreferencePage::UpdateReferenceImageVisibility()
 {
-  m_Ui->m_ReferenceImageLabel->setVisible(isChecked);
-  m_Ui->m_ReferenceImageLineEdit->setVisible(isChecked);
-  m_Ui->m_ReferenceImagePushButton->setVisible(isChecked);
-  m_Ui->m_ReferencePointsLabel->setVisible(isChecked);
-  m_Ui->m_ReferencePointsLineEdit->setVisible(isChecked);
-  m_Ui->m_ReferencePointsPushButton->setVisible(isChecked);
+  bool isVisible = false;
+  if (   m_Ui->m_IterativeCheckBox->isChecked()
+      || m_Ui->m_FeaturesComboBox->currentIndex() == niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES
+      || m_Ui->m_FeaturesComboBox->currentIndex() == niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS
+      || m_Ui->m_FeaturesComboBox->currentIndex() == niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES
+      || m_Ui->m_FeaturesComboBox->currentIndex() == niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_RINGS
+      )
+  {
+    isVisible = true;
+  }
+
+  m_Ui->m_ReferenceImageLabel->setVisible(isVisible);
+  m_Ui->m_ReferenceImageLineEdit->setVisible(isVisible);
+  m_Ui->m_ReferenceImagePushButton->setVisible(isVisible);
+  m_Ui->m_ReferencePointsLabel->setVisible(isVisible);
+  m_Ui->m_ReferencePointsLineEdit->setVisible(isVisible);
+  m_Ui->m_ReferencePointsPushButton->setVisible(isVisible);
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnDoIterativeChecked(bool)
+{
+  this->UpdateReferenceImageVisibility();
 }
 
 
@@ -183,6 +201,8 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
     break;
     case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES:
     case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS:
+    case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES:
+    case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_RINGS:
       m_Ui->m_GridSizeLabel->setVisible(true);
       m_Ui->m_GridPointsInXSpinBox->setVisible(true);
       m_Ui->m_ByLabel->setVisible(true);
@@ -190,7 +210,7 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
       m_Ui->m_TagFamilyLabel->setVisible(false);
       m_Ui->m_TagFamilyComboBox->setVisible(false);
       m_Ui->m_MinPointsLabel->setVisible(false);
-      m_Ui->m_MinPointsSpinBox->setVisible(false);
+      m_Ui->m_MinPointsSpinBox->setVisible(false);      
       m_Ui->m_TemplateImageLabel->setVisible(true);
       m_Ui->m_TemplateImageLineEdit->setVisible(true);
       m_Ui->m_TemplateImagePushButton->setVisible(true);
@@ -209,6 +229,7 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
       m_Ui->m_TemplateImagePushButton->setVisible(false);
     break;
   }
+  this->UpdateReferenceImageVisibility();
 }
 
 

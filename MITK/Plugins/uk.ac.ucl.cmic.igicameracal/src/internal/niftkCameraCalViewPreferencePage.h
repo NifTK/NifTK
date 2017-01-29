@@ -108,6 +108,8 @@ private:
   QWidget*                                        m_Control;
   bool                                            m_Initializing;
   berry::IPreferences::Pointer                    m_CameraCalViewPreferencesNode;
+
+  void UpdateReferenceImageVisibility();
 };
 
 } // end namespace
