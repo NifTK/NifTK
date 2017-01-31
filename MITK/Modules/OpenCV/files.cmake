@@ -14,6 +14,7 @@
 
 set(CPP_FILES
   VideoProcessing/mitkBaseVideoProcessor.cxx
+  VideoProcessing/mitkVideoWriter.cxx
   VideoProcessing/mitkMonoVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoVideoProcessorTemplateMethod.cxx
   VideoProcessing/mitkStereoOneTimePointVideoProcessorTemplateMethod.cxx
