@@ -89,14 +89,14 @@ if(BUILD_NiftyIGI)
     ICPRegService
     OIGTLSystemTimeService
     OpenCVVideoDataSourceService
-    QtAudioDataSourceService
-    UltrasonixDataSourceService
-    NDITrackerDataSourceService
-    NiftyLinkDataSourceService
-    NVidiaSDIDataSourceService
-    QtCameraVideoDataSourceService
-    BKMedicalDataSourceService
-    BlackMagicDataSourceService
+#    QtAudioDataSourceService
+#    UltrasonixDataSourceService
+#    NDITrackerDataSourceService
+#    NiftyLinkDataSourceService
+#    NVidiaSDIDataSourceService
+#    QtCameraVideoDataSourceService
+#    BKMedicalDataSourceService
+#    BlackMagicDataSourceService
   )
 
   if(BUILD_CAFFE)
