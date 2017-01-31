@@ -65,8 +65,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
   m_SliceIndex = p.m_SliceIndex;
   m_SliceAxis = p.m_SliceAxis;
-  m_LowerThreshold = static_cast<int>(p.m_LowerThreshold);
-  m_UpperThreshold = static_cast<int>(p.m_UpperThreshold);
+  m_LowerThreshold = static_cast<TPixel>(p.m_LowerThreshold);
+  m_UpperThreshold = static_cast<TPixel>(p.m_UpperThreshold);
   m_EraseFullSlice = p.m_EraseFullSlice;
 }
 
