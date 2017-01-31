@@ -61,10 +61,10 @@ bool SplitVideo::Split(
     return false;
   }
 
-  CvCapture*  capturer;
+  cv::VideoCapture*  capturer;
   std::string videoIn = videoFiles[0];
   MITK_INFO << "trying to open " << videoIn;
-  capturer = cvCreateFileCapture(videoIn.c_str());
+  capturer = mitk::InitialiseVideoCapture(videoIn);
 
   std::ifstream fin(frameMapFiles[0].c_str());
   if ( !fin )
@@ -73,23 +73,21 @@ bool SplitVideo::Split(
     return false;
   }
 
-  cv::Size S = cv::Size((int)cvGetCaptureProperty (capturer, CV_CAP_PROP_FRAME_WIDTH),
-    (int)cvGetCaptureProperty (capturer, CV_CAP_PROP_FRAME_HEIGHT)) ;
-  double fps = (double)cvGetCaptureProperty (capturer, CV_CAP_PROP_FPS);
-  int codec = (int)cvGetCaptureProperty (capturer,CV_CAP_PROP_FOURCC);
+  cv::Size S = cv::Size (static_cast<int> (capturer->get(CV_CAP_PROP_FRAME_WIDTH)),
+    static_cast<int>(capturer->get(CV_CAP_PROP_FRAME_HEIGHT)) );
+  double fps = static_cast<double>(capturer->get(CV_CAP_PROP_FPS));
+  int codec = static_cast<int>(capturer->get(CV_CAP_PROP_FOURCC));
 
   long EXT[] = {codec & 0XFF, (codec & 0XFF00) >> 8, (codec & 0XFF0000) >> 16, (codec & 0XFF000000) >> 24, 0};
   MITK_INFO << codec << " " << EXT[0] << ", " << EXT[1] << ", " << EXT[2] << ", " << EXT[3];
-
 
   std::string outVideoName = videoIn + "." +  boost::lexical_cast<std::string>(startFrame)
     + "-" +  boost::lexical_cast<std::string>(endFrame) + ".avi";
   std::string outLogName = videoIn + "." +  boost::lexical_cast<std::string>(startFrame)
     + "-" +  boost::lexical_cast<std::string>(endFrame) + ".framemap.log";
-  //CvVideoWriter*  writerer = cvCreateVideoWriter(outVideoName.c_str(),codec,fps,S, true);
-  CvVideoWriter*  writerer = cvCreateVideoWriter(outVideoName.c_str(),CV_FOURCC('D','I','V','X'),fps,S, true);
-  //CV_FOURCC('D', 'I', 'V', 'X')
-  //CV_FOURCC('U', '2', '6', '3')
+
+  cv::VideoWriter* writerer = mitk::CreateVideoWriter(outVideoName.c_str(),fps,S);
+
   std::ofstream fout(outLogName.c_str());
 
   std::string line;
@@ -108,7 +106,8 @@ bool SplitVideo::Split(
       linestream >> frameNumber >> sequenceNumber >> channel >> timeStamp;
       if ( !linestream.fail() ) 
       {
-        cv::Mat videoImage = cvQueryFrame ( capturer );
+        cv::Mat videoImage;
+        capturer->read(videoImage);
 
         if ( frameNumber != videoFrameNumber ) 
         {
@@ -120,8 +119,7 @@ bool SplitVideo::Split(
         if ( frameNumber >= startFrame )
         {
           MITK_INFO << "Writing input frame " << frameNumber << " to output Frame " << videoOutFrameNumber;
-          IplImage image(videoImage);
-          cvWriteFrame(writerer,&image);
+          writerer->write(videoImage);
           fout << videoOutFrameNumber << "\t" << sequenceNumber << "\t" << channel << "\t" << timeStamp << std::endl;
           videoOutFrameNumber ++;
         }
@@ -136,7 +134,8 @@ bool SplitVideo::Split(
 
  fout.close();
  fin.close();
- cvReleaseVideoWriter(&writerer);
+ capturer->release();
+ writerer->release();
 
   return isSuccessful;
 }
