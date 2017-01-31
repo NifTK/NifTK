@@ -268,6 +268,17 @@ cv::VideoCapture* InitialiseVideoCapture ( std::string filename , bool ignoreErr
   return capture;
 }
 
+//---------------------------------------------------------------------------
+cv::VideoWriter* CreateVideoWriter ( std::string filename , double framesPerSecond,
+   cv::Size imageSize, int codec, bool isColour )
+{
+  cv::VideoWriter* writer = new cv::VideoWriter (filename, codec, framesPerSecond, imageSize, isColour);
+  if ( ! writer )
+  {
+    mitkThrow() << "Failed to open " << filename << " for video write." << std::endl;
+  }
+  return writer;
+}
 
 //---------------------------------------------------------------------------
 std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(const std::string& directory)
