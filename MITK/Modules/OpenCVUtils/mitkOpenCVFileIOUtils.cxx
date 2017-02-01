@@ -250,19 +250,43 @@ cv::VideoCapture* InitialiseVideoCapture ( std::string filename , bool ignoreErr
   }
   //try and get some information about the capture, if these calls fail it may be that
   //the capture may still work but will exhibit undesirable behaviour, see trac 3718
-  int m_VideoWidth = capture->get(CV_CAP_PROP_FRAME_WIDTH);
-  int m_VideoHeight = capture->get(CV_CAP_PROP_FRAME_HEIGHT);
+  int videoWidth = capture->get(CV_CAP_PROP_FRAME_WIDTH);
+  int videoHeight = capture->get(CV_CAP_PROP_FRAME_HEIGHT);
 
-  if ( m_VideoWidth == 0 || m_VideoHeight == 0 )
+  if ( videoWidth == 0 || videoHeight == 0 )
   {
-    if ( ! ignoreErrors )
+    //try a bit harder
+    MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding, trying again with getting a frame.";
+    cv::Mat videoImage;
+    if ( capture->read(videoImage) )
     {
-      mitkThrow() << "Problem opening video file for capture. You may want to try rebuilding openCV with ffmpeg support or if available and you're feeling brave over riding video read errors with an ignoreVideoErrors parameter.";
+      videoWidth = videoImage.cols;
+      videoHeight = videoImage.rows;
     }
     else
     {
-      MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding but persevering any way as ignoreErrors is set true";
+      MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding, trying again with getting a frame, after hard coding the codec to h264.";
+      //try forcing the codec to what we commonly use
+      capture->set(CV_CAP_PROP_FOURCC, CV_FOURCC('h','2','6','4'));
+      if ( capture->read(videoImage) )
+      {
+        videoWidth = videoImage.cols;
+        videoHeight = videoImage.rows;
+      }
     }
+    if ( videoWidth == 0 || videoHeight == 0 )
+    {
+      if ( ! ignoreErrors )
+      {
+        mitkThrow() << "Problem opening video file for capture. You may want to try rebuilding openCV with ffmpeg support or if available and you're feeling brave over riding video read errors with an ignoreVideoErrors parameter.";
+      }
+      else
+      {
+        MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding but persevering any way as ignoreErrors is set true";
+      }
+    }
+    //try and return to the start
+    capture->set(CV_CAP_PROP_POS_FRAMES,0);
   }
 
   return capture;
