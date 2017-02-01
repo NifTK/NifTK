@@ -133,8 +133,7 @@ private:
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
   cv::VideoCapture*             m_Capture;
-  CvVideoWriter*                m_LeftWriter;
-  CvVideoWriter*                m_RightWriter;
+  cv::VideoWriter*              m_LeftWriter;
 
   long long                     m_AllowableTimingError; // the maximum permisable timing error when setting points or calculating projection errors;
 

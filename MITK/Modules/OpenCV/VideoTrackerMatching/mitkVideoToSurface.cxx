@@ -49,7 +49,6 @@ VideoToSurface::VideoToSurface()
 , m_VideoHeight(540)
 , m_Capture(NULL)
 , m_LeftWriter(NULL)
-, m_RightWriter(NULL)
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_StartFrame(0)
 , m_PatchHeight (270)
@@ -153,7 +152,7 @@ void VideoToSurface::FindVideoData(mitk::VideoTrackerMatching::Pointer trackerMa
     cv::Size S = cv::Size((int) m_VideoWidth, (int) m_VideoHeight );
     double fps = static_cast<double>(m_Capture->get(CV_CAP_PROP_FPS));
     double halfFPS = fps/2.0;
-    m_LeftWriter = cvCreateVideoWriter(std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_leftchannel_reconstruction.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+    m_LeftWriter = mitk::CreateVideoWriter(std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_leftchannel_reconstruction.avi").c_str(),halfFPS,S);
   }
 
   return;
@@ -296,8 +295,7 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
       {
         if ( m_LeftWriter != NULL ) 
         {
-           IplImage image(leftImage);
-           cvWriteFrame(m_LeftWriter,&image);
+           m_LeftWriter->write(leftImage);
         }
       }
 
@@ -314,7 +312,7 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
   }
   if ( m_LeftWriter != NULL )
   {
-    cvReleaseVideoWriter(&m_LeftWriter);
+    m_LeftWriter->release();
   }
   out.close();
 }
