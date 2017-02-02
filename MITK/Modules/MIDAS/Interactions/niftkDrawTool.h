@@ -49,26 +49,33 @@ public:
   mitkClassMacro(DrawTool, ContourTool)
   itkNewMacro(DrawTool)
 
-  virtual void InitializeStateMachine();
+  virtual void InitializeStateMachine() override;
 
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
-  virtual void ExecuteOperation(mitk::Operation* operation);
+  virtual void ExecuteOperation(mitk::Operation* operation) override;
 
   /// \see mitk::Tool::GetName()
-  virtual const char* GetName() const;
+  virtual const char* GetName() const override;
 
   /// \see mitk::Tool::GetXPM()
-  virtual const char** GetXPM() const;
+  virtual const char** GetXPM() const override;
 
-  /// \brief Gets the cursor size.
+  mitk::Point2D GetEraserPosition() const;
+
+  void SetEraserPosition(const mitk::Point2D& positionInMm);
+
+  /// \brief Gets the eraser size.
   /// Default size is 0.5.
-  double GetCursorSize() const;
+  double GetEraserSize() const;
 
-  /// \brief Sets the cursor size.
-  void SetCursorSize(double cursorSize);
+  /// \brief Sets the eraser size.
+  void SetEraserSize(double eraserSize);
 
-  /// \brief Used to send messages when the cursor size is changed or should be updated in a GUI. */
-  mitk::Message1<double> CursorSizeChanged;
+  /// \brief Used to send messages when the eraser size is changed or should be updated in a GUI. */
+  mitk::Message1<double> EraserSizeChanged;
+
+  /// \brief Shows or hides the transparent circle around the mouse pointer during the erasure.
+  void SetEraserVisible(bool visible, mitk::BaseRenderer* renderer = 0);
 
   /// \brief Start drawing a line at the given mouse point.
   virtual bool StartDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
@@ -79,10 +86,10 @@ public:
   /// \brief Finish drawing a line.
   virtual bool StopDrawing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \brief Erase any contours within the distance given by the cursor size in this class, and denoted by the Erase slider in the GUI.
+  /// \brief Erase any contours within the distance given by the eraser size in this class, and denoted by the Erase slider in the GUI.
   virtual bool StartErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \brief Erase any contours within the distance given by the cursor size in this class, and denoted by the Erase slider in the GUI.
+  /// \brief Erase any contours within the distance given by the eraser size in this class, and denoted by the Erase slider in the GUI.
   virtual bool KeepErasing(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
   /// \brief Finish editing.
@@ -101,7 +108,7 @@ protected:
   virtual ~DrawTool(); // purposely hidden
 
   /// \brief Connects state machine actions to functions.
-  virtual void ConnectActionsAndFunctions();
+  virtual void ConnectActionsAndFunctions() override;
 
   /// \brief Called when the tool gets activated
   virtual void Activated() override;
@@ -129,11 +136,8 @@ private:
   /// \brief Internal method to delete from the mitkToolManager WorkingData[workingDataNumber], which should be a mitk::ContourModelSet representing the "currentContours" ie Green lines in MIDAS.
   bool DeleteFromContour(int workingDataNumber, mitk::StateMachineAction* action, mitk::InteractionEvent* event);
 
-  /// \brief Shows or hides the transparent circle around the mouse pointer during the erasure.
-  void SetEraserScopeVisible(bool visible, mitk::BaseRenderer* renderer = 0);
-
-  /// \brief Cursor size for editing, currently called "Eraser" in MIDAS, where this eraser is defined in millimetres distance.
-  double m_CursorSize;
+  /// \brief Eraser size for editing, currently called "Eraser" in MIDAS, where this eraser is defined in millimetres distance.
+  double m_EraserSize;
 
   /// \brief Stores the most recent point, (i.e. the end of the line if we are drawing a line).
   mitk::Point3D m_MostRecentPointInMm;
@@ -143,7 +147,7 @@ private:
 
   mitk::PlanarCircle::Pointer m_EraserScope;
   mitk::DataNode::Pointer m_EraserScopeNode;
-  bool m_EraserScopeVisible;
+  bool m_EraserVisible;
 
   /// \brief Flag that indicates if a drawing interaction is being performed.
   bool m_DrawingInProgress;
