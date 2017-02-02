@@ -232,6 +232,74 @@ void TestLoadMPSAndConvertToOpenCVVector ( char * directory )
 
 }
 
+void TestInitialiseVideoCapture ( char * goodFile, char * dummyFile )
+{
+  try
+  {
+    bool ignoreErrors = false;
+    cv::VideoCapture* capture = mitk::InitialiseVideoCapture ( goodFile , ignoreErrors );
+    MITK_TEST_CONDITION ( ( capture != NULL ), "Testing initialised capture stream OK.");
+
+    cv::Mat frame;
+    if (  capture->read(frame) )
+    {
+      MITK_TEST_CONDITION ( ( frame.cols==1920 && frame.rows == 540 ), "Testing size of capture stream: " << frame.cols <<
+        " by " << frame.rows );
+    }
+    else
+    {
+      MITK_TEST_CONDITION ( false , "Initialise video capture could not read frame." );
+    }
+  }
+  catch (...)
+  {
+    MITK_TEST_CONDITION ( false , "Initialise video capture threw an exception." );
+  }
+
+  try
+  {
+    bool ignoreErrors = false;
+    cv::VideoCapture* capture = mitk::InitialiseVideoCapture ( dummyFile , ignoreErrors );
+
+    MITK_TEST_CONDITION ( false , "Initialise video capture did not throw an exception when reading dummy data." );
+  }
+  catch (...)
+  {
+    MITK_TEST_CONDITION ( true , "Initialise video capture threw an exception when reading dummy data." );
+  }
+
+}
+
+void TestCreateVideoWriter ()
+{
+  std::string outfile = niftk::CreateUniqueTempFileName ( "video", ".avi" );
+  double frameRate = 25.0;
+  cv::Size size = cv::Size ( 1920, 1080 );
+  try
+  {
+    cv::VideoWriter* writer  = mitk::CreateVideoWriter ( outfile , frameRate, size );
+    MITK_TEST_CONDITION ( ( writer != NULL ), "Testing created video writer OK: " << outfile);
+    cv::Mat frame = cv::Mat::eye (1080,1920,CV_8UC3);
+    try
+    {
+      for ( unsigned int i = 0 ; i < 25 ; i ++ )
+      {
+        writer->write( frame );
+      }
+      MITK_TEST_CONDITION ( true , "Successfully pushed frame to writer." );
+      writer->release();
+    }
+    catch (...)
+    {
+      MITK_TEST_CONDITION ( false , "Failed to push frame to writer." );
+    }
+  }
+  catch (...)
+  {
+    MITK_TEST_CONDITION ( false , "Create video writer threw an exception: " << outfile );
+  }
+}
+
 int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
 {
   // always start with this!
@@ -241,6 +309,8 @@ int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
   TestLoadPickedObject(argv[2]);
   TestLoadPickedPointListFromDirectoryOfMPSFiles(argv[3]);
   TestLoadMPSAndConvertToOpenCVVector ( argv[3] );
+  TestInitialiseVideoCapture ( argv[4], argv[5] );
+  TestCreateVideoWriter ( );
   MITK_TEST_END();
 }
 
