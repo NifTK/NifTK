@@ -48,7 +48,8 @@ int main(int argc, char** argv)
        ( input3DDirectory.length() == 0 ) &&
        ( input3DWithScalars.length() == 0 ) && 
        ( leftGoldStandard.length() == 0 || rightGoldStandard.length() == 0 ) &&
-       ( goldStandardObjects.length() == 0 ) )
+       ( goldStandardObjects.length() == 0 ) &&
+       ( goldStandardDirectory.length() == 0 ) )
   {
     std::cout << "no point input files defined " << std::endl;
     commandLine.getOutput()->usage(commandLine);
