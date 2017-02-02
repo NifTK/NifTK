@@ -54,16 +54,42 @@ std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSe
   mitk::PointSet::PointType point;
   mitk::PointSet::PointIdentifier iD;
 
+  mitk::PointSet::PointIdentifier myIndex = 0;
   for (pIt = points->Begin(); pIt != points->End(); ++pIt)
   {
     iD = pIt->Index();
-    point = pointSet->GetPoint ( iD );
-    cv::Point3d cvPoint;
+    if ( iD == myIndex )
+    {
+      point = pointSet->GetPoint ( iD );
+      cv::Point3d cvPoint;
 
-    cvPoint.x = point[0];
-    cvPoint.y = point[1];
-    cvPoint.z = point[2];
-    result.push_back(cvPoint);
+      cvPoint.x = point[0];
+      cvPoint.y = point[1];
+      cvPoint.z = point[2];
+      result.push_back(cvPoint);
+      myIndex ++;
+    }
+    else
+    {
+      if ( iD < myIndex )
+      {
+        mitkThrow() << "PointSetToVector mitk point set Id is less than vector index, I cannot handle this list. Try reordering your mps file so point ID's are in acscending order";
+      }
+      else
+      {
+        while ( myIndex < iD )
+        {
+          MITK_INFO << "Adding dummy point to world vector with ID " << myIndex;
+          cv::Point3d cvPoint;
+          cvPoint.x = std::numeric_limits<double>::quiet_NaN();
+          cvPoint.y = std::numeric_limits<double>::quiet_NaN();
+          cvPoint.z = std::numeric_limits<double>::quiet_NaN();
+          result.push_back(cvPoint);
+          myIndex ++;
+        }
+        --pIt;
+      }
+    }
   }
 
   return result;
@@ -356,7 +382,7 @@ void CopyToOpenCVMatrix(const cv::Matx44d& input, cv::Mat& output)
 std::vector < mitk::WorldPoint > operator*(const cv::Mat& M, const std::vector< mitk::WorldPoint > & p)
 {
   cv::Mat src ( 4, p.size(), CV_64F );
-  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ )
   {
     src.at<double>(0,i) = p[i].m_Point.x;
     src.at<double>(1,i) = p[i].m_Point.y;
@@ -365,7 +391,7 @@ std::vector < mitk::WorldPoint > operator*(const cv::Mat& M, const std::vector< 
   }
   cv::Mat dst = M*src;
   std::vector < mitk::WorldPoint > returnPoints;
-  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ )
   {
     cv::Point3d point;
     point.x = dst.at<double>(0,i) / dst.at<double>(3,i);
@@ -395,13 +421,13 @@ mitk::WorldPoint  operator*(const cv::Mat& M, const  mitk::WorldPoint & p)
 
   cv::Mat dst = M*src;
   mitk::WorldPoint  returnPoint;
-   
+
   cv::Point3d point;
   point.x = dst.at<double>(0,0) / dst.at<double>(3, 0);
   point.y = dst.at<double>(1,0) / dst.at<double>(3, 0);
   point.z = dst.at<double>(2,0) / dst.at<double>(3, 0);
   returnPoint = mitk::WorldPoint (point, p.m_Scalar);
-  
+
   return returnPoint;
 }
 
@@ -417,7 +443,7 @@ mitk::WorldPoint  operator*(const cv::Matx44d& M, const mitk::WorldPoint& p)
 std::vector <cv::Point3d> operator*(const cv::Mat& M, const std::vector<cv::Point3d>& p)
 {
   cv::Mat src ( 4, p.size(), CV_64F );
-  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ )
   {
     src.at<double>(0,i) = p[i].x;
     src.at<double>(1,i) = p[i].y;
@@ -426,7 +452,7 @@ std::vector <cv::Point3d> operator*(const cv::Mat& M, const std::vector<cv::Poin
   }
   cv::Mat dst = M*src;
   std::vector <cv::Point3d> returnPoints;
-  for ( unsigned int i = 0 ; i < p.size() ; i ++ ) 
+  for ( unsigned int i = 0 ; i < p.size() ; i ++ )
   {
     cv::Point3d point;
     point.x = dst.at<double>(0,i) / dst.at<double>(3, i);
@@ -453,10 +479,10 @@ cv::Point3d operator*(const cv::Mat& M, const cv::Point3d& p)
   src.at<double>(1,0) = p.y;
   src.at<double>(2,0) = p.z;
   src.at<double>(3,0) = 1.0;
-    
+
   cv::Mat dst = M*src;
   cv::Point3d returnPoint;
-  
+
   returnPoint.x = dst.at<double>(0,0) / dst.at<double>(3, 0);
   returnPoint.y = dst.at<double>(1,0) / dst.at<double>(3, 0);
   returnPoint.z = dst.at<double>(2,0) / dst.at<double>(3, 0);
@@ -521,18 +547,18 @@ bool ImageHeadersEqual ( const cv::Mat& m1 , const cv::Mat& m2 )
 }
 
 //-----------------------------------------------------------------------------
-bool ImageDataEqual ( const cv::Mat& m1 , const cv::Mat& m2 , const double& tolerance) 
+bool ImageDataEqual ( const cv::Mat& m1 , const cv::Mat& m2 , const double& tolerance)
 {
   bool equal = ImageHeadersEqual (m1, m2 );
-  
+
   if ( ! equal )
   {
     MITK_WARN << "Attempted to compare data in matrices of different types or sizes";
     return equal;
   }
-  
+
   double error = 0 ;
-  for ( unsigned int i = 0 ; i < m1.rows ; i ++ ) 
+  for ( unsigned int i = 0 ; i < m1.rows ; i ++ )
   {
     for ( unsigned int j = 0 ; j < m1.cols ; j ++ )
     {
@@ -561,7 +587,7 @@ bool ImageDataEqual ( const cv::Mat& m1 , const cv::Mat& m2 , const double& tole
             break;
           }
           case CV_32S:
-          { 
+          {
             error += static_cast<double>(m1.ptr<long int> (i,j)[channel]) - static_cast<double>(m2.ptr<long int> (i,j)[channel]) ;
             break;
           }
@@ -615,12 +641,12 @@ cv::Point2d FindIntersect (const cv::Vec4i& line1, const cv::Vec4i& line2 )
   cv::Point2d returnPoint;
   returnPoint.x = std::numeric_limits<double>::quiet_NaN();
   returnPoint.y = std::numeric_limits<double>::quiet_NaN();
-  
+
   if ( ! ( fabs ( mitk::AngleBetweenLines(line1,line2) ) > 1e-6 ) )
   {
     return returnPoint;
   }
-  if ( ( line1[2] == line1[0] )  || ( line2[2] == line2[0] )  ) 
+  if ( ( line1[2] == line1[0] )  || ( line2[2] == line2[0] )  )
   {
     if ( line1[2] == line1[0] )
     {
@@ -643,9 +669,9 @@ cv::Point2d FindIntersect (const cv::Vec4i& line1, const cv::Vec4i& line2 )
   }
   else
   {
-    a1 =( static_cast<double>(line1[3]) - static_cast<double>(line1[1]) ) / 
+    a1 =( static_cast<double>(line1[3]) - static_cast<double>(line1[1]) ) /
       ( static_cast<double>(line1[2]) - static_cast<double>(line1[0]) );
-    a2 =( static_cast<double>(line2[3]) - static_cast<double>(line2[1]) ) / 
+    a2 =( static_cast<double>(line2[3]) - static_cast<double>(line2[1]) ) /
       ( static_cast<double>(line2[2]) - static_cast<double>(line2[0]) );
     b1 = static_cast<double>(line1[1]) - a1 * static_cast<double>(line1[0]);
     b2 = static_cast<double>(line2[1]) - a2 * static_cast<double>(line2[0]);
@@ -657,9 +683,9 @@ cv::Point2d FindIntersect (const cv::Vec4i& line1, const cv::Vec4i& line2 )
 }
 
 //-----------------------------------------------------------------------------
-bool PointInInterval ( const cv::Point2d& point , const cv::Vec4i& interval ) 
+bool PointInInterval ( const cv::Point2d& point , const cv::Vec4i& interval )
 {
-  if ( (((point.x >= static_cast<double>(interval[2])) && (point.x <= static_cast<double>(interval[0]))) || 
+  if ( (((point.x >= static_cast<double>(interval[2])) && (point.x <= static_cast<double>(interval[0]))) ||
     ((point.x >= static_cast<double>(interval[0])) && (point.x <= static_cast<double>(interval[2]))))  &&
     (((point.y >= static_cast<double>(interval[3])) && (point.y <= static_cast<double>(interval[1]))) ||
     ((point.y >= static_cast<double>(interval[1])) && (point.y <= static_cast<double>(interval[3])))) )
@@ -683,7 +709,7 @@ bool CheckIfLinesArePerpendicular ( cv::Vec4i line1, cv::Vec4i line2 , double to
     return false;
   }
 }
- 
+
 //-----------------------------------------------------------------------------
 double AngleBetweenLines ( cv::Vec4i line1, cv::Vec4i line2 )
 {
@@ -691,7 +717,7 @@ double AngleBetweenLines ( cv::Vec4i line1, cv::Vec4i line2 )
   double u2 = static_cast<double>(line1[3]) - static_cast<double>(line1[1]);
   double v1 = static_cast<double>(line2[2]) - static_cast<double>(line2[0]);
   double v2 = static_cast<double>(line2[3]) - static_cast<double>(line2[1]);
- 
+
   double cosAngle = fabs ( u1 * v1 + u2 * v2 ) /
     ( (sqrt( u1*u1 + u2*u2)) * (sqrt( v1*v1 + v2*v2 )) );
   return acos (cosAngle);
@@ -700,22 +726,22 @@ double AngleBetweenLines ( cv::Vec4i line1, cv::Vec4i line2 )
 
 //-----------------------------------------------------------------------------
 std::vector <cv::Point2d> FindIntersects (const std::vector <cv::Vec4i>& lines  , const bool& rejectIfPointNotOnBothLines,
-    const bool& rejectIfNotPerpendicular, const double& angleTolerance) 
+    const bool& rejectIfNotPerpendicular, const double& angleTolerance)
 {
   std::vector<cv::Point2d> returnPoints;
-  if ( lines.size () < 2 ) 
+  if ( lines.size () < 2 )
   {
     MITK_WARN << "Called FindIntersects with only " << lines.size() << " lines";
     return returnPoints;
   }
-  for ( unsigned int i = 0 ; i < lines.size() - 1 ; i ++ ) 
+  for ( unsigned int i = 0 ; i < lines.size() - 1 ; i ++ )
   {
-    for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ ) 
+    for ( unsigned int j = i + 1 ; j < lines.size() ; j ++ )
     {
       if ( (!rejectIfNotPerpendicular) || CheckIfLinesArePerpendicular( lines[i], lines[j] , angleTolerance) )
       {
         cv::Point2d point =  FindIntersect (lines[i], lines[j]);
-        if (  (! rejectIfPointNotOnBothLines) ||  
+        if (  (! rejectIfPointNotOnBothLines) ||
           ( (mitk::PointInInterval ( point, lines[i] ) ) && ( PointInInterval ( point , lines[j] ) ) ) )
         {
           if ( ! ( boost::math::isnan(point.x) || boost::math::isnan(point.y) ) )
@@ -731,7 +757,7 @@ std::vector <cv::Point2d> FindIntersects (const std::vector <cv::Vec4i>& lines  
 
 
 //-----------------------------------------------------------------------------
-cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers, 
+cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOutliers,
     cv::Point2d * StandardDeviation)
 {
   cv::Point2d centroid;
@@ -752,7 +778,7 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   {
     return centroid;
   }
-  
+
   cv::Point2d standardDeviation;
   standardDeviation.x = 0.0;
   standardDeviation.y = 0.0;
@@ -765,7 +791,7 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   standardDeviation.x = sqrt ( standardDeviation.x/ (double) numberOfPoints ) ;
   standardDeviation.y = sqrt ( standardDeviation.y/ (double) numberOfPoints ) ;
 
-  if ( ! RefineForOutliers ) 
+  if ( ! RefineForOutliers )
   {
     *StandardDeviation = standardDeviation;
     return centroid;
@@ -780,7 +806,7 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   for (unsigned int i = 0; i < numberOfPoints; ++i)
   {
     if ( ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
-         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) ) 
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) )
     {
       centroid.x += points[i].x;
       centroid.y += points[i].y;
@@ -791,7 +817,7 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   centroid.x /= (double) goodPoints;
   centroid.y /= (double) goodPoints;
 
-  if ( StandardDeviation == NULL ) 
+  if ( StandardDeviation == NULL )
   {
     return centroid;
   }
@@ -801,7 +827,7 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   for (unsigned int i = 0; i < numberOfPoints ; ++i )
   {
     if ( ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
-         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) ) 
+         ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) )
     {
       standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
       standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
@@ -810,7 +836,7 @@ cv::Point2d GetCentroid(const std::vector<cv::Point2d>& points, bool RefineForOu
   }
   standardDeviation.x = sqrt ( standardDeviation.x/ (double) goodPoints ) ;
   standardDeviation.y = sqrt ( standardDeviation.y/ (double) goodPoints ) ;
-  
+
   *StandardDeviation = standardDeviation;
   return centroid;
 }
@@ -829,9 +855,9 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
   unsigned int goodPoints = 0 ;
   for (unsigned int i = 0; i < numberOfPoints; ++i)
   {
-  
+
     if ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) )
-    { 
+    {
       centroid.x += points[i].x;
       centroid.y += points[i].y;
       centroid.z += points[i].z;
@@ -847,7 +873,7 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
   {
     return centroid;
   }
-  
+
   cv::Point3d standardDeviation;
   standardDeviation.x = 0.0;
   standardDeviation.y = 0.0;
@@ -867,15 +893,15 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
   standardDeviation.x = sqrt ( standardDeviation.x/ (double) goodPoints ) ;
   standardDeviation.y = sqrt ( standardDeviation.y/ (double) goodPoints ) ;
   standardDeviation.z = sqrt ( standardDeviation.z/ (double) goodPoints ) ;
-  
+
   if ( ! RefineForOutliers )
   {
     *StandardDeviation = standardDeviation;
     return centroid;
   }
-  cv::Point3d highLimit (centroid.x + 2 * standardDeviation.x , 
+  cv::Point3d highLimit (centroid.x + 2 * standardDeviation.x ,
       centroid.y + 2 * standardDeviation.y, centroid.z + standardDeviation.z);
-  cv::Point3d lowLimit (centroid.x - 2 * standardDeviation.x , 
+  cv::Point3d lowLimit (centroid.x - 2 * standardDeviation.x ,
       centroid.y - 2 * standardDeviation.y, centroid.z - standardDeviation.z);
 
   centroid.x = 0.0;
@@ -887,7 +913,7 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
     if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
          ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
          ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) &&
-         ( points[i].z <= highLimit.z ) && ( points[i].z >= lowLimit.z )) 
+         ( points[i].z <= highLimit.z ) && ( points[i].z >= lowLimit.z ))
     {
       centroid.x += points[i].x;
       centroid.y += points[i].y;
@@ -900,7 +926,7 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
   centroid.y /= (double) goodPoints;
   centroid.z /= (double) goodPoints;
 
-  if ( StandardDeviation == NULL ) 
+  if ( StandardDeviation == NULL )
   {
     return centroid;
   }
@@ -914,8 +940,8 @@ cv::Point3d GetCentroid(const std::vector<cv::Point3d>& points, bool RefineForOu
     if ( ( ! ( boost::math::isnan(points[i].x) || boost::math::isnan(points[i].y) || boost::math::isnan(points[i].z) ) ) &&
          ( points[i].x <= highLimit.x ) && ( points[i].x >= lowLimit.x ) &&
          ( points[i].y <= highLimit.y ) && ( points[i].y >= lowLimit.y ) &&
-         ( points[i].z <= highLimit.z ) && ( points[i].z >= lowLimit.z )) 
-    { 
+         ( points[i].z <= highLimit.z ) && ( points[i].z >= lowLimit.z ))
+    {
       standardDeviation.x += ( points[i].x - centroid.x ) * (points[i].x - centroid.x);
       standardDeviation.y += ( points[i].y - centroid.y ) * (points[i].y - centroid.y);
       standardDeviation.z += ( points[i].z - centroid.z ) * (points[i].z - centroid.z);
@@ -982,7 +1008,7 @@ cv::Matx33d ConstructEulerRzMatrix(const double& rz)
   result(1, 0) = -sinRz;
   result(1, 1) = cosRz;
   result(2, 2) = 1;
-  
+
   return result;
 }
 
@@ -1127,7 +1153,7 @@ cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Poi
 {
   cv::Point3d minimumValues;
 
-  if ( inputValues.size() > 0 ) 
+  if ( inputValues.size() > 0 )
   {
     minimumValues.x = inputValues[0].x;
     minimumValues.y = inputValues[0].y;
@@ -1170,32 +1196,32 @@ cv::Point3d FindMinimumValues ( std::vector < cv::Point3d > inputValues, cv::Poi
 
   }
   return minimumValues;
-}  
+}
 
 //-----------------------------------------------------------------------------
 std::pair < double, double >  RMSError (
-    std::vector < mitk::ProjectedPointPairsWithTimingError >  measured , 
-    std::vector < mitk::ProjectedPointPairsWithTimingError > actual , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError >  measured ,
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual ,
     int indexToUse , cv::Point2d outlierSD, long long allowableTimingError,
     bool duplicateLines )
 {
   assert ( measured.size() == actual.size() );
 
   std::pair < double, double>  RMSError;
-  
+
   RMSError.first = 0.0 ;
   RMSError.second = 0.0 ;
- 
+
   mitk::ProjectedPointPair errorStandardDeviations;
   mitk::ProjectedPointPair  errorMeans;
   errorMeans = mitk::MeanError (measured, actual, &errorStandardDeviations,
       indexToUse, allowableTimingError);
   mitk::ProjectedPointPair lowLimit;
   mitk::ProjectedPointPair highLimit;
-  lowLimit.m_Left = errorMeans.m_Left - (outlierSD * errorStandardDeviations.m_Left); 
-  lowLimit.m_Right = errorMeans.m_Right - (outlierSD * errorStandardDeviations.m_Right); 
-  highLimit.m_Left = errorMeans.m_Left + (outlierSD * errorStandardDeviations.m_Left); 
-  highLimit.m_Right = errorMeans.m_Right + (outlierSD * errorStandardDeviations.m_Right); 
+  lowLimit.m_Left = errorMeans.m_Left - (outlierSD * errorStandardDeviations.m_Left);
+  lowLimit.m_Right = errorMeans.m_Right - (outlierSD * errorStandardDeviations.m_Right);
+  highLimit.m_Left = errorMeans.m_Left + (outlierSD * errorStandardDeviations.m_Left);
+  highLimit.m_Right = errorMeans.m_Right + (outlierSD * errorStandardDeviations.m_Right);
 
   std::pair < int , int > count;
   count.first = 0;
@@ -1204,25 +1230,25 @@ std::pair < double, double >  RMSError (
   int highIndex = measured[0].m_Points.size();
   if ( indexToUse != -1 )
   {
-    lowIndex = indexToUse; 
+    lowIndex = indexToUse;
     highIndex = indexToUse;
   }
-  for ( int index = lowIndex; index < highIndex ; index ++ ) 
+  for ( int index = lowIndex; index < highIndex ; index ++ )
   {
     unsigned int increment=1;
     if ( duplicateLines )
     {
       increment = 2;
     }
-    for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment ) 
+    for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment )
     {
       if ( measured[frame].m_TimingError < std::abs (allowableTimingError) )
       {
-        if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf() ) || actual[frame].m_Points[index].LeftNaNOrInf() ) 
+        if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf() ) || actual[frame].m_Points[index].LeftNaNOrInf() )
         {
-          cv::Point2d error = 
+          cv::Point2d error =
             actual[frame].m_Points[index].m_Left - measured[frame].m_Points[index].m_Left;
-          
+
           if ( ( error.x > lowLimit.m_Left.x ) && ( error.x < highLimit.m_Left.x ) &&
              ( error.y > lowLimit.m_Left.y ) && ( error.y < highLimit.m_Left.y ) )
           {
@@ -1230,12 +1256,12 @@ std::pair < double, double >  RMSError (
             count.first ++;
           }
         }
-      
-        if ( ! ( measured[frame].m_Points[index].RightNaNOrInf() ) || actual[frame].m_Points[index].RightNaNOrInf() ) 
+
+        if ( ! ( measured[frame].m_Points[index].RightNaNOrInf() ) || actual[frame].m_Points[index].RightNaNOrInf() )
         {
-          cv::Point2d error = 
+          cv::Point2d error =
             actual[frame].m_Points[index].m_Right - measured[frame].m_Points[index].m_Right;
-          
+
           if ( ( error.x > lowLimit.m_Right.x ) && ( error.x < highLimit.m_Right.x ) &&
              ( error.y > lowLimit.m_Right.y ) && ( error.y < highLimit.m_Right.y ) )
           {
@@ -1253,11 +1279,11 @@ std::pair < double, double >  RMSError (
       }
     }
   }
-  if ( count.first > 0 ) 
+  if ( count.first > 0 )
   {
     RMSError.first = sqrt ( RMSError.first / count.first );
   }
-  if ( count.second > 0 ) 
+  if ( count.second > 0 )
   {
     RMSError.second = sqrt ( RMSError.second / count.second );
   }
@@ -1266,20 +1292,20 @@ std::pair < double, double >  RMSError (
 
 //-----------------------------------------------------------------------------
 mitk::ProjectedPointPair MeanError (
-    std::vector < mitk::ProjectedPointPairsWithTimingError > measured , 
-    std::vector < mitk::ProjectedPointPairsWithTimingError > actual , 
+    std::vector < mitk::ProjectedPointPairsWithTimingError > measured ,
+    std::vector < mitk::ProjectedPointPairsWithTimingError > actual ,
     mitk::ProjectedPointPair * StandardDeviations, int indexToUse,
     long long allowableTimingError, bool duplicateLines)
 {
   assert ( measured.size() == actual.size() );
 
   mitk::ProjectedPointPair meanError;
-  
+
   meanError.m_Left.x = 0.0;
   meanError.m_Left.y = 0.0;
   meanError.m_Right.x = 0.0;
   meanError.m_Right.y = 0.0;
-  
+
   std::pair < int , int > count;
   count.first = 0;
   count.second = 0;
@@ -1287,30 +1313,30 @@ mitk::ProjectedPointPair MeanError (
   int highIndex = measured[0].m_Points.size();
   if ( indexToUse != -1 )
   {
-    lowIndex = indexToUse; 
+    lowIndex = indexToUse;
     highIndex = indexToUse;
   }
-  
-  for ( int index = lowIndex; index < highIndex ; index ++ ) 
+
+  for ( int index = lowIndex; index < highIndex ; index ++ )
   {
     unsigned int increment=1;
     if ( duplicateLines )
     {
       increment = 2;
     }
-    for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment ) 
+    for ( unsigned int frame = 0 ; frame < actual.size() ; frame += increment )
     {
       if ( measured[frame].m_TimingError < std::abs (allowableTimingError) )
       {
-        if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf()  || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
+        if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf()  || actual[frame].m_Points[index].LeftNaNOrInf() ) )
         {
-          meanError.m_Left += 
+          meanError.m_Left +=
             actual[frame].m_Points[index].m_Left - measured[frame].m_Points[index].m_Left ;
           count.first ++;
         }
         if ( ! ( measured[frame].m_Points[index].RightNaNOrInf() || actual[frame].m_Points[index].RightNaNOrInf() ) )
         {
-          meanError.m_Right += 
+          meanError.m_Right +=
             actual[frame].m_Points[index].m_Right - measured[frame].m_Points[index].m_Right ;
           count.second ++;
         }
@@ -1324,15 +1350,15 @@ mitk::ProjectedPointPair MeanError (
       }
     }
   }
-  if ( count.first > 0 ) 
+  if ( count.first > 0 )
   {
     meanError.m_Left =  meanError.m_Left / count.first ;
   }
-  if ( count.second > 0 ) 
+  if ( count.second > 0 )
   {
     meanError.m_Right =  meanError.m_Right / count.second ;
   }
-  if ( StandardDeviations == NULL ) 
+  if ( StandardDeviations == NULL )
   {
     return meanError;
   }
@@ -1342,22 +1368,22 @@ mitk::ProjectedPointPair MeanError (
     StandardDeviations->m_Left.y = 0.0;
     StandardDeviations->m_Right.x = 0.0;
     StandardDeviations->m_Right.y = 0.0;
-    for ( int index = lowIndex; index < highIndex ; index ++ ) 
+    for ( int index = lowIndex; index < highIndex ; index ++ )
     {
-      for ( unsigned int frame = 0 ; frame < actual.size() ; frame ++ ) 
+      for ( unsigned int frame = 0 ; frame < actual.size() ; frame ++ )
       {
         if ( measured[frame].m_TimingError < std::abs (allowableTimingError) )
         {
-          if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf() || actual[frame].m_Points[index].LeftNaNOrInf() ) ) 
+          if ( ! ( measured[frame].m_Points[index].LeftNaNOrInf() || actual[frame].m_Points[index].LeftNaNOrInf() ) )
           {
-            cv::Point2d error = 
+            cv::Point2d error =
               actual[frame].m_Points[index].m_Left - measured[frame].m_Points[index].m_Left - meanError.m_Left;
             StandardDeviations->m_Left += error * error;
             count.first ++;
           }
           if ( ! ( measured[frame].m_Points[index].RightNaNOrInf() || actual[frame].m_Points[index].RightNaNOrInf() ) )
           {
-            cv::Point2d error = 
+            cv::Point2d error =
               actual[frame].m_Points[index].m_Right - measured[frame].m_Points[index].m_Right - meanError.m_Right;
             StandardDeviations->m_Right += error * error;
             count.second ++;
@@ -1365,12 +1391,12 @@ mitk::ProjectedPointPair MeanError (
         }
       }
     }
-    if ( count.first > 0 ) 
+    if ( count.first > 0 )
     {
       StandardDeviations->m_Left.x =  sqrt(StandardDeviations->m_Left.x / count.first);
       StandardDeviations->m_Left.y =  sqrt(StandardDeviations->m_Left.y / count.first) ;
     }
-    if ( count.second > 0 ) 
+    if ( count.second > 0 )
     {
       StandardDeviations->m_Right.x = sqrt( StandardDeviations->m_Right.x / count.second) ;
       StandardDeviations->m_Right.y = sqrt( StandardDeviations->m_Right.y / count.second) ;
@@ -1381,7 +1407,7 @@ mitk::ProjectedPointPair MeanError (
 }
 
 //-----------------------------------------------------------------------------
-cv::Mat PerturbTransform (const cv::Mat transformIn , 
+cv::Mat PerturbTransform (const cv::Mat transformIn ,
     const double tx, const double ty, const double tz,
     const double rx, const double ry, const double rz)
 {
@@ -1392,11 +1418,11 @@ cv::Mat PerturbTransform (const cv::Mat transformIn ,
   rotationVector.at<double>(0,0) = rx * CV_PI/180;
   rotationVector.at<double>(1,0) = ry * CV_PI/180;
   rotationVector.at<double>(2,0) = rz * CV_PI/180;
-  
+
   cv::Rodrigues ( rotationVector,rotationMatrix );
   for ( int row = 0 ; row < 3 ; row ++ )
   {
-    for ( int col = 0 ; col < 3 ; col ++ ) 
+    for ( int col = 0 ; col < 3 ; col ++ )
     {
       perturbationMatrix.at<double>(row,col) = rotationMatrix.at<double>(row,col);
     }
@@ -1414,16 +1440,16 @@ cv::Mat PerturbTransform (const cv::Mat transformIn ,
 
 
 //-----------------------------------------------------------------------------
-cv::Point2d FindNearestPoint ( const cv::Point2d& point, 
-    const std::vector < cv::Point2d>& matchingPoints, double * minRatio , unsigned int * Index ) 
+cv::Point2d FindNearestPoint ( const cv::Point2d& point,
+    const std::vector < cv::Point2d>& matchingPoints, double * minRatio , unsigned int * Index )
 {
   std::vector <cv::Point2d>  sortedMatches;
   for ( unsigned int i = 0 ; i < matchingPoints.size() ; i ++ )
   {
     sortedMatches.push_back ( point - matchingPoints[i] );
   }
-  
-  if ( Index != NULL ) 
+
+  if ( Index != NULL )
   {
     *Index = std::min_element(sortedMatches.begin(), sortedMatches.end(), DistanceCompare) -
       sortedMatches.begin();
@@ -1435,11 +1461,11 @@ cv::Point2d FindNearestPoint ( const cv::Point2d& point,
   {
     if ( sortedMatches.size() > 1 )
     {
-      *minRatio =  
+      *minRatio =
         sqrt(sortedMatches[1].x * sortedMatches[1].x + sortedMatches[1].y * sortedMatches[1].y ) /
-        sqrt(sortedMatches[0].x * sortedMatches[0].x + sortedMatches[0].y * sortedMatches[0].y ); 
+        sqrt(sortedMatches[0].x * sortedMatches[0].x + sortedMatches[0].y * sortedMatches[0].y );
     }
-    else 
+    else
     {
       *minRatio = 0.0;
     }
@@ -1452,7 +1478,7 @@ cv::Point2d FindNearestPoint ( const cv::Point2d& point,
 }
 
 //-----------------------------------------------------------------------------
-mitk::PickedObject FindNearestPickedObject ( const mitk::PickedObject& point, const std::vector <mitk::PickedObject>& matchingPoints , 
+mitk::PickedObject FindNearestPickedObject ( const mitk::PickedObject& point, const std::vector <mitk::PickedObject>& matchingPoints ,
     double* minRatio )
 {
   mitk::PickedObject nearestPoint;
@@ -1465,7 +1491,7 @@ mitk::PickedObject FindNearestPickedObject ( const mitk::PickedObject& point, co
     double distance = point.DistanceTo(*it, delta);
     if ( distance < nextNearestDistance )
     {
-      if ( distance < nearestDistance ) 
+      if ( distance < nearestDistance )
       {
         nextNearestDistance = nearestDistance;
         nearestDistance = distance;
@@ -1493,11 +1519,11 @@ bool DistanceCompare ( const cv::Point2d& p1, const cv::Point2d& p2 )
 }
 
 //-----------------------------------------------------------------------------
-cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
+cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld1,
     const std::vector<cv::Mat>& World2ToTracker2, double& Residual)
 {
- 
-  if ( Tracker1ToWorld1.size() != World2ToTracker2.size() ) 
+
+  if ( Tracker1ToWorld1.size() != World2ToTracker2.size() )
   {
     MITK_ERROR << "Called HandeyeRotation with unequal matrix vectors";
     Residual = -1.0;
@@ -1507,7 +1533,7 @@ cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld
 
   cv::Mat A = cvCreateMat ( 3 * (numberOfViews - 1), 3, CV_64FC1 );
   cv::Mat b = cvCreateMat ( 3 * (numberOfViews - 1), 1, CV_64FC1 );
-  
+
   for ( int i = 0; i < numberOfViews - 1; i ++ )
   {
     cv::Mat mat1 = cvCreateMat(4,4,CV_64FC1);
@@ -1548,26 +1574,26 @@ cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld
     A.at<double>(i*3+2,0)=-(sum.at<double>(1,0));
     A.at<double>(i*3+2,1)=sum.at<double>(0,0);
     A.at<double>(i*3+2,2)=0.0;
- 
+
     b.at<double>(i*3+0,0)=diff.at<double>(0,0);
     b.at<double>(i*3+1,0)=diff.at<double>(1,0);
     b.at<double>(i*3+2,0)=diff.at<double>(2,0);
-  
+
   }
-  
+
   cv::Mat PseudoInverse = cvCreateMat(3,3,CV_64FC1);
   cv::invert(A,PseudoInverse,CV_SVD);
- 
+
   cv::Mat pcgPrime = PseudoInverse * b;
 
   cv::Mat Error = A * pcgPrime-b;
- 
+
   cv::Mat ErrorTransMult = cvCreateMat(Error.cols, Error.cols, CV_64FC1);
- 
+
   cv::mulTransposed (Error, ErrorTransMult, true);
-     
+
   Residual = sqrt(ErrorTransMult.at<double>(0,0)/(numberOfViews-1));
- 
+
   cv::Mat pcg = 2 * pcgPrime / ( sqrt(1 + cv::norm(pcgPrime) * cv::norm(pcgPrime)) );
   cv::Mat id3 = cvCreateMat(3,3,CV_64FC1);
   for ( int row = 0; row < 3; row ++ )
@@ -1584,7 +1610,7 @@ cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld
       }
     }
   }
-      
+
   cv::Mat pcg_crossproduct = cvCreateMat(3,3,CV_64FC1);
   pcg_crossproduct.at<double>(0,0)=0.0;
   pcg_crossproduct.at<double>(0,1)=-(pcg.at<double>(2,0));
@@ -1595,7 +1621,7 @@ cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld
   pcg_crossproduct.at<double>(2,0)=-(pcg.at<double>(1,0));
   pcg_crossproduct.at<double>(2,1)=(pcg.at<double>(0,0));
   pcg_crossproduct.at<double>(2,2)=0.0;
- 
+
   cv::Mat pcg_mulTransposed = cvCreateMat(pcg.rows, pcg.rows, CV_64FC1);
   cv::mulTransposed (pcg, pcg_mulTransposed, false);
   cv::Mat rcg = ( 1 - cv::norm(pcg) * norm(pcg) /2 ) * id3
@@ -1603,10 +1629,10 @@ cv::Mat Tracker2ToTracker1Rotation ( const std::vector<cv::Mat>& Tracker1ToWorld
   return rcg;
 }
 //-----------------------------------------------------------------------------
-cv::Mat Tracker2ToTracker1Translation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
+cv::Mat Tracker2ToTracker1Translation ( const std::vector<cv::Mat>& Tracker1ToWorld1,
      const std::vector<cv::Mat>& World2ToTracker2, double& Residual, const cv::Mat& rcg)
 {
-  if ( Tracker1ToWorld1.size() != World2ToTracker2.size() ) 
+  if ( Tracker1ToWorld1.size() != World2ToTracker2.size() )
   {
     MITK_ERROR << "Called HandeyeTranslation with unequal matrix vectors";
     Residual = -1.0;
@@ -1651,7 +1677,7 @@ cv::Mat Tracker2ToTracker1Translation ( const std::vector<cv::Mat>& Tracker1ToWo
   cv::Mat PseudoInverse = cvCreateMat(3,3,CV_64FC1);
   cv::invert(A,PseudoInverse,CV_SVD);
   cv::Mat tcg = PseudoInverse * b;
-  
+
   cv::Mat Error = A * tcg -b;
   cv::Mat ErrorTransMult = cvCreateMat(Error.cols, Error.cols, CV_64FC1);
   cv::mulTransposed (Error, ErrorTransMult, true);
@@ -1659,8 +1685,8 @@ cv::Mat Tracker2ToTracker1Translation ( const std::vector<cv::Mat>& Tracker1ToWo
   return tcg;
 }
 //-----------------------------------------------------------------------------
-cv::Mat Tracker2ToTracker1RotationAndTranslation ( const std::vector<cv::Mat>& Tracker1ToWorld1, 
-     const std::vector<cv::Mat>& World2ToTracker2, std::vector<double>& Residuals, 
+cv::Mat Tracker2ToTracker1RotationAndTranslation ( const std::vector<cv::Mat>& Tracker1ToWorld1,
+     const std::vector<cv::Mat>& World2ToTracker2, std::vector<double>& Residuals,
      cv::Mat * World2ToWorld1)
 {
   Residuals.clear();
@@ -1709,29 +1735,29 @@ cv::Mat Tracker2ToTracker1RotationAndTranslation ( const std::vector<cv::Mat>& T
       world2ToWorld1s.push_back(world2ToWorld1);
     }
     *World2ToWorld1 = mitk::AverageMatrices (world2ToWorld1s);
-    //lets do a check To get Tracker2 into Tracker1 
+    //lets do a check To get Tracker2 into Tracker1
     //Tracker1InWorld1 = (Tracker2InWorld2 * world2ToWorld1) * tracker2toTracker1
     for ( int i = 0 ; i < Tracker1ToWorld1.size() ; i++ )
     {
-      if ( i == 0 ) 
+      if ( i == 0 )
       {
         MITK_INFO << "Tracker 1: " << i ;
         MITK_INFO << Tracker1ToWorld1[i];
         MITK_INFO << "Tracker 2 to World 1 " << i ;
-        MITK_INFO << (*World2ToWorld1) * World2ToTracker2[i].inv(); 
+        MITK_INFO << (*World2ToWorld1) * World2ToTracker2[i].inv();
         MITK_INFO << "Tracker 1 to world 1 "  << i ;
         MITK_INFO <<  ((*World2ToWorld1) * World2ToTracker2[i].inv()) * tracker2ToTracker1.inv();
       }
-      MITK_INFO << "Difference " << i ; 
+      MITK_INFO << "Difference " << i ;
       MITK_INFO << (((*World2ToWorld1) * World2ToTracker2[i].inv()) * tracker2ToTracker1.inv())- Tracker1ToWorld1[i];
     }
   }
-  else 
+  else
   {
     MITK_INFO << "Grid to world NULL ";
   }
   return tracker2ToTracker1;
-} 
+}
 
 //-----------------------------------------------------------------------------------------
 cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
@@ -1740,17 +1766,17 @@ cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
   cv::Mat temp_T = cvCreateMat (3,1,CV_64FC1);
   for ( int row = 0 ; row < 3 ; row++ )
   {
-    for ( int col = 0 ; col < 3 ; col++ ) 
+    for ( int col = 0 ; col < 3 ; col++ )
     {
       temp.at<double>(row,col) = 0.0;
     }
     temp_T.at<double>(row,0) = 0.0;
   }
-  for ( unsigned int i = 0 ; i < Matrices.size() ; i ++ ) 
+  for ( unsigned int i = 0 ; i < Matrices.size() ; i ++ )
   {
     for ( int row = 0 ; row < 3 ; row++ )
     {
-      for ( int col = 0 ; col < 3 ; col++ ) 
+      for ( int col = 0 ; col < 3 ; col++ )
       {
         double whatItWas = temp.at<double>(row,col);
         double whatToAdd = Matrices[i].at<double>(row,col);
@@ -1758,12 +1784,12 @@ cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
       }
       temp_T.at<double>(row,0) += Matrices[i].at<double>(row,3);
     }
-    
-    //we write temp out, not because it's interesting but because it 
+
+    //we write temp out, not because it's interesting but because it
     //seems to fix a bug in the averaging code, trac 2895
     MITK_INFO << "temp " << temp;
   }
-  
+
   temp_T = temp_T / static_cast<double>(Matrices.size());
   temp = temp / static_cast<double>(Matrices.size());
 
@@ -1777,9 +1803,9 @@ cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
   //write out the vectors and values, because it might be interesting, trac 2972
   MITK_INFO << "eigenvalues " << eigenvalues;
   MITK_INFO << "eigenvectors " << eigenvectors;
-  for ( int row = 0 ; row < 3 ; row ++ ) 
+  for ( int row = 0 ; row < 3 ; row ++ )
   {
-    for ( int col = 0 ; col < 3 ; col ++ ) 
+    for ( int col = 0 ; col < 3 ; col ++ )
     {
       if ( row == col )
       {
@@ -1797,9 +1823,9 @@ cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
   cv::Mat returnMat = cvCreateMat (4,4,CV_64FC1);
   cv::Mat temp2 = cvCreateMat(3,3,CV_64FC1);
   temp2 = temp * ( eigenvectors * rootedEigenValues * eigenvectors.t() );
-  for ( int row = 0 ; row < 3 ; row ++ ) 
+  for ( int row = 0 ; row < 3 ; row ++ )
   {
-    for ( int col = 0 ; col < 3 ; col ++ ) 
+    for ( int col = 0 ; col < 3 ; col ++ )
     {
       returnMat.at<double>(row,col) = temp2.at<double>(row,col);
     }
@@ -1810,8 +1836,8 @@ cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
   returnMat.at<double>(3,2) = 0.0;
   returnMat.at<double>(3,3)  = 1.0;
   return returnMat;
-    
-} 
+
+}
 
 //-----------------------------------------------------------------------------
 std::vector<cv::Mat> FlipMatrices (const std::vector<cv::Mat> Matrices)
@@ -1953,7 +1979,7 @@ std::vector<int> SortMatricesByAngle(const std::vector<cv::Mat>  Matrices)
   double d;
   while ( fabs(distance) > 0.0 )
   {
-   
+
     for ( int row = 0; row < 3; row ++ )
     {
       for ( int col = 0; col < 3; col ++ )
@@ -2010,7 +2036,7 @@ double AngleBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
   //turn them into quaternions first
   cv::Mat q1 = DirectionCosineToQuaternion(Mat1);
   cv::Mat q2 = DirectionCosineToQuaternion(Mat2);
- 
+
   return 2 * acos (q1.at<double>(3,0) * q2.at<double>(3,0)
       + q1.at<double>(0,0) * q2.at<double>(0,0)
       + q1.at<double>(1,0) * q2.at<double>(1,0)
@@ -2023,14 +2049,14 @@ double DistanceBetweenMatrices(cv::Mat Mat1 , cv::Mat Mat2)
 {
   cv::Mat t1 = cvCreateMat(3,1,CV_64FC1);
   cv::Mat t2 = cvCreateMat(3,1,CV_64FC1);
-   
+
   for ( int row = 0; row < 3; row ++ )
   {
     t1.at<double>(row,0) = Mat1.at<double>(row,3);
     t2.at<double>(row,0) = Mat2.at<double>(row,3);
   }
   double returnVal = cv::norm(t1-t2);
-  //This function still leaks memory, I'm not the following statements are 
+  //This function still leaks memory, I'm not the following statements are
   //working
   t1.release();
   t2.release();
@@ -2181,84 +2207,84 @@ void InterpolateTransformationMatrix(const cv::Matx44d& before, const cv::Matx44
 std::string MatrixType ( const cv::Mat& matrix)
 {
   std::string returnString;
-  
-  switch ( matrix.type() ) 
+
+  switch ( matrix.type() )
   {
-    case ( CV_8SC1 ): 
+    case ( CV_8SC1 ):
       returnString = "CV_8SC1";
       break;
-    case ( CV_8SC2 ): 
+    case ( CV_8SC2 ):
       returnString = "CV_8SC2";
       break;
-    case ( CV_8SC3 ): 
+    case ( CV_8SC3 ):
       returnString = "CV_8SC3";
       break;
-    case ( CV_8SC4 ): 
+    case ( CV_8SC4 ):
       returnString = "CV_8SC4";
       break;
 
-    case ( CV_8UC1 ): 
+    case ( CV_8UC1 ):
       returnString = "CV_8UC1";
       break;
-    case ( CV_8UC2 ): 
+    case ( CV_8UC2 ):
       returnString = "CV_8UC2";
       break;
-    case ( CV_8UC3 ): 
+    case ( CV_8UC3 ):
       returnString = "CV_8UC3";
       break;
-    case ( CV_8UC4 ): 
+    case ( CV_8UC4 ):
       returnString = "CV_8UC4";
       break;
 
-    case ( CV_16SC1 ): 
+    case ( CV_16SC1 ):
       returnString = "CV_16SC1";
       break;
-    case ( CV_16SC2 ): 
+    case ( CV_16SC2 ):
       returnString = "CV_16SC2";
       break;
-    case ( CV_16SC3 ): 
+    case ( CV_16SC3 ):
       returnString = "CV_16SC3";
       break;
-    case ( CV_16SC4 ): 
+    case ( CV_16SC4 ):
       returnString = "CV_16SC4";
       break;
 
-    case ( CV_16UC1 ): 
+    case ( CV_16UC1 ):
       returnString = "CV_16UC1";
       break;
-    case ( CV_16UC2 ): 
+    case ( CV_16UC2 ):
       returnString = "CV_16UC2";
       break;
-    case ( CV_16UC3 ): 
+    case ( CV_16UC3 ):
       returnString = "CV_16UC3";
       break;
-    case ( CV_16UC4 ): 
+    case ( CV_16UC4 ):
       returnString = "CV_16UC4";
       break;
 
-    case ( CV_32FC1 ): 
+    case ( CV_32FC1 ):
       returnString = "CV_32FC1";
       break;
-    case ( CV_32FC2 ): 
+    case ( CV_32FC2 ):
       returnString = "CV_32FC2";
       break;
-    case ( CV_32FC3 ): 
+    case ( CV_32FC3 ):
       returnString = "CV_32FC3";
       break;
-    case ( CV_32FC4 ): 
+    case ( CV_32FC4 ):
       returnString = "CV_32FC4";
       break;
 
-    case ( CV_64FC1 ): 
+    case ( CV_64FC1 ):
       returnString = "CV_64FC1";
       break;
-    case ( CV_64FC2 ): 
+    case ( CV_64FC2 ):
       returnString = "CV_64FC2";
       break;
-    case ( CV_64FC3 ): 
+    case ( CV_64FC3 ):
       returnString = "CV_64FC3";
       break;
-    case ( CV_64FC4 ): 
+    case ( CV_64FC4 ):
       returnString = "CV_64FC4";
       break;
     default:
@@ -2330,7 +2356,7 @@ double DistanceToLine ( const std::pair<cv::Point3d, cv::Point3d>& line, const c
 {
   //courtesy Wolfram Mathworld
   cv::Point3d x1;
-  cv::Point3d x2; 
+  cv::Point3d x2;
 
   x1 = line.first;
   x2 = line.second;
@@ -2352,7 +2378,7 @@ double DistanceBetweenTwoPoints ( const cv::Point3d& p1 , const cv::Point3d& p2,
 }
 
 //-----------------------------------------------------------------------------
-double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const std::vector <cv::Point3d>& s2, 
+double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const std::vector <cv::Point3d>& s2,
     unsigned int splineOrder, cv::Point3d* delta )
 {
   if ( ( s1.size() < 1) || (s2.size() < 2) )
@@ -2370,9 +2396,9 @@ double DistanceBetweenTwoSplines ( const std::vector <cv::Point3d>& s1 , const s
     double sum = 0;
     for ( std::vector<cv::Point3d>::const_iterator it_1 = s1.begin() ; it_1 < s1.end() ; it_1 ++ )
     {
-      deltas.push_back ( cv::Point3d ( std::numeric_limits<double>::infinity() , 
-            std::numeric_limits<double>::infinity() , 
-            std::numeric_limits<double>::infinity() )); 
+      deltas.push_back ( cv::Point3d ( std::numeric_limits<double>::infinity() ,
+            std::numeric_limits<double>::infinity() ,
+            std::numeric_limits<double>::infinity() ));
       if ( mitk::IsNaN ( *it_1) )
       {
         return std::numeric_limits<double>::quiet_NaN();
@@ -2412,18 +2438,18 @@ double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, 
 {
   //courtesy Wolfram Mathworld
   cv::Point3d x1;
-  cv::Point3d x2; 
+  cv::Point3d x2;
 
   x1 = line.first;
   x2 = line.second;
 
   cv::Point3d d1 = x2-x0;
   cv::Point3d d2 = x2-x1;
-  
+
   double lambda = mitk::DotProduct ( d2, d1 ) /  mitk::DotProduct ( d2,d2 );
   if ( lambda < 0 ) //we're beyond x2
   {
-    if ( delta != NULL ) 
+    if ( delta != NULL )
     {
       *delta = x0 - x2;
     }
@@ -2431,15 +2457,15 @@ double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, 
   }
   if ( lambda > 1 ) //we're beyond x1
   {
-    if ( delta != NULL ) 
+    if ( delta != NULL )
     {
       *delta = x0 - x1;
     }
     return mitk::Norm ( x1 - x0 );
   }
   //else we're on the line segment
-  
-  if ( delta != NULL ) 
+
+  if ( delta != NULL )
   {
     *delta = ( x2 - lambda * d2 ) - x0;
   }
@@ -2448,7 +2474,7 @@ double DistanceToLineSegment ( const std::pair<cv::Point3d, cv::Point3d>& line, 
 }
 
 //-----------------------------------------------------------------------------
-double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const cv::Point3d& Q0, const cv::Point3d& v , 
+double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const cv::Point3d& Q0, const cv::Point3d& v ,
     cv::Point3d& midpoint )
 {
   // Method 1. Solve for shortest line joining two rays, then get midpoint.
@@ -2497,16 +2523,16 @@ double DistanceBetweenLines ( const cv::Point3d& P0, const cv::Point3d& u, const
   midpoint.x = (Psc.x + Qtc.x)/2.0;
   midpoint.y = (Psc.y + Qtc.y)/2.0;
   midpoint.z = (Psc.z + Qtc.z)/2.0;
-               
+
   return distance;
 }
 
 //-----------------------------------------------------------------------------
-double DistanceBetweenLineAndSegment( const cv::Point3d& P0, const cv::Point3d& u, const cv::Point3d& x0, const cv::Point3d& x1 , 
+double DistanceBetweenLineAndSegment( const cv::Point3d& P0, const cv::Point3d& u, const cv::Point3d& x0, const cv::Point3d& x1 ,
     cv::Point3d& closestPointOnSecondLine )
 {
 
-  std::pair < cv::Point3d, cv::Point3d > pl = mitk::TwoPointsToPLambda ( std::pair < cv::Point3d, cv::Point3d > ( x0, x1 ) ); 
+  std::pair < cv::Point3d, cv::Point3d > pl = mitk::TwoPointsToPLambda ( std::pair < cv::Point3d, cv::Point3d > ( x0, x1 ) );
   cv::Point3d Q0 = pl.first;
   cv::Point3d v = pl.second;
   // Method 1. Solve for shortest line joining two rays, then get midpoint.
@@ -2549,7 +2575,7 @@ double DistanceBetweenLineAndSegment( const cv::Point3d& P0, const cv::Point3d& 
   Qtc.z = Q0.z + tc*v.z;
 
   bool QtcOnSegment = false;
-  if ( x0.x > x1.x ) 
+  if ( x0.x > x1.x )
   {
     if ( (Qtc.x < x0.x) && (Qtc.x > x1.x) )
     {
@@ -2563,9 +2589,9 @@ double DistanceBetweenLineAndSegment( const cv::Point3d& P0, const cv::Point3d& 
       QtcOnSegment = true;
     }
   }
-  
+
   if ( QtcOnSegment )
-  {  
+  {
     distance = sqrt((Psc.x - Qtc.x)*(Psc.x - Qtc.x)
                         +(Psc.y - Qtc.y)*(Psc.y - Qtc.y)
                         +(Psc.z - Qtc.z)*(Psc.z - Qtc.z));
@@ -2593,11 +2619,11 @@ double DistanceBetweenLineAndSegment( const cv::Point3d& P0, const cv::Point3d& 
 
 
 //-----------------------------------------------------------------------------
-std::pair < cv::Point3d , cv::Point3d > TwoPointsToPLambda ( const std::pair < cv::Point3d , cv::Point3d >& twoPointLine ) 
+std::pair < cv::Point3d , cv::Point3d > TwoPointsToPLambda ( const std::pair < cv::Point3d , cv::Point3d >& twoPointLine )
 {
   cv::Point3d delta = twoPointLine.first - twoPointLine.second;;
   double length = sqrt ( ( delta.x * delta.x ) + ( delta.y * delta.y ) + (delta.z * delta.z) );
-  
+
   cv::Point3d u = cv::Point3d (delta.x / length, delta.y/length, delta.z/length) ;
 
   return ( std::pair < cv::Point3d , cv::Point3d > ( twoPointLine.first, u ) );
@@ -2647,24 +2673,24 @@ public:
 
   bool operator () ( const cv::Point3d& point ) const
   {
-    return ( ( point.x < m_XLow ) || ( point.x > m_XHigh ) 
-        || ( point.y < m_YLow ) || ( point.y > m_YHigh ) 
+    return ( ( point.x < m_XLow ) || ( point.x > m_XHigh )
+        || ( point.y < m_YLow ) || ( point.y > m_YHigh )
         || ( point.z < m_ZLow ) || ( point.z > m_ZHigh ) );
   }
-  
+
   bool operator () ( const std::pair < cv::Point3d, double >& point ) const
   {
-    return ( ( point.first.x < m_XLow ) || ( point.first.x > m_XHigh ) 
-        || ( point.first.y < m_YLow ) || ( point.first.y > m_YHigh ) 
+    return ( ( point.first.x < m_XLow ) || ( point.first.x > m_XHigh )
+        || ( point.first.y < m_YLow ) || ( point.first.y > m_YHigh )
         || ( point.first.z < m_ZLow ) || ( point.first.z > m_ZHigh ) );
   }
 
 };
 
 //-----------------------------------------------------------------------------
-unsigned int RemoveOutliers ( std::vector <cv::Point3d>& points, 
-    const double& xLow, const double& xHigh, 
-    const double& yLow, const double& yHigh, 
+unsigned int RemoveOutliers ( std::vector <cv::Point3d>& points,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh,
     const double& zLow, const double& zHigh)
 {
   unsigned int originalSize = points.size();
@@ -2673,9 +2699,9 @@ unsigned int RemoveOutliers ( std::vector <cv::Point3d>& points,
 }
 
 //-----------------------------------------------------------------------------
-unsigned int RemoveOutliers ( std::vector <std::pair < cv::Point3d, double > > & points, 
-    const double& xLow, const double& xHigh, 
-    const double& yLow, const double& yHigh, 
+unsigned int RemoveOutliers ( std::vector <std::pair < cv::Point3d, double > > & points,
+    const double& xLow, const double& xHigh,
+    const double& yLow, const double& yHigh,
     const double& zLow, const double& zHigh)
 {
   unsigned int originalSize = points.size();
