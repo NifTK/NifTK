@@ -86,7 +86,7 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT cv::VideoCapture* InitialiseVideoCapture(st
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT cv::VideoWriter* CreateVideoWriter(std::string filename,
     double frameRate , cv::Size imageSize,
-    int codec = CV_FOURCC('M','J','P','G'),
+    int codec = CV_FOURCC('M','P','G','1'),
     bool isColour = true);
 
 /**
