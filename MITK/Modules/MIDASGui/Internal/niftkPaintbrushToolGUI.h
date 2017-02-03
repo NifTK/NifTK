@@ -27,7 +27,7 @@ namespace niftk
 
 /// \class niftkPaintbrushToolGUI
 /// \brief GUI component for the PaintbrushTool, providing the number of pixels in radius for
-/// the cursor.
+/// the eraser.
 ///
 /// Notice how this class can have a reference to the mitk::Tool it is controlling, and registers with the
 /// mitk::Tool in the OnNewToolAssociated method, and de-registers with the mitk::Tool in the destructor.
@@ -43,8 +43,8 @@ public:
   mitkClassMacro(PaintbrushToolGUI, QmitkToolGUI)
   itkNewMacro(PaintbrushToolGUI)
 
-  /// \brief Method to set or initialise the size of the cursor (radius of influence).
-  void OnCursorSizeChanged(int current);
+  /// \brief Method to set or initialise the size of the eraser (radius of influence).
+  void OnEraserSizeChangedInTool(int current);
 
 signals:
 
@@ -56,7 +56,7 @@ protected slots:
   void OnNewToolAssociated(mitk::Tool*);
 
   /// \brief Qt slot called when the user moves the slider.
-  void OnSliderValueChanged(int value);
+  void OnEraserSizeChangedInGui(int value);
 
 protected:
 

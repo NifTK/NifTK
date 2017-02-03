@@ -107,12 +107,12 @@ public:
   /** We store the name of a property that stores the image region. */
   static const std::string REGION_PROPERTY_NAME;
 
-  /// \brief Gets the cursor size.
+  /// \brief Gets the eraser size.
   /// Default size is 1 pixel.
-  int GetCursorSize() const;
+  int GetEraserSize() const;
 
-  /// \brief Sets the cursor size.
-  void SetCursorSize(int cursorSize);
+  /// \brief Sets the eraser size.
+  void SetEraserSize(int eraserSize);
 
   /// \brief Gets the erosion mode.
   /// If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true.
@@ -122,8 +122,8 @@ public:
   /// If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true.
   void SetErosionMode(bool erosionMode);
 
-  /** Used to send messages when the cursor size is changed or should be updated in a GUI. */
-  mitk::Message1<int> CursorSizeChanged;
+  /** Used to send messages when the eraser size is changed or should be updated in a GUI. */
+  mitk::Message1<int> EraserSizeChanged;
 
   /** Method to enable this class to interact with the Undo/Redo framework. */
   virtual void ExecuteOperation(mitk::Operation* operation);
@@ -225,8 +225,8 @@ private:
   /// \brief Calculates the current image number.
   int GetDataIndex(bool isLeftMouseButton);
 
-  // Cursor size for editing, and cursor type is currently always a cross.
-  int m_CursorSize;
+  // Eraser size for editing, and cursor type is currently always a cross.
+  int m_EraserSize;
 
   // This is the 3D geometry associated with the m_WorkingImage, where we assume both working images have same size and geometry.
   mitk::BaseGeometry* m_WorkingImageGeometry;

@@ -57,7 +57,7 @@ const mitk::OperationType PaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 
 PaintbrushTool::PaintbrushTool()
 : mitk::SegTool2D("")
 , m_Interface(NULL)
-, m_CursorSize(1)
+, m_EraserSize(1)
 , m_WorkingImageGeometry(NULL)
 , m_WorkingImage(NULL)
 , m_ErosionMode(true)
@@ -113,7 +113,7 @@ void PaintbrushTool::Activated()
 {
   Superclass::Activated();
 
-  CursorSizeChanged.Send(m_CursorSize);
+  EraserSizeChanged.Send(m_EraserSize);
 
   // As a legacy solution the display interaction of the new interaction framework is disabled here  to avoid conflicts with tools
   // Note: this only affects InteractionEventObservers (formerly known as Listeners) all DataNode specific interaction will still be enabled
@@ -183,14 +183,14 @@ bool PaintbrushTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode*
   return this->CanHandleEvent(event);
 }
 
-int PaintbrushTool::GetCursorSize() const
+int PaintbrushTool::GetEraserSize() const
 {
-  return m_CursorSize;
+  return m_EraserSize;
 }
 
-void PaintbrushTool::SetCursorSize(int cursorSize)
+void PaintbrushTool::SetEraserSize(int eraserSize)
 {
-  m_CursorSize = cursorSize;
+  m_EraserSize = eraserSize;
 }
 
 bool PaintbrushTool::GetErosionMode() const
@@ -313,7 +313,7 @@ void PaintbrushTool::GetListOfAffectedVoxels(
             processor.AddToList(affectedVoxel);
           }
 
-          int actualCursorSize = m_CursorSize - 1;
+          int actualCursorSize = m_EraserSize - 1;
           if (actualCursorSize > 0)
           {
             for (int dimension = 0; dimension < 2; dimension++)
