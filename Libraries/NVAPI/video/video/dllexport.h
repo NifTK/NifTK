@@ -21,12 +21,15 @@
 // but lets just guard for it anyway
 #ifdef _MSC_VER
 
-#ifdef LIBVIDEO_BUILDING_DLL
-#define LIBVIDEO_DLL_EXPORTS    __declspec(dllexport)
+#if (defined(_WIN32) || defined(WIN32)) && !defined(NIFTK_NVAPI_STATIC) 
+  #ifdef LIBVIDEO_BUILDING_DLL
+    #define LIBVIDEO_DLL_EXPORTS __declspec(dllexport)
+  #else
+    #define LIBVIDEO_DLL_EXPORTS __declspec(dllimport)
+  #endif
 #else
-#define LIBVIDEO_DLL_EXPORTS    __declspec(dllimport)
+  #define LIBVIDEO_DLL_EXPORTS 
 #endif
-
 
 // various bits rely on safely dll-exporting class members which may reference
 //  crt components (that may not be explicitly declared to be exported)
