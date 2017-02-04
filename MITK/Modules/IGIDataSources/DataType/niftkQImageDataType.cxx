@@ -14,9 +14,20 @@
 
 #include "niftkQImageDataType.h"
 #include <mitkExceptionMacro.h>
+#include <cstring>
 
 namespace niftk
 {
+
+//-----------------------------------------------------------------------------
+QImageDataType::~QImageDataType()
+{
+  if (m_Image != nullptr)
+  {
+    delete m_Image;
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 QImageDataType::QImageDataType()
@@ -26,36 +37,101 @@ QImageDataType::QImageDataType()
 
 
 //-----------------------------------------------------------------------------
-QImageDataType::~QImageDataType()
+QImageDataType::QImageDataType(QImage *image)
+: m_Image(image)
 {
-  delete m_Image;
 }
 
 
 //-----------------------------------------------------------------------------
-void QImageDataType::DeepCopy(const QImage& image)
+QImageDataType::QImageDataType(const QImageDataType& other)
+{
+  this->CloneImage(other.m_Image);
+}
+
+
+//-----------------------------------------------------------------------------
+QImageDataType::QImageDataType(QImageDataType&& other)
+: m_Image(other.m_Image)
+{
+  other.m_Image = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------
+QImageDataType& QImageDataType::operator=(const QImageDataType& other)
+{
+  IGIDataType::operator=(other);
+  this->CloneImage(other.m_Image);
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
+QImageDataType& QImageDataType::operator=(QImageDataType&& other)
+{
+  IGIDataType::operator=(other);
+  if (m_Image != nullptr)
+  {
+    delete m_Image;
+  }
+  m_Image = other.m_Image;
+  other.m_Image = nullptr;
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
+void QImageDataType::Clone(const IGIDataType& other)
+{
+  IGIDataType::Clone(other);
+  const QImageDataType* tmp = dynamic_cast<const QImageDataType*>(&other);
+  if (tmp != nullptr)
+  {
+    this->CloneImage(tmp->GetImage());
+  }
+  else
+  {
+    mitkThrow() << "Incorrect data type provided";
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QImageDataType::CloneImage(const QImage *image)
 {
   if (m_Image != nullptr)
   {
-    mitkThrow() << "Image is already set";
+    if (   m_Image->width() == image->width()
+        && m_Image->height() == image->height()
+        && m_Image->byteCount() == image->byteCount()
+        && m_Image->format() == image->format()
+       )
+    {
+      std::memcpy(m_Image->bits(), image->bits(), image->byteCount());
+    }
+    else
+    {
+      delete m_Image;
+      m_Image = new QImage(image->copy());
+    }
   }
-  m_Image = new QImage(image.copy());
-}
-
-
-//-----------------------------------------------------------------------------
-void QImageDataType::ShallowCopy(const QImage& image)
-{
-  if (m_Image != nullptr)
+  else
   {
-    mitkThrow() << "Image is already set";
+    m_Image = new QImage(image->copy());
   }
-  m_Image = new QImage(image);
 }
 
 
 //-----------------------------------------------------------------------------
-const QImage* QImageDataType::GetImage()
+void QImageDataType::SetImage(const QImage *image)
+{
+  this->CloneImage(image);
+}
+
+
+//-----------------------------------------------------------------------------
+const QImage* QImageDataType::GetImage() const
 {
   return m_Image;
 }
