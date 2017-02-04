@@ -30,7 +30,7 @@ QtCameraVideoDataSourceService::QtCameraVideoDataSourceService(
     mitk::DataStorage::Pointer dataStorage)
 : QImageDataSourceService(QString("QtVideo-"),
                           factoryName,
-                          25, // frames per second (ignored, as Qt uses a signal).
+                          25, // expected frames per second (ignored, as Qt uses a signal).
                           50, // ring buffer size,
                           properties,
                           dataStorage

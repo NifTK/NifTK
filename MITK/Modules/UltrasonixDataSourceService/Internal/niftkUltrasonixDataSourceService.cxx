@@ -212,7 +212,13 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: QImageDataSourceService(QString("Ultrasonix-"), factoryName, properties, dataStorage)
+: QImageDataSourceService(QString("Ultrasonix-"),
+                          factoryName,
+                          40, // expected frames per second (ignored, as SDK uses a callback).
+                          80, // ring buffer size
+                          properties,
+                          dataStorage
+                         )
 , m_Ultrasonix(nullptr)
 {
   this->SetStatus("Initialising");
@@ -256,6 +262,8 @@ UltrasonixDataSourceService::~UltrasonixDataSourceService()
 //-----------------------------------------------------------------------------
 void UltrasonixDataSourceService::ProcessImage(const QImage& image)
 {
+  // Note: We can't take ownership of input image.
+
   m_TemporaryImage = new QImage(image); // should just wrap without copy.
   this->GrabData();
   delete m_TemporaryImage;              // then we delete this temporary wrapper.
@@ -263,11 +271,16 @@ void UltrasonixDataSourceService::ProcessImage(const QImage& image)
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataType::Pointer UltrasonixDataSourceService::GrabImage()
+std::unique_ptr<niftk::IGIDataType> UltrasonixDataSourceService::GrabImage()
 {
-  niftk::QImageDataType::Pointer image = niftk::QImageDataType::New();
-  image->DeepCopy(*m_TemporaryImage);  // this should be the only copy in the pipeline.
-  return image.GetPointer();
+  // So this method has to create a clone, to pass as a return
+  // value, like a factory method would do.
+
+  niftk::QImageDataType* wrapper = new niftk::QImageDataType();
+  wrapper->SetImage(m_TemporaryWrapper); // clones it.
+
+  std::unique_ptr<niftk::IGIDataType> result(wrapper);
+  return result;
 }
 
 } // end namespace

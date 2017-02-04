@@ -21,7 +21,7 @@ namespace niftk
 
 /**
 * \class BKMedicalDataSourceService
-* \brief Provides a feed of images from BKMedical MDP, as an IGIDataSourceServiceI.
+* \brief Provides a feed of images from BKMedical 5000, as an IGIDataSourceServiceI.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
@@ -50,7 +50,7 @@ protected:
   /**
    * \see niftk::SingleFrameDataSourceService::GrabImage().
    */
-  virtual niftk::IGIDataType::Pointer GrabImage() override;
+  virtual std::unique_ptr<niftk::IGIDataType> GrabImage() override;
 
 private:
 

@@ -90,11 +90,12 @@ if(BUILD_NiftyIGI)
     OIGTLSystemTimeService
     OpenCVVideoDataSourceService
     QtAudioDataSourceService
+    UltrasonixDataSourceService
 #    NDITrackerDataSourceService
 #    NiftyLinkDataSourceService
 #    NVidiaSDIDataSourceService
     QtCameraVideoDataSourceService
-#    BKMedicalDataSourceService
+    BKMedicalDataSourceService
 #    BlackMagicDataSourceService
   )
 

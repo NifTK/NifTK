@@ -25,7 +25,13 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: QImageDataSourceService(QString("BKMedical-"), factoryName, properties, dataStorage)
+: QImageDataSourceService(QString("BKMedical-"),
+                          factoryName,
+                          40, // expected frames per second,
+                          80, // ring buffer size,
+                          properties,
+                          dataStorage
+                         )
 {
   if(!properties.contains("host"))
   {
@@ -61,13 +67,15 @@ BKMedicalDataSourceService::~BKMedicalDataSourceService()
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataType::Pointer BKMedicalDataSourceService::GrabImage()
+std::unique_ptr<niftk::IGIDataType> BKMedicalDataSourceService::GrabImage()
 {
   QImage localImage;
 
-  niftk::QImageDataType::Pointer wrapper;
-  wrapper->DeepCopy(localImage);
-  return wrapper.GetPointer();
+  niftk::QImageDataType* wrapper = new niftk::QImageDataType();
+  wrapper->SetImage(&localImage); // clones it.
+
+  std::unique_ptr<niftk::IGIDataType> result(wrapper);
+  return result;
 }
 
 } // end namespace
