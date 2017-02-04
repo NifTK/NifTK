@@ -16,6 +16,7 @@
 
 #include <niftkSingleFrameDataSourceService.h>
 #include <niftkIGIDataSourcesExports.h>
+#include "niftkQImageDataType.h"
 
 namespace niftk
 {
@@ -38,6 +39,7 @@ protected:
 
   QImageDataSourceService(QString deviceName,
                           QString factoryName,
+                          unsigned bufferSize,
                           const IGIDataSourceProperties& properties,
                           mitk::DataStorage::Pointer dataStorage
                          );
@@ -46,28 +48,31 @@ protected:
   /**
    * \brief Derived classes implement this to grab a new image.
    */
-  virtual niftk::IGIDataType::Pointer GrabImage() override = 0;
+  virtual std::unique_ptr<niftk::IGIDataType> GrabImage() override = 0;
+
+  /**
+   * \see niftk::SingleFrameDataSourceService::RetrieveImage()
+   */
+  virtual mitk::Image::Pointer RetrieveImage(const niftk::IGIDataSourceI::IGITimeType& requested,
+                                             niftk::IGIDataSourceI::IGITimeType& actualTime,
+                                             unsigned int& outputNumberOfBytes) override;
 
   /**
    * \see niftk::SingleVideoFrameDataSourceService::SaveImage().
    */
-  virtual void SaveImage(const std::string& filename, niftk::IGIDataType::Pointer item) override;
+  virtual void SaveImage(const std::string& filename, niftk::IGIDataType& item) override;
 
   /**
    * \see niftk::SingleVideoFrameDataSourceService::LoadImage().
    */
-  virtual niftk::IGIDataType::Pointer LoadImage(const std::string& filename) override;
-
-  /**
-   * \see niftk::SingleVideoFrameDataSourceService::ConvertImage().
-   */
-  virtual mitk::Image::Pointer ConvertImage(niftk::IGIDataType::Pointer inputImage,
-                                            unsigned int& outputNumberOfBytes) override;
+  virtual std::unique_ptr<niftk::IGIDataType> LoadImage(const std::string& filename) override;
 
 private:
 
   QImageDataSourceService(const QImageDataSourceService&); // deliberately not implemented
   QImageDataSourceService& operator=(const QImageDataSourceService&); // deliberately not implemented
+
+  niftk::QImageDataType m_CachedImage;
 
 }; // end class
 

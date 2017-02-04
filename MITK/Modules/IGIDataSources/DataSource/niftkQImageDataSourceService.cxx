@@ -24,9 +24,10 @@ namespace niftk
 QImageDataSourceService::QImageDataSourceService(
     QString deviceName,
     QString factoryName,
+    unsigned bufferSize,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: SingleFrameDataSourceService(deviceName, factoryName, properties, dataStorage)
+: SingleFrameDataSourceService(deviceName, factoryName, bufferSize, properties, dataStorage)
 {
   this->SetStatus("Initialising");
   this->SetDescription("QImageDataSourceService");
@@ -43,10 +44,10 @@ QImageDataSourceService::~QImageDataSourceService()
 
 //-----------------------------------------------------------------------------
 void QImageDataSourceService::SaveImage(const std::string& filename,
-                                        niftk::IGIDataType::Pointer data)
+                                        niftk::IGIDataType& data)
 {
-  niftk::QImageDataType::Pointer dataType = static_cast<niftk::QImageDataType*>(data.GetPointer());
-  if (dataType.IsNull())
+  niftk::QImageDataType* dataType = dynamic_cast<niftk::QImageDataType*>(&data);
+  if (dataType == nullptr)
   {
     mitkThrow() << "Failed to save QImageDataType as the data received was the wrong type!";
   }
@@ -63,39 +64,38 @@ void QImageDataSourceService::SaveImage(const std::string& filename,
     mitkThrow() << "Failed to save QImageDataType to file:" << filename;
   }
 
-  data->SetIsSaved(true);
+  data.SetIsSaved(true);
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataType::Pointer QImageDataSourceService::LoadImage(const std::string& filename)
+std::unique_ptr<niftk::IGIDataType> QImageDataSourceService::LoadImage(const std::string& filename)
 {
-  QImage image;
-  bool success = image.load(QString::fromStdString(filename));
+  QImage *image = new QImage();
+  bool success = image->load(QString::fromStdString(filename));
   if (!success)
   {
     mitkThrow() << "Failed to load image:" << filename;
   }
 
-  niftk::QImageDataType::Pointer wrapper = niftk::QImageDataType::New();
-  wrapper->ShallowCopy(image);
-
-  return wrapper.GetPointer();
+  std::unique_ptr<niftk::IGIDataType> result(new niftk::QImageDataType(image));
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Image::Pointer QImageDataSourceService::ConvertImage(niftk::IGIDataType::Pointer inputImage,
-                                                           unsigned int& outputNumberOfBytes)
+mitk::Image::Pointer QImageDataSourceService::RetrieveImage(const niftk::IGIDataSourceI::IGITimeType& requestedTime,
+                                                            niftk::IGIDataSourceI::IGITimeType& actualTime,
+                                                            unsigned int& outputNumberOfBytes)
 {
-  niftk::QImageDataType::Pointer dataType = static_cast<niftk::QImageDataType*>(inputImage.GetPointer());
-  if (dataType.IsNull())
+  bool gotFromBuffer = m_Buffer.CopyOutItem(requestedTime, m_CachedImage);
+  if (!gotFromBuffer)
   {
-    this->SetStatus("Failed");
-    mitkThrow() << "Failed to extract QImageDataType!";
+    MITK_INFO << "QImageDataSourceService: Failed to find data for time:" << requestedTime;
+    return nullptr;
   }
 
-  const QImage* img = dataType->GetImage();
+  const QImage* img = m_CachedImage.GetImage();
   if (img == nullptr)
   {
     this->SetStatus("Failed");

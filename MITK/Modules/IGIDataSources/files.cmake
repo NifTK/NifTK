@@ -30,7 +30,7 @@ set(CPP_FILES
   #DataSource/niftkIGIDataSourceBuffer.cxx
   #DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
   DataSource/niftkSingleFrameDataSourceService.cxx
-  #DataSource/niftkQImageDataSourceService.cxx
+  DataSource/niftkQImageDataSourceService.cxx
   Threads/niftkIGITimerBasedThread.cxx
   Threads/niftkIGIDataSourceGrabbingThread.cxx
   Threads/niftkIGIDataSourceBackgroundSaveThread.cxx
