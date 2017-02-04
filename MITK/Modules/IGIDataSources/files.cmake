@@ -12,18 +12,18 @@
 #
 #============================================================================*/
 set(H_FILES
+  Interfaces/niftkIGICleanableDataSourceI.h
+  Interfaces/niftkIGIDataSourceI.h
+  Interfaces/niftkIGILocalDataSourceI.h
+  Interfaces/niftkIGISaveableDataSourceI.h
+  Interfaces/niftkIGIBufferedSaveableDataSourceI.h
 )
 
 set(CPP_FILES
-  Interfaces/niftkIGIDataSourceI.cxx
-  Interfaces/niftkIGILocalDataSourceI.cxx
-  Interfaces/niftkIGISaveableDataSourceI.cxx
-  Interfaces/niftkIGICleanableDataSourceI.cxx
-  #Interfaces/niftkIGIBufferedSaveableDataSourceI.cxx
   Interfaces/niftkIGIDataSourceFactoryServiceI.cxx
   Interfaces/niftkIGIDataSourceFactoryServiceRAII.cxx
   DataType/niftkIGIDataType.cxx
-  #DataType/niftkQImageDataType.cxx
+  DataType/niftkQImageDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceLocker.cxx
   DataSource/niftkIGIDataSourceRingBuffer.cxx
