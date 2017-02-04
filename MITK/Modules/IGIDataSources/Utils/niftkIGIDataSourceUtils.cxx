@@ -27,10 +27,10 @@ QString GetPreferredSlash()
 //-----------------------------------------------------------------------------
 void ProbeTimeStampFiles(QDir path,
                          const QString& suffix,
-                         std::set<niftk::IGIDataType::IGITimeType>& timeStamps
+                         std::set<niftk::IGIDataSourceI::IGITimeType>& timeStamps
                          )
 {
-  QHash<niftk::IGIDataType::IGITimeType, QString> timeStampToFileName; // unused.
+  QHash<niftk::IGIDataSourceI::IGITimeType, QString> timeStampToFileName; // unused.
   niftk::ProbeTimeStampFiles(path, suffix, timeStamps, timeStampToFileName);
 }
 
@@ -38,10 +38,10 @@ void ProbeTimeStampFiles(QDir path,
 //-----------------------------------------------------------------------------
 void ProbeTimeStampFiles(QDir path,
                          const QString& suffix,
-                         std::set<niftk::IGIDataType::IGITimeType>& timeStamps,
-                         QHash<niftk::IGIDataType::IGITimeType, QString>& timeStampToFileName)
+                         std::set<niftk::IGIDataSourceI::IGITimeType>& timeStamps,
+                         QHash<niftk::IGIDataSourceI::IGITimeType, QString>& timeStampToFileName)
 {
-  assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<niftk::IGIDataType::IGITimeType>::max());
+  assert(std::numeric_limits<qulonglong>::max() >= std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::max());
 
   if (!suffix.isEmpty())
   {
@@ -76,8 +76,8 @@ void ProbeTimeStampFiles(QDir path,
 //-----------------------------------------------------------------------------
 void GetPlaybackIndex(const QString& directory,
                       const QString& fileExtension,
-                      QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >& bufferToTimeStamp,
-                      QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> >& bufferToTimeStampToFileNames
+                      QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >& bufferToTimeStamp,
+                      QMap<QString, QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> >& bufferToTimeStampToFileNames
                       )
 {
   bufferToTimeStamp.clear();
@@ -100,16 +100,16 @@ void GetPlaybackIndex(const QString& directory,
         QDir  bufferLevelDir(recordingDir.path() + QDir::separator() + bufferLevelName);
         assert(bufferLevelDir.exists());
 
-        std::set<niftk::IGIDataType::IGITimeType> timeStamps;
-        QHash<niftk::IGIDataType::IGITimeType, QString> timeStampsToFileName;
+        std::set<niftk::IGIDataSourceI::IGITimeType> timeStamps;
+        QHash<niftk::IGIDataSourceI::IGITimeType, QString> timeStampsToFileName;
         niftk::ProbeTimeStampFiles(bufferLevelDir, fileExtension, timeStamps, timeStampsToFileName);
 
         // If the bufferLevel folder contains nothing that looks like a time-stamped file,
         // then we start to hunt for sub-directories below that.
         if (timeStamps.empty())
         {
-          QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > subBufferToTimeStamp;
-          QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> > subBufferToTimeStampToFileNames;
+          QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> > subBufferToTimeStamp;
+          QMap<QString, QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> > subBufferToTimeStampToFileNames;
 
           GetPlaybackIndex(bufferLevelDir.absolutePath(),
                            fileExtension,
@@ -118,23 +118,23 @@ void GetPlaybackIndex(const QString& directory,
 
           if (!subBufferToTimeStamp.isEmpty())
           {
-            std::set<niftk::IGIDataType::IGITimeType> combinedSet;
-            QHash<niftk::IGIDataType::IGITimeType, QStringList> combinedHash;
+            std::set<niftk::IGIDataSourceI::IGITimeType> combinedSet;
+            QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> combinedHash;
 
             // Iterate through all timestamps, and combine.
-            QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator iter;
+            QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >::iterator iter;
             for (iter = subBufferToTimeStamp.begin(); iter != subBufferToTimeStamp.end(); ++iter)
             {
               combinedSet.insert(iter.value().begin(), iter.value().end());
             }
 
             // Iterate through all timestamps, combining filenames.
-            std::set<niftk::IGIDataType::IGITimeType>::iterator iter2;
+            std::set<niftk::IGIDataSourceI::IGITimeType>::iterator iter2;
             for (iter2 = combinedSet.begin(); iter2 != combinedSet.end(); ++iter2)
             {
               QStringList tmp;
 
-              QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> >::iterator iter3;
+              QMap<QString, QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> >::iterator iter3;
               for (iter3 = subBufferToTimeStampToFileNames.begin();
                    iter3 != subBufferToTimeStampToFileNames.end();
                    ++iter3)
@@ -158,10 +158,10 @@ void GetPlaybackIndex(const QString& directory,
         }
         else
         {
-          QHash<niftk::IGIDataType::IGITimeType, QStringList> timeStampsToFileNames;
+          QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> timeStampsToFileNames;
 
           // Convert single file name to stringlist
-          QHash<niftk::IGIDataType::IGITimeType, QString>::iterator iter;
+          QHash<niftk::IGIDataSourceI::IGITimeType, QString>::iterator iter;
           for (iter = timeStampsToFileName.begin(); iter != timeStampsToFileName.end(); ++iter)
           {
             QStringList list;
@@ -193,17 +193,17 @@ void GetPlaybackIndex(const QString& directory,
 //-----------------------------------------------------------------------------
 bool ProbeRecordedData(const QString& path,
                        const QString& fileExtension,
-                       niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                       niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+                       niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                       niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
 
-  niftk::IGIDataType::IGITimeType  firstTimeStampFound = std::numeric_limits<niftk::IGIDataType::IGITimeType>::max();
-  niftk::IGIDataType::IGITimeType  lastTimeStampFound  = std::numeric_limits<niftk::IGIDataType::IGITimeType>::min();
+  niftk::IGIDataSourceI::IGITimeType  firstTimeStampFound = std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::max();
+  niftk::IGIDataSourceI::IGITimeType  lastTimeStampFound  = std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::min();
 
   // Note, that each tool may have different min and max, so we want the
   // most minimum and most maximum of all the sub directories.
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > bufferToTimeStamp;
-  QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> > bufferToTimeStampToFileNames;
+  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> > bufferToTimeStamp;
+  QMap<QString, QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> > bufferToTimeStampToFileNames;
 
   niftk::GetPlaybackIndex(path, fileExtension, bufferToTimeStamp, bufferToTimeStampToFileNames);
   if (bufferToTimeStamp.isEmpty())
@@ -211,18 +211,18 @@ bool ProbeRecordedData(const QString& path,
     return false;
   }
 
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator iter;
+  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >::iterator iter;
   for (iter = bufferToTimeStamp.begin(); iter != bufferToTimeStamp.end(); ++iter)
   {
     if (!iter.value().empty())
     {
-      niftk::IGIDataType::IGITimeType first = *((*iter).begin());
+      niftk::IGIDataSourceI::IGITimeType first = *((*iter).begin());
       if (first < firstTimeStampFound)
       {
         firstTimeStampFound = first;
       }
 
-      niftk::IGIDataType::IGITimeType last = *(--((*iter).end()));
+      niftk::IGIDataSourceI::IGITimeType last = *(--((*iter).end()));
       if (last > lastTimeStampFound)
       {
         lastTimeStampFound = last;
@@ -237,7 +237,7 @@ bool ProbeRecordedData(const QString& path,
   {
     *lastTimeStampInStore = lastTimeStampFound;
   }
-  return firstTimeStampFound != std::numeric_limits<niftk::IGIDataType::IGITimeType>::max();
+  return firstTimeStampFound != std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::max();
 }
 
 } // end namespace

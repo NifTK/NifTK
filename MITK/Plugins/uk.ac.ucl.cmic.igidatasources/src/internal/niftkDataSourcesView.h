@@ -94,7 +94,7 @@ private slots:
   /**
   * \brief We listen to the IGIDataSourceManager to publish the update signal.
   */
-  void OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType timeStamp);
+  void OnUpdateGuiEnd(niftk::IGIDataSourceI::IGITimeType timeStamp);
 
   /**
   * \brief Listens for IGIDataSourceManager's RecordingStarted signal and forwards it onto the CTK bus.

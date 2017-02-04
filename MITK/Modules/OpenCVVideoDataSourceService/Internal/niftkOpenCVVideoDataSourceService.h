@@ -15,8 +15,9 @@
 #define niftkOpenCVVideoDataSourceService_h
 
 #include <niftkSingleFrameDataSourceService.h>
-
 #include <niftkIGIDataSourceGrabbingThread.h>
+#include "niftkOpenCVVideoDataType.h"
+
 #include <mitkOpenCVVideoSource.h>
 
 namespace niftk
@@ -26,7 +27,7 @@ namespace niftk
 * \class OpenCVVideoDataSourceService
 * \brief Provides an OpenCV video feed, as an IGIDataSourceServiceI.
 *
-* Note: All errors should thrown as mitk::Exception or sub-classes thereof.
+* Note: All errors should be thrown as mitk::Exception or sub-classes thereof.
 */
 class OpenCVVideoDataSourceService : public SingleFrameDataSourceService
 {
@@ -47,23 +48,24 @@ protected:
   /**
    * \see niftk::SingleFrameDataSourceService::GrabImage().
    */
-  virtual niftk::IGIDataType::Pointer GrabImage() override;
+  virtual std::unique_ptr<niftk::IGIDataType> GrabImage() override;
+
+  /**
+   * \see niftk::SingleFrameDataSourceService::RetrieveImage()
+   */
+  virtual mitk::Image::Pointer RetrieveImage(const niftk::IGIDataSourceI::IGITimeType& requested,
+                                             niftk::IGIDataSourceI::IGITimeType& actualTime,
+                                             unsigned int& outputNumberOfBytes) override;
 
   /**
    * \see niftk::SingleFrameDataSourceService::SaveImage().
    */
-  virtual void SaveImage(const std::string& filename, niftk::IGIDataType::Pointer item) override;
+  virtual void SaveImage(const std::string& filename, niftk::IGIDataType& item) override;
 
   /**
    * \see niftk::SingleFrameDataSourceService::LoadImage().
    */
-  virtual niftk::IGIDataType::Pointer LoadImage(const std::string& filename) override;
-
-  /**
-   * \see niftk::SingleFrameDataSourceService::ConvertImage().
-   */
-  virtual mitk::Image::Pointer ConvertImage(niftk::IGIDataType::Pointer inputImage,
-                                            unsigned int& outputNumberOfBytes) override;
+  virtual std::unique_ptr<niftk::IGIDataType> LoadImage(const std::string& filename) override;
 
 private:
 
@@ -72,6 +74,7 @@ private:
 
   mitk::OpenCVVideoSource::Pointer    m_VideoSource;
   niftk::IGIDataSourceGrabbingThread* m_DataGrabbingThread;
+  niftk::OpenCVVideoDataType          m_CachedImage;
 
 }; // end class
 

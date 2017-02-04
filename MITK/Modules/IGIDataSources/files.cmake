@@ -11,23 +11,26 @@
 #  See LICENSE.txt in the top level directory for details.
 #
 #============================================================================*/
+set(H_FILES
+)
 
 set(CPP_FILES
   Interfaces/niftkIGIDataSourceI.cxx
   Interfaces/niftkIGILocalDataSourceI.cxx
   Interfaces/niftkIGISaveableDataSourceI.cxx
   Interfaces/niftkIGICleanableDataSourceI.cxx
-  Interfaces/niftkIGIBufferedSaveableDataSourceI.cxx
+  #Interfaces/niftkIGIBufferedSaveableDataSourceI.cxx
   Interfaces/niftkIGIDataSourceFactoryServiceI.cxx
   Interfaces/niftkIGIDataSourceFactoryServiceRAII.cxx
   DataType/niftkIGIDataType.cxx
-  DataType/niftkQImageDataType.cxx
+  #DataType/niftkQImageDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceLocker.cxx
-  DataSource/niftkIGIDataSourceBuffer.cxx
-  DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
+  DataSource/niftkIGIDataSourceRingBuffer.cxx
+  #DataSource/niftkIGIDataSourceBuffer.cxx
+  #DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
   DataSource/niftkSingleFrameDataSourceService.cxx
-  DataSource/niftkQImageDataSourceService.cxx
+  #DataSource/niftkQImageDataSourceService.cxx
   Threads/niftkIGITimerBasedThread.cxx
   Threads/niftkIGIDataSourceGrabbingThread.cxx
   Threads/niftkIGIDataSourceBackgroundSaveThread.cxx

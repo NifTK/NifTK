@@ -18,6 +18,11 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
+IGIDataType::~IGIDataType()
+{
+}
+
+//-----------------------------------------------------------------------------
 IGIDataType::IGIDataType()
 : m_TimeStamp(0)
 , m_Duration(0)
@@ -28,24 +33,62 @@ IGIDataType::IGIDataType()
 {
 }
 
+
 //-----------------------------------------------------------------------------
-IGIDataType::~IGIDataType()
+IGIDataType::IGIDataType(const IGIDataType& other)
+: m_TimeStamp(other.m_TimeStamp)
+, m_Duration(other.m_Duration)
+, m_FrameId(other.m_FrameId)
+, m_IsSaved(other.m_IsSaved)
+, m_ShouldBeSaved(other.m_ShouldBeSaved)
+, m_FileName(other.m_FileName)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-IGIDataType::IGITimeType IGIDataType::GetTimeStampInNanoSeconds() const
+IGIDataType::IGIDataType(IGIDataType&& other)
+: m_TimeStamp(std::move(other.m_TimeStamp))
+, m_Duration(std::move(other.m_Duration))
+, m_FrameId(std::move(other.m_FrameId))
+, m_IsSaved(std::move(other.m_IsSaved))
+, m_ShouldBeSaved(std::move(other.m_ShouldBeSaved))
+, m_FileName(std::move(other.m_FileName))
 {
-  return m_TimeStamp;
+
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIDataType::SetTimeStampInNanoSeconds(const IGIDataType::IGITimeType& time)
+IGIDataType& IGIDataType::operator=(const IGIDataType& other)
 {
-  m_TimeStamp = time;
-  this->Modified();
+  this->Clone(other);
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
+IGIDataType& IGIDataType::operator=(IGIDataType&& other)
+{
+  m_TimeStamp = other.m_TimeStamp;
+  m_Duration = other.m_Duration;
+  m_FrameId = other.m_FrameId;
+  m_IsSaved = other.m_IsSaved;
+  m_ShouldBeSaved = other.m_ShouldBeSaved;
+  m_FileName = other.m_FileName;
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataType::Clone(const IGIDataType& other)
+{
+  m_TimeStamp = other.m_TimeStamp;
+  m_Duration = other.m_Duration;
+  m_FrameId = other.m_FrameId;
+  m_IsSaved = other.m_IsSaved;
+  m_ShouldBeSaved = other.m_ShouldBeSaved;
+  m_FileName = other.m_FileName;
 }
 
 } // end namespace

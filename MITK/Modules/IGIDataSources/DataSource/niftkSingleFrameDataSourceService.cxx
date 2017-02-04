@@ -31,6 +31,7 @@ niftk::IGIDataSourceLocker SingleFrameDataSourceService::s_Lock;
 SingleFrameDataSourceService::SingleFrameDataSourceService(
   QString deviceName,
   QString factoryName,
+  unsigned bufferSize,
   const IGIDataSourceProperties& properties,
   mitk::DataStorage::Pointer dataStorage)
 : IGIDataSource((deviceName + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
@@ -39,10 +40,9 @@ SingleFrameDataSourceService::SingleFrameDataSourceService(
 , m_Lock(QMutex::Recursive)
 , m_ChannelNumber(0)
 , m_FrameId(0)
-, m_Buffer(nullptr)
-, m_BackgroundDeleteThread(nullptr)
+, m_Buffer(bufferSize)
 , m_ApproxIntervalInMilliseconds(0)
-, m_FileExtension(".jpg")
+, m_FileExtension(".jpg") // faster than .png, but lossy.
 {
   this->SetStatus("Initialising");
 
@@ -56,21 +56,10 @@ SingleFrameDataSourceService::SingleFrameDataSourceService(
   m_ChannelNumber = (fullDeviceName.remove(0, deviceName.length())).toInt();
 
   int defaultFramesPerSecond = 25;
-  m_Buffer = niftk::IGIDataSourceBuffer::New(defaultFramesPerSecond * 2);
-
   this->SetApproximateIntervalInMilliseconds(1000 / defaultFramesPerSecond);
   this->SetShouldUpdate(true);
   this->SetProperties(properties);
-
-  m_BackgroundDeleteThread = new niftk::IGIDataSourceBackgroundDeleteThread(NULL, this);
-  m_BackgroundDeleteThread->SetInterval(2000); // try deleting images every 2 seconds.
-  m_BackgroundDeleteThread->start();
-  if (!m_BackgroundDeleteThread->isRunning())
-  {
-    mitkThrow() << "Failed to start background deleting thread";
-  }
-
-  this->SetDescription("Local video source.");
+  this->SetDescription("Local image source.");
   this->SetStatus("Initialised");
   this->Modified();
 }
@@ -80,9 +69,6 @@ SingleFrameDataSourceService::SingleFrameDataSourceService(
 SingleFrameDataSourceService::~SingleFrameDataSourceService()
 {
   s_Lock.RemoveSource(m_ChannelNumber);
-
-  m_BackgroundDeleteThread->ForciblyStop();
-  delete m_BackgroundDeleteThread;
 }
 
 
@@ -103,7 +89,7 @@ void SingleFrameDataSourceService::SetProperties(const IGIDataSourceProperties& 
   if (properties.contains("lag"))
   {
     int milliseconds = (properties.value("lag")).toInt();
-    m_Buffer->SetLagInMilliseconds(milliseconds);
+    m_Buffer.SetLagInMilliseconds(milliseconds);
 
     MITK_INFO << "SingleFrameDataSourceService(" << this->GetName().toStdString()
               << "): Set lag to " << milliseconds << " ms.";
@@ -115,35 +101,27 @@ void SingleFrameDataSourceService::SetProperties(const IGIDataSourceProperties& 
 IGIDataSourceProperties SingleFrameDataSourceService::GetProperties() const
 {
   IGIDataSourceProperties props;
-  props.insert("lag", m_Buffer->GetLagInMilliseconds());
+  props.insert("lag", m_Buffer.GetLagInMilliseconds());
 
   MITK_INFO << "SingleFrameDataSourceService(:" << this->GetName().toStdString()
-            << "):Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
+            << "):Retrieved current value of lag as " << m_Buffer.GetLagInMilliseconds();
 
   return props;
 }
 
 
 //-----------------------------------------------------------------------------
-void SingleFrameDataSourceService::CleanBuffer()
-{
-  // Buffer itself should be threadsafe.
-  m_Buffer->CleanBuffer();
-}
-
-
-//-----------------------------------------------------------------------------
-bool SingleFrameDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                                     niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+bool SingleFrameDataSourceService::ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                                                     niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
   // zero is a suitable default value. it's unlikely that anyone recorded a legitime data set in the middle ages.
-  niftk::IGIDataType::IGITimeType  firstTimeStampFound = 0;
-  niftk::IGIDataType::IGITimeType  lastTimeStampFound  = 0;
+  niftk::IGIDataSourceI::IGITimeType firstTimeStampFound = 0;
+  niftk::IGIDataSourceI::IGITimeType lastTimeStampFound  = 0;
 
   QDir directory(this->GetPlaybackDirectory());
   if (directory.exists())
   {
-    std::set<niftk::IGIDataType::IGITimeType> timeStamps;
+    std::set<niftk::IGIDataSourceI::IGITimeType> timeStamps;
     niftk::ProbeTimeStampFiles(directory, m_FileExtension, timeStamps);
     if (!timeStamps.empty())
     {
@@ -166,19 +144,19 @@ bool SingleFrameDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITime
 
 
 //-----------------------------------------------------------------------------
-void SingleFrameDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                                                 niftk::IGIDataType::IGITimeType lastTimeStamp)
+void SingleFrameDataSourceService::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                                                 niftk::IGIDataSourceI::IGITimeType lastTimeStamp)
 {
   QMutexLocker locker(&m_Lock);
 
   IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
 
-  m_Buffer->DestroyBuffer();
+  m_Buffer.CleanBuffer();
 
   QDir directory(this->GetPlaybackDirectory());
   if (directory.exists())
   {
-    std::set<niftk::IGIDataType::IGITimeType> timeStamps;
+    std::set<niftk::IGIDataSourceI::IGITimeType> timeStamps;
     niftk::ProbeTimeStampFiles(directory, m_FileExtension, timeStamps);
     m_PlaybackIndex = timeStamps;
   }
@@ -195,33 +173,35 @@ void SingleFrameDataSourceService::StopPlayback()
   QMutexLocker locker(&m_Lock);
 
   m_PlaybackIndex.clear();
-  m_Buffer->DestroyBuffer();
+  m_Buffer.CleanBuffer();
 
   IGIDataSource::StopPlayback();
 }
 
 
 //-----------------------------------------------------------------------------
-void SingleFrameDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
+void SingleFrameDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp)
 {
+  QMutexLocker locker(&m_Lock);
+
   assert(this->GetIsPlayingBack());
   assert(!m_PlaybackIndex.empty()); // Should have failed probing if no data.
 
   // this will find us the timestamp right after the requested one
-  std::set<niftk::IGIDataType::IGITimeType>::const_iterator i = m_PlaybackIndex.upper_bound(requestedTimeStamp);
+  std::set<niftk::IGIDataSourceI::IGITimeType>::const_iterator i = m_PlaybackIndex.upper_bound(requestedTimeStamp);
   if (i != m_PlaybackIndex.begin())
   {
     --i;
   }
   if (i != m_PlaybackIndex.end())
   {
-    if (!m_Buffer->Contains(*i))
+    if (!m_Buffer.Contains(*i))
     {
       std::ostringstream  filename;
       filename << this->GetPlaybackDirectory().toStdString() << '/' << (*i) << m_FileExtension.toStdString();
 
-      niftk::IGIDataType::Pointer wrapper = this->LoadImage(filename.str());
-      if (wrapper.IsNull())
+      std::unique_ptr<niftk::IGIDataType> wrapper = this->LoadImage(filename.str());
+      if (!wrapper)
       {
         mitkThrow() << "Failed to create wrapper for:" << filename.str();
       }
@@ -229,7 +209,7 @@ void SingleFrameDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
       wrapper->SetFrameId(m_FrameId++);
       wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
       wrapper->SetShouldBeSaved(false);
-      m_Buffer->AddToBuffer(wrapper.GetPointer());
+      m_Buffer.AddToBuffer(wrapper);
     }
     this->SetStatus("Playing back");
   }
@@ -239,27 +219,22 @@ void SingleFrameDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
 //-----------------------------------------------------------------------------
 void SingleFrameDataSourceService::GrabData()
 {
-  {
-    QMutexLocker locker(&m_Lock);
+  QMutexLocker locker(&m_Lock);
 
-    if (this->GetIsPlayingBack())
-    {
-      return;
-    }
+  if (this->GetIsPlayingBack())
+  {
+    return;
   }
 
-  niftk::IGIDataType::Pointer wrapper = this->GrabImage();
+  std::unique_ptr<niftk::IGIDataType> wrapper = this->GrabImage();
   wrapper->SetTimeStampInNanoSeconds(this->GetTimeStampInNanoseconds());
   wrapper->SetFrameId(m_FrameId++);
   wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
   wrapper->SetShouldBeSaved(this->GetIsRecording());
 
-  // Save synchronously.
-  // This has the side effect that if saving is too slow,
-  // the QTimers just won't keep up, and start missing pulses.
   if (this->GetIsRecording())
   {
-    this->SaveItem(wrapper.GetPointer());
+    this->SaveItem(*wrapper);
     this->SetStatus("Saving");
   }
   else
@@ -267,43 +242,42 @@ void SingleFrameDataSourceService::GrabData()
     this->SetStatus("Grabbing");
   }
 
-  // Putting this after the save, as we don't want to
-  // add to the buffer in this grabbing thread, then the
-  // m_BackgroundDeleteThread deletes the object while
-  // we are trying to save the data.
-  m_Buffer->AddToBuffer(wrapper.GetPointer());
+  m_Buffer.AddToBuffer(wrapper);
 }
 
 
 //-----------------------------------------------------------------------------
-void SingleFrameDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
+void SingleFrameDataSourceService::SaveItem(niftk::IGIDataType& data)
 {
   QString directoryPath = this->GetRecordingDirectory();
   QDir directory(directoryPath);
   if (directory.mkpath(directoryPath))
   {
     QString fileName =  directoryPath + QDir::separator()
-                        + tr("%1").arg(data->GetTimeStampInNanoSeconds()) + m_FileExtension;
+                        + tr("%1").arg(data.GetTimeStampInNanoSeconds()) + m_FileExtension;
     this->SaveImage(fileName.toStdString(), data);
-    data->SetIsSaved(true);
+    data.SetIsSaved(true);
   }
   else
   {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as could not create " << directoryPath.toStdString();
+    mitkThrow() << "Failed to save image as could not create " << directoryPath.toStdString();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> SingleFrameDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
+std::vector<IGIDataItemInfo> SingleFrameDataSourceService::Update(const niftk::IGIDataSourceI::IGITimeType& time)
 {
-  std::vector<IGIDataItemInfo> infos;
+  QMutexLocker locker(&m_Lock);
+
+  m_Buffer.UpdateFrameRate();
 
   // Create default return status.
   // So, we always return at least 1 row.
+  std::vector<IGIDataItemInfo> infos;
   IGIDataItemInfo info;
   info.m_Name = this->GetName();
-  info.m_FramesPerSecond = m_Buffer->GetFrameRate();
+  info.m_FramesPerSecond = m_Buffer.GetFrameRate();
   info.m_IsLate = true;
   info.m_LagInMilliseconds = 0;
   infos.push_back(info);
@@ -321,17 +295,17 @@ std::vector<IGIDataItemInfo> SingleFrameDataSourceService::Update(const niftk::I
     this->PlaybackData(time);
   }
 
-  if (m_Buffer->GetBufferSize() == 0)
+  if (m_Buffer.GetBufferSize() == 0)
   {
     return infos;
   }
 
-  if(m_Buffer->GetFirstTimeStamp() > time)
+  if(m_Buffer.GetFirstTimeStamp() > time)
   {
     MITK_DEBUG << "SingleFrameDataSourceService::Update(), requested time is before buffer time! "
-               << " Buffer size=" << m_Buffer->GetBufferSize()
+               << " Buffer size=" << m_Buffer.GetBufferSize()
                << ", time=" << time
-               << ", firstTime=" << m_Buffer->GetFirstTimeStamp();
+               << ", firstTime=" << m_Buffer.GetFirstTimeStamp();
     return infos;
   }
 
@@ -342,22 +316,16 @@ std::vector<IGIDataItemInfo> SingleFrameDataSourceService::Update(const niftk::I
                 << this->GetName().toStdString() << std::endl;
   }
 
-  niftk::IGIDataType::Pointer dataType = m_Buffer->GetItem(time);
-  if (dataType.IsNull())
-  {
-    // Can have no data at that time, if the update thread triggers before the grab thread.
-
-    MITK_DEBUG << "Failed to find data for time " << time
-               << ", size=" << m_Buffer->GetBufferSize()
-               << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
-    return infos;
-  }
-
+  niftk::IGIDataSourceI::IGITimeType actualTime;
   unsigned int numberOfBytes = 0;
-  mitk::Image::Pointer convertedImage = this->ConvertImage(dataType, numberOfBytes);
+
+  mitk::Image::Pointer convertedImage = this->RetrieveImage(time, actualTime, numberOfBytes);
   if (numberOfBytes == 0)
   {
-    mitkThrow() << "Failed to convert data (zero bytes!)";
+    MITK_DEBUG << "Failed to find data for time " << time
+               << ", size=" << m_Buffer.GetBufferSize()
+               << ", last=" << m_Buffer.GetLastTimeStamp() << std::endl;
+    return infos;
   }
 
   mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
@@ -401,8 +369,8 @@ std::vector<IGIDataItemInfo> SingleFrameDataSourceService::Update(const niftk::I
   imageInNode->GetVtkImageData()->Modified();
   node->Modified();
 
-  infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
-  infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
+  infos[0].m_IsLate = this->IsLate(time, actualTime);
+  infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, actualTime);
 
   return infos;
 }

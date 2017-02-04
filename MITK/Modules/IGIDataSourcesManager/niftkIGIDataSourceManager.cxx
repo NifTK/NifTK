@@ -557,8 +557,8 @@ void IGIDataSourceManager::FreezeDataSource(unsigned int i, bool isFrozen)
 //-----------------------------------------------------------------------------
 void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
                                          const QString& descriptorPath,
-                                         IGIDataType::IGITimeType& overallStartTime,
-                                         IGIDataType::IGITimeType& overallEndTime,
+                                         IGIDataSourceI::IGITimeType& overallStartTime,
+                                         IGIDataSourceI::IGITimeType& overallEndTime,
                                          int& sliderMax,
                                          int& sliderSingleStep,
                                          int& sliderPageStep,
@@ -585,8 +585,8 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
       QString nameOfSource = iter.key();
       QString nameOfFactory = iter.value();
 
-      IGIDataType::IGITimeType startTime;
-      IGIDataType::IGITimeType endTime;
+      IGIDataSourceI::IGITimeType startTime;
+      IGIDataSourceI::IGITimeType endTime;
       bool canDo = false;
 
       if (!m_NameToFactoriesMap.contains(nameOfFactory)
@@ -652,8 +652,8 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
   // quite often doing one mouse-wheel step, corresponds to 3 lines (events), but this is configurable
   // (in control panel somewhere, but we ignore that here, single step is whatever the user's machine says).
 
-  IGIDataType::IGITimeType tenthASecondInNanoseconds = 100000000;
-  IGIDataType::IGITimeType tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
+  IGIDataSourceI::IGITimeType tenthASecondInNanoseconds = 100000000;
+  IGIDataSourceI::IGITimeType tenthASecondStep = tenthASecondInNanoseconds / m_PlaybackSliderFactor;
   tenthASecondStep = std::max(tenthASecondStep, (igtlUint64) 1);
   assert(tenthASecondStep < std::numeric_limits<int>::max());
   sliderSingleStep = static_cast<int>(tenthASecondStep);
@@ -669,7 +669,7 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
   m_PlaybackSliderValue = sliderValue;
   m_PlaybackSliderMaxValue = sliderMax;
 
-  IGIDataType::IGITimeType currentTime = this->ComputeTimeFromSlider(sliderValue);
+  IGIDataSourceI::IGITimeType currentTime = this->ComputeTimeFromSlider(sliderValue);
   this->SetPlaybackTime(currentTime);
 
   this->SetIsPlayingBack(true);
@@ -690,9 +690,9 @@ void IGIDataSourceManager::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-IGIDataType::IGITimeType IGIDataSourceManager::ComputeTimeFromSlider(int sliderValue) const
+IGIDataSourceI::IGITimeType IGIDataSourceManager::ComputeTimeFromSlider(int sliderValue) const
 {
-  IGIDataType::IGITimeType result = m_PlaybackSliderBase
+  IGIDataSourceI::IGITimeType result = m_PlaybackSliderBase
       + ((static_cast<double>(sliderValue) / static_cast<double>(m_PlaybackSliderMaxValue))
          * m_PlaybackSliderMaxValue * m_PlaybackSliderFactor);
 
@@ -703,8 +703,8 @@ IGIDataType::IGITimeType IGIDataSourceManager::ComputeTimeFromSlider(int sliderV
 //-----------------------------------------------------------------------------
 int IGIDataSourceManager::ComputePlaybackTimeSliderValue(QString textEditField) const
 {
-  IGIDataType::IGITimeType maxSliderTime  = m_PlaybackSliderBase
-      + ((IGIDataType::IGITimeType) m_PlaybackSliderMaxValue * m_PlaybackSliderFactor);
+  IGIDataSourceI::IGITimeType maxSliderTime  = m_PlaybackSliderBase
+      + ((IGIDataSourceI::IGITimeType) m_PlaybackSliderMaxValue * m_PlaybackSliderFactor);
 
   // Try to parse as single number, a timestamp in nano seconds.
   bool  ok = false;
@@ -741,7 +741,7 @@ int IGIDataSourceManager::ComputePlaybackTimeSliderValue(QString textEditField) 
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceManager::SetPlaybackTime(const IGIDataType::IGITimeType& time)
+void IGIDataSourceManager::SetPlaybackTime(const IGIDataSourceI::IGITimeType& time)
 {
   QMutexLocker locker(&m_Lock);
 
@@ -770,13 +770,13 @@ void IGIDataSourceManager::SetIsPlayingBackAutomatically(bool isPlayingBackAutom
 void IGIDataSourceManager::AdvancePlaybackTimer()
 {
   int                       sliderValue    = m_PlaybackSliderValue;
-  IGIDataType::IGITimeType  sliderTime     = m_PlaybackSliderBase
-                                             + ((IGIDataType::IGITimeType) sliderValue
+  IGIDataSourceI::IGITimeType  sliderTime  = m_PlaybackSliderBase
+                                             + ((IGIDataSourceI::IGITimeType) sliderValue
                                                 * m_PlaybackSliderFactor);
-  IGIDataType::IGITimeType  advanceBy      = 1000000000 / m_FrameRate;
-  IGIDataType::IGITimeType  newSliderTime  = sliderTime + advanceBy;
-  IGIDataType::IGITimeType  newSliderValue = (newSliderTime - m_PlaybackSliderBase)
-                                             / m_PlaybackSliderFactor;
+  IGIDataSourceI::IGITimeType  advanceBy      = 1000000000 / m_FrameRate;
+  IGIDataSourceI::IGITimeType  newSliderTime  = sliderTime + advanceBy;
+  IGIDataSourceI::IGITimeType  newSliderValue = (newSliderTime - m_PlaybackSliderBase)
+                                              / m_PlaybackSliderFactor;
 
   // make sure there is some progress, in case of bad rounding issues (e.g. the sequence is very long).
   newSliderValue = std::max(newSliderValue, (igtlUint64) sliderValue + 1);
@@ -857,7 +857,7 @@ void IGIDataSourceManager::OnUpdateGui()
     m_CurrentTime = m_TimeStampGenerator->GetTimeStampInNanoseconds();
   }
 
-  niftk::IGIDataType::IGITimeType currentTime = m_CurrentTime;
+  niftk::IGIDataSourceI::IGITimeType currentTime = m_CurrentTime;
 
   QList< QList<IGIDataItemInfo> > dataSourceInfos;
   for (int i = 0; i < m_Sources.size(); i++)

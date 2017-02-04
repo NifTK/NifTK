@@ -16,7 +16,7 @@
 #define niftkIGIDataSourceUtils_h
 
 #include <niftkIGIDataSourcesExports.h>
-#include <niftkIGIDataType.h>
+#include <niftkIGIDataSourceI.h>
 #include <set>
 #include <QDir>
 #include <QString>
@@ -43,8 +43,8 @@ QString GetPreferredSlash();
 NIFTKIGIDATASOURCES_EXPORT
 void ProbeTimeStampFiles(QDir path,
                          const QString& suffix,
-                         std::set<niftk::IGIDataType::IGITimeType>& timeStamps,
-                         QHash<niftk::IGIDataType::IGITimeType, QString>& timeStampToFileName);
+                         std::set<niftk::IGIDataSourceI::IGITimeType>& timeStamps,
+                         QHash<niftk::IGIDataSourceI::IGITimeType, QString>& timeStampToFileName);
 
 /**
 * \brief Scans the path for individual files that match a timestamp pattern and suffix.
@@ -53,7 +53,7 @@ void ProbeTimeStampFiles(QDir path,
 NIFTKIGIDATASOURCES_EXPORT
 void ProbeTimeStampFiles(QDir path,
                          const QString& suffix,
-                         std::set<niftk::IGIDataType::IGITimeType>& timeStamps
+                         std::set<niftk::IGIDataSourceI::IGITimeType>& timeStamps
                          );
 
 /**
@@ -63,8 +63,8 @@ NIFTKIGIDATASOURCES_EXPORT
 void GetPlaybackIndex(
     const QString& directory,
     const QString& fileExtension,
-    QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >& bufferToTimeStamp,
-    QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> >& bufferToTimeStampToFileNames
+    QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >& bufferToTimeStamp,
+    QMap<QString, QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> >& bufferToTimeStampToFileNames
     );
 
 /**
@@ -74,8 +74,8 @@ void GetPlaybackIndex(
 NIFTKIGIDATASOURCES_EXPORT
 bool ProbeRecordedData(const QString& path,
                        const QString& fileExtension,
-                       niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                       niftk::IGIDataType::IGITimeType* lastTimeStampInStore);
+                       niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                       niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore);
 
 } // end namespace
 
