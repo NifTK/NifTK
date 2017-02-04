@@ -105,6 +105,7 @@ mitk::Image::Pointer QImageDataSourceService::RetrieveImage(const niftk::IGIData
     mitkThrow() << "Failed to extract QImage!";
   }
 
+  actualTime = m_CachedImage.GetTimeStampInNanoSeconds();
   mitk::Image::Pointer convertedImage = niftk::CreateMitkImage(img, outputNumberOfBytes);
   return convertedImage;
 }
