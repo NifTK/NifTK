@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkOpenCVVideoDataType.h"
+#include <mitkExceptionMacro.h>
 #include <cstring>
 
 namespace niftk
@@ -88,6 +89,10 @@ void OpenCVVideoDataType::Clone(const IGIDataType& other)
   if (tmp != nullptr)
   {
     this->CloneImage(tmp->GetImage());
+  }
+  else
+  {
+    mitkThrow() << "Incorrect data type provided";
   }
 }
 

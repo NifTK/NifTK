@@ -89,8 +89,7 @@ if(BUILD_NiftyIGI)
     ICPRegService
     OIGTLSystemTimeService
     OpenCVVideoDataSourceService
-#    QtAudioDataSourceService
-#    UltrasonixDataSourceService
+    QtAudioDataSourceService
 #    NDITrackerDataSourceService
 #    NiftyLinkDataSourceService
 #    NVidiaSDIDataSourceService

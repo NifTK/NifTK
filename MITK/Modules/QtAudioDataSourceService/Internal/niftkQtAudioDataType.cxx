@@ -19,7 +19,7 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 QtAudioDataType::QtAudioDataType()
-: m_AudioBlob(0)
+: m_AudioBlob(nullptr)
 , m_Length(0)
 {
 }
@@ -33,7 +33,51 @@ QtAudioDataType::~QtAudioDataType()
 
 
 //-----------------------------------------------------------------------------
-void QtAudioDataType::SetBlob(const char* blob, std::size_t length)
+QtAudioDataType::QtAudioDataType(const QtAudioDataType& other)
+{
+  m_Length = other.m_Length;
+  std::memcpy(m_AudioBlob, other.m_AudioBlob, m_Length);
+}
+
+
+//-----------------------------------------------------------------------------
+QtAudioDataType& QtAudioDataType::operator=(const QtAudioDataType& other)
+{
+  if (m_AudioBlob != nullptr)
+  {
+    delete m_AudioBlob;
+  }
+  m_Length = other.m_Length;
+  std::memcpy(m_AudioBlob, other.m_AudioBlob, m_Length);
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
+QtAudioDataType::QtAudioDataType(QtAudioDataType&& other)
+{
+  m_Length = other.m_Length;
+  std::memcpy(m_AudioBlob, other.m_AudioBlob, m_Length);
+  other.m_AudioBlob = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------
+QtAudioDataType& QtAudioDataType::operator=(QtAudioDataType&& other)
+{
+  if (m_AudioBlob != nullptr)
+  {
+    delete m_AudioBlob;
+  }
+  m_Length = other.m_Length;
+  std::memcpy(m_AudioBlob, other.m_AudioBlob, m_Length);
+  other.m_AudioBlob = nullptr;
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
+void QtAudioDataType::SetBlob(char* blob, std::size_t length)
 {
   delete m_AudioBlob;
   m_AudioBlob = blob;
@@ -42,7 +86,7 @@ void QtAudioDataType::SetBlob(const char* blob, std::size_t length)
 
 
 //-----------------------------------------------------------------------------
-std::pair<const char*, std::size_t> QtAudioDataType::GetBlob() const
+std::pair<char*, std::size_t> QtAudioDataType::GetBlob() const
 {
   return std::make_pair(m_AudioBlob, m_Length);
 }

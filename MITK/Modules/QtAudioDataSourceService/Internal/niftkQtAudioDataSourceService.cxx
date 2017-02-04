@@ -309,8 +309,8 @@ IGIDataSourceProperties QtAudioDataSourceService::GetProperties() const
 
 
 //-----------------------------------------------------------------------------
-void QtAudioDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                                             niftk::IGIDataType::IGITimeType lastTimeStamp)
+void QtAudioDataSourceService::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                                             niftk::IGIDataSourceI::IGITimeType lastTimeStamp)
 {
   mitkThrow() << "QtAudioDataSourceService::StartPlayback(), Not implemented yet!";
 }
@@ -324,15 +324,15 @@ void QtAudioDataSourceService::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-void QtAudioDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
+void QtAudioDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp)
 {
   mitkThrow() << "QtAudioDataSourceService::PlaybackData(), Not implemented yet!";
 }
 
 
 //-----------------------------------------------------------------------------
-bool QtAudioDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                                 niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+bool QtAudioDataSourceService::ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                                                 niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
   return false;
 }
@@ -378,7 +378,7 @@ void QtAudioDataSourceService::StopRecording()
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> QtAudioDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
+std::vector<IGIDataItemInfo> QtAudioDataSourceService::Update(const niftk::IGIDataSourceI::IGITimeType& time)
 {
   std::vector<IGIDataItemInfo> infos;
   IGIDataItemInfo info;
