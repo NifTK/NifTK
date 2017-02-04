@@ -24,7 +24,10 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: SingleFrameDataSourceService(QString("OpenCV-"), factoryName, 50, properties, dataStorage)
+: SingleFrameDataSourceService(QString("OpenCV-"), factoryName,
+                               25, // frames per second
+                               50, // ring buffer size,
+                               properties, dataStorage)
 , m_VideoSource(nullptr)
 , m_DataGrabbingThread(nullptr)
 {

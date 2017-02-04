@@ -31,7 +31,8 @@ niftk::IGIDataSourceLocker SingleFrameDataSourceService::s_Lock;
 SingleFrameDataSourceService::SingleFrameDataSourceService(
   QString deviceName,
   QString factoryName,
-  unsigned bufferSize,
+  unsigned int framesPerSecond,
+  unsigned int bufferSize,
   const IGIDataSourceProperties& properties,
   mitk::DataStorage::Pointer dataStorage)
 : IGIDataSource((deviceName + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
@@ -55,8 +56,7 @@ SingleFrameDataSourceService::SingleFrameDataSourceService(
   QString fullDeviceName = this->GetName();
   m_ChannelNumber = (fullDeviceName.remove(0, deviceName.length())).toInt();
 
-  int defaultFramesPerSecond = 25;
-  this->SetApproximateIntervalInMilliseconds(1000 / defaultFramesPerSecond);
+  this->SetApproximateIntervalInMilliseconds(1000 / framesPerSecond);
   this->SetShouldUpdate(true);
   this->SetProperties(properties);
   this->SetDescription("Local image source.");

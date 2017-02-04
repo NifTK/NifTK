@@ -94,7 +94,8 @@ protected:
 
   SingleFrameDataSourceService(QString deviceName,
                                QString factoryName,
-                               unsigned bufferSize,
+                               unsigned int framesPerSecond,
+                               unsigned int bufferSize,
                                const IGIDataSourceProperties& properties,
                                mitk::DataStorage::Pointer dataStorage
                               );

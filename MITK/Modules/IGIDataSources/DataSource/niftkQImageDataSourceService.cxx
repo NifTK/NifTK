@@ -24,10 +24,13 @@ namespace niftk
 QImageDataSourceService::QImageDataSourceService(
     QString deviceName,
     QString factoryName,
-    unsigned bufferSize,
+    unsigned int framesPerSecond,
+    unsigned int bufferSize,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: SingleFrameDataSourceService(deviceName, factoryName, bufferSize, properties, dataStorage)
+: SingleFrameDataSourceService(deviceName, factoryName,
+                               framesPerSecond, bufferSize,
+                               properties, dataStorage)
 {
   this->SetStatus("Initialising");
   this->SetDescription("QImageDataSourceService");

@@ -93,7 +93,7 @@ if(BUILD_NiftyIGI)
 #    NDITrackerDataSourceService
 #    NiftyLinkDataSourceService
 #    NVidiaSDIDataSourceService
-#    QtCameraVideoDataSourceService
+    QtCameraVideoDataSourceService
 #    BKMedicalDataSourceService
 #    BlackMagicDataSourceService
   )
