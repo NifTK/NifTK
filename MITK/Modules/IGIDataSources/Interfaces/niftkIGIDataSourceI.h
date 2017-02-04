@@ -217,8 +217,8 @@ public:
 
 protected:
 
-  IGIDataSourceI();
-  virtual ~IGIDataSourceI();
+  IGIDataSourceI() {} // Purposefully hidden.
+  virtual ~IGIDataSourceI() {} // Purposefully hidden.
 
 private:
 

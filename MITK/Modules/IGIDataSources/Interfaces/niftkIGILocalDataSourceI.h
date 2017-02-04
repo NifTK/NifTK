@@ -34,8 +34,8 @@ public:
 
 protected:
 
-  IGILocalDataSourceI(); // Purposefully hidden.
-  virtual ~IGILocalDataSourceI(); // Purposefully hidden.
+  IGILocalDataSourceI() {} // Purposefully hidden.
+  virtual ~IGILocalDataSourceI() {} // Purposefully hidden.
 
   IGILocalDataSourceI(const IGILocalDataSourceI&); // Purposefully not implemented.
   IGILocalDataSourceI& operator=(const IGILocalDataSourceI&); // Purposefully not implemented.

@@ -33,8 +33,8 @@ public:
 
 protected:
 
-  IGIBufferedSaveableDataSourceI(); // Purposefully hidden.
-  virtual ~IGIBufferedSaveableDataSourceI(); // Purposefully hidden.
+  IGIBufferedSaveableDataSourceI() {} // Purposefully hidden.
+  virtual ~IGIBufferedSaveableDataSourceI() {} // Purposefully hidden.
 
   IGIBufferedSaveableDataSourceI(const IGIBufferedSaveableDataSourceI&); // Purposefully not implemented.
   IGIBufferedSaveableDataSourceI& operator=(const IGIBufferedSaveableDataSourceI&); // Purposefully not implemented.
