@@ -277,7 +277,7 @@ std::unique_ptr<niftk::IGIDataType> UltrasonixDataSourceService::GrabImage()
   // value, like a factory method would do.
 
   niftk::QImageDataType* wrapper = new niftk::QImageDataType();
-  wrapper->SetImage(m_TemporaryWrapper); // clones it.
+  wrapper->SetImage(m_TemporaryImage); // clones it.
 
   std::unique_ptr<niftk::IGIDataType> result(wrapper);
   return result;
