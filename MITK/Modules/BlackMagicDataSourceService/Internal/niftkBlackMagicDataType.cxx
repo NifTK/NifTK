@@ -18,15 +18,38 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
+BlackMagicDataType::~BlackMagicDataType()
+{
+}
+
+
+//-----------------------------------------------------------------------------
 BlackMagicDataType::BlackMagicDataType()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-BlackMagicDataType::~BlackMagicDataType()
+BlackMagicDataType::BlackMagicDataType(const BlackMagicDataType&)
 {
 }
 
+
+//-----------------------------------------------------------------------------
+BlackMagicDataType::BlackMagicDataType(BlackMagicDataType&&)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+BlackMagicDataType& BlackMagicDataType::operator=(const BlackMagicDataType&)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+BlackMagicDataType& BlackMagicDataType::operator=(BlackMagicDataType&&)
+{
+}
 
 } // end namespace

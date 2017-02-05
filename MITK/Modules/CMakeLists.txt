@@ -96,7 +96,7 @@ if(BUILD_NiftyIGI)
 #    NVidiaSDIDataSourceService
     QtCameraVideoDataSourceService
     BKMedicalDataSourceService
-#    BlackMagicDataSourceService
+    BlackMagicDataSourceService
   )
 
   if(BUILD_CAFFE)

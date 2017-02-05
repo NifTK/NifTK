@@ -16,12 +16,8 @@
 
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
-#include <niftkIGIDataSourceBuffer.h>
-#include <niftkIGIDataSourceBackgroundDeleteThread.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGILocalDataSourceI.h>
-#include <niftkIGICleanableDataSourceI.h>
-#include <niftkIGIBufferedSaveableDataSourceI.h>
 
 #include <QObject>
 #include <QSet>
@@ -43,8 +39,6 @@ class BlackMagicDataSourceService
     : public QObject
     , public IGIDataSource
     , public IGILocalDataSourceI
-    , public IGICleanableDataSourceI
-    , public IGIBufferedSaveableDataSourceI
 {
 
 public:
@@ -55,13 +49,13 @@ public:
   /**
   * \see  IGIDataSourceI::StartPlayback()
   */
-  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                             niftk::IGIDataType::IGITimeType lastTimeStamp) override;
+  virtual void StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                             niftk::IGIDataSourceI::IGITimeType lastTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::PlaybackData()
   */
-  void PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp) override;
+  void PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::StopPlayback()
@@ -71,12 +65,7 @@ public:
   /**
   * \see IGIDataSourceI::Update()
   */
-  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
-
-  /**
-  * \see niftk::IGIDataSource::CleanBuffer()
-  */
-  virtual void CleanBuffer() override;
+  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time) override;
 
   /**
   * \see niftk::IGILocalDataSourceI::GrabData()
@@ -86,8 +75,8 @@ public:
   /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
-  bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
+  bool ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                         niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore) override;
 
   /**
   * \brief IGIDataSourceI::SetProperties()
@@ -111,8 +100,6 @@ private:
 
   BlackMagicDataSourceService(const BlackMagicDataSourceService&); // deliberately not implemented
   BlackMagicDataSourceService& operator=(const BlackMagicDataSourceService&); // deliberately not implemented
-
-  void SaveItem(niftk::IGIDataType::Pointer item) override;
 
   static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;
