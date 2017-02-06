@@ -91,7 +91,7 @@ if(BUILD_NiftyIGI)
     OpenCVVideoDataSourceService
     QtAudioDataSourceService
     UltrasonixDataSourceService
-#    NDITrackerDataSourceService
+    NDITrackerDataSourceService
 #    NiftyLinkDataSourceService
 #    NVidiaSDIDataSourceService
     QtCameraVideoDataSourceService

@@ -33,27 +33,29 @@ class IGITrackerDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(IGITrackerDataType, IGIDataType)
-  itkNewMacro(IGITrackerDataType)
+  IGITrackerDataType();
+  virtual ~IGITrackerDataType();
 
-  void SetTrackingData(vtkSmartPointer<vtkMatrix4x4> data);
-  vtkSmartPointer<vtkMatrix4x4> GetTrackingData() const;
+  IGITrackerDataType(const IGITrackerDataType&);             // Copy constructor
+  IGITrackerDataType& operator=(const IGITrackerDataType&);  // Copy assignment
+  IGITrackerDataType(IGITrackerDataType&&);                  // Move constructor
+  IGITrackerDataType& operator=(IGITrackerDataType&&);       // Move assignment
 
-  itkSetStringMacro(ToolName);
-  itkGetStringMacro(ToolName);
+  void SetToolName(const std::string& toolName) { m_ToolName = toolName; }
+  std::string GetToolName() const { return m_ToolName; }
 
-protected:
+  void SetTrackingMatrix(const vtkSmartPointer<vtkMatrix4x4>& data);
+  vtkSmartPointer<vtkMatrix4x4> GetTrackingMatrix() const;
 
-  IGITrackerDataType(); // Purposefully hidden.
-  virtual ~IGITrackerDataType(); // Purposefully hidden.
-
-  IGITrackerDataType(const IGITrackerDataType&); // Purposefully not implemented.
-  IGITrackerDataType& operator=(const IGITrackerDataType&); // Purposefully not implemented.
+  /**
+   * \brief Sets the 4x4 matrix from a vector of 16 doubles.
+   */
+  void SetTrackingData(const std::vector<double>& transform);
 
 private:
 
   std::string                   m_ToolName;
-  vtkSmartPointer<vtkMatrix4x4> m_TrackingData;
+  vtkSmartPointer<vtkMatrix4x4> m_TrackingMatrix;
 };
 
 } // end namespace

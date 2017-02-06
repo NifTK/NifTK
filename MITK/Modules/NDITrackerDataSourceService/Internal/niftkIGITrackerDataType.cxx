@@ -18,32 +18,81 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGITrackerDataType::IGITrackerDataType()
-{
-  m_TrackingData = vtkSmartPointer<vtkMatrix4x4>::New();
-  m_TrackingData->Identity();
-}
-
-
-//-----------------------------------------------------------------------------
 IGITrackerDataType::~IGITrackerDataType()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void IGITrackerDataType::SetTrackingData(vtkSmartPointer<vtkMatrix4x4> data)
+IGITrackerDataType::IGITrackerDataType()
 {
-  m_TrackingData->DeepCopy(data);
-  this->Modified();
+  m_TrackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  m_TrackingMatrix->Identity();
 }
 
 
 //-----------------------------------------------------------------------------
-vtkSmartPointer<vtkMatrix4x4> IGITrackerDataType::GetTrackingData() const
+IGITrackerDataType::IGITrackerDataType(const IGITrackerDataType& other)
+{
+  m_ToolName = other.m_ToolName;
+  m_TrackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  m_TrackingMatrix->DeepCopy(other.m_TrackingMatrix);
+}
+
+
+//-----------------------------------------------------------------------------
+IGITrackerDataType::IGITrackerDataType(IGITrackerDataType&& other)
+{
+  m_ToolName = other.m_ToolName;
+  m_TrackingMatrix = other.m_TrackingMatrix;
+  other.m_TrackingMatrix = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------
+IGITrackerDataType& IGITrackerDataType::operator=(const IGITrackerDataType& other)
+{
+  m_ToolName = other.m_ToolName;
+  m_TrackingMatrix->DeepCopy(other.m_TrackingMatrix);
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
+IGITrackerDataType& IGITrackerDataType::operator=(IGITrackerDataType&& other)
+{
+  m_ToolName = other.m_ToolName;
+  m_TrackingMatrix = other.m_TrackingMatrix;
+  other.m_TrackingMatrix = nullptr;
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGITrackerDataType::SetTrackingMatrix(const vtkSmartPointer<vtkMatrix4x4>& data)
+{
+  m_TrackingMatrix->DeepCopy(data);
+}
+
+
+//-----------------------------------------------------------------------------
+void IGITrackerDataType::SetTrackingData(const std::vector<double>& transform)
+{
+  for (int r = 0; r < 4; r++)
+  {
+    for (int c = 0; c < 4; c++)
+    {
+      m_TrackingMatrix->SetElement(r, c, transform[r*4 + c]);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkMatrix4x4> IGITrackerDataType::GetTrackingMatrix() const
 {
   vtkSmartPointer<vtkMatrix4x4> tmp = vtkSmartPointer<vtkMatrix4x4>::New();
-  tmp->DeepCopy(m_TrackingData);
+  tmp->DeepCopy(m_TrackingMatrix);
   return tmp;
 }
 
