@@ -19,7 +19,7 @@
 #include <niftkIGIDataSourceRingBuffer.h>
 #include <niftkIGILocalDataSourceI.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
-#include "niftkIGITrackerDataType.h"
+#include <niftkIGITrackerDataType.h>
 
 #include <niftkNDITracker.h>
 

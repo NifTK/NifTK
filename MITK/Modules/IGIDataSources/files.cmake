@@ -24,6 +24,7 @@ set(CPP_FILES
   Interfaces/niftkIGIDataSourceFactoryServiceRAII.cxx
   DataType/niftkIGIDataType.cxx
   DataType/niftkQImageDataType.cxx
+  DataType/niftkIGITrackerDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceLocker.cxx
   DataSource/niftkIGIDataSourceRingBuffer.cxx

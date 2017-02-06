@@ -22,7 +22,6 @@ set(CPP_FILES
   Internal/niftkMITKPolarisVicraDataSourceFactory.cxx
   Internal/niftkMITKPolarisSpectraDataSourceFactory.cxx
   Internal/niftkMITKTrackerDataSourceService.cxx
-  Internal/niftkIGITrackerDataType.cxx
 )
 
 set(MOC_H_FILES
