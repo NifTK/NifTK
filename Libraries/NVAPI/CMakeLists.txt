@@ -43,14 +43,8 @@ if(NOT (CUDA_VERSION_MAJOR LESS 7))
 	include_directories(${CMAKE_BINARY_DIR})
 	include_directories(${CUDA_TOOLKIT_INCLUDE})
 
+  add_definitions(-DNIFTK_NVAPI_STATIC)
 	CUDA_ADD_LIBRARY(niftknvapi STATIC ${niftknvapi_SRCS})
-
-	#if(BUILD_SHARED_LIBS)
-	#	if(WIN32)
-	#		add_definitions(-DNIFTKNVAPI_WINDOWS_EXPORT)
-	#		add_definitions(-DLIBVIDEO_BUILDING_DLL)
-	#	endif(WIN32)
-	#endif(BUILD_SHARED_LIBS)	
 
 	foreach(cuda_dll nvcuda)
 	  if(WIN32)
