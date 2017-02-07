@@ -461,6 +461,33 @@ int TestFindVideoFile(std::string directory)
   return EXIT_SUCCESS;
 }
 
+//-----------------------------------------------------------------------------
+int TestEmptyFile(std::string file)
+{
+  if ( ! niftk::FileIsEmpty ( file ) )
+  {
+    std::cerr << "The method niftk::FileIsEmpty should return true "
+              << "for empty file " << file
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
+int TestNotEmptyFile(std::string file)
+{
+  if ( niftk::FileIsEmpty ( file ) )
+  {
+    std::cerr << "The method niftk::FileIsEmpty should return false "
+              << "for non empty file " << file
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
 /**
  * \brief Basic test harness for FileHelper.h
  */
@@ -526,7 +553,14 @@ int niftkFileHelperTest(int argc, char * argv[])
   {
     return TestFindVideoFile(argv[2]);
   }
-  
+   else if (testNumber == 14)
+  {
+    return TestEmptyFile(argv[2]);
+  }
+   else if (testNumber == 15)
+  {
+    return TestNotEmptyFile(argv[2]);
+  }
   else
   {
     return EXIT_FAILURE;
