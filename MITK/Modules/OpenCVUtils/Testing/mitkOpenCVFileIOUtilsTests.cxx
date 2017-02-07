@@ -272,32 +272,81 @@ void TestInitialiseVideoCapture ( char * goodFile, char * dummyFile )
 
 void TestCreateVideoWriter ()
 {
+  //start by testing codecs
+  int mpeg1codec = CV_FOURCC ( 'M','P','G','1');
+  int mjpgcodec = CV_FOURCC ( 'M','J','P','G');
+  int dvixcodec = CV_FOURCC ( 'D','V','I','X');
+  int junkcodec = CV_FOURCC ( 'J','U','N','K');
+
+  //mpeg1 is not supported on all platforms.
+  bool mpeg1good = mitk::TestVideoWriterCodec ( mpeg1codec );
+  if ( mpeg1good )
+  {
+    MITK_TEST_CONDITION ( true , "MPEG1 codec is usable." );
+  }
+  else
+  {
+    MITK_TEST_CONDITION ( true , "MPEG1 codec is not usable." );
+  }
+
+  //mjpg should always work
+  bool mjpggood = mitk::TestVideoWriterCodec ( mjpgcodec );
+  MITK_TEST_CONDITION ( mjpggood , "Testing that MJPG codec works." );
+
+  //dvix is not supported on all platforms.
+  bool dvixgood = mitk::TestVideoWriterCodec ( dvixcodec );
+  if ( dvixgood )
+  {
+    MITK_TEST_CONDITION ( true , "DVIX codec is useble." );
+  }
+  else
+  {
+    MITK_TEST_CONDITION ( true , "DVIX codec is not usable." );
+  }
+
+  //junk should never work
+  bool junkgood = mitk::TestVideoWriterCodec ( junkcodec );
+  MITK_TEST_CONDITION ( ! junkgood , "Testing that JUNK codec does not work." );
+
+  //now test actual writer
   std::string outfile = niftk::CreateUniqueTempFileName ( "video", ".avi" );
   double frameRate = 25.0;
   cv::Size size = cv::Size ( 1920, 1080 );
-  try
+
+  if ( mpeg1good )
   {
     cv::VideoWriter* writer  = mitk::CreateVideoWriter ( outfile , frameRate, size );
     MITK_TEST_CONDITION ( ( writer != NULL ), "Testing created video writer OK: " << outfile);
     cv::Mat frame = cv::Mat::eye (1080,1920,CV_8UC3);
-    try
+    for ( unsigned int i = 0 ; i < 5 ; i ++ )
     {
-      for ( unsigned int i = 0 ; i < 25 ; i ++ )
-      {
-        writer->write( frame );
-      }
-      MITK_TEST_CONDITION ( true , "Successfully pushed frame to writer." );
-      writer->release();
+      writer->write( frame );
     }
-    catch (...)
-    {
-      MITK_TEST_CONDITION ( false , "Failed to push frame to writer." );
-    }
+    MITK_TEST_CONDITION ( true , "Successfully pushed frame to writer." );
+    writer->release();
+
+    //I'd like to test the encoder better, but whole pipeline is very
+    //unpredictable, the underlying encoder/decoder throws exceptions which aren't
+    //easily caught, or fails to work and doesn't throw. So let's just
+    //check it isn't empty.
+    MITK_TEST_CONDITION ( ! niftk::FileIsEmpty (outfile),
+        "Testing that " << outfile << " is not empty.");
   }
-  catch (...)
+
+  //now try with a silly encoder, should create it, but fall back to mjpeg
+  outfile = niftk::CreateUniqueTempFileName ( "video", ".avi" );
+  cv::VideoWriter* writer  = mitk::CreateVideoWriter ( outfile , frameRate, size, junkcodec );
+  MITK_TEST_CONDITION ( ( writer != NULL ), "Testing created video writer OK: " << outfile);
+  cv::Mat frame = cv::Mat::eye (1080,1920,CV_8UC3);
+  for ( unsigned int i = 0 ; i < 5 ; i ++ )
   {
-    MITK_TEST_CONDITION ( false , "Create video writer threw an exception: " << outfile );
+    writer->write( frame );
   }
+  MITK_TEST_CONDITION ( true , "Successfully pushed frame to writer." );
+  writer->release();
+  MITK_TEST_CONDITION ( ! niftk::FileIsEmpty (outfile),
+    "Testing that " << outfile << " is not empty.");
+
 }
 
 int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
