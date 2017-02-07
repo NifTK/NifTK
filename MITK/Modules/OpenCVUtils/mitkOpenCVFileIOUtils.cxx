@@ -288,19 +288,61 @@ cv::VideoCapture* InitialiseVideoCapture ( std::string filename , bool ignoreErr
     //try and return to the start
     capture->set(CV_CAP_PROP_POS_FRAMES,0);
   }
-
+  MITK_INFO << "Opened " << filename << " for capture using codec " << capture->get(CV_CAP_PROP_FOURCC);
   return capture;
+}
+
+//---------------------------------------------------------------------------
+bool TestVideoWriterCodec ( int codec )
+{
+
+  cv::VideoWriter* writer = new cv::VideoWriter;
+  std::string outfile = niftk::CreateUniqueTempFileName ( "video", ".avi" );
+  double framerate = 25.0;
+  cv::Size size = cv::Size (10,20);
+  bool isColour = true;
+  try
+  {
+    writer->open (outfile, codec, framerate, size, isColour);
+    if ( ! writer->isOpened() )
+    {
+      return false;
+    }
+
+    cv::Mat frame = cv::Mat::eye(size, CV_8UC3);
+    writer->write(frame);
+    writer->release();
+
+    if ( niftk::FileIsEmpty(outfile))
+    {
+      return false;
+    }
+  }
+  catch (...)
+  {
+    return false;
+  }
+  return true;
 }
 
 //---------------------------------------------------------------------------
 cv::VideoWriter* CreateVideoWriter ( std::string filename , double framesPerSecond,
    cv::Size imageSize, int codec, bool isColour )
 {
-  cv::VideoWriter* writer = new cv::VideoWriter (filename, codec, framesPerSecond, imageSize, isColour);
-  if ( ! writer )
+
+  cv::VideoWriter* writer = new cv::VideoWriter;
+  //test the codec
+  if ( mitk::TestVideoWriterCodec ( codec ) )
   {
-    mitkThrow() << "Failed to open " << filename << " for video write." << std::endl;
+    writer->open (filename, codec, framesPerSecond, imageSize, isColour);
   }
+  else
+  {
+    MITK_INFO << "Failed to write to " << filename << "using codec " << codec << "falling back to MJPEG";
+    codec = CV_FOURCC ('M','J','P','G');
+    writer->open(filename, codec, framesPerSecond, imageSize, isColour);
+  }
+
   return writer;
 }
 

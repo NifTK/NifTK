@@ -78,6 +78,12 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT bool SaveTrackerMatrix(const std::string& f
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT cv::VideoCapture* InitialiseVideoCapture(std::string filename, bool ignoreErrors = false);
 
+/**
+ * \brief Checks for errors when using a given video writer codec,
+ * returns true if no errors.
+ * \param the codec
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT bool TestVideoWriterCodec (int codec);
 
 /**
  * \brief Attempts to create a video writer and checks for errors.
