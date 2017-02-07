@@ -24,7 +24,6 @@
 #include <mitkImageAccessByItk.h>
 #include <mitkITKImageImport.h>
 #include <mitkOperationEvent.h>
-#include <mitkPlanarCircle.h>
 #include <mitkToolManager.h>
 #include <mitkUndoController.h>
 #include <mitkVector.h>
@@ -50,35 +49,35 @@ const mitk::OperationType DrawTool::MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR = 320423;
 
 //-----------------------------------------------------------------------------
 DrawTool::DrawTool()
-: ContourTool()
-, m_EraserSize(0.5)
-, m_Interface(nullptr)
-, m_EraserVisible(false)
-, m_DrawingInProgress(false)
-, m_ErasingInProgress(false)
+  : ContourTool(),
+    m_EraserSize(0.5),
+    m_Interface(nullptr),
+    m_EraserVisible(false),
+    m_DrawingInProgress(false),
+    m_ErasingInProgress(false)
 {
   m_Interface = DrawToolEventInterface::New();
   m_Interface->SetDrawTool(this);
 
-  m_EraserScope = mitk::PlanarCircle::New();
+  m_EraserCursor = mitk::PlanarCircle::New();
   mitk::Point2D centre;
   centre[0] = 0.0;
   centre[1] = 0.0;
-  m_EraserScope->PlaceFigure(centre);
+  m_EraserCursor->PlaceFigure(centre);
   this->SetEraserSize(m_EraserSize);
 
-  m_EraserScopeNode = mitk::DataNode::New();
-  m_EraserScopeNode->SetData(m_EraserScope);
-  m_EraserScopeNode->SetName("Draw tool eraser");
-  m_EraserScopeNode->SetBoolProperty("helper object", true);
-  m_EraserScopeNode->SetBoolProperty("includeInBoundingBox", false);
-  m_EraserScopeNode->SetBoolProperty("planarfigure.drawcontrolpoints", false);
-  m_EraserScopeNode->SetBoolProperty("planarfigure.drawname", false);
-  m_EraserScopeNode->SetBoolProperty("planarfigure.drawoutline", false);
-  m_EraserScopeNode->SetBoolProperty("planarfigure.drawshadow", false);
+  m_EraserCursorNode = mitk::DataNode::New();
+  m_EraserCursorNode->SetData(m_EraserCursor);
+  m_EraserCursorNode->SetName("Draw tool eraser");
+  m_EraserCursorNode->SetBoolProperty("helper object", true);
+  m_EraserCursorNode->SetBoolProperty("includeInBoundingBox", false);
+  m_EraserCursorNode->SetBoolProperty("planarfigure.drawcontrolpoints", false);
+  m_EraserCursorNode->SetBoolProperty("planarfigure.drawname", false);
+  m_EraserCursorNode->SetBoolProperty("planarfigure.drawoutline", false);
+  m_EraserCursorNode->SetBoolProperty("planarfigure.drawshadow", false);
   mitk::Color eraserColor;
-  eraserColor.Set(0.8f, 0.8f, 0.0f); // yellow
-  m_EraserScopeNode->SetColor(eraserColor);
+  eraserColor.Set(1.0f, static_cast<float>(165.0 / 255.0), 0.0f); // orange like the segmentation below.
+  m_EraserCursorNode->SetColor(eraserColor);
 }
 
 
@@ -275,14 +274,14 @@ bool DrawTool::StopDrawing(mitk::StateMachineAction* /*action*/, mitk::Interacti
 //-----------------------------------------------------------------------------
 mitk::Point2D DrawTool::GetEraserPosition() const
 {
-  return m_EraserScope->GetControlPoint(0);
+  return m_EraserCursor->GetControlPoint(0);
 }
 
 
 //-----------------------------------------------------------------------------
 void DrawTool::SetEraserPosition(const mitk::Point2D& eraserPosition)
 {
-  m_EraserScope->SetControlPoint(0, eraserPosition);
+  m_EraserCursor->SetControlPoint(0, eraserPosition);
 }
 
 
@@ -298,9 +297,9 @@ void DrawTool::SetEraserSize(double eraserSize)
 {
   m_EraserSize = eraserSize;
 
-  mitk::Point2D controlPoint = m_EraserScope->GetControlPoint(0);
+  mitk::Point2D controlPoint = m_EraserCursor->GetControlPoint(0);
   controlPoint[0] += eraserSize;
-  m_EraserScope->SetControlPoint(1, controlPoint);
+  m_EraserCursor->SetControlPoint(1, controlPoint);
 }
 
 
@@ -317,11 +316,11 @@ bool DrawTool::StartErasing(mitk::StateMachineAction* action, mitk::InteractionE
 
   mitk::BaseRenderer* renderer = positionEvent->GetSender();
   const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
-  m_EraserScope->SetPlaneGeometry(const_cast<mitk::PlaneGeometry*>(planeGeometry));
-  mitk::Point2D mousePosition;
-  planeGeometry->Map(positionEvent->GetPositionInWorld(), mousePosition);
-  m_EraserScope->SetControlPoint(0, mousePosition);
+  m_EraserCursor->SetPlaneGeometry(const_cast<mitk::PlaneGeometry*>(planeGeometry));
+  mitk::Point2D position;
+  planeGeometry->Map(positionEvent->GetPositionInWorld(), position);
 
+  this->SetEraserPosition(position);
   this->SetEraserVisible(true, renderer);
   renderer->RequestUpdate();
 
@@ -343,9 +342,10 @@ bool DrawTool::KeepErasing(mitk::StateMachineAction* action, mitk::InteractionEv
 
   mitk::BaseRenderer* renderer = positionEvent->GetSender();
   const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
-  mitk::Point2D mousePosition;
-  planeGeometry->Map(positionEvent->GetPositionInWorld(), mousePosition);
-  m_EraserScope->SetControlPoint(0, mousePosition);
+  mitk::Point2D position;
+  planeGeometry->Map(positionEvent->GetPositionInWorld(), position);
+
+  this->SetEraserPosition(position);
   renderer->RequestUpdate();
 
   bool result = true;
@@ -837,21 +837,21 @@ void DrawTool::SetEraserVisible(bool visible, mitk::BaseRenderer* renderer)
   {
     if (visible)
     {
-      dataStorage->Add(m_EraserScopeNode);
+      dataStorage->Add(m_EraserCursorNode);
     }
     else
     {
-      dataStorage->Remove(m_EraserScopeNode);
+      dataStorage->Remove(m_EraserCursorNode);
     }
   }
 
   if (visible && renderer)
   {
     const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
-    m_EraserScope->SetPlaneGeometry(const_cast<mitk::PlaneGeometry*>(planeGeometry));
+    m_EraserCursor->SetPlaneGeometry(const_cast<mitk::PlaneGeometry*>(planeGeometry));
   }
 
-  m_EraserScopeNode->SetVisibility(visible, renderer);
+  m_EraserCursorNode->SetVisibility(visible, renderer);
   m_EraserVisible = visible;
 }
 

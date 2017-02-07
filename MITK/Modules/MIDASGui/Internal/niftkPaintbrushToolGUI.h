@@ -18,9 +18,11 @@
 #include <QmitkToolGUI.h>
 #include <niftkPaintbrushTool.h>
 
-class QSlider;
-class QLabel;
 class QFrame;
+class QLabel;
+class QTimer;
+
+class ctkSliderWidget;
 
 namespace niftk
 {
@@ -44,7 +46,7 @@ public:
   itkNewMacro(PaintbrushToolGUI)
 
   /// \brief Method to set or initialise the size of the eraser (radius of influence).
-  void OnEraserSizeChangedInTool(int current);
+  void OnEraserSizeChangedInTool(double eraserSize);
 
 signals:
 
@@ -56,18 +58,26 @@ protected slots:
   void OnNewToolAssociated(mitk::Tool*);
 
   /// \brief Qt slot called when the user moves the slider.
-  void OnEraserSizeChangedInGui(int value);
+  void OnEraserSizeChangedInGui(double value);
+
+  /// \brief Qt slot called after the user stopped dragging the slider.
+  void OnSettingEraserSizeFinished();
 
 protected:
 
   PaintbrushToolGUI();
   virtual ~PaintbrushToolGUI();
 
-  QSlider* m_Slider;
+  ctkSliderWidget* m_Slider;
   QLabel* m_SizeLabel;
   QFrame* m_Frame;
 
   PaintbrushTool::Pointer m_PaintbrushTool;
+
+private:
+
+  QTimer* m_ShowEraserTimer;
+
 };
 
 }

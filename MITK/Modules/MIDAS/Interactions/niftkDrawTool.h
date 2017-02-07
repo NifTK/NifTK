@@ -60,8 +60,10 @@ public:
   /// \see mitk::Tool::GetXPM()
   virtual const char** GetXPM() const override;
 
+  /// \brief Gets the position of the eraser cursor.
   mitk::Point2D GetEraserPosition() const;
 
+  /// \brief Sets the position of the eraser cursor.
   void SetEraserPosition(const mitk::Point2D& positionInMm);
 
   /// \brief Gets the eraser size.
@@ -145,8 +147,8 @@ private:
   /// \brief Pointer to interface object, used as callback in Undo/Redo framework
   DrawToolEventInterface::Pointer m_Interface;
 
-  mitk::PlanarCircle::Pointer m_EraserScope;
-  mitk::DataNode::Pointer m_EraserScopeNode;
+  mitk::PlanarCircle::Pointer m_EraserCursor;
+  mitk::DataNode::Pointer m_EraserCursorNode;
   bool m_EraserVisible;
 
   /// \brief Flag that indicates if a drawing interaction is being performed.

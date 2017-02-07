@@ -23,6 +23,7 @@
 #include <mitkImage.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
+#include <mitkPlanarCross.h>
 #include <mitkSegTool2D.h>
 
 #include <usServiceReference.h>
@@ -100,19 +101,28 @@ public:
 
   virtual void InitializeStateMachine() override;
 
-  /** Strings to help the tool identify itself in GUI. */
+  /// Strings to help the tool identify itself in GUI.
   virtual const char* GetName() const override;
   virtual const char** GetXPM() const override;
 
-  /** We store the name of a property that stores the image region. */
+  /// We store the name of a property that stores the image region.
   static const std::string REGION_PROPERTY_NAME;
+
+  /// \brief Gets the position of the eraser cursor.
+  mitk::Point2D GetEraserPosition() const;
+
+  /// \brief Sets the position of the eraser cursor.
+  void SetEraserPosition(const mitk::Point2D& eraserPosition);
 
   /// \brief Gets the eraser size.
   /// Default size is 1 pixel.
-  int GetEraserSize() const;
+  double GetEraserSize() const;
 
   /// \brief Sets the eraser size.
-  void SetEraserSize(int eraserSize);
+  void SetEraserSize(double eraserSize);
+
+  /// \brief Shows or hides the eraser cursor.
+  void SetEraserVisible(bool visible, mitk::BaseRenderer* renderer = 0);
 
   /// \brief Gets the erosion mode.
   /// If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true.
@@ -123,7 +133,7 @@ public:
   void SetErosionMode(bool erosionMode);
 
   /** Used to send messages when the eraser size is changed or should be updated in a GUI. */
-  mitk::Message1<int> EraserSizeChanged;
+  mitk::Message1<double> EraserSizeChanged;
 
   /** Method to enable this class to interact with the Undo/Redo framework. */
   virtual void ExecuteOperation(mitk::Operation* operation);
@@ -225,8 +235,14 @@ private:
   /// \brief Calculates the current image number.
   int GetDataIndex(bool isLeftMouseButton);
 
-  // Eraser size for editing, and cursor type is currently always a cross.
-  int m_EraserSize;
+  /// \brief Updates coordinates of the eraser cursor.
+  void UpdateEraserCursor();
+
+  /// The position of the eraser on the 2D plane, in mm.
+  mitk::Point2D m_EraserPosition;
+
+  // Eraser size for editing, and cursor type is currently always a cross. Size is in voxels.
+  double m_EraserSize;
 
   // This is the 3D geometry associated with the m_WorkingImage, where we assume both working images have same size and geometry.
   mitk::BaseGeometry* m_WorkingImageGeometry;
@@ -247,6 +263,10 @@ private:
   bool m_AddingAdditionInProgress;
   bool m_AddingSubtractionInProgress;
   bool m_RemovingSubtractionInProgress;
+
+  mitk::PlanarCross::Pointer m_EraserCursor;
+  mitk::DataNode::Pointer m_EraserCursorNode;
+  bool m_EraserVisible;
 
 };
 

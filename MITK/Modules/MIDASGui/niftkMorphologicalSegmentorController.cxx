@@ -209,7 +209,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   {
     // Create that orange colour that MIDAS uses to highlight edited regions.
     mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
-    col->SetColor((float)1.0, (float)(165.0/255.0), (float)0.0);
+    col->SetColor(1.0f, static_cast<float>(165.0 / 255.0), 0.0f);
 
     // Create additions data node, and store reference to image
     float segCol[3];

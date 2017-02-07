@@ -14,11 +14,16 @@
 
 #include "niftkPaintbrushToolGUI.h"
 
-#include <qlabel.h>
-#include <qslider.h>
-#include <qpushbutton.h>
-#include <qlayout.h>
-#include <qpainter.h>
+#include <QLabel>
+#include <QLayout>
+#include <QPainter>
+#include <QPushButton>
+#include <QTimer>
+
+#include <ctkSliderWidget.h>
+
+#include <mitkFocusManager.h>
+#include <mitkGlobalInteraction.h>
 
 #include <niftkToolFactoryMacros.h>
 
@@ -29,10 +34,11 @@ NIFTK_TOOL_GUI_MACRO_NO_EXPORT(PaintbrushTool, PaintbrushToolGUI, "Paintbrush To
 
 //-----------------------------------------------------------------------------
 PaintbrushToolGUI::PaintbrushToolGUI()
-:QmitkToolGUI()
-, m_Slider(NULL)
-, m_SizeLabel(NULL)
-, m_Frame(NULL)
+  : QmitkToolGUI(),
+    m_Slider(nullptr),
+    m_SizeLabel(nullptr),
+    m_Frame(nullptr),
+    m_ShowEraserTimer(new QTimer(this))
 {
   // create the visible widgets
   QBoxLayout* layout = new QHBoxLayout( this );
@@ -40,21 +46,29 @@ PaintbrushToolGUI::PaintbrushToolGUI()
   layout->setSpacing(3);
   this->setLayout(layout);
 
-  QLabel* label = new QLabel( "eraser width (voxel):", this );
+  QLabel* label = new QLabel( "Eraser width (voxel):", this );
   layout->addWidget(label);
 
   m_SizeLabel = new QLabel("1", this);
   layout->addWidget(m_SizeLabel);
 
-  m_Slider = new QSlider(Qt::Horizontal, this);
-  m_Slider->setMinimum(1);
-  m_Slider->setMaximum(6);
-  m_Slider->setPageStep(1);
-  m_Slider->setValue(1);
-  this->connect(m_Slider, SIGNAL(valueChanged(int)), SLOT(OnEraserSizeChangedInGui(int)));
+  m_Slider = new ctkSliderWidget(this);
+  m_Slider->layout()->setSpacing(3);
+  m_Slider->setMinimum(1.0);
+  m_Slider->setMaximum(25.0);
+  m_Slider->setSingleStep(1.0);
+  m_Slider->setPageStep(2.0);
+  m_Slider->setValue(1.0);
+  m_Slider->setDecimals(0);
   layout->addWidget(m_Slider);
 
+  this->connect(m_Slider, SIGNAL(valueChanged(double)), SLOT(OnEraserSizeChangedInGui(double)));
   this->connect(this, SIGNAL(NewToolAssociated(mitk::Tool*)), SLOT(OnNewToolAssociated(mitk::Tool*)));
+
+  m_ShowEraserTimer->setInterval(1000);
+  m_ShowEraserTimer->setSingleShot(true);
+
+  this->connect(m_ShowEraserTimer, SIGNAL(timeout()), SLOT(OnSettingEraserSizeFinished()));
 }
 
 
@@ -63,7 +77,7 @@ PaintbrushToolGUI::~PaintbrushToolGUI()
 {
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->EraserSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, int>( this, &PaintbrushToolGUI::OnEraserSizeChangedInTool );
+    m_PaintbrushTool->EraserSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, double>( this, &PaintbrushToolGUI::OnEraserSizeChangedInTool );
   }
 }
 
@@ -73,33 +87,61 @@ void PaintbrushToolGUI::OnNewToolAssociated(mitk::Tool* tool)
 {
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->EraserSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, int>( this, &PaintbrushToolGUI::OnEraserSizeChangedInTool );
+    m_PaintbrushTool->EraserSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, double>( this, &PaintbrushToolGUI::OnEraserSizeChangedInTool );
   }
 
   m_PaintbrushTool = dynamic_cast<PaintbrushTool*>( tool );
 
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->EraserSizeChanged += mitk::MessageDelegate1<PaintbrushToolGUI, int>( this, &PaintbrushToolGUI::OnEraserSizeChangedInTool );
+    m_PaintbrushTool->EraserSizeChanged += mitk::MessageDelegate1<PaintbrushToolGUI, double>( this, &PaintbrushToolGUI::OnEraserSizeChangedInTool );
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void PaintbrushToolGUI::OnEraserSizeChangedInGui(int value)
+void PaintbrushToolGUI::OnEraserSizeChangedInGui(double value)
 {
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->SetEraserSize( value );
+    m_PaintbrushTool->SetEraserSize(value);
     m_SizeLabel->setText(QString::number(value));
+
+    mitk::BaseRenderer* renderer =
+        mitk::GlobalInteraction::GetInstance()->GetFocusManager()->GetFocused();
+
+    mitk::Point2D centreInPx;
+    centreInPx[0] = renderer->GetSizeX() / 2;
+    centreInPx[1] = renderer->GetSizeY() / 2;
+    mitk::Point2D centreInMm;
+    renderer->GetDisplayGeometry()->DisplayToWorld(centreInPx, centreInMm);
+
+    m_PaintbrushTool->SetEraserPosition(centreInMm);
+
+    m_PaintbrushTool->SetEraserVisible(true, renderer);
+    renderer->RequestUpdate();
+
+    m_ShowEraserTimer->start();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void PaintbrushToolGUI::OnEraserSizeChangedInTool(int current)
+void PaintbrushToolGUI::OnSettingEraserSizeFinished()
 {
-  m_Slider->setValue(current);
+  mitk::BaseRenderer* renderer =
+      mitk::GlobalInteraction::GetInstance()->GetFocusManager()->GetFocused();
+
+  m_PaintbrushTool->SetEraserVisible(false, renderer);
+
+  renderer->RequestUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void PaintbrushToolGUI::OnEraserSizeChangedInTool(double eraserSize)
+{
+  m_Slider->setValue(eraserSize);
 }
 
 }

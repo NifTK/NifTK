@@ -59,6 +59,7 @@ protected slots:
   /// \brief Qt slot called when the user moves the slider.
   void OnEraserSizeChangedInGui(double value);
 
+  /// \brief Qt slot called after the user stopped dragging the slider.
   void OnSettingEraserSizeFinished();
 
 protected:
