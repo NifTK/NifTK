@@ -35,8 +35,10 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector<cv::Point3d> SubtractPointFromP
 
 /**
  * \brief Converts mitk::PointSet to vector of cv::Point3d, but you lose the point ID contained within the mitk::PointSet.
+ * Optionally you can fill missing indices with NaN values, to preserve point to point correspondence.
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSet);
+extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSet,
+    bool fillMissingIndecesWithNaN = false);
 
 
 /**

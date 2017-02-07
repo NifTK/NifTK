@@ -232,6 +232,53 @@ void TestLoadMPSAndConvertToOpenCVVector ( char * directory )
 
 }
 
+void TestLoadMPSAndConvertToOpenCVVectorWithIndexFilling ( char * directory )
+{
+  bool fillMissingIndices = true;
+  //with index filling we should end up with one extra value in the vector, corresponding to the missing point 3
+  mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( directory + niftk::GetFileSeparator() + "points.mps");
+
+  std::vector < cv::Point3d > pointVector = mitk::PointSetToVector ( pointSet, fillMissingIndices );
+
+  MITK_TEST_CONDITION ( pointVector.size() == pointSet->GetSize() + 1 , "Testing that point vector size == point set size + 1 " <<
+      pointVector.size() << " == " << pointSet->GetSize() + 1 );
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[0], cv::Point3d(-108.62, -35.3123, 1484.7), 1e-6) ,
+          "Testing Value of point 0 = " << pointVector[0] );
+
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[5], cv::Point3d(-2.38586, -82.0263, 1509.76), 1e-6) ,
+          "Testing Value of point 5 = " << pointVector[5] );
+
+  //with new format
+  pointSet = mitk::IOUtil::LoadPointSet ( directory + niftk::GetFileSeparator() +
+      "v2" + niftk::GetFileSeparator() + "points.mps");
+
+  pointVector = mitk::PointSetToVector ( pointSet, fillMissingIndices );
+
+  MITK_TEST_CONDITION ( pointVector.size() == pointSet->GetSize() + 1 , "Testing that point vector size == point set size + 1 " <<
+      pointVector.size() << " == " << pointSet->GetSize() + 1);
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[0], cv::Point3d(-108.62, -35.3123, 1484.7), 1e-6) ,
+          "Testing Value of point 0 = " << pointVector[0] );
+
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[5], cv::Point3d(-2.38586, -82.0263, 1509.76), 1e-6) ,
+          "Testing Value of point 5 = " << pointVector[5] );
+
+  //with new format after move
+  pointSet = mitk::IOUtil::LoadPointSet ( directory + niftk::GetFileSeparator() +
+      "v2_moved" + niftk::GetFileSeparator() + "points.mps");
+
+  pointVector = mitk::PointSetToVector ( pointSet, fillMissingIndices );
+
+  MITK_TEST_CONDITION ( pointVector.size() == pointSet->GetSize() + 1, "Testing that point vector size == point set size + 1 " <<
+      pointVector.size() << " == " << pointSet->GetSize() + 1 );
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[0], cv::Point3d( -88.6200, 691.7687, 1403.4441 ), 1e-3) ,
+          "Testing Value of point 0 = " << pointVector[0] );
+
+  MITK_TEST_CONDITION (mitk::NearlyEqual(pointVector[5], cv::Point3d(17.6141, 663.8431, 1448.5037), 1e-3) ,
+          "Testing Value of point 5 = " << pointVector[5] );
+
+}
+
+
 int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
 {
   // always start with this!
@@ -241,6 +288,7 @@ int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
   TestLoadPickedObject(argv[2]);
   TestLoadPickedPointListFromDirectoryOfMPSFiles(argv[3]);
   TestLoadMPSAndConvertToOpenCVVector ( argv[3] );
+  TestLoadMPSAndConvertToOpenCVVectorWithIndexFilling ( argv[3] );
   MITK_TEST_END();
 }
 

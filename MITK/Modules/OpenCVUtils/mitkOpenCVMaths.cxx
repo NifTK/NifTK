@@ -44,7 +44,8 @@ std::vector<cv::Point3d> SubtractPointFromPoints(const std::vector<cv::Point3d> 
 
 
 //-----------------------------------------------------------------------------
-std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSet)
+std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSet ,
+    bool fillMissingIndicesWithNaN )
 {
   std::vector<cv::Point3d> result;
 
@@ -58,7 +59,7 @@ std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSe
   for (pIt = points->Begin(); pIt != points->End(); ++pIt)
   {
     iD = pIt->Index();
-    if ( iD == myIndex )
+    if ( ( ! fillMissingIndicesWithNaN ) || (  iD == myIndex )  )
     {
       point = pointSet->GetPoint ( iD );
       cv::Point3d cvPoint;
