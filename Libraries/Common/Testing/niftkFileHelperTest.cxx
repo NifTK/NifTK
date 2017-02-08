@@ -17,6 +17,7 @@
 #include <niftkFileHelper.h>
 #include <niftkEnvironmentHelper.h>
 #include <niftkConversionUtils.h>
+#include "Exceptions/niftkIOException.h"
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
@@ -488,6 +489,53 @@ int TestNotEmptyFile(std::string file)
   return EXIT_SUCCESS;
 }
 
+//-----------------------------------------------------------------------------
+int TestCreateAndDeleteUniqueFile()
+{
+  std::string filename;
+  try
+  {
+    filename = niftk::CreateUniqueTempFileName("video",".avi");
+  }
+  catch (niftk::IOException e)
+  {
+    std::cerr << "The method niftk::CreateUniqueTempFileName did not return a "
+              << "unique file name " << filename
+              << " : " << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if ( ! niftk::FileExists ( filename ) )
+  {
+    std::cerr << "The method niftk::CreateUniqueTempFileName did not return a "
+              << "writeable file name. " << filename << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if ( ! niftk::FileIsEmpty ( filename ) )
+  {
+    std::cerr << "The method niftk::CreateUniqueTempFileName did not return an "
+              << "empty file. " << filename << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if ( ! niftk::FileDelete ( filename ) )
+  {
+    std::cerr << "The method niftk::FileDelete did not successfully "
+              << "delete empty file. " << filename << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if ( niftk::FileExists ( filename ) )
+  {
+    std::cerr << "The method niftk::FileDelete did not delete "
+              << filename << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+
 /**
  * \brief Basic test harness for FileHelper.h
  */
@@ -561,6 +609,11 @@ int niftkFileHelperTest(int argc, char * argv[])
   {
     return TestNotEmptyFile(argv[2]);
   }
+   else if (testNumber == 16)
+  {
+    return TestCreateAndDeleteUniqueFile();
+  }
+
   else
   {
     return EXIT_FAILURE;

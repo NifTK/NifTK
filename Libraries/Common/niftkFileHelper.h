@@ -247,7 +247,8 @@ NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix(const std::string& fileN
 NIFTKCOMMON_WINEXPORT std::string ModifyFileSuffix(const std::string& fileName,
                                                    std::string newSuffix );
 /**
-* Creates a unique file name for a file located in the O/S temporary directory.
+* Creates a unique file name (and empty file) for a file located in the O/S temporary directory.
+* Throws a niftk::IOException on failure.
 * @param prefix file basename prefix
 * @param suffix file basename suffix
 * @return a unique file name
