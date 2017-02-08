@@ -148,7 +148,8 @@ int main(int argc, char** argv)
       try
       {
         mitk::PointSet::Pointer pointSet = mitk::IOUtil::LoadPointSet ( input3D );
-        std::vector < cv::Point3d > worldPointsVector = mitk::PointSetToVector ( pointSet );
+        bool fillMissingIndicesWithNaN = true;
+        std::vector < cv::Point3d > worldPointsVector = mitk::PointSetToVector ( pointSet, fillMissingIndicesWithNaN );
         for ( unsigned int i = 0 ; i < worldPointsVector.size() ; i ++ )
         {
           worldPoints.push_back ( mitk::WorldPoint(worldPointsVector[i] ) );
