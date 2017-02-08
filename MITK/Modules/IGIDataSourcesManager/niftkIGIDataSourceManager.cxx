@@ -61,6 +61,7 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
 , m_PlaybackSliderFactor(0)
 , m_IsGrabbingScreen(false)
 , m_ScreenGrabDir("")
+, m_IsRecording(false)
 {
   if (m_DataStorage.IsNull())
   {
@@ -503,7 +504,7 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
   // Tell interested parties (e.g. other plugins) that recording has started.
   // We do this before starting writing descriptor because that might throw an execption,
   // which would stall delivering this signal.
-
+  m_IsRecording = true;
   emit RecordingStarted(absolutePath);
 
   this->WriteDescriptorFile(absolutePath);
@@ -520,7 +521,15 @@ void IGIDataSourceManager::StopRecording()
     m_Sources[i]->StopRecording();
   }
 
+  m_IsRecording = false;
   emit RecordingStopped();
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataSourceManager::IsRecording() const
+{
+  return m_IsRecording;
 }
 
 

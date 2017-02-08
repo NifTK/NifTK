@@ -79,6 +79,9 @@ protected slots:
   void OnUpdateShouldPause(const ctkEvent& event);
   void OnUpdateShouldRestart(const ctkEvent& event);
 
+  /** Sent by footswitch. */
+  void OnToggleRecording(const ctkEvent& event);
+
 protected:
 
 private slots:

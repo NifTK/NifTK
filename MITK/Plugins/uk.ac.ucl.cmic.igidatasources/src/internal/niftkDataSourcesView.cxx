@@ -126,6 +126,8 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     eventAdmin->subscribeSlot(this, SLOT(OnUpdateShouldPause(ctkEvent)), properties);
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATERESTART";
     eventAdmin->subscribeSlot(this, SLOT(OnUpdateShouldRestart(ctkEvent)), properties);
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH2START";
+    eventAdmin->subscribeSlot(this, SLOT(OnToggleRecording(ctkEvent)), properties);
   }
 
   m_SetupWasCalled = true;
@@ -181,6 +183,20 @@ void DataSourcesView::OnRecordingStopped()
 {
   ctkDictionary properties;
   emit RecordingStarted(properties);
+}
+
+
+//-----------------------------------------------------------------------------
+void DataSourcesView::OnToggleRecording(const ctkEvent& event)
+{
+  if (m_DataSourceManagerWidget->IsRecording())
+  {
+    m_DataSourceManagerWidget->StopRecording();
+  }
+  else
+  {
+    m_DataSourceManagerWidget->StartRecording();
+  }
 }
 
 } // end namespace

@@ -173,6 +173,11 @@ public:
   void StopRecording();
 
   /**
+   * \brief Returns true if the data source manager is in recording mode.
+   */
+  bool IsRecording() const;
+
+  /**
   * \brief Freezes the data sources (i.e. does not do update).
   *
   * Does not affect the saving of data. The data source can
@@ -384,6 +389,7 @@ private:
   bool                                                             m_IsGrabbingScreen;
   QString                                                          m_ScreenGrabDir;
 
+  bool                                                             m_IsRecording;
 }; // end class;
 
 } // end namespace

@@ -66,6 +66,8 @@ protected slots:
 
   /** Sent by footpedal/hotkey plugin. */
   void OnGrab(const ctkEvent& event);
+
+  /** Sent by buttons. */
   void OnUnGrab(const ctkEvent& event);
   void OnClear(const ctkEvent& event);
 

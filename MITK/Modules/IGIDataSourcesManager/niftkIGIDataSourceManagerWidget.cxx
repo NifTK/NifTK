@@ -397,4 +397,25 @@ void IGIDataSourceManagerWidget::OnBroadcastStatusString(QString text)
   m_ToolManagerConsole->appendPlainText(text);
 }
 
+
+//-----------------------------------------------------------------------------
+bool IGIDataSourceManagerWidget::IsRecording() const
+{
+  return m_PlaybackWidget->IsRecording();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::StartRecording()
+{
+  m_PlaybackWidget->StartRecording();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGIDataSourceManagerWidget::StopRecording()
+{
+  m_PlaybackWidget->StopRecording();
+}
+
 } // end namespace

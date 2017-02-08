@@ -67,6 +67,21 @@ public:
   */
   void RestartUpdate();
 
+  /**
+   * \brief Used to check if the DataSourceManager is recording or not.
+   */
+  bool IsRecording() const;
+
+  /**
+   * \brief Calls through to the DataSourcePlaybackWidget to start recording.
+   */
+  void StartRecording();
+
+  /**
+   * \brief Calls through to the DataSourcePlaybackWidget to stop recording.
+   */
+  void StopRecording();
+
 signals:
 
   /**

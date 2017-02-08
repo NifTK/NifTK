@@ -146,16 +146,8 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
       eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties1);
 
       ctkDictionary properties2;
-      properties2[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH1START";
+      properties2[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH3START";
       eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties2);
-
-      ctkDictionary properties3;
-      properties3[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH2START";
-      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties3);
-
-      ctkDictionary properties4;
-      properties4[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH3START";
-      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties4);
     }
   }
 }
