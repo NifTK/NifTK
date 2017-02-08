@@ -18,10 +18,12 @@
 #include <niftkNiftyCalException.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkImage.h>
+#include <mitkIOUtil.h>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QPixmap>
 #include <QtConcurrentRun>
+
 #include <ctkServiceReference.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
@@ -29,6 +31,7 @@
 
 #include <niftkCoordinateAxesData.h>
 #include <niftkSystemTimeServiceRAII.h>
+#include <niftkFileHelper.h>
 #include <QmitkIGIUtils.h>
 
 namespace niftk
@@ -363,7 +366,53 @@ void CameraCalView::DoTemporaryGrabbingOfDataRegardlessOfCalibrationSettings()
     }
     else
     {
-      // Do something to write out image and trackers.
+      mitk::DataNode::Pointer leftImageNode = m_Controls->m_LeftCameraComboBox->GetSelectedNode();
+      if (leftImageNode.IsNotNull())
+      {
+        std::ostringstream fileName;
+        fileName << m_Manager->GetOutputPrefixName()
+                 << niftk::GetFileSeparator()
+                 << "left-"
+                 << m_FrameNumber
+                 << ".png";
+
+        mitk::IOUtil::Save(leftImageNode->GetData(), fileName.str());
+      }
+      mitk::DataNode::Pointer rightImageNode = m_Controls->m_RightCameraComboBox->GetSelectedNode();
+      if (rightImageNode.IsNotNull())
+      {
+        std::ostringstream fileName;
+        fileName << m_Manager->GetOutputPrefixName()
+                 << niftk::GetFileSeparator()
+                 << "right-"
+                 << m_FrameNumber
+                 << ".png";
+
+        mitk::IOUtil::Save(rightImageNode->GetData(), fileName.str());
+      }
+      mitk::DataNode::Pointer trackingNode = m_Controls->m_TrackerMatrixComboBox->GetSelectedNode();
+      if (trackingNode.IsNotNull())
+      {
+        std::ostringstream fileName;
+        fileName << m_Manager->GetOutputPrefixName()
+                 << niftk::GetFileSeparator()
+                 << "tracker-"
+                 << m_FrameNumber
+                 << ".4x4";
+
+        mitk::IOUtil::Save(trackingNode->GetData(), fileName.str());
+      }
+      mitk::DataNode::Pointer referenceTrackingNode = m_Controls->m_ReferenceTrackerMatrixComboBox->GetSelectedNode();
+      if (referenceTrackingNode.IsNotNull())
+      {
+        std::ostringstream fileName;
+        fileName << m_Manager->GetOutputPrefixName()
+                 << niftk::GetFileSeparator()
+                 << "reference-"
+                 << m_FrameNumber
+                 << ".4x4";
+        mitk::IOUtil::Save(referenceTrackingNode->GetData(), fileName.str());
+      }
     }
   }
 }
