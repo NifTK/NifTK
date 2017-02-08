@@ -301,28 +301,32 @@ bool TestVideoWriterCodec ( int codec )
   double framerate = 25.0;
   cv::Size size = cv::Size (10,20);
   bool isColour = true;
+  bool ok = false;
   try
   {
     writer->open (outfile, codec, framerate, size, isColour);
-    if ( ! writer->isOpened() )
-    {
-      return false;
-    }
 
     cv::Mat frame = cv::Mat::eye(size, CV_8UC3);
     writer->write(frame);
     writer->release();
 
-    if ( niftk::FileIsEmpty(outfile))
+    if ( ! (niftk::FileIsEmpty(outfile)))
     {
-      return false;
+      MITK_INFO << "TestVideoWriterCodec OK: " << outfile << " is not empty: " << niftk::FileSize(outfile);
+      ok = true;
+    }
+    else
+    {
+      MITK_INFO << "TestVideoWriterCodec FAIL: " << outfile << " is empty: " << niftk::FileSize(outfile);
     }
   }
   catch (...)
   {
-    return false;
+    MITK_INFO << "TestVideoWriterCodec FAIL: Caught an exception: " << outfile;
+    ok = false;
   }
-  return true;
+  niftk::FileDelete (outfile);
+  return ok;
 }
 
 //---------------------------------------------------------------------------
