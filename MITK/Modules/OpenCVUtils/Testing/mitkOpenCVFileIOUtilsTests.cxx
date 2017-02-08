@@ -297,7 +297,7 @@ void TestCreateVideoWriter ()
   bool dvixgood = mitk::TestVideoWriterCodec ( dvixcodec );
   if ( dvixgood )
   {
-    MITK_TEST_CONDITION ( true , "DVIX codec is useble." );
+    MITK_TEST_CONDITION ( true , "DVIX codec is usable." );
   }
   else
   {
@@ -332,6 +332,7 @@ void TestCreateVideoWriter ()
     MITK_TEST_CONDITION ( ! niftk::FileIsEmpty (outfile),
         "Testing that " << outfile << " is not empty.");
   }
+  niftk::FileDelete ( outfile );
 
   //now try with a silly encoder, should create it, but fall back to mjpeg
   outfile = niftk::CreateUniqueTempFileName ( "video", ".avi" );
@@ -346,6 +347,7 @@ void TestCreateVideoWriter ()
   writer->release();
   MITK_TEST_CONDITION ( ! niftk::FileIsEmpty (outfile),
     "Testing that " << outfile << " is not empty.");
+  niftk::FileDelete ( outfile );
 
 }
 
