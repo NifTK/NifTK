@@ -75,6 +75,11 @@ signals:
   void RecordingStarted(QString basedirectory);
 
   /**
+  * \brief Emmitted when recording has successfully stopped.
+  */
+  void RecordingStopped();
+
+  /**
   * \brief Emmitted when the manager has asked each data source to update, and they have all updated.
   */
   void UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType);

@@ -80,7 +80,9 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   ok = QObject::connect(m_Manager, SIGNAL (RecordingStarted(QString)) ,
                         this, SIGNAL (RecordingStarted(QString)));
   assert(ok);
-
+  ok = QObject::connect(m_Manager, SIGNAL (RecordingStopped()) ,
+                        this, SIGNAL (RecordingStopped()));
+  assert(ok);
 }
 
 
@@ -123,6 +125,9 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
   assert(ok);
   ok = QObject::disconnect(m_Manager, SIGNAL (RecordingStarted(QString)) ,
                         this, SIGNAL (RecordingStarted(QString)));
+  assert(ok);
+  ok = QObject::disconnect(m_Manager, SIGNAL (RecordingStoped()) ,
+                        this, SIGNAL (RecordingStoped(QString)));
   assert(ok);
 
   // Let Qt clean up m_Manager

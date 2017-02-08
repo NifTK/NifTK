@@ -298,6 +298,11 @@ signals:
   */
   void RecordingStarted(QString basedirectory);
 
+  /**
+  * \brief Emmitted when recording has successfully stopped.
+  */
+  void RecordingStopped();
+
 protected:
 
   IGIDataSourceManager(const IGIDataSourceManager&); // Purposefully not implemented.

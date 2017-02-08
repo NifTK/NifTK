@@ -93,6 +93,11 @@ private slots:
   */
   void OnRecordingStarted(QString baseDirectory);
 
+  /**
+  * \brief Listens for IGIDataSourceManager's RecordingStopped signal and forwards it onto the CTK bus.
+  */
+  void OnRecordingStopped();
+
 private:
 
   /**

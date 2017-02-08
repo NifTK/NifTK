@@ -51,6 +51,7 @@ DataSourcesView::~DataSourcesView()
         {
           eventAdmin->unpublishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
           eventAdmin->unpublishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
+          eventAdmin->unpublishSignal(this, SIGNAL(RecordingStopped(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTOPPED");
         }
       }
     }
@@ -59,6 +60,8 @@ DataSourcesView::~DataSourcesView()
     ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
     assert(ok);
     ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)));
+    assert(ok);
+    ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(RecordingStopped()), this, SLOT(OnRecordingStopped()));
     assert(ok);
   }
 }
@@ -106,6 +109,8 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
   assert(ok);
   ok = QObject::connect(m_DataSourceManagerWidget, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)), Qt::QueuedConnection);
   assert(ok);
+  ok = QObject::connect(m_DataSourceManagerWidget, SIGNAL(RecordingStopped()), this, SLOT(OnRecordingStopped()), Qt::QueuedConnection);
+  assert(ok);
 
   ctkPluginContext* context = niftk::DataSourcesViewActivator::getContext();
   ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
@@ -114,6 +119,7 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
     eventAdmin->publishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
     eventAdmin->publishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
+    eventAdmin->publishSignal(this, SIGNAL(RecordingStopped()), "uk/ac/ucl/cmic/IGIRECORDINGSTOPPED");
 
     ctkDictionary properties;
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATEPAUSE";
@@ -166,6 +172,14 @@ void DataSourcesView::OnRecordingStarted(QString baseDirectory)
 {
   ctkDictionary properties;
   properties["directory"] = baseDirectory;
+  emit RecordingStarted(properties);
+}
+
+
+//-----------------------------------------------------------------------------
+void DataSourcesView::OnRecordingStopped()
+{
+  ctkDictionary properties;
   emit RecordingStarted(properties);
 }
 

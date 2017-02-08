@@ -519,6 +519,8 @@ void IGIDataSourceManager::StopRecording()
   {
     m_Sources[i]->StopRecording();
   }
+
+  emit RecordingStopped();
 }
 
 
