@@ -123,6 +123,8 @@ private:
   QFuture<double>                                  m_BackgroundCalibrateProcess;
   QFutureWatcher<double>                           m_BackgroundCalibrateProcessWatcher;
   QString                                          m_DefaultSaveDirectory;
+  bool                                             m_GrabDataOverride;
+  unsigned int                                     m_FrameNumber;
 };
 
 } // end namespace

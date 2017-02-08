@@ -254,6 +254,7 @@ void CameraCalView::RetrievePreferenceValues()
     {
       m_Manager->SetModelToTrackerFileName(modelToTrackerFileName);
     }
+    m_GrabDataOverride = prefs->GetBool(CameraCalViewPreferencePage::GRAB_DATA_NODE_NAME, false);
   }
 }
 
@@ -348,6 +349,13 @@ void CameraCalView::OnGrab(const ctkEvent& event)
 {
   if (!m_BackgroundGrabProcess.isRunning() && !m_BackgroundCalibrateProcess.isRunning())
   {
+    // Experimental (and possibly temporary)
+    if(m_GrabDataOverride)
+    {
+
+    }
+
+    // The main calibration grabbing.
     this->OnGrabButtonPressed();
   }
 }
@@ -376,6 +384,13 @@ void CameraCalView::OnClear(const ctkEvent& event)
 //-----------------------------------------------------------------------------
 void CameraCalView::OnUpdate(const ctkEvent& event)
 {
+  // Experimental (and possibly temporary)
+  if(m_GrabDataOverride)
+  {
+
+  }
+
+  // The main calibration functionality to update the position of the grid on screen.
   m_Manager->UpdateCameraToWorldPosition();
 }
 
