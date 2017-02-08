@@ -495,7 +495,7 @@ std::vector<cv::Mat> NiftyCalVideoCalibrationManager::ConvertMatrices(const std:
 
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex, bool useReference)
-{  
+{
   cv::Matx21d residual;
   residual(0, 0) = 0;
   residual(1, 0) = 0;
@@ -770,7 +770,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
 
-    niftk::CirclesPointDetector *circlesDetector1 = new niftk::CirclesPointDetector(internalCorners, cv::CALIB_CB_ASYMMETRIC_GRID);
+    niftk::CirclesPointDetector *circlesDetector1 =
+      new niftk::CirclesPointDetector(internalCorners, cv::CALIB_CB_ASYMMETRIC_GRID);
     circlesDetector1->SetImageScaleFactor(scaleFactors);
     circlesDetector1->SetImage(&copyOfImage1);
     circlesDetector1->SetCaching(true);
@@ -865,7 +866,10 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
       niftk::TemplateCirclesPointDetector *circlesIterativeDetector2
-          = new niftk::TemplateCirclesPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID);
+          = new niftk::TemplateCirclesPointDetector(internalCorners,
+                                                    offsetIfNotIterative,
+                                                    cv::CALIB_CB_ASYMMETRIC_GRID);
+
       circlesIterativeDetector2->SetImage(&copyOfImage2);
       circlesIterativeDetector2->SetImageScaleFactor(scaleFactors);
       circlesIterativeDetector2->SetTemplateImage(&m_TemplateImage);
@@ -891,7 +895,10 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
     niftk::TemplateRingsPointDetector *ringsIterativeDetector1
-        = new niftk::TemplateRingsPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID);
+        = new niftk::TemplateRingsPointDetector(internalCorners,
+                                                offsetIfNotIterative,
+                                                cv::CALIB_CB_ASYMMETRIC_GRID);
+
     ringsIterativeDetector1->SetImage(&copyOfImage1);
     ringsIterativeDetector1->SetImageScaleFactor(scaleFactors);
     ringsIterativeDetector1->SetTemplateImage(&m_TemplateImage);
@@ -916,7 +923,10 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
       niftk::TemplateRingsPointDetector *ringsIterativeDetector2
-          = new niftk::TemplateRingsPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID);
+          = new niftk::TemplateRingsPointDetector(internalCorners,
+                                                  offsetIfNotIterative,
+                                                  cv::CALIB_CB_ASYMMETRIC_GRID);
+
       ringsIterativeDetector2->SetImage(&copyOfImage2);
       ringsIterativeDetector2->SetImageScaleFactor(scaleFactors);
       ringsIterativeDetector2->SetTemplateImage(&m_TemplateImage);
@@ -943,7 +953,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
 
     cv::Point2d noScaleFactors(1, 1);
 
-    std::unique_ptr<niftk::TemplateCirclesPointDetector> l1(new niftk::TemplateCirclesPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID));
+    std::unique_ptr<niftk::TemplateCirclesPointDetector> l1(
+      new niftk::TemplateCirclesPointDetector(internalCorners,
+                                              offsetIfNotIterative,
+                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+
     l1->SetImageScaleFactor(noScaleFactors);
     l1->SetTemplateImage(&m_TemplateImage);
     l1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
@@ -954,7 +968,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     l1->SetUseTemplateMatching(true);
     l1->SetCaching(true);
 
-    std::unique_ptr<niftk::TemplateCirclesPointDetector> r1(new niftk::TemplateCirclesPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID));
+    std::unique_ptr<niftk::TemplateCirclesPointDetector> r1(
+      new niftk::TemplateCirclesPointDetector(internalCorners,
+                                              offsetIfNotIterative,
+                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+
     r1->SetImageScaleFactor(noScaleFactors);
     r1->SetTemplateImage(&m_TemplateImage);
     r1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
@@ -987,7 +1005,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       dynamic_cast<niftk::SideBySideDetector*>(
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
-      std::unique_ptr<niftk::TemplateCirclesPointDetector> l3(new niftk::TemplateCirclesPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID));
+      std::unique_ptr<niftk::TemplateCirclesPointDetector> l3(
+        new niftk::TemplateCirclesPointDetector(internalCorners,
+                                                offsetIfNotIterative,
+                                                cv::CALIB_CB_ASYMMETRIC_GRID));
+
       l3->SetImageScaleFactor(noScaleFactors);
       l3->SetTemplateImage(&m_TemplateImage);
       l3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
@@ -998,7 +1020,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       l3->SetUseTemplateMatching(true);
       l3->SetCaching(false);
 
-      std::unique_ptr<niftk::TemplateCirclesPointDetector> r3(new niftk::TemplateCirclesPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID));
+      std::unique_ptr<niftk::TemplateCirclesPointDetector> r3(
+        new niftk::TemplateCirclesPointDetector(internalCorners,
+                                                offsetIfNotIterative,
+                                                cv::CALIB_CB_ASYMMETRIC_GRID));
+
       r3->SetImageScaleFactor(noScaleFactors);
       r3->SetTemplateImage(&m_TemplateImage);
       r3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
@@ -1033,7 +1059,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
 
     cv::Point2d noScaleFactors(1, 1);
 
-    std::unique_ptr<niftk::TemplateRingsPointDetector> l1(new niftk::TemplateRingsPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID));
+    std::unique_ptr<niftk::TemplateRingsPointDetector> l1(
+      new niftk::TemplateRingsPointDetector(internalCorners,
+                                            offsetIfNotIterative,
+                                            cv::CALIB_CB_ASYMMETRIC_GRID));
+
     l1->SetImageScaleFactor(noScaleFactors);
     l1->SetTemplateImage(&m_TemplateImage);
     l1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
@@ -1044,7 +1074,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     l1->SetUseTemplateMatching(true);
     l1->SetCaching(true);
 
-    std::unique_ptr<niftk::TemplateRingsPointDetector> r1(new niftk::TemplateRingsPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID));
+    std::unique_ptr<niftk::TemplateRingsPointDetector> r1(
+      new niftk::TemplateRingsPointDetector(internalCorners,
+                                            offsetIfNotIterative,
+                                            cv::CALIB_CB_ASYMMETRIC_GRID));
+
     r1->SetImageScaleFactor(noScaleFactors);
     r1->SetTemplateImage(&m_TemplateImage);
     r1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
@@ -1077,7 +1111,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       dynamic_cast<niftk::SideBySideDetector*>(
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
-      std::unique_ptr<niftk::TemplateRingsPointDetector> l3(new niftk::TemplateRingsPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID));
+      std::unique_ptr<niftk::TemplateRingsPointDetector> l3(
+        new niftk::TemplateRingsPointDetector(internalCorners,
+                                              offsetIfNotIterative,
+                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+
       l3->SetImageScaleFactor(noScaleFactors);
       l3->SetTemplateImage(&m_TemplateImage);
       l3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
@@ -1088,7 +1126,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       l3->SetUseTemplateMatching(true);
       l3->SetCaching(false);
 
-      std::unique_ptr<niftk::TemplateRingsPointDetector> r3(new niftk::TemplateRingsPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID));
+      std::unique_ptr<niftk::TemplateRingsPointDetector> r3(
+        new niftk::TemplateRingsPointDetector(internalCorners,
+                                              offsetIfNotIterative,
+                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+
       r3->SetImageScaleFactor(noScaleFactors);
       r3->SetTemplateImage(&m_TemplateImage);
       r3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);

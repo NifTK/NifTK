@@ -105,6 +105,7 @@ private:
   double RunCalibration();
 
   void SetButtonsEnabled(bool isEnabled);
+  void DoTemporaryGrabbingOfDataRegardlessOfCalibrationSettings();
 
   /**
    * \brief Retrieve's the pref values from preference service, and stored in member variables.

@@ -40,6 +40,8 @@ const QString CameraCalView::VIEW_ID = "uk.ac.ucl.cmic.igicameracal";
 CameraCalView::CameraCalView()
 : m_Controls(nullptr)
 , m_Manager(nullptr)
+, m_GrabDataOverride(false)
+, m_FrameNumber(0)
 {
   bool ok = false;
   ok = connect(&m_BackgroundGrabProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundGrabProcessFinished()));
@@ -345,17 +347,34 @@ void CameraCalView::OnClearButtonPressed()
 
 
 //-----------------------------------------------------------------------------
+void CameraCalView::DoTemporaryGrabbingOfDataRegardlessOfCalibrationSettings()
+{
+  if(m_GrabDataOverride)
+  {
+    if (m_Manager->GetOutputPrefixName().empty())
+    {
+      QMessageBox msgBox;
+      msgBox.setText("No output directory.");
+      msgBox.setInformativeText("Please set an output directory in the plugin preferences.");
+      msgBox.setStandardButtons(QMessageBox::Ok);
+      msgBox.setDefaultButton(QMessageBox::Ok);
+      msgBox.exec();
+      return;
+    }
+    else
+    {
+      // Do something to write out image and trackers.
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void CameraCalView::OnGrab(const ctkEvent& event)
 {
   if (!m_BackgroundGrabProcess.isRunning() && !m_BackgroundCalibrateProcess.isRunning())
   {
-    // Experimental (and possibly temporary)
-    if(m_GrabDataOverride)
-    {
-
-    }
-
-    // The main calibration grabbing.
+    this->DoTemporaryGrabbingOfDataRegardlessOfCalibrationSettings();
     this->OnGrabButtonPressed();
   }
 }
@@ -384,13 +403,7 @@ void CameraCalView::OnClear(const ctkEvent& event)
 //-----------------------------------------------------------------------------
 void CameraCalView::OnUpdate(const ctkEvent& event)
 {
-  // Experimental (and possibly temporary)
-  if(m_GrabDataOverride)
-  {
-
-  }
-
-  // The main calibration functionality to update the position of the grid on screen.
+  this->DoTemporaryGrabbingOfDataRegardlessOfCalibrationSettings();
   m_Manager->UpdateCameraToWorldPosition();
 }
 
