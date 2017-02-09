@@ -299,7 +299,7 @@ bool TestVideoWriterCodec ( int codec )
   cv::VideoWriter* writer = new cv::VideoWriter;
   std::string outfile = niftk::CreateUniqueTempFileName ( "video", ".avi" );
   double framerate = 25.0;
-  cv::Size size = cv::Size (10,20);
+  cv::Size2i size = cv::Size2i (640,480);
   bool isColour = true;
   bool ok = false;
   try
@@ -307,7 +307,10 @@ bool TestVideoWriterCodec ( int codec )
     writer->open (outfile, codec, framerate, size, isColour);
 
     cv::Mat frame = cv::Mat::eye(size, CV_8UC3);
-    writer->write(frame);
+    for ( unsigned int i = 0 ; i < 2 ; i ++ )
+    {
+      writer->write(frame);
+    }
     writer->release();
 
     if ( ! (niftk::FileIsEmpty(outfile)))
