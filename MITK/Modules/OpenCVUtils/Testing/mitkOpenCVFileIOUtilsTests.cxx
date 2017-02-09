@@ -311,7 +311,7 @@ void TestCreateVideoWriter ()
   //now test actual writer
   std::string outfile = niftk::CreateUniqueTempFileName ( "video", ".avi" );
   double frameRate = 25.0;
-  cv::Size size = cv::Size ( 1920, 1080 );
+  cv::Size2i size = cv::Size2i ( 1920, 1080 );
 
   if ( mpeg1good )
   {
@@ -330,7 +330,9 @@ void TestCreateVideoWriter ()
     //easily caught, or fails to work and doesn't throw. So let's just
     //check it isn't empty.
     MITK_TEST_CONDITION ( ! niftk::FileIsEmpty (outfile),
-        "Testing that " << outfile << " is not empty.");
+        "Testing that " << outfile << " is not empty: filesize = " << niftk::FileSize(outfile) );
+    MITK_TEST_CONDITION ( niftk::FileSize (outfile) == 37860,
+        "Testing that " << outfile << " filesize = 37860 : actual size = " << niftk::FileSize(outfile) );
   }
   niftk::FileDelete ( outfile );
 
@@ -346,7 +348,9 @@ void TestCreateVideoWriter ()
   MITK_TEST_CONDITION ( true , "Successfully pushed frame to writer." );
   writer->release();
   MITK_TEST_CONDITION ( ! niftk::FileIsEmpty (outfile),
-    "Testing that " << outfile << " is not empty.");
+      "Testing that " << outfile << " is not empty: filesize = " << niftk::FileSize(outfile));
+  MITK_TEST_CONDITION ( niftk::FileSize (outfile) == 171732,
+      "Testing that " << outfile << " filesize = 171732 : actual size = " << niftk::FileSize(outfile) );
   niftk::FileDelete ( outfile );
 
 }
