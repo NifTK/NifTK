@@ -315,8 +315,16 @@ bool TestVideoWriterCodec ( int codec )
 
     if ( ! (niftk::FileIsEmpty(outfile)))
     {
-      MITK_INFO << "TestVideoWriterCodec OK: " << outfile << " is not empty: " << niftk::FileSize(outfile);
-      ok = true;
+      //on mac, we get a file size of 128 returned even when the video writer fails, I don't know why
+      if ( ! (  niftk::FileSize(outfile) == 128 ) )
+      {
+        MITK_INFO << "TestVideoWriterCodec OK: " << outfile << " is not empty: " << niftk::FileSize(outfile);
+        ok = true;
+      }
+      else
+      {
+        MITK_INFO << "TestVideoWriterCodec FAIL: " << outfile << " has size " <<  niftk::FileSize(outfile);
+      }
     }
     else
     {
