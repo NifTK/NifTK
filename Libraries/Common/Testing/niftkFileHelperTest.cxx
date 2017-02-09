@@ -537,12 +537,12 @@ int TestCreateAndDeleteUniqueFile()
 }
 
 //-----------------------------------------------------------------------------
-int TestFileSize(std::string file, int expectedSize)
+int TestFileSize(std::string file, int minExpectedSize, int maxExpectedSize )
 {
-  if ( niftk::FileSize ( file ) != expectedSize )
+  if ( ! ( ( niftk::FileSize ( file ) >= minExpectedSize ) && ( niftk::FileSize ( file ) <= maxExpectedSize ) ) )
   {
     std::cerr << "The method niftk::FileSize should return "
-              << expectedSize
+              << minExpectedSize << " to " << maxExpectedSize
               << " for file " << file << ": not " << niftk::FileSize ( file )
               << std::endl;
     return EXIT_FAILURE;
@@ -629,7 +629,7 @@ int niftkFileHelperTest(int argc, char * argv[])
   }
    else if (testNumber == 17)
   {
-    return TestFileSize(argv[2], atoi(argv[3]));
+    return TestFileSize(argv[2], atoi(argv[3]), atoi(argv[4]));
   }
 
 
