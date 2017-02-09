@@ -73,6 +73,11 @@ signals:
   */
   void RecordingStarted(const ctkDictionary&);
 
+  /**
+  * \brief CTK-bus equivalent of IGIDataSourceManager's RecordingStopped. Topic is "uk/ac/ucl/cmic/IGIRECORDINGSTOPPED".
+  */
+  void RecordingStopped(const ctkDictionary&);
+
 protected slots:
 
   /** Sent by other plugins, requesting a pause/restart. */

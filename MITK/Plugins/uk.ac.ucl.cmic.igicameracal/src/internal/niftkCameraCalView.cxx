@@ -43,6 +43,7 @@ const QString CameraCalView::VIEW_ID = "uk.ac.ucl.cmic.igicameracal";
 CameraCalView::CameraCalView()
 : m_Controls(nullptr)
 , m_Manager(nullptr)
+, m_IsRecording(false)
 , m_GrabDataOverride(false)
 , m_FrameNumber(0)
 {
@@ -146,13 +147,18 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
       eventAdmin->publishSignal(this, SIGNAL(PauseIGIUpdate(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATEPAUSE", Qt::DirectConnection);
       eventAdmin->publishSignal(this, SIGNAL(RestartIGIUpdate(ctkDictionary)), "uk/ac/ucl/cmic/IGIUPDATERESTART", Qt::DirectConnection);
 
-      ctkDictionary properties1;
-      properties1[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
-      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties1);
+      ctkDictionary properties;
+      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
 
-      ctkDictionary properties2;
-      properties2[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH3START";
-      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties2);
+      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTARTED";
+      eventAdmin->subscribeSlot(this, SLOT(OnRecordingStarted(ctkEvent)), properties);
+
+      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIRECORDINGSTOPPED";
+      eventAdmin->subscribeSlot(this, SLOT(OnRecordingStopped(ctkEvent)), properties);
+
+      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH3START";
+      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties);
     }
   }
 }
@@ -350,69 +356,65 @@ void CameraCalView::OnClearButtonPressed()
 
 
 //-----------------------------------------------------------------------------
-void CameraCalView::DoTemporaryGrabbingOfDataRegardlessOfCalibrationSettings()
+void CameraCalView::DumpData(const QString& outputDir)
 {
-  if(m_GrabDataOverride)
+  if(m_GrabDataOverride && !outputDir.isEmpty())
   {
-    if (m_Manager->GetOutputPrefixName().empty())
+    bool savedSomething = false;
+    mitk::DataNode::Pointer leftImageNode = m_Controls->m_LeftCameraComboBox->GetSelectedNode();
+    if (leftImageNode.IsNotNull())
     {
-      QMessageBox msgBox;
-      msgBox.setText("No output directory.");
-      msgBox.setInformativeText("Please set an output directory in the plugin preferences.");
-      msgBox.setStandardButtons(QMessageBox::Ok);
-      msgBox.setDefaultButton(QMessageBox::Ok);
-      msgBox.exec();
-      return;
+      std::ostringstream fileName;
+      fileName << outputDir.toStdString()
+               << niftk::GetFileSeparator()
+               << "left-"
+               << m_FrameNumber
+               << ".png";
+
+      mitk::IOUtil::Save(leftImageNode->GetData(), fileName.str());
+      savedSomething = true;
     }
-    else
+    mitk::DataNode::Pointer rightImageNode = m_Controls->m_RightCameraComboBox->GetSelectedNode();
+    if (rightImageNode.IsNotNull())
     {
-      mitk::DataNode::Pointer leftImageNode = m_Controls->m_LeftCameraComboBox->GetSelectedNode();
-      if (leftImageNode.IsNotNull())
-      {
-        std::ostringstream fileName;
-        fileName << m_Manager->GetOutputPrefixName()
-                 << niftk::GetFileSeparator()
-                 << "left-"
-                 << m_FrameNumber
-                 << ".png";
+      std::ostringstream fileName;
+      fileName << outputDir.toStdString()
+               << niftk::GetFileSeparator()
+               << "right-"
+               << m_FrameNumber
+               << ".png";
 
-        mitk::IOUtil::Save(leftImageNode->GetData(), fileName.str());
-      }
-      mitk::DataNode::Pointer rightImageNode = m_Controls->m_RightCameraComboBox->GetSelectedNode();
-      if (rightImageNode.IsNotNull())
-      {
-        std::ostringstream fileName;
-        fileName << m_Manager->GetOutputPrefixName()
-                 << niftk::GetFileSeparator()
-                 << "right-"
-                 << m_FrameNumber
-                 << ".png";
+      mitk::IOUtil::Save(rightImageNode->GetData(), fileName.str());
+      savedSomething = true;
+    }
+    mitk::DataNode::Pointer trackingNode = m_Controls->m_TrackerMatrixComboBox->GetSelectedNode();
+    if (trackingNode.IsNotNull())
+    {
+      std::ostringstream fileName;
+      fileName << outputDir.toStdString()
+               << niftk::GetFileSeparator()
+               << "tracker-"
+               << m_FrameNumber
+               << ".4x4";
 
-        mitk::IOUtil::Save(rightImageNode->GetData(), fileName.str());
-      }
-      mitk::DataNode::Pointer trackingNode = m_Controls->m_TrackerMatrixComboBox->GetSelectedNode();
-      if (trackingNode.IsNotNull())
-      {
-        std::ostringstream fileName;
-        fileName << m_Manager->GetOutputPrefixName()
-                 << niftk::GetFileSeparator()
-                 << "tracker-"
-                 << m_FrameNumber
-                 << ".4x4";
-
-        mitk::IOUtil::Save(trackingNode->GetData(), fileName.str());
-      }
-      mitk::DataNode::Pointer referenceTrackingNode = m_Controls->m_ReferenceTrackerMatrixComboBox->GetSelectedNode();
-      if (referenceTrackingNode.IsNotNull())
-      {
-        std::ostringstream fileName;
-        fileName << m_Manager->GetOutputPrefixName()
-                 << niftk::GetFileSeparator()
-                 << "reference-"
-                 << m_FrameNumber
-                 << ".4x4";
-        mitk::IOUtil::Save(referenceTrackingNode->GetData(), fileName.str());
-      }
+      mitk::IOUtil::Save(trackingNode->GetData(), fileName.str());
+      savedSomething = true;
+    }
+    mitk::DataNode::Pointer referenceTrackingNode = m_Controls->m_ReferenceTrackerMatrixComboBox->GetSelectedNode();
+    if (referenceTrackingNode.IsNotNull())
+    {
+      std::ostringstream fileName;
+      fileName << outputDir.toStdString()
+               << niftk::GetFileSeparator()
+               << "reference-"
+               << m_FrameNumber
+               << ".4x4";
+      mitk::IOUtil::Save(referenceTrackingNode->GetData(), fileName.str());
+      savedSomething = true;
+    }
+    if (savedSomething)
+    {
+      m_FrameNumber++;
     }
   }
 }
@@ -423,7 +425,6 @@ void CameraCalView::OnGrab(const ctkEvent& event)
 {
   if (!m_BackgroundGrabProcess.isRunning() && !m_BackgroundCalibrateProcess.isRunning())
   {
-    this->DoTemporaryGrabbingOfDataRegardlessOfCalibrationSettings();
     this->OnGrabButtonPressed();
   }
 }
@@ -452,7 +453,10 @@ void CameraCalView::OnClear(const ctkEvent& event)
 //-----------------------------------------------------------------------------
 void CameraCalView::OnUpdate(const ctkEvent& event)
 {
-  this->DoTemporaryGrabbingOfDataRegardlessOfCalibrationSettings();
+  if (m_IsRecording && m_GrabDataOverride)
+  {
+    this->DumpData(m_RecordingDirectory);
+  }
   m_Manager->UpdateCameraToWorldPosition();
 }
 
@@ -478,6 +482,23 @@ void CameraCalView::OnGrabButtonPressed()
 
   ctkDictionary dictionary;
   emit PauseIGIUpdate(dictionary);
+
+  if (m_GrabDataOverride)
+  {
+    if (m_Manager->GetOutputPrefixName().empty())
+    {
+      QMessageBox msgBox;
+      msgBox.setText("No output directory.");
+      msgBox.setInformativeText("Please set an output directory in the plugin preferences.");
+      msgBox.setStandardButtons(QMessageBox::Ok);
+      msgBox.setDefaultButton(QMessageBox::Ok);
+      msgBox.exec();
+    }
+    else
+    {
+      this->DumpData(QString::fromStdString(m_Manager->GetOutputPrefixName()));
+    }
+  }
 
   this->SetButtonsEnabled(false);
 
@@ -700,5 +721,25 @@ void CameraCalView::OnUnGrabButtonPressed()
     this->SetButtonsEnabled(true);
   }
 }
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnRecordingStarted(const ctkEvent& event)
+{
+  QString directory = event.getProperty("directory").toString();
+  if (!directory.isEmpty())
+  {
+    m_RecordingDirectory = directory;
+    m_IsRecording = true;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalView::OnRecordingStopped(const ctkEvent& event)
+{
+  m_IsRecording = false;
+}
+
 
 } // end namespace

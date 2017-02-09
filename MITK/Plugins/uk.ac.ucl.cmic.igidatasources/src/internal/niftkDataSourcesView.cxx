@@ -119,7 +119,7 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
     eventAdmin->publishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
     eventAdmin->publishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
-    eventAdmin->publishSignal(this, SIGNAL(RecordingStopped()), "uk/ac/ucl/cmic/IGIRECORDINGSTOPPED");
+    eventAdmin->publishSignal(this, SIGNAL(RecordingStopped(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTOPPED");
 
     ctkDictionary properties;
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATEPAUSE";
