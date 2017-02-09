@@ -536,6 +536,20 @@ int TestCreateAndDeleteUniqueFile()
   return EXIT_SUCCESS;
 }
 
+//-----------------------------------------------------------------------------
+int TestFileSize(std::string file, int expectedSize)
+{
+  if ( niftk::FileSize ( file ) != expectedSize )
+  {
+    std::cerr << "The method niftk::FileSize should return "
+              << expectedSize
+              << " for file " << file << ": not " << niftk::FileSize ( file )
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
 /**
  * \brief Basic test harness for FileHelper.h
  */
@@ -613,6 +627,11 @@ int niftkFileHelperTest(int argc, char * argv[])
   {
     return TestCreateAndDeleteUniqueFile();
   }
+   else if (testNumber == 17)
+  {
+    return TestFileSize(argv[2], atoi(argv[3]));
+  }
+
 
   else
   {
