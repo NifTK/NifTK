@@ -146,10 +146,10 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
   }
 #else
   {
+    srand(time(NULL));
     const int maxTries = 10;
 
     int currTry;
-
 
     /*
      * Custom implementation of mkstemps
@@ -184,6 +184,11 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
         tmpFileName = fs::path(tmpPath);
         break;
       }
+      else
+      {
+        std::cout << fs::path(tmpPath).string() << "Exists" << std::endl;
+      }
+
     }
 
     if (currTry == maxTries) {
