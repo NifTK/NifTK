@@ -13,24 +13,36 @@
 =============================================================================*/
 
 #include "niftkIPHostExtensionDialog.h"
-
+#include <QSettings>
 #include <cassert>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IPHostExtensionDialog::IPHostExtensionDialog(QWidget *parent)
+IPHostExtensionDialog::IPHostExtensionDialog(QWidget *parent, const QString& settingsName)
 :IGIInitialisationDialog(parent)
+, m_SettingsName(settingsName)
 {
   setupUi(this);
-  m_HostName->setText("localhost");
   m_FileExtensionComboBox->addItem("JPEG", QVariant::fromValue(QString(".jpg")));
   m_FileExtensionComboBox->addItem("PNG", QVariant::fromValue(QString(".png")));
   m_FileExtensionComboBox->setCurrentIndex(0);
 
   bool ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
+
+  QSettings settings;
+  settings.beginGroup(m_SettingsName);
+  m_HostName->setText(settings.value("host", "localhost").toString());
+
+  int position = m_FileExtensionComboBox->findData(QVariant(settings.value("extension", ".jpg")));
+  if (position != -1)
+  {
+    m_FileExtensionComboBox->setCurrentIndex(position);
+  }
+
+  settings.endGroup();
 }
 
 
@@ -50,6 +62,12 @@ void IPHostExtensionDialog::OnOKClicked()
   props.insert("extension", QVariant::fromValue(m_FileExtensionComboBox->itemData(
                                                 m_FileExtensionComboBox->currentIndex())));
   m_Properties = props;
+
+  QSettings settings;
+  settings.beginGroup(m_SettingsName);
+  settings.setValue("host", m_HostName->text());
+  settings.setValue("extension", m_FileExtensionComboBox->itemData(m_FileExtensionComboBox->currentIndex()));
+  settings.endGroup();
 }
 
 } // end namespace

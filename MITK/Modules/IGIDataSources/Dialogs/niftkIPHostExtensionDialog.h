@@ -30,13 +30,15 @@ class NIFTKIGIDATASOURCES_EXPORT IPHostExtensionDialog : public IGIInitialisatio
 
 public:
 
-  IPHostExtensionDialog(QWidget *parent);
+  IPHostExtensionDialog(QWidget *parent, const QString& settingsName);
   ~IPHostExtensionDialog();
 
 private slots:
 
   void OnOKClicked();
 
+private:
+  QString m_SettingsName;
 };
 
 } // end namespace

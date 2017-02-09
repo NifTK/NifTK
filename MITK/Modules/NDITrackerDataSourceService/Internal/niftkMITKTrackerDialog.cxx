@@ -24,11 +24,11 @@ namespace niftk
 MITKTrackerDialog::MITKTrackerDialog(QWidget *parent,
                                      QString trackerName,
                                      int defaultBaudRate)
-  : IGIInitialisationDialog(parent)
+: IGIInitialisationDialog(parent)
+, m_TrackerName(trackerName)
+, m_SettingsName("uk.ac.ucl.cmic.niftkMITKTrackerDataSourceService.MITKTrackerDialog")
 {
   setupUi(this);
-  m_TrackerName = trackerName;
-
   m_BaudRate->addItem(QString::number(9600), QVariant::fromValue(9600));
   m_BaudRate->addItem(QString::number(14400), QVariant::fromValue(14400));
   m_BaudRate->addItem(QString::number(19200), QVariant::fromValue(19200));
@@ -68,7 +68,7 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent,
   bool ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
 
-  std::string id = "uk.ac.ucl.cmic.niftkMITKTrackerDataSourceService.MITKTrackerDialog";
+  std::string id = m_SettingsName.toStdString();
   if (false && this->GetPeristenceService()) // Does not load first time, does not load on Windows - MITK bug?
   {
     std::string fileName;
@@ -103,7 +103,7 @@ MITKTrackerDialog::MITKTrackerDialog(QWidget *parent,
   else
   {
     QSettings settings;
-    settings.beginGroup(QString::fromStdString(id));
+    settings.beginGroup(m_SettingsName);
 
     m_FileOpen->setCurrentPath(settings.value("file", "").toString());
 
@@ -142,7 +142,7 @@ void MITKTrackerDialog::OnOKClicked()
 
   m_Properties = props;
 
-  std::string id = "uk.ac.ucl.cmic.niftkMITKTrackerDataSourceService.MITKTrackerDialog";
+  std::string id = m_SettingsName.toStdString();
   if (false && this->GetPeristenceService()) // Does not load first time, does not load on Windows - MITK bug?
   {
     mitk::PropertyList::Pointer propList = this->GetPeristenceService()->GetPropertyList(id);
@@ -153,7 +153,7 @@ void MITKTrackerDialog::OnOKClicked()
   else
   {
     QSettings settings;
-    settings.beginGroup(QString::fromStdString(id));
+    settings.beginGroup(m_SettingsName);
     settings.setValue("file", m_FileOpen->currentPath());
     settings.setValue("port", m_PortName->itemData(m_PortName->currentIndex()).toString());
     settings.setValue("baudRate", m_BaudRate->itemData(m_BaudRate->currentIndex()).toString());
