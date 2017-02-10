@@ -38,6 +38,8 @@ public:
   QmitkUltrasoundPinCalibrationWidget(
     const QString& inputImageDirectory,
     const QString& outputPointDirectory,
+    const bool& outputTimeStamp,
+    const bool& outputZ,
     QWidget *parent = 0
   );
   virtual ~QmitkUltrasoundPinCalibrationWidget();
@@ -81,7 +83,8 @@ private:
   unsigned long int m_ImageFileCounter;
   unsigned long int m_PointsOutputCounter;
   bool m_PNG; //by default we look for nii, but we can read png
-
+  bool m_OutputTimestamp;
+  bool m_OutputZ;
   void NextImage();
   void PreviousImage();
   void QuitApplication();
