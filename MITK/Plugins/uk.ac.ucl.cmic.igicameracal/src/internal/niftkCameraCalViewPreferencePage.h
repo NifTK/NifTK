@@ -62,7 +62,6 @@ public:
   static const QString TEMPLATE_IMAGE_NODE_NAME;
   static const QString PREVIOUS_CALIBRATION_DIR_NODE_NAME;
   static const QString OUTPUT_DIR_NODE_NAME;
-  static const QString GRAB_DATA_NODE_NAME;
 
   CameraCalViewPreferencePage();
   CameraCalViewPreferencePage(const CameraCalViewPreferencePage& other);

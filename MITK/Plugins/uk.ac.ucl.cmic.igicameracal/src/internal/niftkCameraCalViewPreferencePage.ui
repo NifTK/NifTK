@@ -441,28 +441,6 @@
        </item>
       </layout>
      </item>
-     <item row="16" column="0">
-      <widget class="QLabel" name="m_GrabData">
-       <property name="toolTip">
-        <string>Turn on to grab synchronised tracking/image data.
-Use it for grabbing data regardless of calibration parameters.</string>
-       </property>
-       <property name="text">
-        <string>grab data:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="16" column="1">
-      <widget class="QCheckBox" name="m_GrabDataCheckBox">
-       <property name="toolTip">
-        <string>Turn on to grab synchronised tracking/image data.
-Use it for grabbing data regardless of calibration parameters.</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
   </layout>

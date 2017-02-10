@@ -70,6 +70,8 @@ if(BUILD_NiftyIGI)
     SurfRecon
     NiftyCal
     NDITrackers
+    USRecon
+    USReconGui
     IGI
     IGIOverlayEditor
     IGIGui

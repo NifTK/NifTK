@@ -66,6 +66,7 @@ set(_include_plugins
   uk.ac.ucl.cmic.igipointsetcropper
   uk.ac.ucl.cmic.igicameracal
   uk.ac.ucl.cmic.igimaskmerger
+  uk.ac.ucl.cmic.igiultrasoundreconstruction
 )
 
 if(WIN32)

@@ -88,8 +88,6 @@ private slots:
   void OnClearButtonPressed();
   void OnBackgroundGrabProcessFinished();
   void OnBackgroundCalibrateProcessFinished();
-  void OnRecordingStarted(const ctkEvent& event);
-  void OnRecordingStopped(const ctkEvent& event);
 
   /**
    * \brief Called when user changes any of the 3 combo boxes.
@@ -107,7 +105,6 @@ private:
   double RunCalibration();
 
   void SetButtonsEnabled(bool isEnabled);
-  void DumpData(const QString& outputDir);
 
   /**
    * \brief Retrieve's the pref values from preference service, and stored in member variables.
@@ -125,10 +122,6 @@ private:
   QFutureWatcher<bool>                             m_BackgroundGrabProcessWatcher;
   QFuture<double>                                  m_BackgroundCalibrateProcess;
   QFutureWatcher<double>                           m_BackgroundCalibrateProcessWatcher;
-  QString                                          m_RecordingDirectory;
-  bool                                             m_IsRecording;
-  bool                                             m_GrabDataOverride;
-  unsigned int                                     m_FrameNumber;
 };
 
 } // end namespace

@@ -182,7 +182,7 @@ void DataSourcesView::OnRecordingStarted(QString baseDirectory)
 void DataSourcesView::OnRecordingStopped()
 {
   ctkDictionary properties;
-  emit RecordingStarted(properties);
+  emit RecordingStopped(properties);
 }
 
 

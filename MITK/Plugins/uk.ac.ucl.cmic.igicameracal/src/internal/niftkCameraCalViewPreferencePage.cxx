@@ -45,7 +45,6 @@ const QString CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME("mini
 const QString CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME("template image");
 const QString CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME("previous calibration directory");
 const QString CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME("output directory");
-const QString CameraCalViewPreferencePage::GRAB_DATA_NODE_NAME("grab data");
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
@@ -368,7 +367,6 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME, m_Ui->m_TemplateImageLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME, m_Ui->m_PreviousCalibrationDirLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, m_Ui->m_OutputDirLineEdit->text());
-  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::GRAB_DATA_NODE_NAME, m_Ui->m_GrabDataCheckBox->isChecked());
   return true;
 }
 
@@ -405,7 +403,6 @@ void CameraCalViewPreferencePage::Update()
     path = GetWritablePath();
   }
   m_Ui->m_OutputDirLineEdit->setText(path);
-  m_Ui->m_GrabDataCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::GRAB_DATA_NODE_NAME, false));
 }
 
 } // end namespace

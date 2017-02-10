@@ -120,6 +120,7 @@ if(NIFTK_Apps/NiftyIGI)
     Plugins/uk.ac.ucl.cmic.igipointercalib:ON
     Plugins/uk.ac.ucl.cmic.igicameracal:ON
     Plugins/uk.ac.ucl.cmic.igimaskmerger:ON
+    Plugins/uk.ac.ucl.cmic.igiultrasoundreconstruction:ON
   )
 
   if(WIN32)
