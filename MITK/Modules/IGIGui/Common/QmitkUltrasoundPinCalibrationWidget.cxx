@@ -192,7 +192,7 @@ void QmitkUltrasoundPinCalibrationWidget::CreateDir(const std::string& dir)
   {
     if (!niftk::CreateDirAndParents(dir))
     {
-      QMessageBox::critical(this, tr("niftkUltrasoundPinCalibrationSorter"),
+      QMessageBox::critical(this, tr("QmitkUltrasoundPinCalibrationWidget"),
                                   tr("Can't write to\n%1").arg(QString::fromStdString(dir)),
                                   QMessageBox::Ok);
       QApplication::exit(-1);
@@ -243,14 +243,14 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
         }
         else
         {
-          QMessageBox::warning(this, tr("niftkUltrasoundPinCalibrationSorter"),
+          QMessageBox::warning(this, tr("QmitkUltrasoundPinCalibrationWidget"),
                                       tr("Failed to write point to file\n%1").arg(QString::fromStdString(pointFileFullPath)),
                                       QMessageBox::Ok);
         }
       }
       else
       {
-        QMessageBox::warning(this, tr("niftkUltrasoundPinCalibrationSorter"),
+        QMessageBox::warning(this, tr("QmitkUltrasoundPinCalibrationWidget"),
                                     tr("Invalid image file name\n%1").arg(imageFileName),
                                     QMessageBox::Ok);
       }
