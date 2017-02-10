@@ -42,15 +42,20 @@ int main(int argc, char** argv)
 
     returnStatus = EXIT_SUCCESS;
   }
+  catch (mitk::Exception& e)
+  {
+    MITK_ERROR << "Caught mitk::Exception: " << e.GetDescription() << ", from:" << e.GetFile() << "::" << e.GetLine() << std::endl;
+    returnStatus = EXIT_FAILURE + 1;
+  }
   catch (std::exception& e)
   {
-    MITK_ERROR << "Caught std::exception:" << e.what();
-    returnStatus = EXIT_FAILURE + 1;
+    MITK_ERROR << "Caught std::exception: " << e.what() << std::endl;
+    returnStatus = EXIT_FAILURE + 2;
   }
   catch (...)
   {
-    MITK_ERROR << "Caught unknown exception:";
-    returnStatus = EXIT_FAILURE + 2;
+    MITK_ERROR << "Caught unknown exception:" << std::endl;
+    returnStatus = EXIT_FAILURE + 3;
   }
 
   return returnStatus;
