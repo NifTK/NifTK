@@ -83,7 +83,7 @@ void USReconstructorPrivate::AddPair(mitk::Image::Pointer image,
                    mitk::Image::Pointer, niftk::CoordinateAxesData::Pointer>(image->Clone(),
                                                                              transform->Clone()));
 
-  MITK_INFO << "USReconstructorPrivate: Saved snapshot:" << m_Data.size();
+  MITK_INFO << "USReconstructorPrivate: Collected snapshot:" << m_Data.size();
 }
 
 

@@ -23,14 +23,13 @@ int niftkUSReconTest(int argc, char * argv[])
   // Always start with this, with name of function.
   MITK_TEST_BEGIN("niftkUSReconTest");
 
-  if (argc != 2)
+  if (argc != 1)
   {
     MITK_ERROR << "Usage: niftkUSReconTest describe arguments here.";
     return EXIT_FAILURE;
   }
 
-  std::string outputDirName = argv[1];
-  niftk::USReconstructor::Pointer reconstructor = niftk::USReconstructor::New(outputDirName);
+  niftk::USReconstructor::Pointer reconstructor = niftk::USReconstructor::New();
 
   MITK_TEST_CONDITION_REQUIRED(reconstructor.IsNotNull(), "Checking reconstructor was constructed.");
   MITK_TEST_CONDITION_REQUIRED(1 == 2,"... Implement tests here.");
