@@ -15,7 +15,6 @@
 #include "niftkDataSourcesViewPreferencePage.h"
 #include "niftkDataSourcesView.h"
 #include <niftkIGIDataSourceManager.h>
-#include <QmitkIGIUtils.h>
 #include <QFormLayout>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -118,8 +117,7 @@ void DataSourcesViewPreferencePage::Update()
   QString path = m_DataSourcesViewPreferencesNode->Get("output directory prefix", "");
   if(path.isEmpty())
   {
-    path = GetWritablePath(
-      niftk::IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
+    path = niftk::IGIDataSourceManager::GetDefaultWritablePath();
   }
   m_DirectoryPrefix->setDirectory(path);
 }

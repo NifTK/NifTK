@@ -890,7 +890,7 @@ void IGIDataSourceManager::OnUpdateGui()
 
 
 //-----------------------------------------------------------------------------
-QString IGIDataSourceManager::GetDefaultWritablePath() const
+QString IGIDataSourceManager::GetDefaultWritablePath()
 {
   QString path = GetWritablePath(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
   return path;

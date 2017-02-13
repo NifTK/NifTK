@@ -16,7 +16,7 @@
 #define DataSourcesView_h
 
 #include <niftkBaseView.h>
-#include <niftkIGIDataType.h>
+#include <niftkIGIDataSourceI.h>
 #include <niftkIGIDataSourceManagerWidget.h>
 #include <berryIBerryPreferences.h>
 #include <ctkDictionary.h>
