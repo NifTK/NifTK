@@ -38,8 +38,8 @@ namespace niftk
 {
 
 const int   IGIDataSourceManager::DEFAULT_FRAME_RATE = 20;
-const QString IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE(
-  "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION");
+const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE = 
+  "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION";
 
 //-----------------------------------------------------------------------------
 IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent)
@@ -64,8 +64,7 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
   }
 
   this->RetrieveAllDataSourceFactories();
-  m_DirectoryPrefix = GetWritablePath(
-    DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE.toStdString().c_str());
+  m_DirectoryPrefix = GetWritablePath(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
 
   m_TimeStampGenerator = igtl::TimeStamp::New();
   m_TimeStampGenerator->GetTime();

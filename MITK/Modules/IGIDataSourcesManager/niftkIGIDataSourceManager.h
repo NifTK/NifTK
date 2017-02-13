@@ -58,7 +58,7 @@ class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourceManager : public QObject
 public:
 
   static const int     DEFAULT_FRAME_RATE;
-  static const QString DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
+  static const char*   DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
 
   IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent);
   virtual ~IGIDataSourceManager();

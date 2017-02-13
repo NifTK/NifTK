@@ -119,7 +119,7 @@ void DataSourcesViewPreferencePage::Update()
   if(path.isEmpty())
   {
     path = GetWritablePath(
-      niftk::IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE.toStdString().c_str());
+      niftk::IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
   }
   m_DirectoryPrefix->setDirectory(path);
 }
