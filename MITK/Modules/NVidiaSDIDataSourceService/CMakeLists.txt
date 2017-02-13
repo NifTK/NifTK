@@ -21,8 +21,8 @@ if(NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
   endif(NOT (CUDA_VERSION_MAJOR LESS 7)) 
 
   MITK_CREATE_MODULE(
-    DEPENDS niftkIGIDataSources niftkIGIGui
-    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets
+    DEPENDS niftkIGIDataSources niftkCoreGui niftkOpenCVImageConversion
+    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets NiftyLink|OpenIGTLink OpenCV
     AUTOLOAD_WITH niftkIGIDataSources
   )  
   

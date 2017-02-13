@@ -27,11 +27,6 @@
 #include <vtkPNGWriter.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
-#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
-#include <QDesktopServices>
-#else
-#include <QStandardPaths>
-#endif
 #include <QProcessEnvironment>
 #include <QVector>
 #include <QDateTime>
@@ -43,8 +38,8 @@ namespace niftk
 {
 
 const int   IGIDataSourceManager::DEFAULT_FRAME_RATE = 20;
-const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE
-  = "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION";
+const QString IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE(
+  "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION");
 
 //-----------------------------------------------------------------------------
 IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent)
@@ -69,7 +64,8 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
   }
 
   this->RetrieveAllDataSourceFactories();
-  m_DirectoryPrefix = this->GetDefaultPath();
+  m_DirectoryPrefix = GetWritablePath(
+    DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE.toStdString().c_str());
 
   m_TimeStampGenerator = igtl::TimeStamp::New();
   m_TimeStampGenerator->GetTime();
@@ -132,13 +128,6 @@ bool IGIDataSourceManager::IsPlayingBack() const
 bool IGIDataSourceManager::IsPlayingBackAutomatically() const
 {
   return m_IsPlayingBackAutomatically;
-}
-
-
-//-----------------------------------------------------------------------------
-QString IGIDataSourceManager::GetDefaultPath()
-{
-  return GetWritablePath(IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
 }
 
 

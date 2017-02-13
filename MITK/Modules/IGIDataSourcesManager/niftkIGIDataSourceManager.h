@@ -57,8 +57,8 @@ class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourceManager : public QObject
 
 public:
 
-  static const int    DEFAULT_FRAME_RATE;
-  static const char*  DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
+  static const int     DEFAULT_FRAME_RATE;
+  static const QString DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
 
   IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent);
   virtual ~IGIDataSourceManager();
@@ -108,8 +108,6 @@ public:
   * recording session is recorded into a new sub-directory within this directory.
   */
   void SetDirectoryPrefix(const QString& directoryPrefix);
-
-  static QString GetDefaultPath();
 
   /**
   * \brief Sets the update rate, effectively the number of times

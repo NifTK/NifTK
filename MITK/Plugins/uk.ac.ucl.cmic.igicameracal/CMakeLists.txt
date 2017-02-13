@@ -17,7 +17,7 @@ project(uk_ac_ucl_cmic_igicameracal)
 mitk_create_plugin(
   EXPORT_DIRECTIVE CAMERACAL_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS niftkNiftyCal niftkIGIGui niftkIGIServices
+  MODULE_DEPENDS niftkIGIGui niftkNiftyCal niftkIGIServices
   PACKAGE_DEPENDS NiftyCal AprilTags OpenCV
 )
 

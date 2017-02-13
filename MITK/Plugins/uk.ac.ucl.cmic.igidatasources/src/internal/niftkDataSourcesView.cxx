@@ -143,7 +143,8 @@ void DataSourcesView::RetrievePreferenceValues()
     QString path = prefs->Get("output directory prefix", "");
     if (path == "")
     {
-      path = niftk::IGIDataSourceManager::GetDefaultPath();
+      path = GetWritablePath(
+        niftk::IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE.toStdString().c_str());
     }
 
     int refreshRate = prefs->GetInt("refresh rate", niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
@@ -153,7 +154,8 @@ void DataSourcesView::RetrievePreferenceValues()
   }
   else
   {
-    QString defaultPath = niftk::IGIDataSourceManager::GetDefaultPath();
+    QString defaultPath = GetWritablePath(
+      niftk::IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE.toStdString().c_str());
     m_DataSourceManagerWidget->SetDirectoryPrefix(defaultPath);
     m_DataSourceManagerWidget->SetFramesPerSecond(niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
   }

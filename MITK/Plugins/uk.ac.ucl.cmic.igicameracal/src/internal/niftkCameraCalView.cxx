@@ -603,6 +603,7 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
     niftk::SystemTimeServiceI::TimeType timeStampInMillis = timeStamp / 1000000;
     QString formattedTime = FormatDateTime(timeStampInMillis);
     m_Manager->Save(formattedTime.toStdString());
+
   }
 
   m_Manager->Restart();
