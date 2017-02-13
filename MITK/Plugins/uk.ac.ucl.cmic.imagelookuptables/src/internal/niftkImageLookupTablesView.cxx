@@ -70,7 +70,6 @@ namespace niftk
 ImageLookupTablesView::ImageLookupTablesView()
 : m_Controls(0)
 , m_SelectedNodes()
-, m_SelectedImage(nullptr)
 , m_Precision(2)
 , m_InUpdate(false)
 , m_ThresholdForIntegerBehaviour(50)
@@ -91,9 +90,12 @@ ImageLookupTablesView::ImageLookupTablesView(const ImageLookupTablesView& other)
 //-----------------------------------------------------------------------------
 ImageLookupTablesView::~ImageLookupTablesView()
 {
-  this->Unregister();
+  if (!m_SelectedNodes.isEmpty())
+  {
+    this->UnregisterObservers();
+  }
 
-  if (m_Controls != NULL)
+  if (m_Controls != nullptr)
   {
     delete m_Controls;
   }
@@ -152,7 +154,7 @@ void ImageLookupTablesView::CreateConnections()
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::OnPreferencesChanged(const berry::IBerryPreferences*)
 {
-  RetrievePreferenceValues();
+  this->RetrievePreferenceValues();
 }
 
 
@@ -188,42 +190,43 @@ void ImageLookupTablesView::RetrievePreferenceValues()
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::SetFocus()
 {
+  m_Controls->m_LookupTableComboBox->setFocus();
 }
 
 
 //-----------------------------------------------------------------------------
-void ImageLookupTablesView::EnableControls(bool b)
+void ImageLookupTablesView::EnableControls(bool enabled)
 {
-  m_Controls->m_LookupTableComboBox->setEnabled(b);
-  m_Controls->m_LoadButton->setEnabled(b);
-  m_Controls->m_NewButton->setEnabled(b);
+  m_Controls->m_LookupTableComboBox->setEnabled(enabled);
+  m_Controls->m_LoadButton->setEnabled(enabled);
+  m_Controls->m_NewButton->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void ImageLookupTablesView::EnableScaleControls(bool b)
+void ImageLookupTablesView::EnableScaleControls(bool enabled)
 {
-  m_Controls->m_MinSlider->setEnabled(b);
-  m_Controls->m_MaxSlider->setEnabled(b);
-  m_Controls->m_WindowSlider->setEnabled(b);
-  m_Controls->m_LevelSlider->setEnabled(b);
-  m_Controls->m_MinLimitDoubleSpinBox->setEnabled(b);
-  m_Controls->m_MaxLimitDoubleSpinBox->setEnabled(b);
-  m_Controls->m_ResetButton->setEnabled(b);
+  m_Controls->m_MinSlider->setEnabled(enabled);
+  m_Controls->m_MaxSlider->setEnabled(enabled);
+  m_Controls->m_WindowSlider->setEnabled(enabled);
+  m_Controls->m_LevelSlider->setEnabled(enabled);
+  m_Controls->m_MinLimitDoubleSpinBox->setEnabled(enabled);
+  m_Controls->m_MaxLimitDoubleSpinBox->setEnabled(enabled);
+  m_Controls->m_ResetButton->setEnabled(enabled);
 }
 
 
 //-----------------------------------------------------------------------------
-void ImageLookupTablesView::EnableLabelControls(bool b)
+void ImageLookupTablesView::EnableLabelControls(bool enabled)
 {
-  m_Controls->m_SaveButton->setEnabled(b);
-  m_Controls->m_AddLabelButton->setEnabled(b);
-  m_Controls->m_RemoveLabelButton->setEnabled(b);
-  m_Controls->m_MoveLabelUpButton->setEnabled(b);
-  m_Controls->m_MoveLabelDownButton->setEnabled(b);
-  m_Controls->widget_LabelTable->setEnabled(b);
+  m_Controls->m_SaveButton->setEnabled(enabled);
+  m_Controls->m_AddLabelButton->setEnabled(enabled);
+  m_Controls->m_RemoveLabelButton->setEnabled(enabled);
+  m_Controls->m_MoveLabelUpButton->setEnabled(enabled);
+  m_Controls->m_MoveLabelDownButton->setEnabled(enabled);
+  m_Controls->widget_LabelTable->setEnabled(enabled);
 
-  if (b)
+  if (enabled)
   {
     this->UpdateLabelMapTable();
   }
@@ -236,14 +239,14 @@ void ImageLookupTablesView::EnableLabelControls(bool b)
 
 
 //-----------------------------------------------------------------------------
-void ImageLookupTablesView::BlockSignals(bool b)
+void ImageLookupTablesView::BlockSignals(bool blocked)
 {
-  m_Controls->m_MinSlider->blockSignals(b);
-  m_Controls->m_MaxSlider->blockSignals(b);
-  m_Controls->m_WindowSlider->blockSignals(b);
-  m_Controls->m_LevelSlider->blockSignals(b);
-  m_Controls->m_MinLimitDoubleSpinBox->blockSignals(b);
-  m_Controls->m_MaxLimitDoubleSpinBox->blockSignals(b);
+  m_Controls->m_MinSlider->blockSignals(blocked);
+  m_Controls->m_MaxSlider->blockSignals(blocked);
+  m_Controls->m_WindowSlider->blockSignals(blocked);
+  m_Controls->m_LevelSlider->blockSignals(blocked);
+  m_Controls->m_MinLimitDoubleSpinBox->blockSignals(blocked);
+  m_Controls->m_MaxLimitDoubleSpinBox->blockSignals(blocked);
 }
 
 
@@ -258,7 +261,7 @@ void ImageLookupTablesView::OnSelectionChanged(berry::IWorkbenchPart::Pointer /*
     if (m_SelectedNodes.isEmpty() && isValid)
     {
       m_SelectedNodes = selectedNodes;
-      this->Register(selectedNodes[0]);
+      this->RegisterObservers();
 
       this->DifferentImageSelected();
       this->OnRangeChanged();
@@ -269,9 +272,9 @@ void ImageLookupTablesView::OnSelectionChanged(berry::IWorkbenchPart::Pointer /*
     }
     else if (isValid)
     {
-      this->Unregister();
+      this->UnregisterObservers();
       m_SelectedNodes = selectedNodes;
-      this->Register(selectedNodes[0]);
+      this->RegisterObservers();
 
       this->DifferentImageSelected();
       this->OnRangeChanged();
@@ -279,7 +282,7 @@ void ImageLookupTablesView::OnSelectionChanged(berry::IWorkbenchPart::Pointer /*
     }
     else
     {
-      this->Unregister();
+      this->UnregisterObservers();
       m_SelectedNodes.clear();
     }
 
@@ -341,20 +344,20 @@ void ImageLookupTablesView::Activated()
 
 
 //-----------------------------------------------------------------------------
-void ImageLookupTablesView::Register(const mitk::DataNode::Pointer node)
+void ImageLookupTablesView::RegisterObservers()
 {
   itk::ReceptorMemberCommand<ImageLookupTablesView>::Pointer command
     = itk::ReceptorMemberCommand<ImageLookupTablesView>::New();
 
   command->SetCallbackFunction(this, &ImageLookupTablesView::OnPropertyChanged);
 
-  mitk::BaseProperty::Pointer property = node->GetProperty("levelwindow");
+  mitk::BaseProperty::Pointer property = m_SelectedNodes[0]->GetProperty("levelwindow");
   m_LevelWindowPropertyObserverTag = property->AddObserver(itk::ModifiedEvent(), command);
 }
 
 
 //-----------------------------------------------------------------------------
-void ImageLookupTablesView::Unregister()
+void ImageLookupTablesView::UnregisterObservers()
 {
   mitk::BaseProperty::Pointer property = m_SelectedNodes[0]->GetProperty("levelwindow");
   property->RemoveObserver(m_LevelWindowPropertyObserverTag);
@@ -366,8 +369,6 @@ void ImageLookupTablesView::DifferentImageSelected()
 {
   this->BlockSignals(true);
 
-  m_SelectedImage = dynamic_cast<mitk::Image*>(m_SelectedNodes[0]->GetData());
-
   // As the NiftyView application level plugin provides a mitk::LevelWindow, it MUST be present.
   mitk::LevelWindow levelWindow;
   m_SelectedNodes[0]->GetLevelWindow(levelWindow);
@@ -378,6 +379,7 @@ void ImageLookupTablesView::DifferentImageSelected()
 
   m_Controls->m_MinLimitDoubleSpinBox->setValue(levelWindow.GetRangeMin());
   m_Controls->m_MaxLimitDoubleSpinBox->setValue(levelWindow.GetRangeMax());
+
   this->BlockSignals(false);
 
   signed int lookupTableIndex = -1;
@@ -396,7 +398,7 @@ void ImageLookupTablesView::DifferentImageSelected()
   }
 
   LookupTableProviderService* lutService = PluginActivator::GetInstance()->GetLookupTableProviderService();
-  if (lutService == NULL)
+  if (lutService == nullptr)
   {
     mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
   }
@@ -415,7 +417,7 @@ void ImageLookupTablesView::UpdateLookupTableComboBox()
 
   // create a lookup table
   LookupTableProviderService* lutService = PluginActivator::GetInstance()->GetLookupTableProviderService();
-  if (lutService == NULL)
+  if (lutService == nullptr)
   {
     mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
   }
@@ -460,11 +462,14 @@ void ImageLookupTablesView::OnRangeChanged()
 
   levelWindow.SetRangeMinMax(m_Controls->m_MinLimitDoubleSpinBox->value(), m_Controls->m_MaxLimitDoubleSpinBox->value());
 
+  for (mitk::DataNode::Pointer selectedNode: m_SelectedNodes)
+  {
+    selectedNode->SetLevelWindow(levelWindow);
+  }
+
   double rangeMin = levelWindow.GetRangeMin();
   double rangeMax = levelWindow.GetRangeMax();
   double range = levelWindow.GetRange();
-
-  m_SelectedNodes[0]->SetLevelWindow(levelWindow);
 
   // Trac 1680 - don't forget, MIDAS generally deals with integer images
   // so the user requirements are such that they must be able to change
@@ -556,7 +561,11 @@ void ImageLookupTablesView::OnWindowBoundsChanged()
   double max = m_Controls->m_MaxSlider->value();
 
   levelWindow.SetWindowBounds(min, max);
-  m_SelectedNodes[0]->SetLevelWindow(levelWindow);
+
+  for (mitk::DataNode::Pointer selectedNode: m_SelectedNodes)
+  {
+    selectedNode->SetLevelWindow(levelWindow);
+  }
 
   this->RequestRenderWindowUpdate();
 }
@@ -577,7 +586,11 @@ void ImageLookupTablesView::OnLevelWindowChanged()
   double level = m_Controls->m_LevelSlider->value();
 
   levelWindow.SetLevelWindow(level, window);
-  m_SelectedNodes[0]->SetLevelWindow(levelWindow);
+
+  for (mitk::DataNode::Pointer selectedNode: m_SelectedNodes)
+  {
+    selectedNode->SetLevelWindow(levelWindow);
+  }
 
   this->RequestRenderWindowUpdate();
 }
@@ -600,8 +613,8 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
 {
   if (!m_SelectedNodes.isEmpty())
   {
-  LookupTableProviderService* lutService = PluginActivator::GetInstance()->GetLookupTableProviderService();
-    if (lutService == NULL)
+    LookupTableProviderService* lutService = PluginActivator::GetInstance()->GetLookupTableProviderService();
+    if (lutService == nullptr)
     {
       mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
     }
@@ -613,50 +626,54 @@ void ImageLookupTablesView::OnLookupTableComboBoxChanged(int comboBoxIndex)
       return;
     }
 
-    m_SelectedNodes[0]->SetStringProperty("LookupTableName", lutName.toStdString().c_str());
-    bool isScaled = lutService->GetIsScaled(lutName);
-
-    if (isScaled)
+    for (mitk::DataNode::Pointer selectedNode: m_SelectedNodes)
     {
-      float lowestOpacity = 1;
-      m_SelectedNodes[0]->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
+      selectedNode->SetStringProperty("LookupTableName", lutName.toStdString().c_str());
+      bool isScaled = lutService->GetIsScaled(lutName);
 
-      float highestOpacity = 1;
-      m_SelectedNodes[0]->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
+      if (isScaled)
+      {
+        float lowestOpacity = 1;
+        selectedNode->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
 
-      // Get LUT from Micro Service.
-      NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
-      m_SelectedNodes[0]->ReplaceProperty("LookupTable", mitkLUTProperty);
+        float highestOpacity = 1;
+        selectedNode->GetFloatProperty("Image Rendering.Highest Value Opacity", highestOpacity);
 
-      mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
-      m_SelectedNodes[0]->ReplaceProperty("Image Rendering.Mode", renderProp);
+        // Get LUT from Micro Service.
+        NamedLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName, lowestOpacity, highestOpacity);
+        selectedNode->ReplaceProperty("LookupTable", mitkLUTProperty);
 
-      mitk::VtkResliceInterpolationProperty::Pointer resliceProp = mitk::VtkResliceInterpolationProperty::New(VTK_CUBIC_INTERPOLATION);
-      m_SelectedNodes[0]->ReplaceProperty("reslice interpolation", resliceProp);
+        mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_LEVELWINDOW_COLOR);
+        selectedNode->ReplaceProperty("Image Rendering.Mode", renderProp);
 
-      m_SelectedNodes[0]->ReplaceProperty("texture interpolation", mitk::BoolProperty::New( true ));
+        mitk::VtkResliceInterpolationProperty::Pointer resliceProp = mitk::VtkResliceInterpolationProperty::New(VTK_CUBIC_INTERPOLATION);
+        selectedNode->ReplaceProperty("reslice interpolation", resliceProp);
+
+        selectedNode->ReplaceProperty("texture interpolation", mitk::BoolProperty::New( true ));
+      }
+      else
+      {
+        // Get LUT from Micro Service.
+        LabeledLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName);
+        selectedNode->ReplaceProperty("LookupTable", mitkLUTProperty);
+
+        mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_COLOR);
+        selectedNode->ReplaceProperty("Image Rendering.Mode", renderProp);
+
+        mitk::VtkResliceInterpolationProperty::Pointer resliceProp = mitk::VtkResliceInterpolationProperty::New(VTK_RESLICE_NEAREST);
+        selectedNode->ReplaceProperty("reslice interpolation", resliceProp);
+
+        selectedNode->ReplaceProperty("texture interpolation", mitk::BoolProperty::New( false ));
+      }
+
+      this->EnableScaleControls(isScaled);
+      this->EnableLabelControls(!isScaled);
+
+      // Force redraw.
+      selectedNode->Update();
+      selectedNode->Modified();
     }
-    else
-    {
-      // Get LUT from Micro Service.
-      LabeledLookupTableProperty::Pointer mitkLUTProperty = lutService->CreateLookupTableProperty(lutName);
-      m_SelectedNodes[0]->ReplaceProperty("LookupTable", mitkLUTProperty);
 
-      mitk::RenderingModeProperty::Pointer renderProp = mitk::RenderingModeProperty::New(mitk::RenderingModeProperty::LOOKUPTABLE_COLOR);
-      m_SelectedNodes[0]->ReplaceProperty("Image Rendering.Mode", renderProp);
-
-      mitk::VtkResliceInterpolationProperty::Pointer resliceProp = mitk::VtkResliceInterpolationProperty::New(VTK_RESLICE_NEAREST);
-      m_SelectedNodes[0]->ReplaceProperty("reslice interpolation", resliceProp);
-
-      m_SelectedNodes[0]->ReplaceProperty("texture interpolation", mitk::BoolProperty::New( false ));
-    }
-
-    this->EnableScaleControls(isScaled);
-    this->EnableLabelControls(!isScaled);
-
-    // Force redraw.
-    m_SelectedNodes[0]->Update();
-    m_SelectedNodes[0]->Modified();
     this->RequestRenderWindowUpdate();
   }
 }
@@ -668,8 +685,8 @@ void ImageLookupTablesView::OnResetButtonPressed()
   mitk::LevelWindow levelWindow;
   m_SelectedNodes[0]->GetLevelWindow(levelWindow);
 
-  float rangeMin(0);
-  float rangeMax(0);
+  float rangeMin = 0.0f;
+  float rangeMax = 0.0f;
 
   if (m_SelectedNodes[0]->GetFloatProperty("image data min", rangeMin)
       && m_SelectedNodes[0]->GetFloatProperty("image data max", rangeMax))
@@ -858,7 +875,7 @@ void ImageLookupTablesView::OnNewButtonPressed()
   }
 
   LookupTableProviderService* lutService = PluginActivator::GetInstance()->GetLookupTableProviderService();
-  if (lutService == NULL)
+  if (lutService == nullptr)
   {
     mitkThrow() << "Failed to find LookupTableProviderService." << std::endl;
   }
@@ -1297,7 +1314,7 @@ void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
     {
       if (!isdigit(*valItr))
       {
-        QMessageBox::warning(NULL, "Label Map Editor", QString("Value must be a number. Resetting to old value."));
+        QMessageBox::warning(nullptr, "Label Map Editor", QString("Value must be a number. Resetting to old value."));
 
         QString value = QString::number(labels.at(row).first);
         item->setText(value);
@@ -1316,7 +1333,7 @@ void ImageLookupTablesView::OnLabelMapTableCellChanged(int row, int column)
 
       if (labels.at(i).first == newValue)
       {
-        QMessageBox::warning(NULL, "Label Map Editor", QString("Value is not unique. Resetting to old value."));
+        QMessageBox::warning(nullptr, "Label Map Editor", QString("Value is not unique. Resetting to old value."));
 
         QString oldValueStr = QString::number(labels.at(row).first);
         item->setText(oldValueStr);

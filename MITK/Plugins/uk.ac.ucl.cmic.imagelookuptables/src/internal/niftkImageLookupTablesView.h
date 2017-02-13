@@ -166,14 +166,14 @@ private:
   bool IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes);
 
   /**
-   * \brief Registers the given node, as the one we are tracking.
+   * \brief Registers observers to the given node, as the one we are tracking.
    */
-  void Register(const mitk::DataNode::Pointer node);
+  void RegisterObservers();
 
   /**
-   * \brief Unregisters the given node.
+   * \brief Unregisters observers from the given node.
    */
-  void Unregister();
+  void UnregisterObservers();
 
   /**
    * \brief Called when a node is successfully registered, to initialize/reset the controls to appropriate ranges.
@@ -237,11 +237,6 @@ private:
    * \brief Tracks the currently selected node.
    */
   QList<mitk::DataNode::Pointer> m_SelectedNodes;
-
-  /**
-   * \brief Tracks the currently selected image.
-   */
-  mitk::Image::Pointer m_SelectedImage;
 
   /**
    * \brief Stores the precision, as you could have float images, with intensity range between 0 and 1.
