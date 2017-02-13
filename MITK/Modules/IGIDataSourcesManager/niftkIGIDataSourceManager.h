@@ -266,6 +266,11 @@ public:
    */
   void GlobalReInit();
 
+  /**
+   * \brief Returns a reasonable, default, (e.g. Desktop) place to write output.
+   */
+  QString GetDefaultWritablePath() const;
+
 signals:
 
   /**

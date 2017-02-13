@@ -17,7 +17,7 @@ project(uk_ac_ucl_cmic_igidatasources)
 mitk_create_plugin(
   EXPORT_DIRECTIVE IGIDATASOURCES_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
-  MODULE_DEPENDS niftkIGIGui niftkIGIDataSourcesManager niftkIGIDataSources niftkIGIServices
+  MODULE_DEPENDS niftkIGIDataSourcesManager
   PACKAGE_DEPENDS NiftyLink|OpenIGTLink CTK|CTKWidgets
 )
 

@@ -20,7 +20,6 @@
 #include <service/event/ctkEvent.h>
 #include <service/event/ctkEventConstants.h>
 #include <cassert>
-#include <QmitkIGIUtils.h>
 
 namespace niftk
 {
@@ -143,8 +142,7 @@ void DataSourcesView::RetrievePreferenceValues()
     QString path = prefs->Get("output directory prefix", "");
     if (path == "")
     {
-      path = GetWritablePath(
-        niftk::IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
+      path = m_DataSourceManagerWidget->GetDefaultWritablePath();
     }
 
     int refreshRate = prefs->GetInt("refresh rate", niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
@@ -154,8 +152,7 @@ void DataSourcesView::RetrievePreferenceValues()
   }
   else
   {
-    QString defaultPath = GetWritablePath(
-      niftk::IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
+    QString defaultPath = m_DataSourceManagerWidget->GetDefaultWritablePath();
     m_DataSourceManagerWidget->SetDirectoryPrefix(defaultPath);
     m_DataSourceManagerWidget->SetFramesPerSecond(niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
   }

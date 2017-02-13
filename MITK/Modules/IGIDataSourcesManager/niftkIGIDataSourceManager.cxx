@@ -888,4 +888,12 @@ void IGIDataSourceManager::OnUpdateGui()
   emit TimerUpdated(rawTimeStampString, humanReadableTimeStamp);
 }
 
+
+//-----------------------------------------------------------------------------
+QString IGIDataSourceManager::GetDefaultWritablePath() const
+{
+  QString path = GetWritablePath(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
+  return path;
+}
+
 } // end namespace

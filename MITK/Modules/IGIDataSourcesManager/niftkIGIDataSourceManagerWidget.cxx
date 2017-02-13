@@ -418,4 +418,11 @@ void IGIDataSourceManagerWidget::StopRecording()
   m_PlaybackWidget->StopRecording();
 }
 
+
+//-----------------------------------------------------------------------------
+QString IGIDataSourceManagerWidget::GetDefaultWritablePath() const
+{  
+  return m_Manager->GetDefaultWritablePath();
+}
+
 } // end namespace

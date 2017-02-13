@@ -82,6 +82,8 @@ public:
    */
   void StopRecording();
 
+  QString GetDefaultWritablePath() const;
+
 signals:
 
   /**
