@@ -30,9 +30,7 @@
 #include <service/event/ctkEventConstants.h>
 
 #include <niftkCoordinateAxesData.h>
-#include <niftkSystemTimeServiceRAII.h>
 #include <niftkFileHelper.h>
-#include <QmitkIGIUtils.h>
 
 namespace niftk
 {
@@ -597,13 +595,7 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
-
-    niftk::SystemTimeServiceRAII timeService;
-    niftk::SystemTimeServiceI::TimeType timeStamp = timeService.GetSystemTimeInNanoseconds();
-    niftk::SystemTimeServiceI::TimeType timeStampInMillis = timeStamp / 1000000;
-    QString formattedTime = FormatDateTime(timeStampInMillis);
-    m_Manager->Save(formattedTime.toStdString());
-
+    m_Manager->Save();
   }
 
   m_Manager->Restart();

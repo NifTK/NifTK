@@ -101,4 +101,6 @@ NIFTKIGIGUI_EXPORT QString GetWritablePath(const char* defaultRecordingDir = nul
  */
 NIFTKIGIGUI_EXPORT QString FormatDateTime(const qint64& timeInMillis);
 
+NIFTKIGIGUI_EXPORT std::string FormatDateTimeAsStdString(const qint64& timeInMillis);
+
 #endif

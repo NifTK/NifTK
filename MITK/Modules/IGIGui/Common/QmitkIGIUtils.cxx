@@ -346,3 +346,11 @@ QString FormatDateTime(const qint64& timeInMillis)
   return formattedTime;
 }
 
+
+//-----------------------------------------------------------------------------
+std::string FormatDateTimeAsStdString(const qint64& timeInMillis)
+{
+  QString formattedTime = FormatDateTime(timeInMillis);
+  return formattedTime.toStdString();
+}
+
