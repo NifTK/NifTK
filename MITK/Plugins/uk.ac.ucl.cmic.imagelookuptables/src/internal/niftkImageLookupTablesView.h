@@ -54,8 +54,9 @@ public:
   /**
    * \brief Called by framework when DataManager's selection has changed.
    */
-  virtual void OnSelectionChanged( berry::IWorkbenchPart::Pointer source,
-                                   const QList<mitk::DataNode::Pointer>& nodes ) override;
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer source,
+                                  const QList<mitk::DataNode::Pointer>& nodes) override;
+
 protected:
 
   /**
@@ -77,11 +78,6 @@ protected:
    * \brief Called when the user toggles the opacity control properties.
    */
   virtual void OnLookupTablePropertyChanged(const itk::EventObject&);
-
-  /**
-   * \brief Actually updates the GUI when property changes.
-   */
-  virtual void OnPropertyChanged();
 
 protected slots:
 
@@ -240,12 +236,12 @@ private:
   /**
    * \brief Tracks the currently selected node.
    */
-  mitk::DataNode::Pointer m_CurrentNode;
+  QList<mitk::DataNode::Pointer> m_SelectedNodes;
 
   /**
    * \brief Tracks the currently selected image.
    */
-  mitk::Image::Pointer m_CurrentImage;
+  mitk::Image::Pointer m_SelectedImage;
 
   /**
    * \brief Stores the precision, as you could have float images, with intensity range between 0 and 1.
@@ -265,7 +261,7 @@ private:
   /**
    * \brief To store the observer ID on the LevelWindow property.
    */
-  unsigned long int m_LevelWindowPropertyObserverTag;
+  unsigned long m_LevelWindowPropertyObserverTag;
 };
 
 }
