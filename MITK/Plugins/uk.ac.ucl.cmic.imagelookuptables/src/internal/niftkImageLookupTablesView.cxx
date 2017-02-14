@@ -388,6 +388,7 @@ void ImageLookupTablesView::DifferentImageSelected()
     lookupTableIndex = m_Controls->m_LookupTableComboBox->findText(QString::fromStdString(lookupTableName));
   }
 
+  bool wasBlocked = m_Controls->m_LookupTableComboBox->blockSignals(true);
   if (lookupTableIndex > -1)
   {
     m_Controls->m_LookupTableComboBox->setCurrentIndex(lookupTableIndex);
@@ -396,6 +397,7 @@ void ImageLookupTablesView::DifferentImageSelected()
   {
     m_Controls->m_LookupTableComboBox->setCurrentIndex(0);
   }
+  m_Controls->m_LookupTableComboBox->blockSignals(wasBlocked);
 
   LookupTableProviderService* lutService = PluginActivator::GetInstance()->GetLookupTableProviderService();
   if (lutService == nullptr)
