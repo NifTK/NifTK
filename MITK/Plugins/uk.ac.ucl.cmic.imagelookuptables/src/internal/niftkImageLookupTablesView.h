@@ -54,8 +54,9 @@ public:
   /**
    * \brief Called by framework when DataManager's selection has changed.
    */
-  virtual void OnSelectionChanged( berry::IWorkbenchPart::Pointer source,
-                                   const QList<mitk::DataNode::Pointer>& nodes ) override;
+  virtual void OnSelectionChanged(berry::IWorkbenchPart::Pointer source,
+                                  const QList<mitk::DataNode::Pointer>& nodes) override;
+
 protected:
 
   /**
@@ -77,11 +78,6 @@ protected:
    * \brief Called when the user toggles the opacity control properties.
    */
   virtual void OnLookupTablePropertyChanged(const itk::EventObject&);
-
-  /**
-   * \brief Actually updates the GUI when property changes.
-   */
-  virtual void OnPropertyChanged();
 
 protected slots:
 
@@ -170,14 +166,14 @@ private:
   bool IsSelectionValid(const QList<mitk::DataNode::Pointer>& nodes);
 
   /**
-   * \brief Registers the given node, as the one we are tracking.
+   * \brief Registers observers to the given node, as the one we are tracking.
    */
-  void Register(const mitk::DataNode::Pointer node);
+  void RegisterObservers();
 
   /**
-   * \brief Unregisters the given node.
+   * \brief Unregisters observers from the given node.
    */
-  void Unregister();
+  void UnregisterObservers();
 
   /**
    * \brief Called when a node is successfully registered, to initialize/reset the controls to appropriate ranges.
@@ -240,12 +236,7 @@ private:
   /**
    * \brief Tracks the currently selected node.
    */
-  mitk::DataNode::Pointer m_CurrentNode;
-
-  /**
-   * \brief Tracks the currently selected image.
-   */
-  mitk::Image::Pointer m_CurrentImage;
+  QList<mitk::DataNode::Pointer> m_SelectedNodes;
 
   /**
    * \brief Stores the precision, as you could have float images, with intensity range between 0 and 1.
@@ -265,7 +256,7 @@ private:
   /**
    * \brief To store the observer ID on the LevelWindow property.
    */
-  unsigned long int m_LevelWindowPropertyObserverTag;
+  unsigned long m_LevelWindowPropertyObserverTag;
 };
 
 }
