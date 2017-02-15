@@ -16,7 +16,7 @@
 #include <limits>
 
 #include <mitkEvaluateIntrinsicParametersOnNumberOfFrames.h>
-#include <niftkEvaluateIntrinsicParametersOnNumberOfFramesCLP.h>
+#include <niftkEvaluateIntrinsicParamsCLP.h>
 
 int main(int argc, char** argv)
 {
