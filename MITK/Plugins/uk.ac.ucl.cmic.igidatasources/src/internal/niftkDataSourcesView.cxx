@@ -50,6 +50,7 @@ DataSourcesView::~DataSourcesView()
         {
           eventAdmin->unpublishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
           eventAdmin->unpublishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
+          eventAdmin->unpublishSignal(this, SIGNAL(RecordingStopped(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTOPPED");
         }
       }
     }
@@ -58,6 +59,8 @@ DataSourcesView::~DataSourcesView()
     ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
     assert(ok);
     ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)));
+    assert(ok);
+    ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(RecordingStopped()), this, SLOT(OnRecordingStopped()));
     assert(ok);
   }
 }
@@ -105,6 +108,8 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
   assert(ok);
   ok = QObject::connect(m_DataSourceManagerWidget, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)), Qt::QueuedConnection);
   assert(ok);
+  ok = QObject::connect(m_DataSourceManagerWidget, SIGNAL(RecordingStopped()), this, SLOT(OnRecordingStopped()), Qt::QueuedConnection);
+  assert(ok);
 
   ctkPluginContext* context = niftk::DataSourcesViewActivator::getContext();
   ctkServiceReference ref = context->getServiceReference<ctkEventAdmin>();
@@ -113,12 +118,15 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
     ctkEventAdmin* eventAdmin = context->getService<ctkEventAdmin>(ref);
     eventAdmin->publishSignal(this, SIGNAL(Updated(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATE");
     eventAdmin->publishSignal(this, SIGNAL(RecordingStarted(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTARTED");
+    eventAdmin->publishSignal(this, SIGNAL(RecordingStopped(ctkDictionary)), "uk/ac/ucl/cmic/IGIRECORDINGSTOPPED");
 
     ctkDictionary properties;
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATEPAUSE";
     eventAdmin->subscribeSlot(this, SLOT(OnUpdateShouldPause(ctkEvent)), properties);
     properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATERESTART";
     eventAdmin->subscribeSlot(this, SLOT(OnUpdateShouldRestart(ctkEvent)), properties);
+    properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH2START";
+    eventAdmin->subscribeSlot(this, SLOT(OnToggleRecording(ctkEvent)), properties);
   }
 
   m_SetupWasCalled = true;
@@ -134,7 +142,7 @@ void DataSourcesView::RetrievePreferenceValues()
     QString path = prefs->Get("output directory prefix", "");
     if (path == "")
     {
-      path = niftk::IGIDataSourceManager::GetDefaultPath();
+      path = m_DataSourceManagerWidget->GetDefaultWritablePath();
     }
 
     int refreshRate = prefs->GetInt("refresh rate", niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
@@ -144,7 +152,7 @@ void DataSourcesView::RetrievePreferenceValues()
   }
   else
   {
-    QString defaultPath = niftk::IGIDataSourceManager::GetDefaultPath();
+    QString defaultPath = m_DataSourceManagerWidget->GetDefaultWritablePath();
     m_DataSourceManagerWidget->SetDirectoryPrefix(defaultPath);
     m_DataSourceManagerWidget->SetFramesPerSecond(niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE);
   }
@@ -166,6 +174,28 @@ void DataSourcesView::OnRecordingStarted(QString baseDirectory)
   ctkDictionary properties;
   properties["directory"] = baseDirectory;
   emit RecordingStarted(properties);
+}
+
+
+//-----------------------------------------------------------------------------
+void DataSourcesView::OnRecordingStopped()
+{
+  ctkDictionary properties;
+  emit RecordingStopped(properties);
+}
+
+
+//-----------------------------------------------------------------------------
+void DataSourcesView::OnToggleRecording(const ctkEvent& event)
+{
+  if (m_DataSourceManagerWidget->IsRecording())
+  {
+    m_DataSourceManagerWidget->StopRecording();
+  }
+  else
+  {
+    m_DataSourceManagerWidget->StartRecording();
+  }
 }
 
 } // end namespace

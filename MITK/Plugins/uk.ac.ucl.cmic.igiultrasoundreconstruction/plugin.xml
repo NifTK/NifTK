@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+  <extension point="org.blueberry.ui.views">
+    <view id="uk.ac.ucl.cmic.igiultrasoundreconstruction"
+          name="Ultrasound Reconstruction"
+          class="niftk::UltrasoundReconstructionView"
+          icon="resources/niftkUltrasoundReconstruction.png" />
+  </extension>
+
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.igiultrasoundreconstruction.preferencepage"
+          name="Ultrasound Reconstruction"
+          class="niftk::UltrasoundReconstructionPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.igiultrasoundreconstruction.keywords"></keywordreference>
+    </page>
+  </extension>
+
+</plugin>

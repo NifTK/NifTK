@@ -40,6 +40,7 @@ private slots:
 
 private:
   QString m_TrackerName;
+  QString m_SettingsName;
   PERSISTENCE_GET_SERVICE_METHOD_MACRO;
 };
 

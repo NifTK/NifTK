@@ -67,12 +67,34 @@ public:
   */
   void RestartUpdate();
 
+  /**
+   * \brief Used to check if the DataSourceManager is recording or not.
+   */
+  bool IsRecording() const;
+
+  /**
+   * \brief Calls through to the DataSourcePlaybackWidget to start recording.
+   */
+  void StartRecording();
+
+  /**
+   * \brief Calls through to the DataSourcePlaybackWidget to stop recording.
+   */
+  void StopRecording();
+
+  QString GetDefaultWritablePath() const;
+
 signals:
 
   /**
   * \brief Emmitted when recording has successfully started.
   */
   void RecordingStarted(QString basedirectory);
+
+  /**
+  * \brief Emmitted when recording has successfully stopped.
+  */
+  void RecordingStopped();
 
   /**
   * \brief Emmitted when the manager has asked each data source to update, and they have all updated.

@@ -1,0 +1,19 @@
+/**
+\page uk_ac_ucl_cmic_igiultrasoundreconstruction The Ultrasound Reconstruction View
+
+\section USReconIntro Introduction
+
+Write an intro.
+
+\section USReconPreferences Preferences
+
+Describe any preferences that can be set.
+
+\section USReconControls Controls
+
+Describe the main functionality.
+
+\section USReferences References
+
+\li [1] Provide links to key papers.
+*/

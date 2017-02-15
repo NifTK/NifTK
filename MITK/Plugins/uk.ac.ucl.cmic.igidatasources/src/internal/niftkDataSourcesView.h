@@ -16,7 +16,7 @@
 #define DataSourcesView_h
 
 #include <niftkBaseView.h>
-#include <niftkIGIDataType.h>
+#include <niftkIGIDataSourceI.h>
 #include <niftkIGIDataSourceManagerWidget.h>
 #include <berryIBerryPreferences.h>
 #include <ctkDictionary.h>
@@ -73,11 +73,19 @@ signals:
   */
   void RecordingStarted(const ctkDictionary&);
 
+  /**
+  * \brief CTK-bus equivalent of IGIDataSourceManager's RecordingStopped. Topic is "uk/ac/ucl/cmic/IGIRECORDINGSTOPPED".
+  */
+  void RecordingStopped(const ctkDictionary&);
+
 protected slots:
 
   /** Sent by other plugins, requesting a pause/restart. */
   void OnUpdateShouldPause(const ctkEvent& event);
   void OnUpdateShouldRestart(const ctkEvent& event);
+
+  /** Sent by footswitch. */
+  void OnToggleRecording(const ctkEvent& event);
 
 protected:
 
@@ -92,6 +100,11 @@ private slots:
   * \brief Listens for IGIDataSourceManager's RecordingStarted signal and forwards it onto the CTK bus.
   */
   void OnRecordingStarted(QString baseDirectory);
+
+  /**
+  * \brief Listens for IGIDataSourceManager's RecordingStopped signal and forwards it onto the CTK bus.
+  */
+  void OnRecordingStopped();
 
 private:
 

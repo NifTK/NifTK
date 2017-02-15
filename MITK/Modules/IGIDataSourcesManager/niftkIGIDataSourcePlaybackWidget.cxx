@@ -274,6 +274,13 @@ void IGIDataSourcePlaybackWidget::OnPlayStart()
 
 
 //-----------------------------------------------------------------------------
+bool IGIDataSourcePlaybackWidget::IsRecording() const
+{
+  return m_Manager->IsRecording();
+}
+
+
+//-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnRecordStart()
 {
   if (!m_RecordPushButton->isEnabled())

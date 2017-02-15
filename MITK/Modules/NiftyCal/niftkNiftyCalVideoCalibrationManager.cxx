@@ -17,39 +17,44 @@
 #include <mitkCameraIntrinsics.h>
 #include <mitkCameraIntrinsicsProperty.h>
 #include <mitkProperties.h>
-#include <mitkOpenCVMaths.h>
-#include <mitkOpenCVFileIOUtils.h>
-#include <niftkFileHelper.h>
-#include <niftkOpenCVImageConversion.h>
-
-#include <niftkCoordinateAxesData.h>
-#include <niftkMatrixUtilities.h>
-#include <niftkNiftyCalTypes.h>
-#include <niftkChessboardPointDetector.h>
-#include <niftkCirclesPointDetector.h>
-#include <niftkAprilTagsPointDetector.h>
-#include <niftkCirclesIterativePointDetector.h>
-#include <niftkRingsPointDetector.h>
-#include <niftkIOUtilities.h>
-#include <niftkMonoCameraCalibration.h>
-#include <niftkStereoCameraCalibration.h>
-#include <niftkIterativeMonoCameraCalibration.h>
-#include <niftkIterativeStereoCameraCalibration.h>
-#include <niftkNonLinearMaltiHandEyeOptimiser.h>
-#include <niftkNonLinearNDOFHandEyeOptimiser.h>
-#include <niftkNonLinearStereoHandEyeOptimiser.h>
 
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 #include <highgui.h>
 #include <sstream>
 
+// NifTK
+#include <mitkOpenCVMaths.h>
+#include <mitkOpenCVFileIOUtils.h>
+#include <niftkFileHelper.h>
+#include <niftkOpenCVImageConversion.h>
+#include <niftkCoordinateAxesData.h>
+#include <niftkMatrixUtilities.h>
+#include <niftkSystemTimeServiceRAII.h>
+#include <QmitkIGIUtils.h>
+
+// NiftyCal
+#include <niftkNiftyCalTypes.h>
+#include <niftkChessboardPointDetector.h>
+#include <niftkCirclesPointDetector.h>
+#include <niftkAprilTagsPointDetector.h>
+#include <niftkTemplateCirclesPointDetector.h>
+#include <niftkTemplateRingsPointDetector.h>
+#include <niftkIOUtilities.h>
+#include <niftkZhangCameraCalibration.h>
+#include <niftkTsaiCameraCalibration.h>
+#include <niftkStereoCameraCalibration.h>
+#include <niftkIterativeMonoCameraCalibration.h>
+#include <niftkIterativeStereoCameraCalibration.h>
+#include <niftkHandEyeCalibration.h>
+#include <niftkSideBySideDetector.h>
+
 namespace niftk
 {
 
 const bool                NiftyCalVideoCalibrationManager::DefaultDoIterative(false);
 const bool                NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation(false);
-const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating(5);
+const unsigned int        NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating(10);
 const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorX(1);
 const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorY(1);
 const unsigned int        NiftyCalVideoCalibrationManager::DefaultGridSizeX(14);
@@ -71,8 +76,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_ReferenceTrackingTransformNode(nullptr)
 , m_DoIterative(NiftyCalVideoCalibrationManager::DefaultDoIterative)
 , m_Do3DOptimisation(NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation)
-, m_MinimumNumberOfSnapshotsForCalibrating(
-    NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating)
+, m_NumberOfSnapshotsForCalibrating(NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating)
 , m_ScaleFactorX(NiftyCalVideoCalibrationManager::DefaultScaleFactorX)
 , m_ScaleFactorY(NiftyCalVideoCalibrationManager::DefaultScaleFactorY)
 , m_GridSizeX(NiftyCalVideoCalibrationManager::DefaultGridSizeX)
@@ -86,13 +90,16 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 {
   m_ImageNode[0] = nullptr;
   m_ImageNode[1] = nullptr;
-  for (int i = 0; i < 4; i++)                           // 4 different methods - see HandEyeMethod enum
+
+  // 4 different methods - see HandEyeMethod enum
+  for (int i = 0; i < 4; i++)
   {
     m_HandEyeMatrices[0].push_back(cv::Matx44d::eye()); // left
     m_HandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
     m_ReferenceHandEyeMatrices[0].push_back(cv::Matx44d::eye()); // left
     m_ReferenceHandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
   }
+
   m_ModelToWorld = cv::Matx44d::eye();
 
   m_ModelPointsToVisualise = mitk::PointSet::New();
@@ -319,14 +326,14 @@ void NiftyCalVideoCalibrationManager::SetModelToTrackerFileName(
 
 
 //-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::SetOutputDirName(const std::string& dirName)
+void NiftyCalVideoCalibrationManager::SetOutputPrefixName(const std::string& dirName)
 {
   if (dirName.empty())
   {
     mitkThrow() << "Empty output directory name.";
   }
 
-  m_OutputDirName = (dirName + niftk::GetFileSeparator());
+  m_OutputPrefixName = (dirName + niftk::GetFileSeparator());
   this->Modified();
 }
 
@@ -491,22 +498,27 @@ std::vector<cv::Mat> NiftyCalVideoCalibrationManager::ConvertMatrices(const std:
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex, bool useReference)
 {
-  double residualRotation = 0;
-  double residualTranslation = 0;
+  cv::Matx21d residual;
+  residual(0, 0) = 0;
+  residual(1, 0) = 0;
 
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
+  // This method needs at least 3 camera and tracking matrices,
+  // corresponding to 2 movements, rotating about 2 independent axes.
+  // eg. start, move by Rx, move by Ry = 3 posns.
+
+  // And this method checks the number of tracking and hand matrices.
   cv::Matx44d handEye =
     niftk::CalculateHandEyeUsingTsaisMethod(
       trackingMatrices,
       cameraMatrices,
-      residualRotation,
-      residualTranslation
+      residual
       );
 
-  std::cout << "Tsai 1989, linear hand-eye: rot=" << residualRotation
-            << ", trans=" << residualTranslation << std::endl;
+  std::cout << "Tsai 1989, linear hand-eye: rot=" << residual(0, 0)
+            << ", trans=" << residual(1, 0) << std::endl;
 
   return handEye;
 }
@@ -515,6 +527,8 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex, bool 
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex, bool useReference)
 {
+  // This method itself, can work with only 1 example.
+
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
@@ -539,38 +553,77 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex, bo
 
 
 //-----------------------------------------------------------------------------
+cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialHandEye(int imageIndex, bool useReference)
+{
+  cv::Matx44d handEye;
+  if (m_TrackingMatrices.size() > 1)
+  {
+    if (useReference)
+    {
+      handEye = m_ReferenceHandEyeMatrices[imageIndex][TSAI_1989];
+    }
+    else
+    {
+      handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
+    }
+  }
+  else
+  {
+    if (useReference)
+    {
+      handEye = m_ReferenceHandEyeMatrices[imageIndex][SHAHIDI_2002];
+    }
+    else
+    {
+      handEye = m_HandEyeMatrices[imageIndex][SHAHIDI_2002];
+    }
+  }
+  return handEye;
+}
+
+
+//-----------------------------------------------------------------------------
+cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialModelToWorld()
+{
+  cv::Matx44d modelToWorld;
+  if (m_TrackingMatrices.size() > 1)
+  {
+    modelToWorld = m_ModelToWorld; // one calculated after averaging
+  }
+  else
+  {
+    modelToWorld = m_ModelToTracker; // one loaded from file in preferences.
+  }
+  return modelToWorld;
+}
+
+
+//-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool useReference)
 {
-  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
+  double reprojectionRMS = 0;
+
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
-
-  // Assumes we have done Tsai first.
-  cv::Matx44d handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
-  if (useReference)
-  {
-    handEye = m_ReferenceHandEyeMatrices[imageIndex][TSAI_1989];
-  }
-
-  cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
-        handEye,
-        trackingMatrices,
-        cameraMatrices
-        );
-
-  niftk::NonLinearMaltiHandEyeOptimiser::Pointer optimiser = niftk::NonLinearMaltiHandEyeOptimiser::New();
-  optimiser->SetModel(&m_ModelPoints);
-  optimiser->SetPoints(&m_Points[imageIndex]);
-  optimiser->SetHandMatrices(&trackingMatrices);
 
   // We clone them, so we dont modify the member variables m_Intrinsic, m_Distortion.
   cv::Mat intrinsic = m_Intrinsic[imageIndex].clone();
   cv::Mat distortion = m_Distortion[imageIndex].clone();
 
-  double reprojectionRMS = optimiser->Optimise(modelToWorld,
-                                               handEye,
-                                               intrinsic,
-                                               distortion
-                                              );
+  cv::Matx44d handEye = this->GetInitialModelToWorld();
+  cv::Matx44d modelToWorld = this->GetInitialHandEye(imageIndex, useReference);
+
+  niftk::CalculateHandEyeUsingMaltisMethod(m_ModelPoints,
+                                           m_Points[imageIndex],
+                                           trackingMatrices,
+                                           intrinsic,
+                                           distortion,
+                                           handEye,
+                                           modelToWorld,
+                                           reprojectionRMS
+                                          );
+
+  // Store optimised result
+  m_HandEyeMatrices[imageIndex][MALTI_2013] = handEye;
 
   std::cout << "Malti 2013, non-linear hand-eye: rms=" << reprojectionRMS << std::endl;
 
@@ -581,32 +634,22 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageIndex, bool useReference)
 {
-  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
+  double reprojectionRMS = 0;
+
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
-  // Assumes we have done Tsai first.
-  cv::Matx44d handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
-  if (useReference)
-  {
-    handEye = m_ReferenceHandEyeMatrices[imageIndex][TSAI_1989];
-  }
+  cv::Matx44d handEye = this->GetInitialModelToWorld();
+  cv::Matx44d modelToWorld = this->GetInitialHandEye(imageIndex, useReference);
 
-  cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
-        handEye,
-        trackingMatrices,
-        cameraMatrices
-        );
-
-  niftk::NonLinearNDOFHandEyeOptimiser::Pointer optimiser = niftk::NonLinearNDOFHandEyeOptimiser::New();
-  optimiser->SetModel(&m_ModelPoints);
-  optimiser->SetPoints(&m_Points[imageIndex]);
-  optimiser->SetHandMatrices(&trackingMatrices);
-  optimiser->SetIntrinsic(&m_Intrinsic[imageIndex]);   // i.e. we DON'T optimise these.
-  optimiser->SetDistortion(&m_Distortion[imageIndex]); // i.e. we DON'T optimise these.
-
-  double reprojectionRMS = optimiser->Optimise(modelToWorld, // We do optimise all extrinsic
-                                               handEye       // but we don't really care about
-                                              );             // the extrinsic results.
+  niftk::CalculateHandEyeByOptimisingAllExtrinsic(m_ModelPoints,
+                                                  m_Points[imageIndex],
+                                                  trackingMatrices,
+                                                  m_Intrinsic[imageIndex],
+                                                  m_Distortion[imageIndex],
+                                                  handEye,
+                                                  modelToWorld,
+                                                  reprojectionRMS
+                                                 );
 
   std::cout << "Malti 2013, non-linear hand-eye, but with full extrinsic: "
             << "rms=" << reprojectionRMS << std::endl;
@@ -621,37 +664,30 @@ void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d
                                                                      bool useReference
                                                                      )
 {
-  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
+  double reprojectionRMS = 0;
+
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
-
-  // Assumes we have done Tsai first.
-  cv::Matx44d handEye = m_HandEyeMatrices[0][TSAI_1989]; // 0 == from left.
-  if (useReference)
-  {
-    handEye = m_ReferenceHandEyeMatrices[0][TSAI_1989];
-  }
-
-  cv::Matx44d modelToWorld = niftk::CalculateAverageModelToWorld(
-        handEye,
-        trackingMatrices,
-        cameraMatrices
-        );
-
-  niftk::NonLinearStereoHandEyeOptimiser::Pointer optimiser = niftk::NonLinearStereoHandEyeOptimiser::New();
-  optimiser->SetModel(&m_ModelPoints);
-  optimiser->SetPoints(&m_Points[0]);
-  optimiser->SetRightHandPoints(&m_Points[1]);
-  optimiser->SetHandMatrices(&trackingMatrices);
-  optimiser->SetLeftIntrinsic(&m_Intrinsic[0]);    // i.e. we DON'T optimise these.
-  optimiser->SetLeftDistortion(&m_Distortion[0]);  // i.e. we DON'T optimise these.
-  optimiser->SetRightIntrinsic(&m_Intrinsic[0]);   // i.e. we DON'T optimise these.
-  optimiser->SetRightDistortion(&m_Distortion[0]); // i.e. we DON'T optimise these.
 
   cv::Matx44d stereoExtrinsics = niftk::RotationAndTranslationToMatrix(
         m_LeftToRightRotationMatrix, m_LeftToRightTranslationVector);
 
-  optimiser->Optimise(modelToWorld, handEye, stereoExtrinsics);
+  cv::Matx44d handEye = this->GetInitialModelToWorld();
+  cv::Matx44d modelToWorld = this->GetInitialHandEye(0, useReference);
 
+  niftk::CalculateHandEyeInStereoByOptimisingAllExtrinsic(m_ModelPoints,
+                                                          m_Points[0],
+                                                          m_Intrinsic[0],
+                                                          m_Distortion[0],
+                                                          m_Points[1],
+                                                          m_Intrinsic[1],
+                                                          m_Distortion[1],
+                                                          trackingMatrices,
+                                                          m_Do3DOptimisation,
+                                                          handEye,
+                                                          modelToWorld,
+                                                          stereoExtrinsics,
+                                                          reprojectionRMS
+                                                         );
   leftHandEye = handEye;
   rightHandEye = (stereoExtrinsics.inv()) * handEye;
 }
@@ -736,7 +772,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
 
-    niftk::CirclesPointDetector *circlesDetector1 = new niftk::CirclesPointDetector(internalCorners);
+    niftk::CirclesPointDetector *circlesDetector1 =
+      new niftk::CirclesPointDetector(internalCorners, cv::CALIB_CB_ASYMMETRIC_GRID);
     circlesDetector1->SetImageScaleFactor(scaleFactors);
     circlesDetector1->SetImage(&copyOfImage1);
     circlesDetector1->SetCaching(true);
@@ -754,7 +791,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
       niftk::CirclesPointDetector *circlesDetector2 =
-        new niftk::CirclesPointDetector(internalCorners);
+        new niftk::CirclesPointDetector(internalCorners, cv::CALIB_CB_ASYMMETRIC_GRID);
       circlesDetector2->SetImageScaleFactor(scaleFactors);
       circlesDetector2->SetImage(&copyOfImage2);
       circlesDetector2->SetCaching(false);
@@ -805,8 +842,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 4.0, m_TemplateImage.rows / 4.0);
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
-    niftk::CirclesIterativePointDetector *circlesIterativeDetector1
-        = new niftk::CirclesIterativePointDetector(internalCorners, offsetIfNotIterative);
+    niftk::TemplateCirclesPointDetector *circlesIterativeDetector1
+        = new niftk::TemplateCirclesPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID);
     circlesIterativeDetector1->SetImage(&copyOfImage1);
     circlesIterativeDetector1->SetImageScaleFactor(scaleFactors);
     circlesIterativeDetector1->SetTemplateImage(&m_TemplateImage);
@@ -827,11 +864,14 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       std::shared_ptr<niftk::IPoint2DDetector> originalDetector(circlesIterativeDetector1);
       m_OriginalImages[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
-      dynamic_cast<niftk::CirclesIterativePointDetector*>(
+      dynamic_cast<niftk::TemplateCirclesPointDetector*>(
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
-      niftk::CirclesIterativePointDetector *circlesIterativeDetector2
-          = new niftk::CirclesIterativePointDetector(internalCorners, offsetIfNotIterative);
+      niftk::TemplateCirclesPointDetector *circlesIterativeDetector2
+          = new niftk::TemplateCirclesPointDetector(internalCorners,
+                                                    offsetIfNotIterative,
+                                                    cv::CALIB_CB_ASYMMETRIC_GRID);
+
       circlesIterativeDetector2->SetImage(&copyOfImage2);
       circlesIterativeDetector2->SetImageScaleFactor(scaleFactors);
       circlesIterativeDetector2->SetTemplateImage(&m_TemplateImage);
@@ -846,7 +886,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(circlesIterativeDetector2);
       m_ImagesForWarping[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
-      dynamic_cast<niftk::CirclesIterativePointDetector*>(
+      dynamic_cast<niftk::TemplateCirclesPointDetector*>(
         m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
@@ -856,8 +896,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 4.0, m_TemplateImage.rows / 4.0);
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
-    niftk::RingsPointDetector *ringsIterativeDetector1
-        = new niftk::RingsPointDetector(internalCorners, offsetIfNotIterative);
+    niftk::TemplateRingsPointDetector *ringsIterativeDetector1
+        = new niftk::TemplateRingsPointDetector(internalCorners,
+                                                offsetIfNotIterative,
+                                                cv::CALIB_CB_ASYMMETRIC_GRID);
+
     ringsIterativeDetector1->SetImage(&copyOfImage1);
     ringsIterativeDetector1->SetImageScaleFactor(scaleFactors);
     ringsIterativeDetector1->SetTemplateImage(&m_TemplateImage);
@@ -878,11 +921,14 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       std::shared_ptr<niftk::IPoint2DDetector> originalDetector(ringsIterativeDetector1);
       m_OriginalImages[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
-      dynamic_cast<niftk::RingsPointDetector*>(
+      dynamic_cast<niftk::TemplateRingsPointDetector*>(
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
-      niftk::RingsPointDetector *ringsIterativeDetector2
-          = new niftk::RingsPointDetector(internalCorners, offsetIfNotIterative);
+      niftk::TemplateRingsPointDetector *ringsIterativeDetector2
+          = new niftk::TemplateRingsPointDetector(internalCorners,
+                                                  offsetIfNotIterative,
+                                                  cv::CALIB_CB_ASYMMETRIC_GRID);
+
       ringsIterativeDetector2->SetImage(&copyOfImage2);
       ringsIterativeDetector2->SetImageScaleFactor(scaleFactors);
       ringsIterativeDetector2->SetTemplateImage(&m_TemplateImage);
@@ -897,7 +943,219 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(ringsIterativeDetector2);
       m_ImagesForWarping[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
-      dynamic_cast<niftk::RingsPointDetector*>(
+      dynamic_cast<niftk::TemplateRingsPointDetector*>(
+        m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
+    }
+  }
+  else if (m_CalibrationPattern == TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES)
+  {
+    cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 4.0, m_TemplateImage.rows / 4.0);
+    unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
+
+    cv::Point2d noScaleFactors(1, 1);
+
+    std::unique_ptr<niftk::TemplateCirclesPointDetector> l1(
+      new niftk::TemplateCirclesPointDetector(internalCorners,
+                                              offsetIfNotIterative,
+                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+
+    l1->SetImageScaleFactor(noScaleFactors);
+    l1->SetTemplateImage(&m_TemplateImage);
+    l1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+    l1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+    l1->SetMaxAreaInPixels(maxArea);
+    l1->SetUseContours(true);
+    l1->SetUseInternalResampling(true);
+    l1->SetUseTemplateMatching(true);
+    l1->SetCaching(true);
+
+    std::unique_ptr<niftk::TemplateCirclesPointDetector> r1(
+      new niftk::TemplateCirclesPointDetector(internalCorners,
+                                              offsetIfNotIterative,
+                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+
+    r1->SetImageScaleFactor(noScaleFactors);
+    r1->SetTemplateImage(&m_TemplateImage);
+    r1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+    r1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+    r1->SetMaxAreaInPixels(maxArea);
+    r1->SetUseContours(true);
+    r1->SetUseInternalResampling(true);
+    r1->SetUseTemplateMatching(true);
+    r1->SetCaching(true);
+
+    std::unique_ptr<niftk::PointDetector> l2(l1.release());
+    std::unique_ptr<niftk::PointDetector> r2(r1.release());
+
+    std::unique_ptr<niftk::SideBySideDetector> s1(new niftk::SideBySideDetector(l2, r2));
+    s1->SetImage(&copyOfImage1);
+    s1->SetImageScaleFactor(scaleFactors);
+
+    std::unique_ptr<niftk::PointDetector> s2(s1.release());
+
+    niftk::PointSet points = s1->GetPoints();
+
+    if (points.size() == 2 * m_GridSizeX * m_GridSizeY)
+    {
+      isSuccessful = true;
+      m_Points[imageIndex].push_back(points);
+
+      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(s2.release());
+      m_OriginalImages[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
+      dynamic_cast<niftk::SideBySideDetector*>(
+        m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
+
+      std::unique_ptr<niftk::TemplateCirclesPointDetector> l3(
+        new niftk::TemplateCirclesPointDetector(internalCorners,
+                                                offsetIfNotIterative,
+                                                cv::CALIB_CB_ASYMMETRIC_GRID));
+
+      l3->SetImageScaleFactor(noScaleFactors);
+      l3->SetTemplateImage(&m_TemplateImage);
+      l3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+      l3->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+      l3->SetMaxAreaInPixels(maxArea);
+      l3->SetUseContours(false);
+      l3->SetUseInternalResampling(false);
+      l3->SetUseTemplateMatching(true);
+      l3->SetCaching(false);
+
+      std::unique_ptr<niftk::TemplateCirclesPointDetector> r3(
+        new niftk::TemplateCirclesPointDetector(internalCorners,
+                                                offsetIfNotIterative,
+                                                cv::CALIB_CB_ASYMMETRIC_GRID));
+
+      r3->SetImageScaleFactor(noScaleFactors);
+      r3->SetTemplateImage(&m_TemplateImage);
+      r3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+      r3->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+      r3->SetMaxAreaInPixels(maxArea);
+      r3->SetUseContours(false);
+      r3->SetUseInternalResampling(false);
+      r3->SetUseTemplateMatching(true);
+      r3->SetCaching(false);
+
+      std::unique_ptr<niftk::PointDetector> l4(l3.release());
+      std::unique_ptr<niftk::PointDetector> r4(r3.release());
+
+      std::unique_ptr<niftk::SideBySideDetector> s3(new niftk::SideBySideDetector(l4, r4));
+      s3->SetImage(&copyOfImage2);
+      s3->SetImageScaleFactor(scaleFactors);
+
+      std::unique_ptr<niftk::PointDetector> s4(s3.release());
+
+      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(s4.release());
+      m_ImagesForWarping[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
+      dynamic_cast<niftk::TemplateCirclesPointDetector*>(
+        m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
+    }
+  }
+  else if (m_CalibrationPattern == TEMPLATE_MATCHING_NON_COPLANAR_RINGS)
+  {
+    cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 4.0, m_TemplateImage.rows / 4.0);
+    unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
+
+    cv::Point2d noScaleFactors(1, 1);
+
+    std::unique_ptr<niftk::TemplateRingsPointDetector> l1(
+      new niftk::TemplateRingsPointDetector(internalCorners,
+                                            offsetIfNotIterative,
+                                            cv::CALIB_CB_ASYMMETRIC_GRID));
+
+    l1->SetImageScaleFactor(noScaleFactors);
+    l1->SetTemplateImage(&m_TemplateImage);
+    l1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+    l1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+    l1->SetMaxAreaInPixels(maxArea);
+    l1->SetUseContours(true);
+    l1->SetUseInternalResampling(true);
+    l1->SetUseTemplateMatching(true);
+    l1->SetCaching(true);
+
+    std::unique_ptr<niftk::TemplateRingsPointDetector> r1(
+      new niftk::TemplateRingsPointDetector(internalCorners,
+                                            offsetIfNotIterative,
+                                            cv::CALIB_CB_ASYMMETRIC_GRID));
+
+    r1->SetImageScaleFactor(noScaleFactors);
+    r1->SetTemplateImage(&m_TemplateImage);
+    r1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+    r1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+    r1->SetMaxAreaInPixels(maxArea);
+    r1->SetUseContours(true);
+    r1->SetUseInternalResampling(true);
+    r1->SetUseTemplateMatching(true);
+    r1->SetCaching(true);
+
+    std::unique_ptr<niftk::PointDetector> l2(l1.release());
+    std::unique_ptr<niftk::PointDetector> r2(r1.release());
+
+    std::unique_ptr<niftk::SideBySideDetector> s1(new niftk::SideBySideDetector(l2, r2));
+    s1->SetImage(&copyOfImage1);
+    s1->SetImageScaleFactor(scaleFactors);
+
+    std::unique_ptr<niftk::PointDetector> s2(s1.release());
+
+    niftk::PointSet points = s1->GetPoints();
+
+    if (points.size() == 2 * m_GridSizeX * m_GridSizeY)
+    {
+      isSuccessful = true;
+      m_Points[imageIndex].push_back(points);
+
+      std::shared_ptr<niftk::IPoint2DDetector> originalDetector(s2.release());
+      m_OriginalImages[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(originalDetector, copyOfImage1));
+      dynamic_cast<niftk::SideBySideDetector*>(
+        m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
+
+      std::unique_ptr<niftk::TemplateRingsPointDetector> l3(
+        new niftk::TemplateRingsPointDetector(internalCorners,
+                                              offsetIfNotIterative,
+                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+
+      l3->SetImageScaleFactor(noScaleFactors);
+      l3->SetTemplateImage(&m_TemplateImage);
+      l3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+      l3->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+      l3->SetMaxAreaInPixels(maxArea);
+      l3->SetUseContours(false);
+      l3->SetUseInternalResampling(false);
+      l3->SetUseTemplateMatching(true);
+      l3->SetCaching(false);
+
+      std::unique_ptr<niftk::TemplateRingsPointDetector> r3(
+        new niftk::TemplateRingsPointDetector(internalCorners,
+                                              offsetIfNotIterative,
+                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+
+      r3->SetImageScaleFactor(noScaleFactors);
+      r3->SetTemplateImage(&m_TemplateImage);
+      r3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
+      r3->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
+      r3->SetMaxAreaInPixels(maxArea);
+      r3->SetUseContours(false);
+      r3->SetUseInternalResampling(false);
+      r3->SetUseTemplateMatching(true);
+      r3->SetCaching(false);
+
+      std::unique_ptr<niftk::PointDetector> l4(l3.release());
+      std::unique_ptr<niftk::PointDetector> r4(r3.release());
+
+      std::unique_ptr<niftk::SideBySideDetector> s3(new niftk::SideBySideDetector(l4, r4));
+      s3->SetImage(&copyOfImage2);
+      s3->SetImageScaleFactor(scaleFactors);
+
+      std::unique_ptr<niftk::PointDetector> s4(s3.release());
+
+      std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(s4.release());
+      m_ImagesForWarping[imageIndex].push_back(
+        std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
+      dynamic_cast<niftk::TemplateRingsPointDetector*>(
         m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
@@ -1100,6 +1358,10 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   tmpRMS(0, 0) = 0;
   tmpRMS(1, 0) = 0;
 
+  cv::Point2d sensorDimensions;
+  sensorDimensions.x = 1;
+  sensorDimensions.y = 1;
+
   if (m_ImageNode[0].IsNull())
   {
     mitkThrow() << "Left image should never be NULL.";
@@ -1129,7 +1391,6 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     else
     {
       tmpRMS = niftk::IterativeStereoCameraCalibration(
-        m_Do3DOptimisation,
         m_ModelPoints,
         m_ReferenceDataForIterativeCalib,
         m_OriginalImages[0],
@@ -1145,10 +1406,12 @@ double NiftyCalVideoCalibrationManager::Calibrate()
         m_Distortion[1],
         m_Rvecs[1],
         m_Tvecs[1],
+        m_LeftToRightRotationMatrix,
+        m_LeftToRightTranslationVector,
         m_EssentialMatrix,
         m_FundamentalMatrix,
-        m_LeftToRightRotationMatrix,
-        m_LeftToRightTranslationVector
+        0,
+        m_Do3DOptimisation
         );
       if (m_Do3DOptimisation)
       {
@@ -1167,30 +1430,77 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   }
   else
   {
-    rms = niftk::MonoCameraCalibration(
-      m_ModelPoints,
-      m_Points[0],
-      m_ImageSize,
-      m_Intrinsic[0],
-      m_Distortion[0],
-      m_Rvecs[0],
-      m_Tvecs[0]
-      );
+    if (m_Points[0].size() == 1)
+    {
+      cv::Mat rvecLeft;
+      cv::Mat tvecLeft;
+
+      rms = niftk::TsaiMonoCameraCalibration(m_ModelPoints,
+                                             *(m_Points[0].begin()),
+                                             m_ImageSize,
+                                             sensorDimensions,
+                                             m_Intrinsic[0],
+                                             m_Distortion[0],
+                                             rvecLeft,
+                                             tvecLeft
+                                            );
+
+      m_Rvecs[0].clear();
+      m_Tvecs[0].clear();
+
+      m_Rvecs[0].push_back(rvecLeft);
+      m_Tvecs[0].push_back(tvecLeft);
+    }
+    else
+    {
+      rms = niftk::ZhangMonoCameraCalibration(
+        m_ModelPoints,
+        m_Points[0],
+        m_ImageSize,
+        m_Intrinsic[0],
+        m_Distortion[0],
+        m_Rvecs[0],
+        m_Tvecs[0]
+        );
+    }
 
     if (m_ImageNode[1].IsNotNull())
     {
-      niftk::MonoCameraCalibration(
-        m_ModelPoints,
-        m_Points[1],
-        m_ImageSize,
-        m_Intrinsic[1],
-        m_Distortion[1],
-        m_Rvecs[1],
-        m_Tvecs[1]
-        );
+      if (m_Points[1].size() == 1)
+      {
+        cv::Mat rvecRight;
+        cv::Mat tvecRight;
+
+        rms = niftk::TsaiMonoCameraCalibration(m_ModelPoints,
+                                               *(m_Points[1].begin()),
+                                               m_ImageSize,
+                                               sensorDimensions,
+                                               m_Intrinsic[1],
+                                               m_Distortion[1],
+                                               rvecRight,
+                                               tvecRight
+                                              );
+
+        m_Rvecs[1].clear();
+        m_Tvecs[1].clear();
+
+        m_Rvecs[1].push_back(rvecRight);
+        m_Tvecs[2].push_back(tvecRight);
+      }
+      else
+      {
+        niftk::ZhangMonoCameraCalibration(
+          m_ModelPoints,
+          m_Points[1],
+          m_ImageSize,
+          m_Intrinsic[1],
+          m_Distortion[1],
+          m_Rvecs[1],
+          m_Tvecs[1]
+          );
+      }
 
       tmpRMS = niftk::StereoCameraCalibration(
-        m_Do3DOptimisation,
         m_ModelPoints,
         m_Points[0],
         m_Points[1],
@@ -1207,7 +1517,8 @@ double NiftyCalVideoCalibrationManager::Calibrate()
         m_LeftToRightTranslationVector,
         m_EssentialMatrix,
         m_FundamentalMatrix,
-        CV_CALIB_USE_INTRINSIC_GUESS
+        CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_FIX_INTRINSIC,
+        m_Do3DOptimisation
         );
       if (m_Do3DOptimisation)
       {
@@ -1220,13 +1531,19 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     }
   }
 
-  // Do all hand-eye methods if we have tracking info.
+  // If we have tracking info, do all hand-eye methods .
   if (m_TrackingTransformNode.IsNotNull())
   {
     // Don't change the order of these.
-    // Malti requires an initial hand-eye, so we use Tsai.
-    m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, false);
-    m_HandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, false);
+    // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
+    if (m_TrackingMatrices.size() > 1)
+    {
+      m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, false);
+    }
+    else
+    {
+      m_HandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, false);
+    }
     m_HandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0, false);
     if (m_ImageNode[1].IsNull())
     {
@@ -1236,7 +1553,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     if (m_ImageNode[1].IsNotNull())
     {
       // Don't change the order of these.
-      // Malti requires an initial hand-eye, so we use Tsai.
+      // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
       m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);
       m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, false);
       m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, false);
@@ -1251,9 +1568,15 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     if (m_ReferenceTrackingTransformNode.IsNotNull())
     {
       // Don't change the order of these.
-      // Malti requires an initial hand-eye, so we use Tsai.
-      m_ReferenceHandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, true);
-      m_ReferenceHandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, true);
+      // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
+      if (m_ReferenceTrackingMatrices.size() > 1)
+      {
+        m_ReferenceHandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, true);
+      }
+      else
+      {
+        m_ReferenceHandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, true);
+      }
       m_ReferenceHandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0, true);
       if (m_ImageNode[1].IsNull())
       {
@@ -1263,9 +1586,15 @@ double NiftyCalVideoCalibrationManager::Calibrate()
       if (m_ImageNode[1].IsNotNull())
       {
         // Don't change the order of these.
-        // Malti requires an initial hand-eye, so we use Tsai.
-        m_ReferenceHandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, true);
-        m_ReferenceHandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, true);
+        // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
+        if (m_ReferenceTrackingMatrices.size() > 1)
+        {
+          m_ReferenceHandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, true);
+        }
+        else
+        {
+          m_ReferenceHandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, true);
+        }
         m_ReferenceHandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, true);
 
         DoFullExtrinsicHandEyeInStereo(m_ReferenceHandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
@@ -1470,12 +1799,26 @@ void NiftyCalVideoCalibrationManager::Save()
     mitkThrow() << "Left image should never be NULL.";
   }
 
-  if (m_OutputDirName.empty())
+  if (m_OutputPrefixName.empty())
   {
     mitkThrow() << "Empty output directory name.";
   }
 
+  niftk::SystemTimeServiceRAII timeService;
+  niftk::SystemTimeServiceI::TimeType timeInNanoseconds = timeService.GetSystemTimeInNanoseconds();
+  niftk::SystemTimeServiceI::TimeType timeInMilliseconds = timeInNanoseconds/1000000;
+  std::string formattedTime = FormatDateTimeAsStdString(timeInMilliseconds);
+
+  std::ostringstream dirName;
+  dirName << m_OutputPrefixName << niftk::GetFileSeparator() << formattedTime << niftk::GetFileSeparator();
+  m_OutputDirName = dirName.str();
+
   MITK_INFO << "Saving calibration to:" << m_OutputDirName << ":";
+
+  if (!niftk::CreateDirAndParents(m_OutputDirName))
+  {
+    mitkThrow() << "Failed to create directory:" << m_OutputDirName;
+  }
 
   niftk::SaveNifTKIntrinsics(m_Intrinsic[0], m_Distortion[0], m_OutputDirName + "calib.left.intrinsic.txt");
   this->SaveImages("calib.left.images.", m_OriginalImages[0]);

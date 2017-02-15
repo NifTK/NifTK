@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_9">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
@@ -45,6 +45,34 @@
       </layout>
      </item>
      <item row="1" column="0">
+      <widget class="QLabel" name="m_3DModelLabel">
+       <property name="toolTip">
+        <string>Plain text file containing point id and 3D (x, y, z) coordinates, one point per line.</string>
+       </property>
+       <property name="text">
+        <string>model file:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLineEdit" name="m_3DModelLineEdit">
+         <property name="toolTip">
+          <string>Plain text file containing point id and 3D (x, y, z) coordinates, one point per line.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_3DModelToolButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="2" column="0">
       <widget class="QLabel" name="m_ScaleImageLabel">
        <property name="toolTip">
         <string>Scale the image, changing the number of pixels.</string>
@@ -54,7 +82,7 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QDoubleSpinBox" name="m_ScaleImageInXSpinBox">
@@ -102,148 +130,33 @@
        </item>
       </layout>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="m_3DModelLabel">
-       <property name="toolTip">
-        <string>Plain text file containing point id and 3D (x, y, z) coordinates, one point per line.</string>
-       </property>
-       <property name="text">
-        <string>model file:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
-       <item>
-        <widget class="QLineEdit" name="m_3DModelLineEdit">
-         <property name="toolTip">
-          <string>Plain text file containing point id and 3D (x, y, z) coordinates, one point per line.</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="m_3DModelToolButton">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="m_MinimumViewsLabel">
+      <widget class="QLabel" name="m_NumberViewsLabel">
        <property name="toolTip">
-        <string>The minimum before camera calibration starts.</string>
+        <string>Required number of views before camera calibration starts.</string>
        </property>
        <property name="text">
-        <string>minimum number of views:</string>
+        <string>number of views</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QSpinBox" name="m_MinimumViewsSpinBox">
+      <widget class="QSpinBox" name="m_NumberViewsSpinBox">
        <property name="toolTip">
         <string>The minimum before camera calibration starts.</string>
        </property>
        <property name="minimum">
-        <number>5</number>
+        <number>1</number>
        </property>
        <property name="singleStep">
         <number>2</number>
        </property>
+       <property name="value">
+        <number>10</number>
+       </property>
       </widget>
      </item>
      <item row="4" column="0">
-      <widget class="QLabel" name="m_Do3DOptimisationLabel">
-       <property name="toolTip">
-        <string>For stereo, optimises 3D reconstruction error rather than reprojection error.</string>
-       </property>
-       <property name="text">
-        <string>do 3D optimisation:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QCheckBox" name="m_Do3DOptimisationCheckBox">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="m_IterativeLabel">
-       <property name="toolTip">
-        <string>See Dutta 2009 paper.</string>
-       </property>
-       <property name="text">
-        <string>do iterative calibration:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QCheckBox" name="m_IterativeCheckBox">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="m_ReferenceImageLabel">
-       <property name="toolTip">
-        <string>See Dutta 2009.</string>
-       </property>
-       <property name="text">
-        <string>reference image:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
-       <item>
-        <widget class="QLineEdit" name="m_ReferenceImageLineEdit">
-         <property name="toolTip">
-          <string>Reference image for iterative calibration.</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="m_ReferenceImagePushButton">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="m_ReferencePointsLabel">
-       <property name="toolTip">
-        <string>See Dutta 2009.</string>
-       </property>
-       <property name="text">
-        <string>reference points:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_7">
-       <item>
-        <widget class="QLineEdit" name="m_ReferencePointsLineEdit">
-         <property name="toolTip">
-          <string>Reference points (2D) for iterative calibration.</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="m_ReferencePointsPushButton">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="8" column="0">
       <widget class="QLabel" name="m_FeaturesLabel">
        <property name="toolTip">
         <string>Choose the features you are trying to detect.</string>
@@ -253,14 +166,14 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
+     <item row="4" column="1">
       <widget class="QComboBox" name="m_FeaturesComboBox">
        <property name="toolTip">
         <string>Select type of features.</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="m_GridSizeLabel">
        <property name="toolTip">
         <string>For chessboards, and grids of dots or rings, specify the number of dots in horizontal then vertical direction.</string>
@@ -270,7 +183,7 @@
        </property>
       </widget>
      </item>
-     <item row="9" column="1">
+     <item row="5" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QSpinBox" name="m_GridPointsInXSpinBox">
@@ -307,21 +220,24 @@
        </item>
       </layout>
      </item>
-     <item row="10" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="m_TagFamilyLabel">
+       <property name="toolTip">
+        <string>Aptil Tags tag family code</string>
+       </property>
        <property name="text">
         <string>tag family:</string>
        </property>
       </widget>
      </item>
-     <item row="10" column="1">
+     <item row="6" column="1">
       <widget class="QComboBox" name="m_TagFamilyComboBox">
        <property name="toolTip">
         <string>April Tag family name.</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="m_MinPointsLabel">
        <property name="toolTip">
         <string>Normally, chessboards require all points,
@@ -332,7 +248,7 @@
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
+     <item row="7" column="1">
       <widget class="QSpinBox" name="m_MinPointsSpinBox">
        <property name="toolTip">
         <string>Minimum number of points for April Tags.</string>
@@ -345,7 +261,63 @@
        </property>
       </widget>
      </item>
-     <item row="12" column="0">
+     <item row="8" column="0">
+      <widget class="QLabel" name="m_ReferenceImageLabel">
+       <property name="toolTip">
+        <string>See Dutta 2009.</string>
+       </property>
+       <property name="text">
+        <string>reference image:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QLineEdit" name="m_ReferenceImageLineEdit">
+         <property name="toolTip">
+          <string>Reference image for iterative calibration.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_ReferenceImagePushButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="9" column="0">
+      <widget class="QLabel" name="m_ReferencePointsLabel">
+       <property name="toolTip">
+        <string>See Dutta 2009.</string>
+       </property>
+       <property name="text">
+        <string>reference points:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QLineEdit" name="m_ReferencePointsLineEdit">
+         <property name="toolTip">
+          <string>Reference points (2D) for iterative calibration.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_ReferencePointsPushButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="10" column="0">
       <widget class="QLabel" name="m_TemplateImageLabel">
        <property name="toolTip">
         <string/>
@@ -355,7 +327,7 @@
        </property>
       </widget>
      </item>
-     <item row="12" column="1">
+     <item row="10" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QLineEdit" name="m_TemplateImageLineEdit"/>
@@ -368,6 +340,40 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="11" column="0">
+      <widget class="QLabel" name="m_Do3DOptimisationLabel">
+       <property name="toolTip">
+        <string>For stereo, optimises 3D reconstruction error rather than reprojection error.</string>
+       </property>
+       <property name="text">
+        <string>do 3D optimisation:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1">
+      <widget class="QCheckBox" name="m_Do3DOptimisationCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="0">
+      <widget class="QLabel" name="m_IterativeLabel">
+       <property name="toolTip">
+        <string>See Dutta 2009 paper.</string>
+       </property>
+       <property name="text">
+        <string>do iterative calibration:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="1">
+      <widget class="QCheckBox" name="m_IterativeCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </item>
      <item row="13" column="0">
       <widget class="QLabel" name="m_HandEyeLabel">
@@ -400,6 +406,34 @@
        </item>
        <item>
         <widget class="QToolButton" name="m_ModelToTrackerToolButton">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="15" column="0">
+      <widget class="QLabel" name="m_OutputDirLabel">
+       <property name="toolTip">
+        <string>The minimum before camera calibration starts.</string>
+       </property>
+       <property name="text">
+        <string>output directory:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="15" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_9">
+       <item>
+        <widget class="QLineEdit" name="m_OutputDirLineEdit">
+         <property name="toolTip">
+          <string>Plain text file containing point id and 3D (x, y, z) coordinates, one point per line.</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="m_OutputDirToolButton">
          <property name="text">
           <string>...</string>
          </property>

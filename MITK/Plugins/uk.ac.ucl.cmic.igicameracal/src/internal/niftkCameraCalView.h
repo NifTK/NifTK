@@ -66,6 +66,8 @@ protected slots:
 
   /** Sent by footpedal/hotkey plugin. */
   void OnGrab(const ctkEvent& event);
+
+  /** Sent by buttons. */
   void OnUnGrab(const ctkEvent& event);
   void OnClear(const ctkEvent& event);
 
@@ -84,7 +86,6 @@ private slots:
   void OnGrabButtonPressed();
   void OnUnGrabButtonPressed();
   void OnClearButtonPressed();
-  void OnSaveButtonPressed();
   void OnBackgroundGrabProcessFinished();
   void OnBackgroundCalibrateProcessFinished();
 
@@ -121,7 +122,6 @@ private:
   QFutureWatcher<bool>                             m_BackgroundGrabProcessWatcher;
   QFuture<double>                                  m_BackgroundCalibrateProcess;
   QFutureWatcher<double>                           m_BackgroundCalibrateProcessWatcher;
-  QString                                          m_DefaultSaveDirectory;
 };
 
 } // end namespace

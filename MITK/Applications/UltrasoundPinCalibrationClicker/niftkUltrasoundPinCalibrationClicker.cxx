@@ -40,21 +40,28 @@ int main(int argc, char** argv)
     
     QmitkUltrasoundPinCalibrationWidget cw(
       QString::fromStdString(inputImageDirectory),
-      QString::fromStdString(outputPointDirectory)
+      QString::fromStdString(outputPointDirectory),
+      outputTimeStamp,
+      outputZ
     );
     cw.show();
     
     returnStatus = app.exec();
   }
+  catch (mitk::Exception& e)
+  {
+    MITK_ERROR << "Caught mitk::Exception: " << e.GetDescription() << ", from:" << e.GetFile() << "::" << e.GetLine() << std::endl;
+    returnStatus = EXIT_FAILURE + 1;
+  }
   catch (std::exception& e)
   {
-    std::cerr << "Caught std::exception: " << e.what() << std::endl;
-    returnStatus = -1;
+    MITK_ERROR << "Caught std::exception: " << e.what() << std::endl;
+    returnStatus = EXIT_FAILURE + 2;
   }
   catch (...)
   {
-    std::cerr << "Caught unknown exception: " << std::endl;
-    returnStatus = -2;
+    MITK_ERROR << "Caught unknown exception:" << std::endl;
+    returnStatus = EXIT_FAILURE + 3;
   }
 
   return returnStatus;

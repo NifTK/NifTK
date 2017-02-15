@@ -18,16 +18,19 @@
 #include <niftkNiftyCalException.h>
 #include <mitkNodePredicateDataType.h>
 #include <mitkImage.h>
+#include <mitkIOUtil.h>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QPixmap>
 #include <QtConcurrentRun>
+
 #include <ctkServiceReference.h>
 #include <service/event/ctkEventAdmin.h>
 #include <service/event/ctkEvent.h>
 #include <service/event/ctkEventConstants.h>
 
 #include <niftkCoordinateAxesData.h>
+#include <niftkFileHelper.h>
 
 namespace niftk
 {
@@ -110,7 +113,6 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
     connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUnGrabButtonPressed()));
     connect(m_Controls->m_ClearButton, SIGNAL(pressed()), this, SLOT(OnClearButtonPressed()));
-    connect(m_Controls->m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
 
     // Hook up combo boxes, so we know when user changes node
     connect(m_Controls->m_LeftCameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
@@ -120,7 +122,6 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
 
     // Start these up as disabled, until we have enough images to calibrate.
     m_Controls->m_UndoButton->setEnabled(false);
-    m_Controls->m_SaveButton->setEnabled(false);
     m_Controls->m_ClearButton->setEnabled(false);
 
     // Create manager, before we retrieve preferences which will populate it.
@@ -141,21 +142,12 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
       eventAdmin->publishSignal(this, SIGNAL(PauseIGIUpdate(ctkDictionary)),"uk/ac/ucl/cmic/IGIUPDATEPAUSE", Qt::DirectConnection);
       eventAdmin->publishSignal(this, SIGNAL(RestartIGIUpdate(ctkDictionary)), "uk/ac/ucl/cmic/IGIUPDATERESTART", Qt::DirectConnection);
 
-      ctkDictionary properties1;
-      properties1[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
-      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties1);
+      ctkDictionary properties;
+      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIUPDATE";
+      eventAdmin->subscribeSlot(this, SLOT(OnUpdate(ctkEvent)), properties);
 
-      ctkDictionary properties2;
-      properties2[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH1START";
-      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties2);
-
-      ctkDictionary properties3;
-      properties3[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH2START";
-      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties3);
-
-      ctkDictionary properties4;
-      properties4[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH3START";
-      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties4);
+      properties[ctkEventConstants::EVENT_TOPIC] = "uk/ac/ucl/cmic/IGIFOOTSWITCH3START";
+      eventAdmin->subscribeSlot(this, SLOT(OnGrab(ctkEvent)), properties);
     }
   }
 }
@@ -174,14 +166,11 @@ void CameraCalView::SetButtonsEnabled(bool isEnabled)
   {
     m_Controls->m_ClearButton->setEnabled(m_Manager->GetNumberOfSnapshots() > 0);
     m_Controls->m_UndoButton->setEnabled(m_Manager->GetNumberOfSnapshots() > 0);
-    m_Controls->m_SaveButton->setEnabled(m_Manager->GetNumberOfSnapshots()
-                                         >= m_Manager->GetMinimumNumberOfSnapshotsForCalibrating());
   }
   else
   {
     m_Controls->m_ClearButton->setEnabled(isEnabled);
     m_Controls->m_UndoButton->setEnabled(isEnabled);
-    m_Controls->m_SaveButton->setEnabled(isEnabled);
   }
 }
 
@@ -199,7 +188,7 @@ void CameraCalView::RetrievePreferenceValues()
   berry::IPreferences::Pointer prefs = GetPreferences();
   if (prefs.IsNotNull())
   {
-    m_Manager->SetMinimumNumberOfSnapshotsForCalibrating(prefs->GetInt(CameraCalViewPreferencePage::MINIMUM_VIEWS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfSnapshotsForCalibrating));
+    m_Manager->SetNumberOfSnapshotsForCalibrating(prefs->GetInt(CameraCalViewPreferencePage::NUMBER_VIEWS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating));
 
     std::string fileName = prefs->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, "").toStdString();
     if (!fileName.empty())
@@ -238,6 +227,12 @@ void CameraCalView::RetrievePreferenceValues()
     {
       QDir dirName(QString::fromStdString(calibrationDir));
       m_Manager->LoadCalibrationFromDirectory(dirName.absolutePath().toStdString());
+    }
+
+    std::string outputDir = prefs->Get(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, "").toStdString();
+    if (!outputDir.empty())
+    {
+      m_Manager->SetOutputPrefixName(outputDir);
     }
 
     m_Manager->SetCalibrationPattern(
@@ -474,6 +469,11 @@ void CameraCalView::OnBackgroundGrabProcessFinished()
 
   if (successfullyGrabbed)
   {
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
+    m_Controls->m_ImageLabel->setPixmap(image);
+    m_Controls->m_ImageLabel->show();
+
+    // try calibrating - might not have enough images yet.
     this->Calibrate();
   }
   else
@@ -493,8 +493,7 @@ void CameraCalView::OnBackgroundGrabProcessFinished()
 //-----------------------------------------------------------------------------
 void CameraCalView::Calibrate()
 {
-  if (m_Manager->GetNumberOfSnapshots()
-      >= m_Manager->GetMinimumNumberOfSnapshotsForCalibrating())
+  if (m_Manager->GetNumberOfSnapshots() == m_Manager->GetNumberOfSnapshotsForCalibrating())
   {
     if (m_Manager->GetModelFileName().empty())
     {
@@ -519,9 +518,6 @@ void CameraCalView::Calibrate()
   }
   else
   {
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
-    m_Controls->m_ImageLabel->setPixmap(image);
-    m_Controls->m_ImageLabel->show();
     m_Controls->m_ProjectionErrorValue->setText("Too few images.");
   }
 }
@@ -571,7 +567,7 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
   if (m_BackgroundCalibrateProcess.isCanceled()
       || m_BackgroundCalibrateProcess.resultCount() == 0)
   {
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/red-cross-300px.png");
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/thumb-down-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
 
@@ -585,13 +581,24 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
   else
   {
     double rms = m_BackgroundCalibrateProcessWatcher.result();
-    m_Controls->m_ProjectionErrorValue->setText(tr("%1 pixels (%2 images).").arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
+    QString message("%1 pixels (%2 image");
+    if (m_Manager->GetNumberOfSnapshots() == 1)
+    {
+      message.append(")"); // singular
+    }
+    else
+    {
+      message.append("s)"); // plural
+    }
+    m_Controls->m_ProjectionErrorValue->setText(tr(message.toStdString().c_str()).arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
 
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/green-tick-300px.png");
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
+    m_Manager->Save();
   }
 
+  m_Manager->Restart();
   this->SetButtonsEnabled(true);
 }
 
@@ -611,25 +618,5 @@ void CameraCalView::OnUnGrabButtonPressed()
     this->SetButtonsEnabled(true);
   }
 }
-
-
-//-----------------------------------------------------------------------------
-void CameraCalView::OnSaveButtonPressed()
-{
-  // should not be able to call/click here if it's still running.
-  assert(!m_BackgroundGrabProcess.isRunning());
-  assert(!m_BackgroundCalibrateProcess.isRunning());
-
-  QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Output Directory"),
-                                                  "",
-                                                  QFileDialog::ShowDirsOnly
-                                                  | QFileDialog::DontResolveSymlinks);
-  if (!dir.isEmpty())
-  {
-    m_Manager->SetOutputDirName(dir.toStdString());
-    m_Manager->Save();
-  }
-}
-
 
 } // end namespace

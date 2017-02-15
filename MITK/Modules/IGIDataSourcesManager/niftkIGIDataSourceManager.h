@@ -57,8 +57,8 @@ class NIFTKIGIDATASOURCESMANAGER_EXPORT IGIDataSourceManager : public QObject
 
 public:
 
-  static const int    DEFAULT_FRAME_RATE;
-  static const char*  DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
+  static const int     DEFAULT_FRAME_RATE;
+  static const char*   DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE;
 
   IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent);
   virtual ~IGIDataSourceManager();
@@ -95,11 +95,6 @@ public:
   * If there are no sources, this does nothing.
   */
   void StartUpdateTimer();
-
-  /**
-  * \brief Returns a default path, to somewhere writable, like the desktop.
-  */
-  static QString GetDefaultPath();
 
   /**
    * \brief Gets a suitable directory name from a prefix determined by preferences, and a date-time stamp.
@@ -174,6 +169,11 @@ public:
   * \brief Stops the recording process.
   */
   void StopRecording();
+
+  /**
+   * \brief Returns true if the data source manager is in recording mode.
+   */
+  bool IsRecording() const;
 
   /**
   * \brief Freezes the data sources (i.e. does not do update).
@@ -266,6 +266,11 @@ public:
    */
   void GlobalReInit();
 
+  /**
+   * \brief Returns a reasonable, default, (e.g. Desktop) place to write output.
+   */
+  static QString GetDefaultWritablePath();
+
 signals:
 
   /**
@@ -300,6 +305,11 @@ signals:
   * \brief Emmitted when recording has successfully started.
   */
   void RecordingStarted(QString basedirectory);
+
+  /**
+  * \brief Emmitted when recording has successfully stopped.
+  */
+  void RecordingStopped();
 
 protected:
 
@@ -382,6 +392,7 @@ private:
   bool                                                             m_IsGrabbingScreen;
   QString                                                          m_ScreenGrabDir;
 
+  bool                                                             m_IsRecording;
 }; // end class;
 
 } // end namespace

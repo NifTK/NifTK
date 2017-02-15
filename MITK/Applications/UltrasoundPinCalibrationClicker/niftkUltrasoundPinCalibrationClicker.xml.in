@@ -24,6 +24,22 @@
       <description>Directory to write selected 2D pin locations.</description>
       <label>Output Points Directory</label>
     </directory>
+    <boolean>
+      <name>outputTimeStamp</name>
+      <longflag>outputTimeStamp</longflag>
+      <description>Output timestamp in file.</description>
+      <label>Output Timestamp</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+    <boolean>
+      <name>outputZ</name>
+      <longflag>outputZ</longflag>
+      <description>Output Z value of zero in file.</description>
+      <label>Output Z</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
   </parameters>
 
 </executable>

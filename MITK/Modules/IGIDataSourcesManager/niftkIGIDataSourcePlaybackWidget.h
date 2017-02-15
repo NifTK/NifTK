@@ -61,6 +61,11 @@ public:
   void StopRecording();
 
   /**
+   * \brief Used to check if the DataSourceManager is recording or not.
+   */
+  bool IsRecording() const;
+
+  /**
   * \brief Called from the Plugin (e.g event bus) to pause the DataStorage update process.
   */
   void PauseUpdate();

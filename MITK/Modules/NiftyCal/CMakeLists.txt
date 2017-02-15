@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  DEPENDS niftkcommon niftkOpenCVUtils niftkOpenCVImageConversion MitkCameraCalibration
+  DEPENDS niftkcommon niftkOpenCVUtils niftkOpenCVImageConversion MitkCameraCalibration niftkIGIServices niftkIGIGui
   PACKAGE_DEPENDS NiftyCal AprilTags OpenCV
 )
 

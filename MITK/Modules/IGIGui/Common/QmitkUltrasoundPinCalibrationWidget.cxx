@@ -31,12 +31,16 @@
 //-----------------------------------------------------------------------------
 QmitkUltrasoundPinCalibrationWidget::QmitkUltrasoundPinCalibrationWidget(
   const QString& inputImageDirectory,
-  const QString& outputPointDirectory,  
+  const QString& outputPointDirectory,
+  const bool& outputTimeStamp,
+  const bool& outputZ,
   QWidget *parent)
 : QVTKWidget(parent)
 , m_InputImageDirectory(inputImageDirectory)
 , m_OutputPointDirectory(outputPointDirectory)
 , m_PNG(true)
+, m_OutputTimestamp(outputTimeStamp)
+, m_OutputZ(outputZ)
 {
   m_ImageViewer = vtkImageViewer::New();
   this->SetRenderWindow(m_ImageViewer->GetRenderWindow());
@@ -188,7 +192,7 @@ void QmitkUltrasoundPinCalibrationWidget::CreateDir(const std::string& dir)
   {
     if (!niftk::CreateDirAndParents(dir))
     {
-      QMessageBox::critical(this, tr("niftkUltrasoundPinCalibrationSorter"),
+      QMessageBox::critical(this, tr("QmitkUltrasoundPinCalibrationWidget"),
                                   tr("Can't write to\n%1").arg(QString::fromStdString(dir)),
                                   QMessageBox::Ok);
       QApplication::exit(-1);
@@ -205,7 +209,6 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
     int xPixel = event->x();
     int yPixel = event->y();
     Qt::MouseButton button = event->button();
-    double zCoordinate = 0;
 
     if (button == Qt::LeftButton)
     {
@@ -219,25 +222,35 @@ void QmitkUltrasoundPinCalibrationWidget::StorePoint(QMouseEvent* event)
       {
         QString imageTimeStampString = imageFileName.mid(matchIndex,19);
         QString baseNameForPoint = imageTimeStampString + QString(".txt");
-        std::string pointFileFullPath = niftk::ConvertToFullNativePath((m_OutputPointDirectory + QString("/") + baseNameForPoint).toStdString());
+        std::string pointFileFullPath = niftk::ConvertToFullNativePath((m_OutputPointDirectory
+                                                                        + QString::fromStdString(niftk::GetFileSeparator())
+                                                                        + baseNameForPoint).toStdString());
 
         ofstream myfile(pointFileFullPath.c_str(), std::ofstream::out | std::ofstream::trunc);
         if (myfile.is_open())
         {
-          myfile << xPixel << " " << yPixel << " " << zCoordinate << std::endl;
+          if (m_OutputTimestamp)
+          {
+            myfile << imageTimeStampString.toStdString() << " ";
+          }
+          myfile << xPixel << " " << yPixel << " ";
+          if (m_OutputZ)
+          {
+            myfile << " 0" << std::endl;
+          }
           myfile.close();
           m_PointsOutputCounter++;
         }
         else
         {
-          QMessageBox::warning(this, tr("niftkUltrasoundPinCalibrationSorter"),
+          QMessageBox::warning(this, tr("QmitkUltrasoundPinCalibrationWidget"),
                                       tr("Failed to write point to file\n%1").arg(QString::fromStdString(pointFileFullPath)),
                                       QMessageBox::Ok);
         }
       }
       else
       {
-        QMessageBox::warning(this, tr("niftkUltrasoundPinCalibrationSorter"),
+        QMessageBox::warning(this, tr("QmitkUltrasoundPinCalibrationWidget"),
                                     tr("Invalid image file name\n%1").arg(imageFileName),
                                     QMessageBox::Ok);
       }

@@ -66,6 +66,7 @@ set(_include_plugins
   uk.ac.ucl.cmic.igipointsetcropper
   uk.ac.ucl.cmic.igicameracal
   uk.ac.ucl.cmic.igimaskmerger
+  uk.ac.ucl.cmic.igiultrasoundreconstruction
 )
 
 if(WIN32)
@@ -103,6 +104,12 @@ if(OPENCV_WITH_NONFREE)
     ${_include_plugins}
     uk.ac.ucl.cmic.igidistancemeasurer
   )
+endif()
+
+# Horrible work-around to force NiftyIGI to preload niftknvapi.
+# Can be removed when we finally upgrade to CUDA 7.5 throughout.
+if(WIN32 AND NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
+  add_definitions(-DNIFTYIGI_USE_NVAPI)
 endif()
 
 NIFTK_CREATE_GUI_APPLICATION(

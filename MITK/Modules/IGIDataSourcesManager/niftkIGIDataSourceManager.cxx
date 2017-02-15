@@ -23,14 +23,10 @@
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
 #include <mitkTimeGeometry.h>
+#include <QmitkIGIUtils.h>
 #include <vtkPNGWriter.h>
 #include <vtkSmartPointer.h>
 #include <vtkRenderer.h>
-#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
-#include <QDesktopServices>
-#else
-#include <QStandardPaths>
-#endif
 #include <QProcessEnvironment>
 #include <QVector>
 #include <QDateTime>
@@ -42,8 +38,8 @@ namespace niftk
 {
 
 const int   IGIDataSourceManager::DEFAULT_FRAME_RATE = 20;
-const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE
-  = "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION";
+const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE =
+  "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION";
 
 //-----------------------------------------------------------------------------
 IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorage, QObject* parent)
@@ -60,6 +56,7 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
 , m_PlaybackSliderFactor(0)
 , m_IsGrabbingScreen(false)
 , m_ScreenGrabDir("")
+, m_IsRecording(false)
 {
   if (m_DataStorage.IsNull())
   {
@@ -67,7 +64,7 @@ IGIDataSourceManager::IGIDataSourceManager(mitk::DataStorage::Pointer dataStorag
   }
 
   this->RetrieveAllDataSourceFactories();
-  m_DirectoryPrefix = this->GetDefaultPath();
+  m_DirectoryPrefix = GetWritablePath(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
 
   m_TimeStampGenerator = igtl::TimeStamp::New();
   m_TimeStampGenerator->GetTime();
@@ -134,70 +131,6 @@ bool IGIDataSourceManager::IsPlayingBackAutomatically() const
 
 
 //-----------------------------------------------------------------------------
-QString IGIDataSourceManager::GetDefaultPath()
-{
-  QString result;
-  QDir directory;
-
-  QString path;
-  QStringList paths;
-
-  // if the user has configured a per-machine default location for igi data.
-  // if that path exist we use it as a default (prefs from uk_ac_ucl_cmic_igidatasources will override it if necessary).
-  QProcessEnvironment   myEnv = QProcessEnvironment::systemEnvironment();
-  path = myEnv.value(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE, "");
-  directory.setPath(path);
-
-  if (!directory.exists())
-  {
-#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
-    path = QDesktopServices::storageLocation(QDesktopServices::DesktopLocation);
-#else
-    paths = QStandardPaths::standardLocations(QStandardPaths::DesktopLocation);
-    assert(paths.size() == 1);
-    path = paths[0];
-#endif
-
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
-    path = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
-#else
-    paths = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
-    assert(paths.size() == 1);
-    path = paths[0];
-#endif
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
-    path = QDesktopServices::storageLocation(QDesktopServices::HomeLocation);
-#else
-    paths = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
-    assert(paths.size() == 1);
-    path = paths[0];
-#endif
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = QDir::currentPath();
-    directory.setPath(path);
-  }
-  if (!directory.exists())
-  {
-    path = "";
-  }
-
-  result = path;
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 QString IGIDataSourceManager::GetDirectoryName()
 {
   QMutexLocker locker(&m_Lock);
@@ -213,10 +146,7 @@ QString IGIDataSourceManager::GetDirectoryName()
   m_TimeStampGenerator->GetTimeStamp(&seconds, &nanoseconds);
   millis = (igtlUint64)seconds*1000 + nanoseconds/1000000;
 
-  QDateTime dateTime;
-  dateTime.setMSecsSinceEpoch(millis);
-
-  QString formattedTime = dateTime.toString("yyyy.MM.dd_hh-mm-ss-zzz");
+  QString formattedTime = FormatDateTime(millis);
   QString directoryName = baseDirectory + QDir::separator() + formattedTime;
 
   return directoryName;
@@ -562,7 +492,7 @@ void IGIDataSourceManager::StartRecording(QString absolutePath)
   // Tell interested parties (e.g. other plugins) that recording has started.
   // We do this before starting writing descriptor because that might throw an execption,
   // which would stall delivering this signal.
-
+  m_IsRecording = true;
   emit RecordingStarted(absolutePath);
 
   this->WriteDescriptorFile(absolutePath);
@@ -578,6 +508,16 @@ void IGIDataSourceManager::StopRecording()
   {
     m_Sources[i]->StopRecording();
   }
+
+  m_IsRecording = false;
+  emit RecordingStopped();
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataSourceManager::IsRecording() const
+{
+  return m_IsRecording;
 }
 
 
@@ -946,6 +886,14 @@ void IGIDataSourceManager::OnUpdateGui()
       .toString("yyyy/MM/dd hh:mm:ss.zzz");
 
   emit TimerUpdated(rawTimeStampString, humanReadableTimeStamp);
+}
+
+
+//-----------------------------------------------------------------------------
+QString IGIDataSourceManager::GetDefaultWritablePath()
+{
+  QString path = GetWritablePath(DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE);
+  return path;
 }
 
 } // end namespace

@@ -91,4 +91,16 @@ NIFTKIGIGUI_EXPORT std::vector<float [3]> ReadRigidBodyDefinitionFile(QString& r
  */
 NIFTKIGIGUI_EXPORT QString ConvertNanoSecondsToString(const igtlUint32& nanosec);
 
+/**
+* \brief Returns a default path, to somewhere writable, like the desktop.
+*/
+NIFTKIGIGUI_EXPORT QString GetWritablePath(const char* defaultRecordingDir = nullptr);
+
+/**
+ * \brief Format's the time in millis to "yyyy.MM.dd_hh-mm-ss-zzz".
+ */
+NIFTKIGIGUI_EXPORT QString FormatDateTime(const qint64& timeInMillis);
+
+NIFTKIGIGUI_EXPORT std::string FormatDateTimeAsStdString(const qint64& timeInMillis);
+
 #endif

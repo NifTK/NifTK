@@ -344,6 +344,7 @@ void CaffeSegController::InternalUpdate()
   {
     QMutexLocker locker(&d->m_Lock);
     d->m_BackgroundProcess = QtConcurrent::run(this, &niftk::CaffeSegController::InternalUpdateBackground);
+    d->m_BackgroundProcessWatcher.setFuture(d->m_BackgroundProcess);
   }
 }
 

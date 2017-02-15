@@ -33,8 +33,12 @@ namespace niftk
  * \class NiftyCalVideoCalibrationManager
  * \brief Manager class to perform video calibration as provided by NiftyCal.
  *
- * This one is not an MITK Service as it is stateful. So, it would
- * be more problematic to have a system-wide service, called from multiple threads.
+ * Note: This class is stateful and not thread safe.
+ *
+ * This class was originally intended to work with Zhang's method, which requires
+ * N (typically 5-10) views of a calibration pattern. However, it was modified to
+ * work with Tsai's method (1 view, coplanar or non-coplanar). So, there may
+ * be some residual technical debt to tidy up and simplify.
  */
 class NIFTKNIFTYCAL_EXPORT NiftyCalVideoCalibrationManager : public itk::Object
 {
@@ -47,7 +51,9 @@ public:
     CIRCLE_GRID,
     APRIL_TAGS,
     TEMPLATE_MATCHING_CIRCLES,
-    TEMPLATE_MATCHING_RINGS
+    TEMPLATE_MATCHING_RINGS,
+    TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES,
+    TEMPLATE_MATCHING_NON_COPLANAR_RINGS
   };
 
   enum HandEyeMethod
@@ -61,7 +67,7 @@ public:
 
   const static bool                DefaultDoIterative;
   const static bool                DefaultDo3DOptimisation;
-  const static unsigned int        DefaultMinimumNumberOfSnapshotsForCalibrating;
+  const static unsigned int        DefaultNumberOfSnapshotsForCalibrating;
   const static double              DefaultScaleFactorX;
   const static double              DefaultScaleFactorY;
   const static unsigned int        DefaultGridSizeX;
@@ -89,8 +95,8 @@ public:
   itkSetMacro(ReferenceTrackingTransformNode, mitk::DataNode::Pointer);
   itkGetMacro(ReferenceTrackingTransformNode, mitk::DataNode::Pointer);
 
-  itkSetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
-  itkGetMacro(MinimumNumberOfSnapshotsForCalibrating, unsigned int);
+  itkSetMacro(NumberOfSnapshotsForCalibrating, unsigned int);
+  itkGetMacro(NumberOfSnapshotsForCalibrating, unsigned int);
 
   itkSetMacro(DoIterative, bool);
   itkGetMacro(DoIterative, bool);
@@ -128,8 +134,8 @@ public:
   void SetModelFileName(const std::string& fileName);
   itkGetMacro(ModelFileName, std::string);
 
-  void SetOutputDirName(const std::string& dirName);
-  itkGetMacro(OutputDirName, std::string);
+  void SetOutputPrefixName(const std::string& dirName);
+  itkGetMacro(OutputPrefixName, std::string);
 
   void SetReferenceDataFileNames(const std::string& imageFileName,
                                  const std::string& pointsFileName);
@@ -300,6 +306,9 @@ private:
    */
   void UpdateDisplayNodes();
 
+  cv::Matx44d GetInitialHandEye(int imageIndex, bool useReference);
+  cv::Matx44d GetInitialModelToWorld();
+
   typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> > MatrixProperty;
 
   // Data from Plugin/DataStorage.
@@ -311,7 +320,7 @@ private:
   // Data from preferences.
   bool                                           m_DoIterative;
   bool                                           m_Do3DOptimisation;
-  unsigned int                                   m_MinimumNumberOfSnapshotsForCalibrating;
+  unsigned int                                   m_NumberOfSnapshotsForCalibrating;
   std::string                                    m_ModelFileName;
   double                                         m_ScaleFactorX;
   double                                         m_ScaleFactorY;
@@ -320,6 +329,7 @@ private:
   CalibrationPatterns                            m_CalibrationPattern;
   HandEyeMethod                                  m_HandeyeMethod;
   std::string                                    m_TagFamily;
+  std::string                                    m_OutputPrefixName;
   std::string                                    m_OutputDirName;
   std::string                                    m_ModelToTrackerFileName;
   std::string                                    m_ReferenceImageFileName;

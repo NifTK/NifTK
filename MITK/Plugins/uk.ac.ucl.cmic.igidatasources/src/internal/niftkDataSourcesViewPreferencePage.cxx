@@ -15,7 +15,6 @@
 #include "niftkDataSourcesViewPreferencePage.h"
 #include "niftkDataSourcesView.h"
 #include <niftkIGIDataSourceManager.h>
-
 #include <QFormLayout>
 #include <QVBoxLayout>
 #include <QLabel>
@@ -116,9 +115,9 @@ void DataSourcesViewPreferencePage::Update()
 {
   m_FramesPerSecondSpinBox->setValue(m_DataSourcesViewPreferencesNode->GetInt("refresh rate", niftk::IGIDataSourceManager::DEFAULT_FRAME_RATE));
   QString path = m_DataSourcesViewPreferencesNode->Get("output directory prefix", "");
-  if (path == "")
+  if(path.isEmpty())
   {
-    path = niftk::IGIDataSourceManager::GetDefaultPath();
+    path = niftk::IGIDataSourceManager::GetDefaultWritablePath();
   }
   m_DirectoryPrefix->setDirectory(path);
 }
