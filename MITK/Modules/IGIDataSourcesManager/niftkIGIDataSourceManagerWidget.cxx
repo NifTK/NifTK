@@ -421,7 +421,7 @@ void IGIDataSourceManagerWidget::StopRecording()
 
 //-----------------------------------------------------------------------------
 QString IGIDataSourceManagerWidget::GetDefaultWritablePath() const
-{  
+{
   return m_Manager->GetDefaultWritablePath();
 }
 

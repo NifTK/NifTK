@@ -54,7 +54,8 @@ IGIDataSourceI::Pointer UltrasonixDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* UltrasonixDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  return new niftk::IPHostExtensionDialog(parent, "uk.ac.ucl.cmic.niftkUltrasonixDataSourceService.IPHostExtensionDialog");
+  return new niftk::IPHostExtensionDialog(parent,
+                                          "uk.ac.ucl.cmic.niftkUltrasonixDataSourceService.IPHostExtensionDialog");
 }
 
 

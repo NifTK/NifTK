@@ -38,7 +38,7 @@ namespace niftk
 {
 
 const int   IGIDataSourceManager::DEFAULT_FRAME_RATE = 20;
-const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE = 
+const char* IGIDataSourceManager::DEFAULT_RECORDINGDESTINATION_ENVIRONMENTVARIABLE =
   "NIFTK_IGIDATASOURCES_DEFAULTRECORDINGDESTINATION";
 
 //-----------------------------------------------------------------------------
