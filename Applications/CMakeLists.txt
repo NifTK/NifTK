@@ -60,7 +60,7 @@ set(_applications
   BinaryShapeBasedSuperSamplingFilter
   BlockMatching
   BreastDCEandADC
-  BreastDensityCalculationGivenMRISegmentation
+  BreastDensityCalculationFromMRI
   BreastDensityFromMRIs
   BreastDensityFromMRIsGivenMaskAndImage
   BreastDicomSeriesReadImageWrite

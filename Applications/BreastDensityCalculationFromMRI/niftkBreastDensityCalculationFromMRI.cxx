@@ -18,7 +18,7 @@
 
 #include <niftkConversionUtils.h>
 
-#include <niftkBreastDensityCalculationGivenMRISegmentationCLP.h>
+#include <niftkBreastDensityCalculationFromMRICLP.h>
 
 #include <itkImage.h>
 #include <itkImageFileReader.h>
