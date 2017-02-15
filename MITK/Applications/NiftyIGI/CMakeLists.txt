@@ -106,6 +106,12 @@ if(OPENCV_WITH_NONFREE)
   )
 endif()
 
+# Horrible work-around to force NiftyIGI to preload niftknvapi.
+# Can be removed when we finally upgrade to CUDA 7.5 throughout.
+if(WIN32 AND NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
+  add_definitions(-DNIFTYIGI_USE_NVAPI)
+endif()
+
 NIFTK_CREATE_GUI_APPLICATION(
   NAME NiftyIGI
   INCLUDE_PLUGINS ${_include_plugins}
