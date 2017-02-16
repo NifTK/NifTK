@@ -12,18 +12,18 @@
 #
 #============================================================================*/
 
-if(SlicerExecutionModel_FOUND)
-
-  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-    NAME niftkBreastDensityCalculationGivenMRISegmentation
-    BUILD_SLICER
-    INSTALL_SCRIPT
-    TARGET_LIBRARIES
-      niftkcommon
-      niftkITK
-      niftkITKIO
-      ${ITK_LIBRARIES}
-  )
-
-endif()
-
+NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+  NAME niftkEvaluateIntrinsicParams
+  BUILD_SLICER
+  INSTALL_SCRIPT
+  TARGET_LIBRARIES
+    niftkcommon
+    MitkLegacyIO
+    ${Boost_LIBRARIES}
+    MitkSegmentation
+    niftkOpenCVUtils
+    niftkIGIGui
+    niftkPointReg
+    niftkSurfRecon
+    niftkICPReg
+)
