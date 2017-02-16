@@ -15,6 +15,7 @@
 #ifndef niftkIGITrackerDataType_h
 #define niftkIGITrackerDataType_h
 
+#include "niftkIGIDataSourcesExports.h"
 #include <niftkIGIDataType.h>
 
 #include <vtkSmartPointer.h>
@@ -29,7 +30,7 @@ namespace niftk
  *
  * (normally NDI Aurora, Spectra, Polaris etc).
  */
-class IGITrackerDataType : public IGIDataType
+class NIFTKIGIDATASOURCES_EXPORT IGITrackerDataType : public IGIDataType
 {
 public:
 
