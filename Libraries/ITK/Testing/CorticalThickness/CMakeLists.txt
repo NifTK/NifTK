@@ -55,8 +55,12 @@ add_test(CTE-Correct-PVMap ${CORTICAL_THICKNESS_UNIT_TESTS} CorrectGMUsingPVMapT
 add_test(CTE-Correct-Neighbourhood ${CORTICAL_THICKNESS_UNIT_TESTS} CorrectGMUsingNeighbourhoodTest)
 add_test(CTE-Lagrange-Init-1 ${CORTICAL_THICKNESS_UNIT_TESTS} LagrangianInitializedStreamlinesFilterTest ${TEMPORARY_OUTPUT}/CTE-Lagrange-Init-1.png )
 add_test(CTE-Bourgeat-1 ${CORTICAL_THICKNESS_UNIT_TESTS} --compare ${BASELINE}/CTE-Bourgeat-1_out.png ${TEMPORARY_OUTPUT}/CTE-Bourgeat-1_out.png Bourgeat2008Test ${INPUT_DATA}/cte_330_x_330_wiggly.png ${INPUT_DATA}/cte_330_x_330_wiggly_pv.png ${TEMPORARY_OUTPUT}/CTE-Bourgeat-1_out.png 255 127 0 200 0.000001 200 0.0000000001 0.9 0.5 0.001 2.0 153 242 59.528 0.001)
-add_test(CTE-RungeKutta-1 ${CORTICAL_THICKNESS_UNIT_TESTS} FourthOrderRungeKuttaVelocityFieldTest)
-add_test(CTE-RungeKutta-2 ${CORTICAL_THICKNESS_UNIT_TESTS} --compare ${BASELINE}/CTE-RungeKutta-2-out.nii ${TEMPORARY_OUTPUT}/CTE-RungeKutta-2-out.nii FourthOrderRungeKuttaVelocityFieldThicknessTest ${TEMPORARY_OUTPUT}/CTE-RungeKutta-2-out.nii)
+
+if(NOT WIN32 OR ${CMAKE_GENERATOR} MATCHES "Win64")
+  add_test(CTE-RungeKutta-1 ${CORTICAL_THICKNESS_UNIT_TESTS} FourthOrderRungeKuttaVelocityFieldTest)
+  add_test(CTE-RungeKutta-2 ${CORTICAL_THICKNESS_UNIT_TESTS} --compare ${BASELINE}/CTE-RungeKutta-2-out.nii ${TEMPORARY_OUTPUT}/CTE-RungeKutta-2-out.nii FourthOrderRungeKuttaVelocityFieldThicknessTest ${TEMPORARY_OUTPUT}/CTE-RungeKutta-2-out.nii)
+endif()
+
 add_test(CTE-AddUpdate-1 ${CORTICAL_THICKNESS_UNIT_TESTS} AddUpdateToTimeVaryingVelocityFilterTest )
 add_test(CTE-Smooth ${CORTICAL_THICKNESS_UNIT_TESTS} GaussianSmoothVectorFieldFilterTest )
 #add_test(CTE-RegCTE-1  ${CORTICAL_THICKNESS_UNIT_TESTS} --compare ${BASELINE}/cte_circle_out.nii ${TEMPORARY_OUTPUT}/cte_circle_out.nii RegistrationBasedCorticalThicknessFilterTest ${INPUT_DATA}/cte_circle_wm.png ${INPUT_DATA}/cte_circle_gmwm.png ${INPUT_DATA}/cte_circle_thick10.png ${INPUT_DATA}/cte_circle_gwi.png 100 20 1 1.5 0 0.00001 0.99 ${TEMPORARY_OUTPUT}/cte_circle_out.nii)
