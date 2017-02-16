@@ -39,8 +39,8 @@ public:
   std::pair<char*, std::size_t> GetBlob() const;
 
 private:
-  char*   m_AudioBlob;
-  std::size_t   m_Length;
+  char*       m_AudioBlob;
+  std::size_t m_Length;
 };
 
 } // end namespace

@@ -123,7 +123,7 @@ public:
 
 protected:
 
-  IGIDataSourceRingBuffer& operator=(const IGIDataSourceRingBuffer&); // Purposefully not implemented.  
+  IGIDataSourceRingBuffer& operator=(const IGIDataSourceRingBuffer&); // Purposefully not implemented.
   IGIDataSourceRingBuffer(const IGIDataSourceRingBuffer&); // Purposefully not implemented.
 
   itk::FastMutexLock::Pointer        m_Mutex;

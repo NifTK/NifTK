@@ -77,7 +77,8 @@ void ProbeTimeStampFiles(QDir path,
 void GetPlaybackIndex(const QString& directory,
                       const QString& fileExtension,
                       QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >& bufferToTimeStamp,
-                      QMap<QString, QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> >& bufferToTimeStampToFileNames
+                      QMap<QString, QHash<
+                        niftk::IGIDataSourceI::IGITimeType, QStringList> >& bufferToTimeStampToFileNames
                       )
 {
   bufferToTimeStamp.clear();
@@ -197,8 +198,11 @@ bool ProbeRecordedData(const QString& path,
                        niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
 
-  niftk::IGIDataSourceI::IGITimeType  firstTimeStampFound = std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::max();
-  niftk::IGIDataSourceI::IGITimeType  lastTimeStampFound  = std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::min();
+  niftk::IGIDataSourceI::IGITimeType  firstTimeStampFound
+    = std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::max();
+
+  niftk::IGIDataSourceI::IGITimeType  lastTimeStampFound
+    = std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::min();
 
   // Note, that each tool may have different min and max, so we want the
   // most minimum and most maximum of all the sub directories.
