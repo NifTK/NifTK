@@ -90,10 +90,13 @@ NiftyLinkServerDataSourceService::~NiftyLinkServerDataSourceService()
                            SLOT(OnMessageReceived(int, niftk::NiftyLinkMessageContainer::Pointer)));
   assert(ok);
 
+  int portNumber = m_Server->serverPort();
+
   m_Server->Shutdown();
   delete m_Server;
 
   s_Lock.RemoveSource(m_ServerNumber);
+  s_PortsInUse.remove(portNumber);
 }
 
 
