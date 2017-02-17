@@ -24,6 +24,8 @@ namespace niftk
 /**
  * \class QmitkIGINiftyLinkDataType
  * \brief Data wrapper for messages coming from NiftyLink.
+ *
+ * Note: Copy/Move operations are shallow copies of message pointers.
  */
 class NiftyLinkDataType : public IGIDataType
 {
@@ -33,6 +35,11 @@ public:
   NiftyLinkDataType();
   NiftyLinkDataType(niftk::NiftyLinkMessageContainer::Pointer message);
   virtual ~NiftyLinkDataType();
+
+  NiftyLinkDataType(const NiftyLinkDataType&);             // Copy constructor
+  NiftyLinkDataType& operator=(const NiftyLinkDataType&);  // Copy assignment
+  NiftyLinkDataType(NiftyLinkDataType&&);                  // Move constructor
+  NiftyLinkDataType& operator=(NiftyLinkDataType&&);       // Move assignment
 
   niftk::NiftyLinkMessageContainer::Pointer GetMessageContainer() const { return m_Message; }
   void SetMessageContainer(niftk::NiftyLinkMessageContainer::Pointer p) { m_Message = p;}
@@ -48,11 +55,6 @@ public:
   virtual void Clone(const IGIDataType&) override;
 
 private:
-
-  NiftyLinkDataType(const NiftyLinkDataType&);             // Copy constructor - deliberately not implemented yet
-  NiftyLinkDataType& operator=(const NiftyLinkDataType&);  // Copy assignment - deliberately not implemented yet
-  NiftyLinkDataType(NiftyLinkDataType&&);                  // Move constructor - deliberately not implemented yet
-  NiftyLinkDataType& operator=(NiftyLinkDataType&&);       // Move assignment - deliberately not implemented yet
 
   niftk::NiftyLinkMessageContainer::Pointer m_Message;
 

@@ -41,6 +41,38 @@ NiftyLinkDataType::NiftyLinkDataType(niftk::NiftyLinkMessageContainer::Pointer m
 
 
 //-----------------------------------------------------------------------------
+NiftyLinkDataType::NiftyLinkDataType(const NiftyLinkDataType& other)
+{
+  m_Message = other.m_Message;
+}
+
+
+//-----------------------------------------------------------------------------
+NiftyLinkDataType::NiftyLinkDataType(NiftyLinkDataType&& other)
+{
+  m_Message = other.m_Message;
+  other.m_Message = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------
+NiftyLinkDataType& NiftyLinkDataType::operator=(const NiftyLinkDataType& other)
+{
+  m_Message = other.m_Message;
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
+NiftyLinkDataType& NiftyLinkDataType::operator=(NiftyLinkDataType&& other)
+{
+  m_Message = other.m_Message;
+  other.m_Message = nullptr;
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
 bool NiftyLinkDataType::IsFastToSave()
 {
   bool isFast = true;
