@@ -12,18 +12,18 @@
 
 =============================================================================*/
 
-#ifndef niftkIGIWaitForSavedDataSourceBuffer_h
-#define niftkIGIWaitForSavedDataSourceBuffer_h
+#ifndef niftkIGIDataSourceWaitingBuffer_h
+#define niftkIGIDataSourceWaitingBuffer_h
 
 #include <niftkIGIDataSourcesExports.h>
-#include "niftkIGIDataSourceBuffer.h"
 #include <niftkIGIBufferedSaveableDataSourceI.h>
+#include "niftkIGIDataSourceLinearBuffer.h"
 
 namespace niftk
 {
 
 /**
-* \class IGIWaitForSavedDataSourceBuffer
+* \class IGIDataSourceWaitingBuffer
 * \brief Manages a buffer of niftk::IGIDataType, where the buffer
 * will not delete things that have not yet been saved, thereby
 * allowing for independent save/cleardown threads.
@@ -32,16 +32,19 @@ namespace niftk
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKIGIDATASOURCES_EXPORT IGIWaitForSavedDataSourceBuffer : public IGIDataSourceBuffer
+class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceWaitingBuffer : public IGIDataSourceLinearBuffer
 {
 public:
 
-  mitkClassMacroItkParent(IGIWaitForSavedDataSourceBuffer, IGIDataSourceBuffer)
-  mitkNewMacro2Param(IGIWaitForSavedDataSourceBuffer, BufferType::size_type, IGIBufferedSaveableDataSourceI*)
+  IGIDataSourceWaitingBuffer(
+    IGIDataSourceLinearBuffer::BufferType::size_type minSize,
+    niftk::IGIBufferedSaveableDataSourceI* source);
+
+  virtual ~IGIDataSourceWaitingBuffer();
 
   /**
-  * \brief Clears down the buffer, opting not to delete an
-  * item if the item has not yet been saved.
+  * \brief Clears down the buffer in order, opting to stop and
+  * wait and not to delete an item if the item has not yet been saved.
   */
   virtual void CleanBuffer() override;
 
@@ -52,14 +55,8 @@ public:
 
 protected:
 
-  IGIWaitForSavedDataSourceBuffer(
-      BufferType::size_type minSize,
-      niftk::IGIBufferedSaveableDataSourceI* source); // Purposefully hidden.
-
-  virtual ~IGIWaitForSavedDataSourceBuffer(); // Purposefully hidden.
-
-  IGIWaitForSavedDataSourceBuffer(const IGIWaitForSavedDataSourceBuffer&); // Purposefully not implemented.
-  IGIWaitForSavedDataSourceBuffer& operator=(const IGIWaitForSavedDataSourceBuffer&); // Purposefully not implemented.
+  IGIDataSourceWaitingBuffer(const IGIDataSourceWaitingBuffer&); // Purposefully not implemented.
+  IGIDataSourceWaitingBuffer& operator=(const IGIDataSourceWaitingBuffer&); // Purposefully not implemented.
 
 private:
 

@@ -36,11 +36,11 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 NiftyLinkDataSourceService::NiftyLinkDataSourceService(
-    QString name,
-    QString factoryName,
-    const IGIDataSourceProperties& properties,
-    mitk::DataStorage::Pointer dataStorage
-    )
+  QString name,
+  QString factoryName,
+  const IGIDataSourceProperties& properties,
+  mitk::DataStorage::Pointer dataStorage
+)
 : IGIDataSource(name.toStdString(),
                 factoryName.toStdString(),
                 dataStorage)
@@ -60,7 +60,7 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
   // know the expected frame rate, a network source could be anything.
   // Lets assume for now:
   //   Vicra = 20 fps, Spectra, Aurora = faster.
-  //   Ultrasonix = 20 fpas, or faster.
+  //   Ultrasonix = 20 fps, or faster.
   // So, 20 fps = 50 ms.
   this->SetTimeStampTolerance(50*1000000);
   this->SetProperties(properties);
@@ -137,10 +137,10 @@ void NiftyLinkDataSourceService::CleanBuffer()
   QMutexLocker locker(&m_Lock);
 
   // Buffers should be threadsafe. Clean all buffers.
-  QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
+  std::map<std::string, std::unique_ptr<niftk::IGIDataSourceWaitingBuffer> >::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
   {
-    (*iter)->CleanBuffer();
+    (*iter).second->CleanBuffer();
   }
 }
 
@@ -154,17 +154,17 @@ void NiftyLinkDataSourceService::SaveBuffer()
   // This is called by a separate save thread, which, for each
   // item, does a callback onto this object, thereby ending
   // up calling SaveItem from the save thread.
-  QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
+  std::map<std::string, std::unique_ptr<niftk::IGIDataSourceWaitingBuffer> >::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
   {
-    (*iter)->SaveBuffer();
+    (*iter).second->SaveBuffer();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-bool NiftyLinkDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                                   niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+bool NiftyLinkDataSourceService::ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                                                   niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
   QString path = this->GetPlaybackDirectory();
   return niftk::ProbeRecordedData(path, QString(""), firstTimeStampInStore, lastTimeStampInStore);
@@ -172,8 +172,8 @@ bool NiftyLinkDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeTy
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                                               niftk::IGIDataType::IGITimeType lastTimeStamp)
+void NiftyLinkDataSourceService::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                                               niftk::IGIDataSourceI::IGITimeType lastTimeStamp)
 {
   QMutexLocker locker(&m_Lock);
 
@@ -199,19 +199,20 @@ void NiftyLinkDataSourceService::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
+void NiftyLinkDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp)
 {
   assert(this->GetIsPlayingBack());
   assert(m_PlaybackIndex.size() > 0); // Should have failed probing if no data.
 
   // This will find us the timestamp right after the requested one.
   // Remember we have multiple buffers!
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator iter;
+  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >::iterator iter;
   for (iter = m_PlaybackIndex.begin(); iter != m_PlaybackIndex.end(); ++iter)
   {
     QString bufferName = iter.key();
+    std::string bufferNameAsStdString = bufferName.toStdString();
 
-    std::set<niftk::IGIDataType::IGITimeType>::const_iterator iter =
+    std::set<niftk::IGIDataSourceI::IGITimeType>::const_iterator iter =
       m_PlaybackIndex[bufferName].upper_bound(requestedTimeStamp);
 
     if (iter != m_PlaybackIndex[bufferName].begin())
@@ -220,21 +221,21 @@ void NiftyLinkDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
     }
     if (iter != m_PlaybackIndex[bufferName].end())
     {
-      if (!m_Buffers.contains(bufferName))
+      if (m_Buffers.find(bufferNameAsStdString) == m_Buffers.end())
       {
         // So buffer requires a back-ground delete thread.
-        niftk::IGIWaitForSavedDataSourceBuffer::Pointer newBuffer
-            = niftk::IGIWaitForSavedDataSourceBuffer::New(120, this);
+        std::unique_ptr<niftk::IGIDataSourceWaitingBuffer> newBuffer(
+              new niftk::IGIDataSourceWaitingBuffer(120, this));
         newBuffer->SetLagInMilliseconds(m_Lag);
-        m_Buffers.insert(bufferName, newBuffer);
+        m_Buffers.insert(std::make_pair(bufferNameAsStdString, std::move(newBuffer)));
       }
 
-      niftk::IGIDataType::IGITimeType requestedTime = *iter;
+      niftk::IGIDataSourceI::IGITimeType requestedTime = *iter;
 
       QStringList listOfRelevantFiles = m_PlaybackFiles[bufferName].value(requestedTime);
       if (!listOfRelevantFiles.isEmpty())
       {
-        if (!m_Buffers[bufferName]->Contains(requestedTime))
+        if (m_Buffers[bufferNameAsStdString]->Contains(requestedTime))
         {
           // Apart from String messages, we would only expect 1 message type from each device.
 
@@ -276,7 +277,7 @@ QString NiftyLinkDataSourceService::GetDirectoryNamePart(const QString& fullPath
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType& time, QStringList& listOfFileNames)
+void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataSourceI::IGITimeType& time, QStringList& listOfFileNames)
 {
   if (listOfFileNames.isEmpty())
   {
@@ -374,15 +375,14 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType
         container->SetOwnerName("playback");
         container->SetSenderHostName("localhost");
 
-        niftk::NiftyLinkDataType::Pointer wrapper = niftk::NiftyLinkDataType::New();
-        wrapper->SetMessageContainer(container);
+        std::unique_ptr<niftk::IGIDataType> wrapper(new niftk::NiftyLinkDataType(container));
         wrapper->SetFrameId(m_FrameId++);
         wrapper->SetTimeStampInNanoSeconds(time);
         wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
         wrapper->SetShouldBeSaved(false);
 
         // Buffer itself should be threadsafe, so I'm not locking anything here.
-        m_Buffers[QString(msg->GetDeviceName())]->AddToBuffer(wrapper.GetPointer());
+        m_Buffers[std::string(msg->GetDeviceName())]->AddToBuffer(wrapper);
       }
       catch (mitk::Exception& e)
       {
@@ -406,7 +406,7 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataType::IGITimeType
 
 //-----------------------------------------------------------------------------
 void NiftyLinkDataSourceService::LoadTrackingData(
-    const niftk::IGIDataType::IGITimeType& time, QStringList& listOfFileNames)
+    const niftk::IGIDataSourceI::IGITimeType& time, QStringList& listOfFileNames)
 {
   if (listOfFileNames.isEmpty())
   {
@@ -466,24 +466,23 @@ void NiftyLinkDataSourceService::LoadTrackingData(
     container->SetOwnerName("playback");
     container->SetSenderHostName("localhost");
 
-    niftk::NiftyLinkDataType::Pointer wrapper = niftk::NiftyLinkDataType::New();
+    std::unique_ptr<niftk::IGIDataType> wrapper(new niftk::NiftyLinkDataType(container));
     wrapper->SetFrameId(m_FrameId++);
     wrapper->SetTimeStampInNanoSeconds(time);
     wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
     wrapper->SetShouldBeSaved(false);
-    wrapper->SetMessageContainer(container);
 
     // Buffer itself should be threadsafe, so I'm not locking anything here.
-    m_Buffers[QString(msg->GetDeviceName())]->AddToBuffer(wrapper.GetPointer());
+    m_Buffers[std::string(msg->GetDeviceName())]->AddToBuffer(wrapper);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
+void NiftyLinkDataSourceService::SaveItem(niftk::IGIDataType& data)
 {
-  niftk::NiftyLinkDataType::Pointer niftyLinkType = dynamic_cast<niftk::NiftyLinkDataType*>(data.GetPointer());
-  if (niftyLinkType.IsNull())
+  niftk::NiftyLinkDataType* niftyLinkType = dynamic_cast<niftk::NiftyLinkDataType*>(&data);
+  if (niftyLinkType == nullptr)
   {
     mitkThrow() << this->GetName().toStdString() << ": Received null data?!?";
   }
@@ -508,21 +507,21 @@ void NiftyLinkDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
   igtl::TrackingDataMessage* igtlTrackingData = dynamic_cast<igtl::TrackingDataMessage*>(igtlMessage.GetPointer());
   if (igtlTrackingData != NULL)
   {
-    this->SaveTrackingData(niftyLinkType, igtlTrackingData);
+    this->SaveTrackingData(*niftyLinkType, igtlTrackingData);
     return;
   }
 
   igtl::ImageMessage* igtlImageMessage = dynamic_cast<igtl::ImageMessage*>(igtlMessage.GetPointer());
   if (igtlImageMessage != NULL)
   {
-    this->SaveImage(niftyLinkType, igtlImageMessage);
+    this->SaveImage(*niftyLinkType, igtlImageMessage);
     return;
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dataType,
+void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType& dataType,
                                            igtl::ImageMessage* imageMessage)
 {
   if (imageMessage == NULL)
@@ -541,7 +540,7 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
   QDir directory(outputPath);
   if (directory.mkpath(outputPath))
   {
-    QString fileName = outputPath + QDir::separator() + tr("%1.nii").arg(dataType->GetTimeStampInNanoSeconds());
+    QString fileName = outputPath + QDir::separator() + tr("%1.nii").arg(dataType.GetTimeStampInNanoSeconds());
 
     int nx;
     int ny;
@@ -617,7 +616,7 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType::Pointer dat
 
 
 //-----------------------------------------------------------------------------
-void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType::Pointer dataType,
+void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType& dataType,
                                                   igtl::TrackingDataMessage* trackingMessage)
 {
   if (trackingMessage == NULL)
@@ -643,7 +642,7 @@ void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType::Poin
     QDir directory(toolPath);
     if (directory.mkpath(toolPath))
     {
-      QString fileName = toolPath + QDir::separator() + tr("%1.txt").arg(dataType->GetTimeStampInNanoSeconds());
+      QString fileName = toolPath + QDir::separator() + tr("%1.txt").arg(dataType.GetTimeStampInNanoSeconds());
 
       float matrix[4][4];
       elem->GetMatrix(matrix);
@@ -678,7 +677,7 @@ void NiftyLinkDataSourceService::SaveTrackingData(niftk::NiftyLinkDataType::Poin
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
+std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGIDataSourceI::IGITimeType& time)
 {
   std::vector<IGIDataItemInfo> infos;
 
@@ -692,7 +691,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
   // Early exit if no buffers, which means that
   // the source is created, but has not recorded any data yet.
 
-  if (m_Buffers.isEmpty())
+  if (m_Buffers.empty())
   {
     IGIDataItemInfo info;
     info.m_Name = this->GetName();
@@ -709,10 +708,10 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
     return infos;
   }
 
-  QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>::iterator iter;
+  std::map<std::string, std::unique_ptr<niftk::IGIDataSourceWaitingBuffer> >::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
   {
-    QString deviceName = iter.key();
+    std::string deviceName = (*iter).first;
 
     if (m_Buffers[deviceName]->GetBufferSize() == 0)
     {
@@ -724,18 +723,17 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
       continue;
     }
 
-    niftk::NiftyLinkDataType::Pointer dataType =
-      dynamic_cast<niftk::NiftyLinkDataType*>(m_Buffers[deviceName]->GetItem(time).GetPointer());
-
-    if (dataType.IsNull())
+    bool gotFromBuffer = m_Buffers[deviceName]->CopyOutItem(time, m_CachedDataType);
+    if (!gotFromBuffer)
     {
       MITK_DEBUG << "Failed to find data for time " << time
-                 << ", size=" << m_Buffers[deviceName]->GetBufferSize()
-                 << ", last=" << m_Buffers[deviceName]->GetLastTimeStamp() << std::endl;
+                 << ", size="  << m_Buffers[deviceName]->GetBufferSize()
+                 << ", first=" << m_Buffers[deviceName]->GetFirstTimeStamp()
+                 << ", last="  << m_Buffers[deviceName]->GetLastTimeStamp() << std::endl;
       continue;
     }
 
-    niftk::NiftyLinkMessageContainer::Pointer msgContainer = dataType->GetMessageContainer();
+    niftk::NiftyLinkMessageContainer::Pointer msgContainer = m_CachedDataType.GetMessageContainer();
     if (msgContainer.data() == NULL)
     {
       mitkThrow() << this->GetName().toStdString() << ":NiftyLinkDataType does not contain a NiftyLinkMessageContainer";
@@ -758,7 +756,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
     if (trackingMessage != NULL)
     {
       std::vector<IGIDataItemInfo> tmp =
-          this->ReceiveTrackingData(deviceName, time, dataType->GetTimeStampInNanoSeconds(), trackingMessage);
+          this->ReceiveTrackingData(deviceName, time, m_CachedDataType.GetTimeStampInNanoSeconds(), trackingMessage);
       this->AddAll(tmp, infos);
     }
 
@@ -766,7 +764,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
     if (imgMsg != NULL)
     {
       std::vector<IGIDataItemInfo> tmp =
-          this->ReceiveImage(deviceName, time, dataType->GetTimeStampInNanoSeconds(), imgMsg);
+          this->ReceiveImage(deviceName, time, m_CachedDataType.GetTimeStampInNanoSeconds(), imgMsg);
       this->AddAll(tmp, infos);
     }
   }
@@ -786,9 +784,9 @@ void NiftyLinkDataSourceService::AddAll(const std::vector<IGIDataItemInfo>& a, s
 
 //-----------------------------------------------------------------------------
 std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(
-    QString deviceName,
-    niftk::IGIDataType::IGITimeType timeRequested,
-    niftk::IGIDataType::IGITimeType actualTime,
+    std::string deviceName,
+    niftk::IGIDataSourceI::IGITimeType timeRequested,
+    niftk::IGIDataSourceI::IGITimeType actualTime,
     igtl::TrackingDataMessage* trackingMessage
     )
 {
@@ -868,15 +866,15 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveTrackingData(
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString deviceName,
-                                                                      niftk::IGIDataType::IGITimeType timeRequested,
-                                                                      niftk::IGIDataType::IGITimeType actualTime,
+std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(std::string deviceNameAsStdString,
+                                                                      niftk::IGIDataSourceI::IGITimeType timeRequested,
+                                                                      niftk::IGIDataSourceI::IGITimeType actualTime,
                                                                       igtl::ImageMessage* imgMsg)
 {
-
+  QString deviceName = QString::fromStdString(deviceNameAsStdString);
   std::vector<IGIDataItemInfo> infos;
   IGIDataItemInfo info;
-  info.m_Name = deviceName;
+  info.m_Name =
   info.m_FramesPerSecond = 0;
   info.m_IsLate = false;
   info.m_LagInMilliseconds = 0;
@@ -960,7 +958,7 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::ReceiveImage(QString de
 
   node->Modified();
 
-  infos[0].m_FramesPerSecond = m_Buffers[deviceName]->GetFrameRate();
+  infos[0].m_FramesPerSecond = m_Buffers[deviceNameAsStdString]->GetFrameRate();
   infos[0].m_IsLate = this->IsLate(timeRequested, actualTime);
   infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(timeRequested, actualTime);
   return infos;
@@ -1014,14 +1012,14 @@ void NiftyLinkDataSourceService::MessageReceived(niftk::NiftyLinkMessageContaine
   // Try to get the best time stamp available.
   // Remember: network clients could be rather
   // unreliable, or have incorrectly synched clock.
-  niftk::IGIDataType::IGITimeType localTime = this->GetTimeStampInNanoseconds();
+  niftk::IGIDataSourceI::IGITimeType localTime = this->GetTimeStampInNanoseconds();
   message->GetTimeCreated(m_MessageCreatedTimeStamp);
-  niftk::IGIDataType::IGITimeType timeCreated = m_MessageCreatedTimeStamp->GetTimeStampInNanoseconds();
-  niftk::IGIDataType::IGITimeType timeToUse = 0;
-  if (timeCreated > localTime  // if remote end is ahead, clock must be wrong.
-      || timeCreated == 0      // if not specified, time data is useless.
-      || timeCreated == std::numeric_limits<niftk::IGIDataType::IGITimeType>::min()
-      || timeCreated == std::numeric_limits<niftk::IGIDataType::IGITimeType>::max()
+  niftk::IGIDataSourceI::IGITimeType timeCreated = m_MessageCreatedTimeStamp->GetTimeStampInNanoseconds();
+  niftk::IGIDataSourceI::IGITimeType timeToUse = 0;
+  if (   timeCreated > localTime  // if remote end is ahead, clock must be wrong.
+      || timeCreated == 0         // if not specified, time data is useless.
+      || timeCreated == std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::min()
+      || timeCreated == std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::max()
       )
   {
     timeToUse = localTime;
@@ -1033,28 +1031,29 @@ void NiftyLinkDataSourceService::MessageReceived(niftk::NiftyLinkMessageContaine
 
   QString originator(igtlMessage->GetDeviceName());
 
-  niftk::NiftyLinkDataType::Pointer wrapper = niftk::NiftyLinkDataType::New();
-  wrapper->SetMessageContainer(message);
+  niftk::NiftyLinkDataType* niftyLinkDataType = new niftk::NiftyLinkDataType(message);
+
+  std::unique_ptr<niftk::IGIDataType> wrapper(niftyLinkDataType);
   wrapper->SetTimeStampInNanoSeconds(timeToUse);
   wrapper->SetFrameId(m_FrameId++);
   wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
   wrapper->SetShouldBeSaved(isRecording);
 
-  if (!m_Buffers.contains(originator))
+  if (m_Buffers.find(originator.toStdString()) == m_Buffers.end())
   {
     // So buffer requires a back-ground delete thread.
-    niftk::IGIWaitForSavedDataSourceBuffer::Pointer newBuffer
-        = niftk::IGIWaitForSavedDataSourceBuffer::New(120, this);
+    std::unique_ptr<niftk::IGIDataSourceWaitingBuffer> newBuffer(
+          new niftk::IGIDataSourceWaitingBuffer(120, this));
     newBuffer->SetLagInMilliseconds(m_Lag);
-    m_Buffers.insert(originator, newBuffer);
+    m_Buffers.insert(std::make_pair(originator.toStdString(), std::move(newBuffer)));
   }
 
   if (isRecording)
   {
     // Save synchronously, within this thread (triggered from Network).
-    if (wrapper->IsFastToSave())
+    if (niftyLinkDataType->IsFastToSave())
     {
-      this->SaveItem(wrapper.GetPointer());
+      this->SaveItem(*wrapper);
       wrapper->SetIsSaved(true); // clear down happens in another thread.
     }
     else
@@ -1067,7 +1066,7 @@ void NiftyLinkDataSourceService::MessageReceived(niftk::NiftyLinkMessageContaine
   // I'm adding this last, so that the isSaved field is correct at the point
   // the item enters the buffer. This means the background delete thread and background
   // save thread won't know about it until it enters the buffer here.
-  m_Buffers[originator]->AddToBuffer(wrapper.GetPointer());
+  m_Buffers[originator.toStdString()]->AddToBuffer(wrapper);
 
   this->SetStatus("Grabbing");
 }

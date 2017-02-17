@@ -27,9 +27,10 @@ set(CPP_FILES
   DataType/niftkIGITrackerDataType.cxx
   DataSource/niftkIGIDataSource.cxx
   DataSource/niftkIGIDataSourceLocker.cxx
+  DataSource/niftkIGIDataSourceBuffer.cxx
   DataSource/niftkIGIDataSourceRingBuffer.cxx
-  #DataSource/niftkIGIDataSourceBuffer.cxx
-  #DataSource/niftkIGIWaitForSavedDataSourceBuffer.cxx
+  DataSource/niftkIGIDataSourceLinearBuffer.cxx
+  DataSource/niftkIGIDataSourceWaitingBuffer.cxx
   DataSource/niftkSingleFrameDataSourceService.cxx
   DataSource/niftkQImageDataSourceService.cxx
   Threads/niftkIGITimerBasedThread.cxx

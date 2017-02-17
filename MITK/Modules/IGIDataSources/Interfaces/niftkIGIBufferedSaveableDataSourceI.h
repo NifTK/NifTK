@@ -29,7 +29,7 @@ class NIFTKIGIDATASOURCES_EXPORT IGIBufferedSaveableDataSourceI
 {
 public:
 
-  virtual void SaveItem(niftk::IGIDataType::Pointer item) = 0;
+  virtual void SaveItem(niftk::IGIDataType& item) = 0;
 
 protected:
 

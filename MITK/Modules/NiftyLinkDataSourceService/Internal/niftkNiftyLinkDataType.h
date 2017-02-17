@@ -30,32 +30,29 @@ class NiftyLinkDataType : public IGIDataType
 
 public:
 
-  mitkClassMacro(NiftyLinkDataType, IGIDataType)
-  itkNewMacro(NiftyLinkDataType)
-
-  virtual void* GetData() const override { return m_Message.data(); }
+  NiftyLinkDataType();
+  NiftyLinkDataType(niftk::NiftyLinkMessageContainer::Pointer message);
+  virtual ~NiftyLinkDataType();
 
   niftk::NiftyLinkMessageContainer::Pointer GetMessageContainer() const { return m_Message; }
-  void SetMessageContainer(niftk::NiftyLinkMessageContainer::Pointer message)
-  {
-    m_Message = message;
-    this->Modified();
-  }
+  void SetMessageContainer(niftk::NiftyLinkMessageContainer::Pointer p) { m_Message = p;}
 
   /**
-  * \brief Meaning, can we save to disk in under 40 ms?
+  * \brief Meaning, can we save to disk in under 40 ms (25fps).
   */
   bool IsFastToSave();
 
-protected:
-
-  NiftyLinkDataType(); // Purposefully hidden.
-  virtual ~NiftyLinkDataType(); // Purposefully hidden.
-
-  NiftyLinkDataType(const NiftyLinkDataType&); // Purposefully not implemented.
-  NiftyLinkDataType& operator=(const NiftyLinkDataType&); // Purposefully not implemented.
+  /**
+   * \brief Overrides base class, but only copies NiftyLinkDataType.
+   */
+  virtual void Clone(const IGIDataType&) override;
 
 private:
+
+  NiftyLinkDataType(const NiftyLinkDataType&);             // Copy constructor - deliberately not implemented yet
+  NiftyLinkDataType& operator=(const NiftyLinkDataType&);  // Copy assignment - deliberately not implemented yet
+  NiftyLinkDataType(NiftyLinkDataType&&);                  // Move constructor - deliberately not implemented yet
+  NiftyLinkDataType& operator=(NiftyLinkDataType&&);       // Move assignment - deliberately not implemented yet
 
   niftk::NiftyLinkMessageContainer::Pointer m_Message;
 

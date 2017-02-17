@@ -16,81 +16,41 @@
 #define niftkIGIDataSourceBuffer_h
 
 #include <niftkIGIDataSourcesExports.h>
+#include <niftkIGIDataSourceI.h>
 #include <niftkIGIDataType.h>
-
-#include <mitkCommon.h>
-
-#include <itkVersion.h>
-#include <itkObject.h>
-#include <itkObjectFactoryBase.h>
 #include <itkFastMutexLock.h>
 
-#include <set>
-#include <QString>
+#include <vector>
+#include <string>
 
 namespace niftk
 {
 
 /**
 * \class IGIDataSourceBuffer
-* \brief Manages a buffer of niftk::IGIDataType.
+* \brief Manages a ring buffer of niftk::IGIDataType,
+* assuming niftk::IGIDataType items are inserted in time order.
 *
-* Note: This class MUST be thread-safe.
+* Note: This class MUST be kept thread-safe.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceBuffer : public itk::Object
+class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceBuffer
 {
 public:
 
-  struct TimeStampComparator
-  {
-    bool operator()(const niftk::IGIDataType::Pointer& a, const niftk::IGIDataType::Pointer& b);
-  };
-
-  typedef std::set<niftk::IGIDataType::Pointer, TimeStampComparator> BufferType;
-
-  mitkClassMacroItkParent(IGIDataSourceBuffer, itk::Object)
-  mitkNewMacro1Param(IGIDataSourceBuffer, BufferType::size_type)
-
-  QString GetName() const;
-  void SetName(QString name);
+  IGIDataSourceBuffer();
+  virtual ~IGIDataSourceBuffer();
 
   /**
-  * \brief Returns true if the buffer already contains a
-  * data item with an exactly matching timestamp, false otherwise.
-  */
-  bool Contains(const niftk::IGIDataType::IGITimeType& time) const;
+   * \brief Return the name of the buffer, useful if we have a buffer for each tracked tool.
+   */
+  std::string GetName() const;
 
   /**
-  * \brief Adds an item to the buffer, which if the calling object deletes
-  * pointers, then the buffer is effectively the owner.
-  *
-  * This assumes the timestamp on the item is already correctly set.
-  */
-  void AddToBuffer(niftk::IGIDataType::Pointer item);
-
-  /**
-  * \brief Destroy all items in the buffer.
-  *
-  * If no items are in the buffer, this does nothing.
-  */
-  void DestroyBuffer();
-
-  /**
-  * \brief Clears down the buffer, leaving behind a minimum
-  * size buffer. The deletion policy can be overriden by sub-classes.
-  *
-  * This class simply has a minimum number of items specified in the
-  * constructor, so the CleanBuffer method will never reduce the buffer size
-  * to less than this amount.
-  */
-  virtual void CleanBuffer();
-
-  /**
-  * \brief Sets the lag in milliseconds.
-  */
-  void SetLagInMilliseconds(unsigned int milliseconds);
+   * \brief Set the name of the buffer, useful if we have a buffer for each tracked tool.
+   */
+  void SetName(const std::string& name);
 
   /**
   * \brief Retrieves the lag value in milliseconds.
@@ -98,21 +58,9 @@ public:
   unsigned int GetLagInMilliseconds() const;
 
   /**
-  * \brief Returns the number of items in the buffer.
+  * \brief Sets the lag in milliseconds.
   */
-  BufferType::size_type GetBufferSize() const;
-
-  /**
-  * \brief Returns the time stamp of the first item in the buffer.
-  * \throw mitk::Exception if the buffer is empty.
-  */
-  niftk::IGIDataType::IGITimeType GetFirstTimeStamp() const;
-
-  /**
-  * \brief Returns the time stamp of the last item in the buffer.
-  * \throw mitk::Exception if the buffer is empty.
-  */
-  niftk::IGIDataType::IGITimeType GetLastTimeStamp() const;
+  void SetLagInMilliseconds(unsigned int milliseconds);
 
   /**
   * \brief Returns the frame rate, in frames per second.
@@ -120,34 +68,69 @@ public:
   float GetFrameRate() const;
 
   /**
-  * \brief Gets the item from the buffer most closely before the specified time.
-  *
-  * If there are no items in the buffer, will return NULL.
-  * If the lag is specified, will ofset backwards in time and retrieve that item.
-  * If that item is not available, will also return NULL.
+   * \brief Called by clients to update frame rate, otherwise, its not updated.
+   */
+  void UpdateFrameRate();
+
+  /**
+  * \brief Returns the number of items in the buffer.
   */
-  niftk::IGIDataType::Pointer GetItem(const niftk::IGIDataType::IGITimeType& time) const;
+  virtual unsigned int GetBufferSize() const = 0;
+
+  /**
+  * \brief Clears down the buffer.
+  */
+  virtual void CleanBuffer() = 0;
+
+  /**
+  * \brief Returns true if the buffer already contains a
+  * data item with an exactly matching timestamp, false otherwise.
+  */
+  virtual bool Contains(const niftk::IGIDataSourceI::IGITimeType& time) const = 0;
+
+  /**
+  * \brief Adds to buffer.
+  *
+  * This assumes the timestamp on the item is already correctly set.
+  */
+  virtual void AddToBuffer(std::unique_ptr<niftk::IGIDataType>& item) = 0;
+
+  /**
+  * \brief Returns the time stamp of the first item in the buffer.
+  * \throw mitk::Exception if the buffer is empty.
+  */
+  virtual niftk::IGIDataSourceI::IGITimeType GetFirstTimeStamp() const = 0;
+
+  /**
+  * \brief Returns the time stamp of the last item in the buffer.
+  * \throw mitk::Exception if the buffer is empty.
+  */
+  virtual niftk::IGIDataSourceI::IGITimeType GetLastTimeStamp() const = 0;
+
+  /**
+  * \brief Copies out the item from the buffer most closely before the specified time.
+  *
+  * \param item the output
+  * \return true if item was updated, false otherwise
+  * If there are no items in the buffer, will not update item.
+  * If the lag is specified, will ofset backwards in time and retrieve that item.
+  * If that item is not available, will also not update item.
+  */
+  virtual bool CopyOutItem(const niftk::IGIDataSourceI::IGITimeType& time,
+                           niftk::IGIDataType& item) const = 0;
 
 protected:
 
-  IGIDataSourceBuffer(BufferType::size_type minSize); // Purposefully hidden.
-  virtual ~IGIDataSourceBuffer(); // Purposefully hidden.
-
-  IGIDataSourceBuffer(const IGIDataSourceBuffer&); // Purposefully not implemented.
   IGIDataSourceBuffer& operator=(const IGIDataSourceBuffer&); // Purposefully not implemented.
+  IGIDataSourceBuffer(const IGIDataSourceBuffer&); // Purposefully not implemented.
 
-  itk::FastMutexLock::Pointer     m_Mutex;
-  BufferType                      m_Buffer;
-  BufferType::iterator            m_BufferIterator;
-  BufferType::size_type           m_MinimumSize;
-  QString                         m_Name;
+  itk::FastMutexLock::Pointer        m_Mutex;
+  niftk::IGIDataSourceI::IGITimeType m_Lag; // stored in nanoseconds.
 
 private:
 
-  void UpdateFrameRate();
-
-  float                           m_FrameRate;
-  niftk::IGIDataType::IGITimeType m_Lag; // stored in nanoseconds.
+  float                              m_FrameRate;
+  std::string                        m_Name;
 
 };
 

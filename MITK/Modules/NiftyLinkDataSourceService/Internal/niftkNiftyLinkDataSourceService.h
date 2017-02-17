@@ -17,7 +17,7 @@
 #include "niftkNiftyLinkDataType.h"
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
-#include <niftkIGIWaitForSavedDataSourceBuffer.h>
+#include <niftkIGIDataSourceWaitingBuffer.h>
 #include <niftkIGICleanableDataSourceI.h>
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
 #include <niftkIGIBufferedSaveableDataSourceI.h>
@@ -77,13 +77,13 @@ public:
   /**
   * \see  IGIDataSourceI::StartPlayback()
   */
-  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                             niftk::IGIDataType::IGITimeType lastTimeStamp) override;
+  virtual void StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                             niftk::IGIDataSourceI::IGITimeType lastTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::PlaybackData()
   */
-  void PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp) override;
+  void PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::StopPlayback()
@@ -93,12 +93,12 @@ public:
   /**
   * \see IGIDataSourceI::Update()
   */
-  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
+  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time) override;
 
   /**
   * \see niftk::IGIDataSource::SaveItem()
   */
-  virtual void SaveItem(niftk::IGIDataType::Pointer item) override;
+  virtual void SaveItem(niftk::IGIDataType& item) override;
 
   /**
   * \see niftk::IGIDataSource::CleanBuffer()
@@ -113,8 +113,8 @@ public:
   /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
-  bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
+  bool ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                         niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore) override;
 
   /**
   * \brief IGIDataSourceI::SetProperties()
@@ -150,40 +150,43 @@ private:
   NiftyLinkDataSourceService(const NiftyLinkDataSourceService&); // deliberately not implemented
   NiftyLinkDataSourceService& operator=(const NiftyLinkDataSourceService&); // deliberately not implemented
 
-  std::vector<IGIDataItemInfo> ReceiveTrackingData(QString bufferName,
-                                                   niftk::IGIDataType::IGITimeType timeRequested,
-                                                   niftk::IGIDataType::IGITimeType actualTime,
+  std::vector<IGIDataItemInfo> ReceiveTrackingData(std::string bufferName,
+                                                   niftk::IGIDataSourceI::IGITimeType timeRequested,
+                                                   niftk::IGIDataSourceI::IGITimeType actualTime,
                                                    igtl::TrackingDataMessage*);
-  void SaveTrackingData(niftk::NiftyLinkDataType::Pointer, igtl::TrackingDataMessage*);
-  void LoadTrackingData(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames);
 
-  std::vector<IGIDataItemInfo> ReceiveImage(QString bufferName,
-                                            niftk::IGIDataType::IGITimeType timeRequested,
-                                            niftk::IGIDataType::IGITimeType actualTime,
+  void SaveTrackingData(niftk::NiftyLinkDataType&, igtl::TrackingDataMessage*);
+  void LoadTrackingData(const niftk::IGIDataSourceI::IGITimeType& actualTime, QStringList& listOfFileNames);
+
+  std::vector<IGIDataItemInfo> ReceiveImage(std::string bufferName,
+                                            niftk::IGIDataSourceI::IGITimeType timeRequested,
+                                            niftk::IGIDataSourceI::IGITimeType actualTime,
                                             igtl::ImageMessage*);
-  void SaveImage(niftk::NiftyLinkDataType::Pointer, igtl::ImageMessage*);
-  void LoadImage(const niftk::IGIDataType::IGITimeType& actualTime, QStringList& listOfFileNames);
+
+  void SaveImage(niftk::NiftyLinkDataType&, igtl::ImageMessage*);
+  void LoadImage(const niftk::IGIDataSourceI::IGITimeType& actualTime, QStringList& listOfFileNames);
 
   std::vector<IGIDataItemInfo> ReceiveString(igtl::StringMessage*);
 
   void AddAll(const std::vector<IGIDataItemInfo>& a, std::vector<IGIDataItemInfo>& b);
   QString GetDirectoryNamePart(const QString& fullPathName, int indexFromEnd);
 
-  QMutex                                                              m_Lock;
-  niftk::IGIDataType::IGIIndexType                                    m_FrameId;
-  niftk::IGIDataSourceBackgroundDeleteThread*                         m_BackgroundDeleteThread;
-  niftk::IGIDataSourceBackgroundSaveThread*                           m_BackgroundSaveThread;
-  int                                                                 m_Lag;
+  QMutex                                                                     m_Lock;
+  niftk::IGIDataSourceI::IGIIndexType                                        m_FrameId;
+  niftk::IGIDataSourceBackgroundDeleteThread*                                m_BackgroundDeleteThread;
+  niftk::IGIDataSourceBackgroundSaveThread*                                  m_BackgroundSaveThread;
+  int                                                                        m_Lag;
 
   // In contrast say to the OpenCV source, we store multiple playback indexes, key is device name.
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >           m_PlaybackIndex;
-  QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> > m_PlaybackFiles;
+  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >               m_PlaybackIndex;
+  QMap<QString, QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> >     m_PlaybackFiles;
 
   // In contrast say to the OpenCV source, we store multiple buffers, key is device name.
-  QMap<QString, niftk::IGIWaitForSavedDataSourceBuffer::Pointer>      m_Buffers;
+  std::map<std::string, std::unique_ptr<niftk::IGIDataSourceWaitingBuffer> > m_Buffers;
 
   // Make sure this is only used from the MessageReceived thread.
-  igtl::TimeStamp::Pointer                                            m_MessageCreatedTimeStamp;
+  igtl::TimeStamp::Pointer                                                   m_MessageCreatedTimeStamp;
+  niftk::NiftyLinkDataType                                                   m_CachedDataType;
 
 }; // end class
 

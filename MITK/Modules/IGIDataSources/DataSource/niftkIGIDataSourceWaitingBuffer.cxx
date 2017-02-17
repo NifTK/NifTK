@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkIGIWaitForSavedDataSourceBuffer.h"
+#include "niftkIGIDataSourceWaitingBuffer.h"
 
 #include <itkMutexLockHolder.h>
 
@@ -20,10 +20,10 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIWaitForSavedDataSourceBuffer::IGIWaitForSavedDataSourceBuffer(
-    BufferType::size_type minSize,
-    niftk::IGIBufferedSaveableDataSourceI* dataSource)
-: IGIDataSourceBuffer(minSize)
+IGIDataSourceWaitingBuffer::IGIDataSourceWaitingBuffer(
+  IGIDataSourceLinearBuffer::BufferType::size_type minSize,
+  niftk::IGIBufferedSaveableDataSourceI* dataSource)
+: IGIDataSourceLinearBuffer(minSize)
 , m_DataSource(dataSource)
 {
   if (m_DataSource == NULL)
@@ -34,13 +34,13 @@ IGIWaitForSavedDataSourceBuffer::IGIWaitForSavedDataSourceBuffer(
 
 
 //-----------------------------------------------------------------------------
-IGIWaitForSavedDataSourceBuffer::~IGIWaitForSavedDataSourceBuffer()
+IGIDataSourceWaitingBuffer::~IGIDataSourceWaitingBuffer()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIWaitForSavedDataSourceBuffer::CleanBuffer()
+void IGIDataSourceWaitingBuffer::CleanBuffer()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
@@ -56,8 +56,8 @@ void IGIWaitForSavedDataSourceBuffer::CleanBuffer()
           && counter < numberToDelete
           )
     {
-      niftk::IGIDataType::Pointer tmp = (*endIter);
-      if (tmp.IsNotNull())
+      niftk::IGIDataType* tmp = (*endIter).get();
+      if (tmp != nullptr)
       {
         if (tmp->GetShouldBeSaved() && !tmp->GetIsSaved())
         {
@@ -71,14 +71,13 @@ void IGIWaitForSavedDataSourceBuffer::CleanBuffer()
     if (counter > 1 && startIter != endIter)
     {
       m_Buffer.erase(startIter, endIter);
-      this->Modified();
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void IGIWaitForSavedDataSourceBuffer::SaveBuffer()
+void IGIDataSourceWaitingBuffer::SaveBuffer()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
@@ -93,11 +92,11 @@ void IGIWaitForSavedDataSourceBuffer::SaveBuffer()
           && counter < numberToSave
           )
     {
-      niftk::IGIDataType::Pointer tmp = (*iter);
+      niftk::IGIDataType* tmp = (*iter).get();
       if (tmp->GetShouldBeSaved())
       {
         // This should throw exception if it fails.
-        m_DataSource->SaveItem(tmp);
+        m_DataSource->SaveItem(*tmp);
         tmp->SetIsSaved(true);
       }
       ++iter;

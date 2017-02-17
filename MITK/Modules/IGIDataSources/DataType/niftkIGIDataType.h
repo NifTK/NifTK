@@ -62,8 +62,6 @@ public:
 
   virtual void Clone(const IGIDataType&);
 
-protected:
-
 private:
 
   niftk::IGIDataSourceI::IGITimeType  m_TimeStamp;

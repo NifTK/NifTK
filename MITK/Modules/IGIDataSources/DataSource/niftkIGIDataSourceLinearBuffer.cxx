@@ -12,34 +12,33 @@
 
 =============================================================================*/
 
-#include "niftkIGIDataSourceRingBuffer.h"
-#include <mitkExceptionMacro.h>
+#include "niftkIGIDataSourceLinearBuffer.h"
 #include <itkMutexLockHolder.h>
+#include <mitkExceptionMacro.h>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGIDataSourceRingBuffer::IGIDataSourceRingBuffer(BufferType::size_type numberOfItems)
-: m_FirstItem(-1)
-, m_LastItem(-1)
-, m_NumberOfItems(numberOfItems)
+IGIDataSourceLinearBuffer::IGIDataSourceLinearBuffer(BufferType::size_type minSize)
+: m_MinimumSize(minSize)
 {
-  if (m_NumberOfItems < 1)
+  if (minSize == 0)
   {
-    mitkThrow() << "Buffer size should be a number >= 1";
+    mitkThrow() << "Buffer size should be a number > 0";
   }
+  m_BufferIterator = m_Buffer.begin();
 }
 
 
 //-----------------------------------------------------------------------------
-IGIDataSourceRingBuffer::~IGIDataSourceRingBuffer()
+IGIDataSourceLinearBuffer::~IGIDataSourceLinearBuffer()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-unsigned int IGIDataSourceRingBuffer::GetBufferSize() const
+unsigned int IGIDataSourceLinearBuffer::GetBufferSize() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
@@ -48,18 +47,43 @@ unsigned int IGIDataSourceRingBuffer::GetBufferSize() const
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSourceRingBuffer::CleanBuffer()
+void IGIDataSourceLinearBuffer::DestroyBuffer()
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
   m_Buffer.clear();
-  m_FirstItem = -1;
-  m_LastItem = -1;
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIDataSourceRingBuffer::Contains(const niftk::IGIDataSourceI::IGITimeType& time) const
+void IGIDataSourceLinearBuffer::CleanBuffer()
+{
+  itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
+
+  if (m_Buffer.size() > m_MinimumSize)
+  {
+    BufferType::size_type numberToDelete =  m_Buffer.size() - m_MinimumSize;
+    BufferType::size_type counter = 0;
+
+    BufferType::iterator startIter = m_Buffer.begin();
+    BufferType::iterator endIter = m_Buffer.begin();
+
+    while(endIter != m_Buffer.end() && counter < numberToDelete)
+    {
+      ++endIter;
+      ++counter;
+    }
+
+    if (counter > 1 && startIter != endIter)
+    {
+      m_Buffer.erase(startIter, endIter);
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataSourceLinearBuffer::Contains(const niftk::IGIDataSourceI::IGITimeType& time) const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
@@ -80,58 +104,21 @@ bool IGIDataSourceRingBuffer::Contains(const niftk::IGIDataSourceI::IGITimeType&
     }
     ++iter;
   }
-
   return containsIt;
 }
 
 
 //-----------------------------------------------------------------------------
-int IGIDataSourceRingBuffer::GetNextIndex(const int& currentIndex) const
-{
-  int result = currentIndex + 1;
-  if (result == m_NumberOfItems || result >= m_Buffer.size())
-  {
-    result = 0;
-  }
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-int IGIDataSourceRingBuffer::GetPreviousIndex(const int& currentIndex) const
-{
-  int result = currentIndex - 1;
-  if (result == -1)
-  {
-    result = m_Buffer.size() -1;
-  }
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-void IGIDataSourceRingBuffer::AddToBuffer(std::unique_ptr<niftk::IGIDataType>& item)
+void IGIDataSourceLinearBuffer::AddToBuffer(std::unique_ptr<niftk::IGIDataType>& item)
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
-  if (m_Buffer.size() < m_NumberOfItems)
-  {
-    m_Buffer.emplace_back(std::move(item));
-    m_FirstItem = 0;
-    m_LastItem = m_Buffer.size() - 1;
-  }
-  else
-  {
-    int nextFrame = this->GetNextIndex(m_LastItem);
-    m_Buffer[nextFrame]->Clone(*item);
-    m_LastItem = nextFrame;
-    m_FirstItem = this->GetNextIndex(m_FirstItem);
-  }
+  m_Buffer.push_back(std::move(item));
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataSourceI::IGITimeType IGIDataSourceRingBuffer::GetFirstTimeStamp() const
+niftk::IGIDataSourceI::IGITimeType IGIDataSourceLinearBuffer::GetFirstTimeStamp() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
@@ -139,12 +126,13 @@ niftk::IGIDataSourceI::IGITimeType IGIDataSourceRingBuffer::GetFirstTimeStamp() 
   {
     mitkThrow() << "Empty Buffer, so can't get first time stamp";
   }
-  return m_Buffer[m_FirstItem]->GetTimeStampInNanoSeconds();
+
+  return (*m_Buffer.begin())->GetTimeStampInNanoSeconds();
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataSourceI::IGITimeType IGIDataSourceRingBuffer::GetLastTimeStamp() const
+niftk::IGIDataSourceI::IGITimeType IGIDataSourceLinearBuffer::GetLastTimeStamp() const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
@@ -152,13 +140,14 @@ niftk::IGIDataSourceI::IGITimeType IGIDataSourceRingBuffer::GetLastTimeStamp() c
   {
     mitkThrow() << "Empty Buffer, so can't get last time stamp";
   }
-  return m_Buffer[m_LastItem]->GetTimeStampInNanoSeconds();
+
+  return (*(--(m_Buffer.end())))->GetTimeStampInNanoSeconds();
 }
 
 
 //-----------------------------------------------------------------------------
-bool IGIDataSourceRingBuffer::CopyOutItem(const niftk::IGIDataSourceI::IGITimeType& time,
-                                          niftk::IGIDataType& item) const
+bool IGIDataSourceLinearBuffer::CopyOutItem(const niftk::IGIDataSourceI::IGITimeType& time,
+                                            niftk::IGIDataType& item) const
 {
   itk::MutexLockHolder<itk::FastMutexLock> lock(*m_Mutex);
 
@@ -177,40 +166,33 @@ bool IGIDataSourceRingBuffer::CopyOutItem(const niftk::IGIDataSourceI::IGITimeTy
 
   // If first item in buffer is later than requested time,
   // we don't have any data early enough, so abandon.
-  if (m_Buffer[m_FirstItem]->GetTimeStampInNanoSeconds() > effectiveTime)
+  if ((*(m_Buffer.begin()))->GetTimeStampInNanoSeconds() > effectiveTime)
   {
     return false;
   }
 
   // If first item in buffer is exactly equal to request time, just return
   // it without searching the buffer. This occurs during playback.
-  if (m_Buffer[m_FirstItem]->GetTimeStampInNanoSeconds() == effectiveTime)
+  if ((*(m_Buffer.begin()))->GetTimeStampInNanoSeconds() == effectiveTime)
   {
-    item.Clone(*(m_Buffer[m_FirstItem]));
+    item.Clone(*(*(m_Buffer.begin())));
     return true;
   }
 
-  int bufferIndex = m_FirstItem;
-  if (bufferIndex < 0)
+  BufferType::const_iterator iter = m_Buffer.begin();
+  while(iter != m_Buffer.end() && (*iter)->GetTimeStampInNanoSeconds() < effectiveTime)
   {
-    return false;
+    ++iter;
   }
 
-  while(bufferIndex != m_LastItem && m_Buffer[bufferIndex]->GetTimeStampInNanoSeconds() < effectiveTime)
+  if (iter != m_Buffer.end() && (*iter)->GetTimeStampInNanoSeconds() == effectiveTime)
   {
-    bufferIndex = this->GetNextIndex(bufferIndex);
-  }
-
-  if (bufferIndex != m_LastItem && m_Buffer[bufferIndex]->GetTimeStampInNanoSeconds() == effectiveTime)
-  {
-    item.Clone(*(m_Buffer[bufferIndex]));
+    item.Clone(*(*iter));
     return true;
   }
 
-  // Backtrack one step, as we just went past the closest one.
-  bufferIndex = this->GetPreviousIndex(bufferIndex);
-  item.Clone(*(m_Buffer[bufferIndex]));
-
+  --iter; // Backtrack one step, as we just went past the closest one.
+  item.Clone(*(*iter));
   return true;
 }
 

@@ -92,8 +92,8 @@ if(BUILD_NiftyIGI)
     QtAudioDataSourceService
     UltrasonixDataSourceService
     NDITrackerDataSourceService
-#    NiftyLinkDataSourceService
-#    NVidiaSDIDataSourceService
+    NiftyLinkDataSourceService
+    NVidiaSDIDataSourceService
     QtCameraVideoDataSourceService
     BKMedicalDataSourceService
     BlackMagicDataSourceService

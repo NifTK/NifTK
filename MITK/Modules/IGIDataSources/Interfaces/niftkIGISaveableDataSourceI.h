@@ -32,8 +32,8 @@ public:
 
 protected:
 
-  IGISaveableDataSourceI(); // Purposefully hidden.
-  virtual ~IGISaveableDataSourceI(); // Purposefully hidden.
+  IGISaveableDataSourceI() {} // Purposefully hidden.
+  virtual ~IGISaveableDataSourceI() {} // Purposefully hidden.
 
   IGISaveableDataSourceI(const IGISaveableDataSourceI&); // Purposefully not implemented.
   IGISaveableDataSourceI& operator=(const IGISaveableDataSourceI&); // Purposefully not implemented.

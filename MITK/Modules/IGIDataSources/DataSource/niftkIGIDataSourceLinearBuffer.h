@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkIGIDataSourceRingBuffer_h
-#define niftkIGIDataSourceRingBuffer_h
+#ifndef niftkIGIDataSourceLinearBuffer_h
+#define niftkIGIDataSourceLinearBuffer_h
 
 #include <niftkIGIDataSourcesExports.h>
 #include "niftkIGIDataSourceBuffer.h"
@@ -21,28 +21,28 @@
 #include <niftkIGIDataType.h>
 #include <itkFastMutexLock.h>
 
-#include <vector>
+#include <list>
 
 namespace niftk
 {
 
 /**
-* \class IGIDataSourceRingBuffer
-* \brief Manages a ring buffer of niftk::IGIDataType,
+* \class IGIDataSourceLinearBuffer
+* \brief Manages a buffer of niftk::IGIDataType,
 * assuming niftk::IGIDataType items are inserted in time order.
 *
-* Note: This class MUST be kept thread-safe.
+* Note: This class MUST be thread-safe.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
 */
-class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceRingBuffer : public IGIDataSourceBuffer
+class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceLinearBuffer : public IGIDataSourceBuffer
 {
 public:
 
-  typedef std::vector<std::unique_ptr<niftk::IGIDataType> > BufferType;
+  typedef std::list<std::unique_ptr<niftk::IGIDataType> > BufferType;
 
-  IGIDataSourceRingBuffer(BufferType::size_type numberOfItems);
-  virtual ~IGIDataSourceRingBuffer();
+  IGIDataSourceLinearBuffer(BufferType::size_type minSize);
+  virtual ~IGIDataSourceLinearBuffer();
 
   /**
   * \see IGIDataSourceBuffer::GetBufferSize();
@@ -50,7 +50,7 @@ public:
   virtual unsigned int GetBufferSize() const override;
 
   /**
-  * \see IGIDataSourceBuffer::CleanBuffer()
+  * \see IGIDataSourceBuffer::Contains()
   */
   virtual void CleanBuffer() override;
 
@@ -80,20 +80,29 @@ public:
   virtual bool CopyOutItem(const niftk::IGIDataSourceI::IGITimeType& time,
                            niftk::IGIDataType& item) const override;
 
+  /**
+  * \brief Destroy all items in the buffer.
+  *
+  * (clears it right down, regardless of minimum size.
+  */
+  void DestroyBuffer();
+
 protected:
 
-  IGIDataSourceRingBuffer& operator=(const IGIDataSourceRingBuffer&); // Purposefully not implemented.
-  IGIDataSourceRingBuffer(const IGIDataSourceRingBuffer&); // Purposefully not implemented.
+  IGIDataSourceLinearBuffer(const IGIDataSourceLinearBuffer&); // Purposefully not implemented.
+  IGIDataSourceLinearBuffer& operator=(const IGIDataSourceLinearBuffer&); // Purposefully not implemented.
 
-  BufferType            m_Buffer;
-  int                   m_FirstItem;
-  int                   m_LastItem;
-  BufferType::size_type m_NumberOfItems;
+  BufferType                         m_Buffer;
+  BufferType::iterator               m_BufferIterator;
+  BufferType::size_type              m_MinimumSize;
 
 private:
 
-  int GetNextIndex(const int& currentIndex) const;
-  int GetPreviousIndex(const int& currentIndex) const;
+  void UpdateFrameRate();
+
+  float                              m_FrameRate;
+  niftk::IGIDataSourceI::IGITimeType m_Lag; // stored in nanoseconds.
+
 };
 
 } // end namespace
