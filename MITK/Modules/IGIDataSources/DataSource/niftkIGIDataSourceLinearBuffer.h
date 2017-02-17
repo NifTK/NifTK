@@ -98,8 +98,6 @@ protected:
 
 private:
 
-  void UpdateFrameRate();
-
   float                              m_FrameRate;
   niftk::IGIDataSourceI::IGITimeType m_Lag; // stored in nanoseconds.
 

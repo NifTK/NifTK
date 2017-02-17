@@ -22,6 +22,8 @@ namespace niftk
 //-----------------------------------------------------------------------------
 IGIDataSourceLinearBuffer::IGIDataSourceLinearBuffer(BufferType::size_type minSize)
 : m_MinimumSize(minSize)
+, m_FrameRate(0)
+, m_Lag(0)
 {
   if (minSize == 0)
   {

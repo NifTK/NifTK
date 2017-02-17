@@ -387,6 +387,9 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
       continue;
     }
 
+    // Update frame rate:
+    m_Buffers[bufferName]->UpdateFrameRate();
+
     bool gotFromBuffer = m_Buffers[bufferName]->CopyOutItem(time, m_CachedDataType);
     if (!gotFromBuffer)
     {

@@ -61,8 +61,9 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
   // Lets assume for now:
   //   Vicra = 20 fps, Spectra, Aurora = faster.
   //   Ultrasonix = 20 fps, or faster.
-  // So, 20 fps = 50 ms.
-  this->SetTimeStampTolerance(50*1000000);
+  // So, 10 fps = 100 ms.
+  // Warn if 2 frames late.
+  this->SetTimeStampTolerance(2*100*1000000);
   this->SetProperties(properties);
   this->SetShouldUpdate(true);
 
@@ -722,6 +723,9 @@ std::vector<IGIDataItemInfo> NiftyLinkDataSourceService::Update(const niftk::IGI
     {
       continue;
     }
+
+    // Update frame rate:
+    m_Buffers[deviceName]->UpdateFrameRate();
 
     bool gotFromBuffer = m_Buffers[deviceName]->CopyOutItem(time, m_CachedDataType);
     if (!gotFromBuffer)
