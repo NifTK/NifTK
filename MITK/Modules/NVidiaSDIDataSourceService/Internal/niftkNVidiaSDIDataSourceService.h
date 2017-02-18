@@ -18,7 +18,7 @@
 #include <niftkIGIDataSourceLocker.h>
 #include <niftkIGILocalDataSourceI.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
-#include <niftkIGIDataSourceBuffer.h>
+#include <niftkIGIDataSourceLinearBuffer.h>
 #include <niftkIGICleanableDataSourceI.h>
 #include <niftkIGIDataSourceBackgroundDeleteThread.h>
 
@@ -27,6 +27,7 @@
 #include <QMutex>
 #include <QString>
 #include <cv.h>
+#include <memory>
 
 namespace niftk
 {
@@ -76,13 +77,13 @@ public:
   /**
   * \see  IGIDataSourceI::StartPlayback()
   */
-  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                             niftk::IGIDataType::IGITimeType lastTimeStamp) override;
+  virtual void StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                             niftk::IGIDataSourceI::IGITimeType lastTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::PlaybackData()
   */
-  void PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp) override;
+  void PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::StopPlayback()
@@ -92,13 +93,13 @@ public:
   /**
   * \see IGIDataSourceI::Update()
   */
-  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
+  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time) override;
 
   /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
-  bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
+  bool ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                         niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore) override;
 
   /**
   * \brief IGIDataSourceI::SetProperties()
@@ -142,37 +143,37 @@ private:
   NVidiaSDIDataSourceService(const NVidiaSDIDataSourceService&); // deliberately not implemented
   NVidiaSDIDataSourceService& operator=(const NVidiaSDIDataSourceService&); // deliberately not implemented
 
-  void SaveItem(niftk::IGIDataType::Pointer item);
+  void SaveItem(niftk::IGIDataType& item);
 
   /** For pattern required by base class */
-  static niftk::IGIDataSourceLocker               s_Lock;
-  QMutex                                          m_Lock;
-  int                                             m_ChannelNumber;
-  niftk::IGIDataType::IGIIndexType                m_FrameId;
-  niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
-  niftk::IGIDataSourceGrabbingThread*             m_DataGrabbingThread;
-  niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
+  static niftk::IGIDataSourceLocker                 s_Lock;
+  QMutex                                            m_Lock;
+  int                                               m_ChannelNumber;
+  niftk::IGIDataSourceI::IGIIndexType               m_FrameId;
+  niftk::IGIDataSourceLinearBuffer                  m_Buffer;
+  niftk::IGIDataSourceGrabbingThread*               m_DataGrabbingThread;
+  niftk::IGIDataSourceBackgroundDeleteThread*       m_BackgroundDeleteThread;
 
   /** From here down, importing Johannes's QmitkIGINVidiaDataSource */
 
   // holds internals to prevent header pollution
-  NVidiaSDIDataSourceImpl*                        m_Pimpl;
-  unsigned int                                    m_MostRecentSequenceNumber;
-  unsigned int                                    m_MipmapLevel;
+  NVidiaSDIDataSourceImpl*                          m_Pimpl;
+  unsigned int                                      m_MostRecentSequenceNumber;
+  unsigned int                                      m_MipmapLevel;
   
   // used to correlate clock, frame numbers and other events
-  std::ofstream                                   m_FrameMapLogFile;
+  std::ofstream                                     m_FrameMapLogFile;
 
   // used to detect whether record has stopped or not.
   // there's no notification when the user clicked stop-record.
-  bool                                            m_WasSavingMessagesPreviously;
+  bool                                              m_WasSavingMessagesPreviously;
 
   // because the sdi thread is running separately to the data-source-interface
   // we can end up in a situation where sdi bits get recreated with new sequence numbers
   // but these parts here still expect the old sdi instance.
-  unsigned int                                    m_ExpectedCookie;
-  static const char*                              s_NODE_NAME;
-
+  unsigned int                                      m_ExpectedCookie;
+  static const char*                                s_NODE_NAME;
+    
   // Nested private type
   struct PlaybackPerFrameInfo
   {
@@ -181,16 +182,16 @@ private:
     unsigned int m_frameNumber[4];
     PlaybackPerFrameInfo();
   };
-  std::map<niftk::IGIDataType::IGITimeType, 
-    PlaybackPerFrameInfo>                         m_PlaybackIndex;
+  std::map<niftk::IGIDataSourceI::IGITimeType, 
+    PlaybackPerFrameInfo>                           m_PlaybackIndex;
 
   // used to prevent replaying the same thing over and over again.
   // because decompression in its current implementation is quite heavy-weight,
   // the repeated calls to PlaybackData() and similarly Update() slow down the machine
   // quite significantly.
-  niftk::IGIDataType::IGITimeType                 m_MostRecentlyPlayedbackTimeStamp;
-  niftk::IGIDataType::IGITimeType                 m_MostRecentlyUpdatedTimeStamp;
-  std::pair<IplImage*, int>                       m_CachedUpdate;
+  niftk::IGIDataSourceI::IGITimeType                m_MostRecentlyPlayedbackTimeStamp;
+  niftk::IGIDataSourceI::IGITimeType                m_MostRecentlyUpdatedTimeStamp;
+  std::pair<IplImage*, int>                         m_CachedUpdate;
 
 private:
 
@@ -214,10 +215,10 @@ private:
   bool IsCapturing();
 
   bool InitWithRecordedData(
-    std::map<niftk::IGIDataType::IGITimeType, PlaybackPerFrameInfo>& index, 
+    std::map<niftk::IGIDataSourceI::IGITimeType, PlaybackPerFrameInfo>& index, 
     const std::string& path, 
-    niftk::IGIDataType::IGITimeType* firstTimeStampInStore, 
-    niftk::IGIDataType::IGITimeType* lastTimeStampInStore, 
+    niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore, 
+    niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore, 
     bool forReal);
 
 }; // end class

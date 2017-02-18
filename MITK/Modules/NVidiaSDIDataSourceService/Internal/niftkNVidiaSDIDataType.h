@@ -28,22 +28,19 @@ class NVidiaSDIDataType : public IGIDataType
 {
 public:
 
-  //typedef unsigned __int64 NVidiaSDITimeType;
   typedef unsigned long long NVidiaSDITimeType;
 
-  mitkClassMacro(NVidiaSDIDataType, IGIDataType)
-  mitkNewMacro3Param(NVidiaSDIDataType, unsigned int, unsigned int, NVidiaSDITimeType)
+  virtual ~NVidiaSDIDataType();
+  NVidiaSDIDataType(unsigned int, unsigned int, NVidiaSDITimeType);
+  NVidiaSDIDataType(const NVidiaSDIDataType&);
+  NVidiaSDIDataType(const NVidiaSDIDataType&&);
+  NVidiaSDIDataType& operator=(const NVidiaSDIDataType&);
+  NVidiaSDIDataType& operator=(const NVidiaSDIDataType&&);
 
   unsigned int GetSequenceNumber() const;
   unsigned int GetCookie() const;
 
-protected:
-
-  NVidiaSDIDataType(unsigned int, unsigned int, NVidiaSDITimeType); // Purposefully hidden.
-  virtual ~NVidiaSDIDataType(); // Purposefully hidden.
-
-  NVidiaSDIDataType(const NVidiaSDIDataType&); // Purposefully not implemented.
-  NVidiaSDIDataType& operator=(const NVidiaSDIDataType&); // Purposefully not implemented.
+  virtual void Clone(const IGIDataType&) override;
 
 private:
 
