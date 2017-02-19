@@ -1033,6 +1033,7 @@ void SideViewerWidget::SetGeometry(const itk::EventObject& event)
   if (timeGeometry != m_TimeGeometry)
   {
     m_Viewer->SetTimeGeometry(timeGeometry);
+    m_VisibilityTracker->SetTrackedRenderer(m_MainWindow->GetRenderer());
 
     if (!m_TimeGeometry)
     {
