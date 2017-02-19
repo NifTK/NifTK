@@ -320,77 +320,77 @@ void SideViewerWidget::SetFocused()
 
 void SideViewerWidget::SetupUi(QWidget *parent)
 {
-    QVBoxLayout* verticalLayout = new QVBoxLayout(parent);
-    verticalLayout->setSpacing(3);
-    verticalLayout->setContentsMargins(0, 0, 0, 0);
-    m_Viewer = new SingleViewerWidget(parent, m_RenderingManager, "side viewer");
+  QVBoxLayout* verticalLayout = new QVBoxLayout(parent);
+  verticalLayout->setSpacing(3);
+  verticalLayout->setContentsMargins(0, 0, 0, 0);
+  m_Viewer = new SingleViewerWidget(parent, m_RenderingManager, "side viewer");
 
-    verticalLayout->addWidget(m_Viewer);
+  verticalLayout->addWidget(m_Viewer);
 
-    m_ControlsWidget = new QWidget(parent);
-    QHBoxLayout* horizontalLayout_2 = new QHBoxLayout(m_ControlsWidget);
-    horizontalLayout_2->setSpacing(0);
-    horizontalLayout_2->setContentsMargins(3, 0, 0, 3);
-    m_LayoutWidget = new QWidget(m_ControlsWidget);
-    QHBoxLayout* horizontalLayout = new QHBoxLayout(m_LayoutWidget);
-    horizontalLayout->setSpacing(0);
-    horizontalLayout->setContentsMargins(0, 0, 0, 0);
+  m_ControlsWidget = new QWidget(parent);
+  QHBoxLayout* horizontalLayout_2 = new QHBoxLayout(m_ControlsWidget);
+  horizontalLayout_2->setSpacing(0);
+  horizontalLayout_2->setContentsMargins(3, 0, 0, 3);
+  m_LayoutWidget = new QWidget(m_ControlsWidget);
+  QHBoxLayout* horizontalLayout = new QHBoxLayout(m_LayoutWidget);
+  horizontalLayout->setSpacing(0);
+  horizontalLayout->setContentsMargins(0, 0, 0, 0);
 
-    m_AxialWindowRadioButton = new QRadioButton(m_LayoutWidget);
-    m_AxialWindowRadioButton->setText("ax");
+  m_AxialWindowRadioButton = new QRadioButton(m_LayoutWidget);
+  m_AxialWindowRadioButton->setText("ax");
 
-    horizontalLayout->addWidget(m_AxialWindowRadioButton);
+  horizontalLayout->addWidget(m_AxialWindowRadioButton);
 
-    m_SagittalWindowRadioButton = new QRadioButton(m_LayoutWidget);
-    m_SagittalWindowRadioButton->setText("sag");
+  m_SagittalWindowRadioButton = new QRadioButton(m_LayoutWidget);
+  m_SagittalWindowRadioButton->setText("sag");
 
-    horizontalLayout->addWidget(m_SagittalWindowRadioButton);
-    m_CoronalWindowRadioButton = new QRadioButton(m_LayoutWidget);
-    m_CoronalWindowRadioButton->setText("cor");
+  horizontalLayout->addWidget(m_SagittalWindowRadioButton);
+  m_CoronalWindowRadioButton = new QRadioButton(m_LayoutWidget);
+  m_CoronalWindowRadioButton->setText("cor");
 
-    horizontalLayout->addWidget(m_CoronalWindowRadioButton);
+  horizontalLayout->addWidget(m_CoronalWindowRadioButton);
 
-    m_MultiWindowRadioButton = new QRadioButton(m_LayoutWidget);
+  m_MultiWindowRadioButton = new QRadioButton(m_LayoutWidget);
 
-    horizontalLayout->addWidget(m_MultiWindowRadioButton);
+  horizontalLayout->addWidget(m_MultiWindowRadioButton);
 
-    m_MultiWindowComboBox = new QComboBox(m_LayoutWidget);
-    m_MultiWindowComboBox->addItem("2H");
-    m_MultiWindowComboBox->addItem("2V");
-    m_MultiWindowComboBox->setMaximumSize(QSize(52, 16777215));
+  m_MultiWindowComboBox = new QComboBox(m_LayoutWidget);
+  m_MultiWindowComboBox->addItem("2H");
+  m_MultiWindowComboBox->addItem("2V");
+  m_MultiWindowComboBox->setMaximumSize(QSize(52, 16777215));
 
-    horizontalLayout->addWidget(m_MultiWindowComboBox);
+  horizontalLayout->addWidget(m_MultiWindowComboBox);
 
-    horizontalLayout_2->addWidget(m_LayoutWidget);
+  horizontalLayout_2->addWidget(m_LayoutWidget);
 
-    m_SliceLabel = new QLabel(m_ControlsWidget);
-    m_SliceLabel->setText("slice:");
+  m_SliceLabel = new QLabel(m_ControlsWidget);
+  m_SliceLabel->setText("slice:");
 
-    horizontalLayout_2->addWidget(m_SliceLabel);
+  horizontalLayout_2->addWidget(m_SliceLabel);
 
-    m_SliceSpinBox = new QSpinBox(m_ControlsWidget);
-    m_SliceSpinBox->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
-    m_SliceSpinBox->setMaximum(999);
+  m_SliceSpinBox = new QSpinBox(m_ControlsWidget);
+  m_SliceSpinBox->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+  m_SliceSpinBox->setMaximum(999);
 
-    horizontalLayout_2->addWidget(m_SliceSpinBox);
+  horizontalLayout_2->addWidget(m_SliceSpinBox);
 
-    m_MagnificationLabel = new QLabel(m_ControlsWidget);
-    m_MagnificationLabel->setText("magn.:");
+  m_MagnificationLabel = new QLabel(m_ControlsWidget);
+  m_MagnificationLabel->setText("magn.:");
 
-    horizontalLayout_2->addWidget(m_MagnificationLabel);
+  horizontalLayout_2->addWidget(m_MagnificationLabel);
 
-    m_MagnificationSpinBox = new QDoubleSpinBox(m_ControlsWidget);
-    m_MagnificationSpinBox->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+  m_MagnificationSpinBox = new QDoubleSpinBox(m_ControlsWidget);
+  m_MagnificationSpinBox->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
-    horizontalLayout_2->addWidget(m_MagnificationSpinBox);
+  horizontalLayout_2->addWidget(m_MagnificationSpinBox);
 
-    QSpacerItem* horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+  QSpacerItem* horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-    horizontalLayout_2->addItem(horizontalSpacer);
+  horizontalLayout_2->addItem(horizontalSpacer);
 
-    verticalLayout->addWidget(m_ControlsWidget);
+  verticalLayout->addWidget(m_ControlsWidget);
 
-    verticalLayout->setStretch(0, 1);
+  verticalLayout->setStretch(0, 1);
 }
 
 //-----------------------------------------------------------------------------
