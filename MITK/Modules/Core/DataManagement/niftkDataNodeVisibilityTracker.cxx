@@ -58,18 +58,14 @@ void DataNodeVisibilityTracker::SetTrackedRenderer(const mitk::BaseRenderer* tra
     bool visibility = false;
     if (m_TrackedRenderer && !this->IsIgnored(node) && !node->GetProperty("renderer"))
     {
-      /// TODO
-      /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
-      visibility = node->IsVisible(const_cast<mitk::BaseRenderer*>(m_TrackedRenderer));
+      visibility = node->IsVisible(m_TrackedRenderer);
     }
 
     for (std::size_t i = 0; i < m_ManagedRenderers.size(); ++i)
     {
       if (!this->IsIgnored(node) && !node->GetProperty("renderer"))
       {
-        /// TODO
-        /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
-        node->SetBoolProperty("visible", visibility, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
+        node->SetBoolProperty("visible", visibility, m_ManagedRenderers[i]);
       }
     }
   }
@@ -127,9 +123,7 @@ void DataNodeVisibilityTracker::OnNodeAdded(mitk::DataNode* node)
   bool visibility = false;
   if (m_TrackedRenderer && !this->IsIgnored(node) && !node->GetProperty("renderer"))
   {
-    /// TODO
-    /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
-    visibility = node->IsVisible(const_cast<mitk::BaseRenderer*>(m_TrackedRenderer));
+    visibility = node->IsVisible(m_TrackedRenderer);
   }
 
   for (unsigned int i = 0; i < m_ManagedRenderers.size(); i++)
@@ -142,9 +136,7 @@ void DataNodeVisibilityTracker::OnNodeAdded(mitk::DataNode* node)
     /// visibility as in the tracked renderer. Otherwise, we leave it as it is.
     if (rendererSpecificProperty == globalProperty)
     {
-      /// TODO
-      /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
-      node->SetBoolProperty("visible", visibility, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
+      node->SetBoolProperty("visible", visibility, m_ManagedRenderers[i]);
     }
   }
 
@@ -179,9 +171,7 @@ void DataNodeVisibilityTracker::OnPropertyChanged(mitk::DataNode* node, const mi
   bool foundGlobalVisible = node->GetBoolProperty("visible", globalVisible);
 
   bool trackedWindowVisible = false;
-  /// TODO
-  /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
-  bool foundTrackedWindowVisible = node->GetBoolProperty("visible", trackedWindowVisible, const_cast<mitk::BaseRenderer*>(m_TrackedRenderer));
+  bool foundTrackedWindowVisible = node->GetBoolProperty("visible", trackedWindowVisible, m_TrackedRenderer);
 
   // We default to ON.
   bool finalVisibility = true;
@@ -197,9 +187,7 @@ void DataNodeVisibilityTracker::OnPropertyChanged(mitk::DataNode* node, const mi
   // Set the final visibility flag
   for (std::size_t i = 0; i < m_ManagedRenderers.size(); ++i)
   {
-    /// TODO
-    /// The const_cast is needed because of the MITK bug 17778. It should be removed after the bug is fixed.
-    node->SetBoolProperty("visible", finalVisibility, const_cast<mitk::BaseRenderer*>(m_ManagedRenderers[i]));
+    node->SetBoolProperty("visible", finalVisibility, m_ManagedRenderers[i]);
   }
 }
 
