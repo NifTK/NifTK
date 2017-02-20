@@ -25,6 +25,10 @@ set(NIFTK_NIFTYMIDAS_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyM
 #
 # i.e. they are assumed to be well tested/safe.
 # So, turn them OFF if you DON'T want them in your app.
+#
+# The 'org_mitk_gui_qt_common_legacy' plugin depends on 'org_mitk_gui_qt_stdmultiwidgeteditor'
+# and needs therefore to be disabled, together with all the plugins that depend on it, like
+# 'basicimageprocessing' or 'moviemaker'.
 ###########################################################
 set(_exclude_plugins
   org_mitk_gui_qt_aicpregistration
@@ -36,6 +40,7 @@ set(_exclude_plugins
   org_mitk_gui_qt_segmentation
   org_mitk_gui_qt_stdmultiwidgeteditor
   org_mitk_gui_qt_volumevisualization
+  org_mitk_gui_qt_basicimageprocessing
 )
 
 ###########################################################
