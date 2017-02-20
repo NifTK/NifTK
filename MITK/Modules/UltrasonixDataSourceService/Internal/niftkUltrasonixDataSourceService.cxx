@@ -109,21 +109,9 @@ bool UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, 
     {
       // This should set the alpha channel to 1, leaving other pixels (RGB) unchanged.
       // use with QImage::Format_ARGB32
-      // ((unsigned int*)m_Buffer)[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000;
-
-      // Or do it this way, and we are outputing QImage::Format_RGB888
-      readFrom++;
-      *writeTo = *readFrom;
-      writeTo++;
-      readFrom++;
-      *writeTo = *readFrom;
-      writeTo++;
-      readFrom++;
-      *writeTo = *readFrom;
-      writeTo++;
-      readFrom++;
+      ((unsigned int*)m_Buffer)[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000;
     }
-    QImage image(m_Buffer, desc.w, desc.h, QImage::Format_RGB888);
+    QImage image(m_Buffer, desc.w, desc.h, QImage::Format_ARGB32);
     m_Service->ProcessImage(image);
   }
   else if (desc.ss == 8)
