@@ -343,8 +343,8 @@ void TestCreateVideoWriter ()
     //check it isn't empty.
     MITK_TEST_CONDITION ( ! niftk::FileIsEmpty (outfile),
         "Testing that " << outfile << " is not empty: filesize = " << niftk::FileSize(outfile) );
-    MITK_TEST_CONDITION ( niftk::FileSize (outfile) >= 37860,
-        "Testing that " << outfile << " filesize = 37860 : actual size = " << niftk::FileSize(outfile) );
+    MITK_TEST_CONDITION ( niftk::FileSize (outfile) >= 33232,
+        "Testing that " << outfile << " filesize >= 33232 : actual size = " << niftk::FileSize(outfile) );
   }
   niftk::FileDelete ( outfile );
 
@@ -364,7 +364,7 @@ void TestCreateVideoWriter ()
     MITK_TEST_CONDITION ( ! niftk::FileIsEmpty (outfile),
       "Testing that " << outfile << " is not empty: filesize = " << niftk::FileSize(outfile));
     MITK_TEST_CONDITION ( niftk::FileSize (outfile) >= 171732,
-      "Testing that " << outfile << " filesize = 171732 : actual size = " << niftk::FileSize(outfile) );
+      "Testing that " << outfile << " filesize >= 171732 : actual size = " << niftk::FileSize(outfile) );
     niftk::FileDelete ( outfile );
   }
 }
