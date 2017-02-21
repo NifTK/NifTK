@@ -13,7 +13,7 @@
 #============================================================================*/
 
 set(CPP_FILES
-  USRecon/niftkUSReconstructor.cxx
+  niftkUltrasoundProcessing.cxx
 )
 
 

@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>626</width>
+    <height>373</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
@@ -37,44 +37,93 @@
       <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_TrackingComboBox"/>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="m_GrabSingleFrameLabel">
-       <property name="text">
-        <string>grab single frame:</string>
+      <layout class="QHBoxLayout" name="m_HorizontalLayout3">
+       <property name="spacing">
+        <number>0</number>
        </property>
-      </widget>
+       <item>
+        <widget class="QLabel" name="m_NumberOfFramesLabel">
+         <property name="text">
+          <string>number of frames:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="m_NumberOfFramesValueLabel">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="2" column="1">
-      <widget class="QPushButton" name="m_GrabSingleFramePushButton">
-       <property name="text">
-        <string>grab</string>
+      <layout class="QHBoxLayout" name="m_HorizontalLayout2">
+       <property name="spacing">
+        <number>0</number>
        </property>
-      </widget>
+       <item>
+        <widget class="QPushButton" name="m_GrabSingleFramePushButton">
+         <property name="text">
+          <string>grab</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_ClearDataPushButton">
+         <property name="text">
+          <string>clear</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="m_ReconstructVolumeLabel">
+      <widget class="QLabel" name="m_CalibrationLabel">
        <property name="text">
-        <string>reconstruct volume:</string>
+        <string>calibration:</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <widget class="QPushButton" name="m_ReconstructVolumePushButton">
-       <property name="text">
-        <string>reconstruct</string>
+      <layout class="QHBoxLayout" name="m_HorizontalLayout1">
+       <property name="spacing">
+        <number>0</number>
        </property>
-      </widget>
+       <item>
+        <widget class="QPushButton" name="m_CalibrationLoadPushButton">
+         <property name="text">
+          <string>load</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="m_CalibrationRunPushButton">
+         <property name="text">
+          <string>calibrate</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item row="4" column="0">
-      <widget class="QLabel" name="m_ClearDataLabel">
+      <widget class="QLabel" name="m_SaveMatchedDataLabel">
        <property name="text">
-        <string>clear collected data:</string>
+        <string>save paired data:</string>
        </property>
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QPushButton" name="m_ClearDataPushButton">
+      <widget class="QPushButton" name="m_SaveMatchedDataPushButton">
        <property name="text">
-        <string>clear</string>
+        <string>save</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QPushButton" name="m_ReconstructVolumePushButton">
+       <property name="text">
+        <string>reconstruct</string>
        </property>
       </widget>
      </item>

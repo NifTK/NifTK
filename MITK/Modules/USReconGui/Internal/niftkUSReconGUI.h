@@ -37,6 +37,7 @@ public:
 
   void SetDataStorage(mitk::DataStorage* storage);
   void SetEnableButtons(bool isEnabled);
+  void SetNumberOfFramesLabel(int);
   mitk::DataNode::Pointer GetImageNode() const;
   mitk::DataNode::Pointer GetTrackingNode() const;
 
@@ -45,8 +46,11 @@ signals:
   void OnImageSelectionChanged(const mitk::DataNode*);
   void OnTrackingSelectionChanged(const mitk::DataNode*);
   void OnGrabPressed();
-  void OnReconstructPressed();
   void OnClearDataPressed();
+  void OnSaveDataPressed();
+  void OnLoadCalibrationPressed();
+  void OnCalibratePressed();
+  void OnReconstructPressed();
 
 private:
 

@@ -126,13 +126,6 @@ void UltrasoundReconstructionView::RetrievePreferenceValues()
       = (prefService->GetSystemPreferences()->Node(VIEW_ID))
         .Cast<berry::IBerryPreferences>();
   assert( prefs );
-
-  QString outputDirName = prefs->Get(UltrasoundReconstructionPreferencePage::OUTPUT_DIR_NODE_NAME, "");
-  m_USReconController->SetOutputDirName(outputDirName);
-
-  // ToDo: Make prefs out of these options.
-  m_USReconController->SetDumpEachFrameWhileRecording(false);
-  m_USReconController->SetDumpEachReconstructedVolume(false);
 }
 
 

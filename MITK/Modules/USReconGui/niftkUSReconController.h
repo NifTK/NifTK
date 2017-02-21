@@ -42,12 +42,6 @@ public:
   /// This function has to be called from the CreateQtPartControl function of the view.
   virtual void SetupGUI(QWidget* parent) override;
 
-  /// \brief Sets the output directory name.
-  ///
-  /// When button/footswitch is pressed, we take copies of
-  /// the image and tracking data, and write to this directory.
-  void SetOutputDirName(const QString& outputDir);
-
   /// \brief We pass in the recording dir, so we can dump images to the same folder.
   void SetRecordingStarted(const QString& recordingDir);
 
@@ -58,16 +52,16 @@ public:
   /// So, the rate at which we dump images is controlled by screen rate.
   void Update();
 
-  void SetDumpEachFrameWhileRecording(bool doIt);
-  void SetDumpEachReconstructedVolume(bool doIt);
-
 public slots:
 
   void OnImageSelectionChanged(const mitk::DataNode*);
   void OnTrackingSelectionChanged(const mitk::DataNode*);
   void OnGrabPressed();
-  void OnReconstructPressed();
   void OnClearDataPressed();
+  void OnSaveDataPressed();
+  void OnLoadCalibrationPressed();
+  void OnCalibratePressed();
+  void OnReconstructPressed();
 
 protected:
 
@@ -86,8 +80,6 @@ private:
   Q_DECLARE_PRIVATE(USReconController);
 
   void CaptureImages();
-  void SaveImages(const QString& dirName);
-
   void DoReconstruction();
   void DoReconstructionInBackground();
 };

@@ -13,7 +13,6 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  INCLUDE_DIRS USRecon
   DEPENDS niftkOpenCVImageConversion
   PACKAGE_DEPENDS OpenCV
 )

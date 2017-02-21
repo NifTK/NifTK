@@ -33,11 +33,6 @@ class UltrasoundReconstructionPreferencePage : public QObject, public berry::IQt
 
 public:
 
-  /**
-   * \brief Stores the name of the preference node that contains the name of the output directory.
-   */
-  static const QString OUTPUT_DIR_NODE_NAME;
-
   UltrasoundReconstructionPreferencePage();
   UltrasoundReconstructionPreferencePage(const UltrasoundReconstructionPreferencePage& other);
   ~UltrasoundReconstructionPreferencePage();
@@ -67,9 +62,8 @@ protected slots:
 
 protected:
 
-  QWidget*            m_MainControl;
-  ctkDirectoryButton* m_OutputDirName;
-  bool                m_Initializing;
+  QWidget* m_MainControl;
+  bool     m_Initializing;
 
   berry::IPreferences::Pointer m_UltrasoundReconstructionPreferencesNode;
 };
