@@ -70,6 +70,16 @@ public:
 
   void ProcessImage(const QImage& image);
 
+    /**
+  * \brief IGIDataSourceI::SetProperties()
+  */
+  virtual void SetProperties(const IGIDataSourceProperties& properties) override;
+
+  /**
+  * \brief IGIDataSourceI::GetProperties()
+  */
+  virtual IGIDataSourceProperties GetProperties() const override;
+
 protected:
 
   UltrasonixDataSourceService(QString factoryName,

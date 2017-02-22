@@ -13,8 +13,19 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Internal/niftkUltrasonixConfigDialog.cxx
   Internal/niftkUltrasonixDataSourceFactory.cxx
   Internal/niftkUltrasonixDataSourceActivator.cxx
   Internal/niftkUltrasonixDataSourceService.cxx
 )
 
+set(MOC_H_FILES
+  Internal/niftkUltrasonixConfigDialog.h
+)
+
+set(UI_FILES
+  Internal/niftkUltrasonixConfigDialog.ui
+  )
+
+set(QRC_FILES
+)

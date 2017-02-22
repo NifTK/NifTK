@@ -175,7 +175,7 @@ void UltrasonixDataSourceInterface::Connect(const QString& host)
   {
     m_Ulterius->toggleFreeze();
   }
-  m_Ulterius->setDataToAcquire(udtBPost32);
+  m_Ulterius->setDataToAcquire(udtBPost);
 }
 
 
@@ -270,5 +270,23 @@ std::unique_ptr<niftk::IGIDataType> UltrasonixDataSourceService::GrabImage()
   std::unique_ptr<niftk::IGIDataType> result(wrapper);
   return result;
 }
+
+//-----------------------------------------------------------------------------
+void UltrasonixDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
+{
+  niftk::SingleFrameDataSourceService::SetProperties(properties);
+
+
+}
+
+
+//-----------------------------------------------------------------------------
+IGIDataSourceProperties UltrasonixDataSourceService::GetProperties() const
+{
+  IGIDataSourceProperties props = niftk::SingleFrameDataSourceService::GetProperties();
+
+  return props;
+}
+
 
 } // end namespace
