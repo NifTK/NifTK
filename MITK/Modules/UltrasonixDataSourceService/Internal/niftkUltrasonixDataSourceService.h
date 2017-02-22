@@ -39,6 +39,8 @@ public:
   bool IsConnected() const;
   bool ProcessBuffer(void *data, int type, int sz, bool cine, int frmnum);
   bool ProcessParameterChange(void* paramID, int x, int y);
+  QVariant GetUDataMask() const;
+  void SetUDataMask(QVariant value);
 
 private:
   UltrasonixDataSourceInterface(UltrasonixDataSourceService* serviceObj);
@@ -47,6 +49,7 @@ private:
   UltrasonixDataSourceService*          m_Service;
   unsigned char*                        m_Buffer;
   QVector<QRgb>                         m_DefaultLUT;
+  QVariant                              m_UDataMask;
 
   static bool NewDataCallBack(void *data, int type, int sz, bool cine, int frmnum);
   static bool ParamCallBack(void* paramID, int x, int y);

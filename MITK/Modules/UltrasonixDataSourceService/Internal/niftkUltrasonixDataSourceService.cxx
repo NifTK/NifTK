@@ -82,6 +82,23 @@ UltrasonixDataSourceInterface::UltrasonixDataSourceInterface(UltrasonixDataSourc
   {
     m_DefaultLUT.push_back(qRgb(i, i, i));
   }
+
+  m_UDataMask = QVariant::fromValue(0x00000004);
+}
+
+
+//-----------------------------------------------------------------------------
+QVariant UltrasonixDataSourceInterface::GetUDataMask() const
+{
+  return m_UDataMask;
+}
+
+
+//-----------------------------------------------------------------------------
+void UltrasonixDataSourceInterface::SetUDataMask(QVariant value)
+{
+  m_UDataMask = value;
+  m_Ulterius->setDataToAcquire(uData(value.toInt()));
 }
 
 
@@ -181,7 +198,7 @@ void UltrasonixDataSourceInterface::Connect(const QString& host)
   {
     m_Ulterius->toggleFreeze();
   }
-  m_Ulterius->setDataToAcquire(udtBPost);
+  m_Ulterius->setDataToAcquire(this->GetUDataMask().toInt());
 }
 
 
@@ -281,8 +298,11 @@ std::unique_ptr<niftk::IGIDataType> UltrasonixDataSourceService::GrabImage()
 void UltrasonixDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
 {
   niftk::SingleFrameDataSourceService::SetProperties(properties);
-
-
+  if (properties.contains("uData"))
+  {
+    QVariant uDataMask = properties.value("uData");
+    m_Ultrasonix->SetUDataMask(uDataMask);
+  }
 }
 
 
@@ -290,6 +310,7 @@ void UltrasonixDataSourceService::SetProperties(const IGIDataSourceProperties& p
 IGIDataSourceProperties UltrasonixDataSourceService::GetProperties() const
 {
   IGIDataSourceProperties props = niftk::SingleFrameDataSourceService::GetProperties();
+  props.insert("uData", m_Ultrasonix->GetUDataMask());
 
   return props;
 }

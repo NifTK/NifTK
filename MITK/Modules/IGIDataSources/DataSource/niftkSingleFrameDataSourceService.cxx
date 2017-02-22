@@ -329,6 +329,23 @@ std::vector<IGIDataItemInfo> SingleFrameDataSourceService::Update(const niftk::I
   }
 
   mitk::Image::Pointer imageInNode = dynamic_cast<mitk::Image*>(node->GetData());
+  if (!imageInNode.IsNull())
+  {
+    // check size of image that is already attached to data node!
+    bool haswrongsize = false;
+    haswrongsize |= imageInNode->GetDimension(0) != convertedImage->GetDimension(0);
+    haswrongsize |= imageInNode->GetDimension(1) != convertedImage->GetDimension(1);
+    haswrongsize |= imageInNode->GetDimension(2) != 1;
+    // check image type as well.
+    haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent()   != convertedImage->GetPixelType().GetBitsPerComponent();
+    haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != convertedImage->GetPixelType().GetNumberOfComponents();
+
+    if (haswrongsize)
+    {
+      imageInNode = mitk::Image::Pointer();
+    }
+  }
+
   if (imageInNode.IsNull())
   {
     // We remove and add to trigger the NodeAdded event,
@@ -353,7 +370,7 @@ std::vector<IGIDataItemInfo> SingleFrameDataSourceService::Update(const niftk::I
     }
     catch(mitk::Exception& e)
     {
-      MITK_ERROR << "Failed to copy OpenCV image to DataStorage due to " << e.what() << std::endl;
+      MITK_ERROR << "Failed to copy image to DataStorage due to " << e.what() << std::endl;
     }
   }
 
