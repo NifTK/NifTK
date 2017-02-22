@@ -17,6 +17,8 @@
 #include <Internal/niftkUSReconGUI.h>
 #include <mitkIOUtil.h>
 #include <niftkFileHelper.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QFuture>
@@ -111,7 +113,6 @@ void USReconController::SetupGUI(QWidget* parent)
   connect(d->m_GUI, SIGNAL(OnGrabPressed()), this, SLOT(OnGrabPressed()));
   connect(d->m_GUI, SIGNAL(OnClearDataPressed()), this, SLOT(OnClearDataPressed()));
   connect(d->m_GUI, SIGNAL(OnSaveDataPressed()), this, SLOT(OnSaveDataPressed()));
-  connect(d->m_GUI, SIGNAL(OnLoadCalibrationPressed()), this, SLOT(OnLoadCalibrationPressed()));
   connect(d->m_GUI, SIGNAL(OnCalibratePressed()), this, SLOT(OnCalibratePressed()));
   connect(d->m_GUI, SIGNAL(OnReconstructPressed()), this, SLOT(OnReconstructPressed()));
   connect(&d->m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
@@ -193,6 +194,7 @@ void USReconController::OnClearDataPressed()
   MITK_INFO << "Clearing all previously collected image and tracking data";
 
   d->m_TrackedImages.clear();
+  d->m_GUI->SetNumberOfFramesLabel(d->m_TrackedImages.size());
 
   MITK_INFO << "Clearing all previously collected image and tracking data - DONE";
 }
@@ -202,10 +204,10 @@ void USReconController::OnClearDataPressed()
 void USReconController::Update()
 {
   Q_D(USReconController);
+  QMutexLocker locker(&d->m_Lock);
 
   if (d->m_IsRecording)
-  {
-    QMutexLocker locker(&d->m_Lock);
+  {  
     this->CaptureImages();
   }
 }
@@ -228,6 +230,7 @@ void USReconController::OnGrabPressed()
 void USReconController::OnSaveDataPressed()
 {
   Q_D(USReconController);
+  QMutexLocker locker(&d->m_Lock);
 
   if (d->m_TrackedImages.empty())
   {
@@ -301,16 +304,32 @@ void USReconController::OnSaveDataPressed()
 
 
 //-----------------------------------------------------------------------------
-void USReconController::OnLoadCalibrationPressed()
-{
-  MITK_INFO << "OnLoadCalibrationPressed()";
-}
-
-
-//-----------------------------------------------------------------------------
 void USReconController::OnCalibratePressed()
 {
-  MITK_INFO << "OnCalibratePressed()";
+  Q_D(USReconController);
+  QMutexLocker locker(&d->m_Lock);
+
+  if (d->m_TrackedImages.empty())
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No data!");
+    msgBox.setInformativeText("No data has been collected. Please grab some, or start recording.");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+    return;
+  }
+
+  vtkSmartPointer<vtkMatrix4x4> scalingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkSmartPointer<vtkMatrix4x4> rigidMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+
+  niftk::DoUltrasoundCalibration(d->m_TrackedImages,
+                                 *scalingMatrix,
+                                 *rigidMatrix
+                                );
+
+  d->m_GUI->SetScalingMatrix(*scalingMatrix);
+  d->m_GUI->SetRigidMatrix(*rigidMatrix);
 }
 
 
@@ -346,7 +365,14 @@ void USReconController::DoReconstructionInBackground()
 
   MITK_INFO << "Running Ultrasound Reconstruction in Background";
 
-  mitk::Image::Pointer newImage = niftk::DoUltrasoundReconstruction(d->m_TrackedImages);
+  vtkSmartPointer<vtkMatrix4x4> scalingMatrix = d->m_GUI->GetScalingMatrix();
+  vtkSmartPointer<vtkMatrix4x4> rigidMatrix = d->m_GUI->GetRigidMatrix();
+  vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkMatrix4x4::Multiply4x4(rigidMatrix, scalingMatrix, calibrationMatrix);
+
+  mitk::Image::Pointer newImage = niftk::DoUltrasoundReconstruction(d->m_TrackedImages,
+                                                                    *calibrationMatrix
+                                                                   );
   if (newImage.IsNotNull())
   {
     // Temporary: Save image straight to disk.

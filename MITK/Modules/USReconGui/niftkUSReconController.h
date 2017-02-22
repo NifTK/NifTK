@@ -59,7 +59,6 @@ public slots:
   void OnGrabPressed();
   void OnClearDataPressed();
   void OnSaveDataPressed();
-  void OnLoadCalibrationPressed();
   void OnCalibratePressed();
   void OnReconstructPressed();
 

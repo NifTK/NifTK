@@ -69,13 +69,13 @@ if(BUILD_NiftyIGI)
     OpenCV
     SurfRecon
     NDITrackers
-    USRecon
-    USReconGui
     IGI
     IGIOverlayEditor
     IGIGui
     IGIServices
     IGIDataSources
+    USRecon
+    USReconGui
     NiftyCal
 
     # Notice how the IGIDataSourcesManager does NOT know about

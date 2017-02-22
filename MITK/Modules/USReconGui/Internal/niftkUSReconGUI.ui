@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
@@ -81,22 +81,12 @@
      <item row="3" column="0">
       <widget class="QLabel" name="m_CalibrationLabel">
        <property name="text">
-        <string>calibration:</string>
+        <string>processing:</string>
        </property>
       </widget>
      </item>
      <item row="3" column="1">
-      <layout class="QHBoxLayout" name="m_HorizontalLayout1">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QPushButton" name="m_CalibrationLoadPushButton">
-         <property name="text">
-          <string>load</string>
-         </property>
-        </widget>
-       </item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QPushButton" name="m_CalibrationRunPushButton">
          <property name="text">
@@ -104,26 +94,46 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="m_ReconstructVolumePushButton">
+         <property name="text">
+          <string>reconstruct</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item row="4" column="0">
+      <widget class="QLabel" name="m_ScalingMatrixLabel">
+       <property name="text">
+        <string>scaling matrix:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QmitkMatrixWidget" name="m_ScalingMatrix" native="true"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="m_RigidMatrixLabel">
+       <property name="text">
+        <string>rigid matrix:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QmitkMatrixWidget" name="m_RigidMatrix" native="true"/>
+     </item>
+     <item row="6" column="0">
       <widget class="QLabel" name="m_SaveMatchedDataLabel">
        <property name="text">
         <string>save paired data:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="6" column="1">
       <widget class="QPushButton" name="m_SaveMatchedDataPushButton">
        <property name="text">
         <string>save</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QPushButton" name="m_ReconstructVolumePushButton">
-       <property name="text">
-        <string>reconstruct</string>
        </property>
       </widget>
      </item>
@@ -136,6 +146,12 @@
    <class>QmitkDataStorageComboBoxWithSelectNone</class>
    <extends>QComboBox</extends>
    <header location="global">QmitkDataStorageComboBoxWithSelectNone.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QmitkMatrixWidget</class>
+   <extends>QWidget</extends>
+   <header>QmitkMatrixWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

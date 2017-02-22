@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  DEPENDS MitkQtWidgets niftkUSRecon niftkCoreGui
+  DEPENDS MitkQtWidgets niftkUSRecon niftkIGIGui
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
