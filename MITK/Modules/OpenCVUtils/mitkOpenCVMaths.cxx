@@ -56,7 +56,7 @@ std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSe
   mitk::PointSet::PointIdentifier iD;
 
   mitk::PointSet::PointIdentifier myIndex = 0;
-  for (pIt = points->Begin(); pIt != points->End(); ++pIt)
+  for (pIt = points->Begin(); pIt != points->End() ; )
   {
     iD = pIt->Index();
     if ( ( ! fillMissingIndicesWithNaN ) || (  iD == myIndex )  )
@@ -69,6 +69,7 @@ std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSe
       cvPoint.z = point[2];
       result.push_back(cvPoint);
       myIndex ++;
+      ++pIt;
     }
     else
     {
@@ -88,7 +89,6 @@ std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSe
           result.push_back(cvPoint);
           myIndex ++;
         }
-        --pIt;
       }
     }
   }
