@@ -46,6 +46,7 @@ private:
   ulterius*                             m_Ulterius;
   UltrasonixDataSourceService*          m_Service;
   unsigned char*                        m_Buffer;
+  QVector<QRgb>                         m_DefaultLUT;
 
   static bool NewDataCallBack(void *data, int type, int sz, bool cine, int frmnum);
   static bool ParamCallBack(void* paramID, int x, int y);

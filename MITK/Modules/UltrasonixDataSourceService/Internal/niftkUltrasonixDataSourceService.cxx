@@ -77,6 +77,11 @@ UltrasonixDataSourceInterface::UltrasonixDataSourceInterface(UltrasonixDataSourc
   m_Ulterius = new ulterius;
   m_Ulterius->setCallback(NewDataCallBack);
   m_Ulterius->setParamCallback(ParamCallBack);
+
+  for (int i = 0; i < 256; i++)
+  {
+    m_DefaultLUT.push_back(qRgb(i, i, i));
+  }
 }
 
 
@@ -120,6 +125,7 @@ bool UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, 
     QImage image(static_cast<unsigned char*>(data), desc.w, desc.h, QImage::Format_Grayscale8);
 #else
     QImage image(static_cast<unsigned char*>(data), desc.w, desc.h, QImage::Format_Indexed8);
+    image.setColorTable(m_DefaultLUT);
 #endif
     m_Service->ProcessImage(image);
   }
