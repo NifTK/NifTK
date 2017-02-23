@@ -35,6 +35,14 @@ NIFTKUSRECON_EXPORT void DoUltrasoundCalibration(const TrackedImageData& data,
                                                  vtkMatrix4x4& imageToSensorTransform
                                                 );
 
+cv::Point2d FindCircleInImage(const cv::Mat& image, cv::Mat& model);
+
+cv::Mat CreateRingModel(const int model_width);
+
+int HoughForRadius(cv::Mat& image, int x, int y, int& max_radius, int medianR);
+
+int RawHough(cv::Mat& image, int& x, int& y, int medianR);
+
 /**
 * \brief Entry point for Guofang's Ultrasound Reconstruction.
 */
