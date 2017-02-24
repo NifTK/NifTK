@@ -18,12 +18,12 @@
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 #include <mitkImageAccessByItk.h>
-#include <cv.h>
+
 
 namespace niftk
 {
 //-------------------------------------------------------------------------------------
-int HoughForRadius(Mat& image, int x, int y, int& max_radius, int medianR)
+int HoughForRadius(const cv::Mat& image, int x, int y, int& max_radius, int medianR)
 {
   int i;
   int j;
@@ -69,7 +69,7 @@ int HoughForRadius(Mat& image, int x, int y, int& max_radius, int medianR)
 }
 
 //------------------------------------------------------------------------------
-void RawHough(Mat& image, int& x, int& y, int& r, int medianR)
+void RawHough(const cv::Mat& image, int& x, int& y, int& r, int medianR)
 {
   int max_x = x;
   int max_y = y;
@@ -140,7 +140,9 @@ cv::Point2d FindCircleInImage(const cv::Mat& image, cv::Mat& model)
   int endy = image_height - 1 - model_width * 3 / 4;
 
   double min_diff = 1000000000;
-  max_x = 0, max_y = 0, max_radius = 0;
+  int max_x = 0;
+  int max_y = 0;
+  int max_radius = 0;
 
   unsigned char *ptr_image;
   unsigned char *ptr_model;
@@ -206,27 +208,22 @@ cv::Point2d FindCircleInImage(const cv::Mat& image, cv::Mat& model)
 }
 
 
-// tracking_data is a number_of_scans x 7 matrix---------------------------------------------------------
-cv::Mat DoUltrasoundCalibration(const std::vector<cv::Point2d>& points,
-                                Mat& tracking_data)
+// tracking_data is a pair of quaternions representing rotation and translation
+// Caution: the old .para files record translation first and then a unit quaternion for rotation  
+cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
+                              const std::vector<TrackingQuaternions>& tracking_data)
 {
   int number_of_scans = (int)points.size();
 
-  if(tracking_data.rows != number_of_scans)
-  {
-    cout << "Center points and tracking data not matching!" << endl;
-    return 0.0f;
-  }
+  cv::Mat F(3 * number_of_scans, 1, CV_64F);
+  cv::Mat Ftmp(3 * number_of_scans, 1, CV_64F);
+  cv::Mat J(3 * number_of_scans, 12, CV_64F);
+  cv::Mat H(12, 12, CV_64F);
 
-  Mat F(3 * number_of_scans, 1, CV_64F);
-  Mat Ftmp(3 * number_of_scans, 1, CV_64F);
-  Mat J(3 * number_of_scans, 12, CV_64F);
-  Mat H(12, 12, CV_64F);
-
-  ZQuaternion q1;
-  ZQuaternion t1;
-  ZQuaternion t3;
-  ZQuaternion qx;
+  niftkQuaternion q1;
+  niftkQuaternion t1;
+  niftkQuaternion t3;
+  niftkQuaternion qx;
 
   //Parameter initialisation
 	cv::Mat a(12, 1, CV_64F, cv::Scalar(0));
@@ -249,21 +246,15 @@ cv::Mat DoUltrasoundCalibration(const std::vector<cv::Point2d>& points,
   t3[2] = a.at<double>(10) = 0.0;
   t3[3] = a.at<double>(11) = 0.0;
 
-  ZQuaternion fi;
+  niftkQuaternion fi;
 
-  ZQuaternion* Q2 = new ZQuaternion[number_of_scans];
-  ZQuaternion* T2 = new ZQuaternion[number_of_scans];
-
-  for (int i = 0; i < number_of_scans; i++)
+  vector<niftkQuaternion> Q2;
+  vector<niftkQuaternion> T2;
+  
+  for(auto iter = tracking_data.begin(); iter != tracking_data.end(); iter++)
   {
-    T2[i][1] = tracking_data.at<double>(i, 0);
-    T2[i][2] = tracking_data.at<double>(i, 1);
-    T2[i][3] = tracking_data.at<double>(i, 2);
-    
-    Q2[i][0] = tracking_data.at<double>(i, 3);
-    Q2[i][1] = tracking_data.at<double>(i, 4);
-    Q2[i][2] = tracking_data.at<double>(i, 5);
-    Q2[i][3] = tracking_data.at<double>(i, 6);
+    Q2.push_back(iter->first);
+    T2.push_back(iter->second);
   }
 
   double p22;
@@ -303,7 +294,7 @@ cv::Mat DoUltrasoundCalibration(const std::vector<cv::Point2d>& points,
   double dqxq_dq_44;
 
   double lambda = 0.001;
-  Mat I = Mat::eye(12, 12, CV_64FC1);
+  cv::Mat I = cv::Mat::eye(12, 12, CV_64FC1);
 
   for (int times = 0; times<100; times++) //100 iteratios for the LM algorithm
   {
@@ -458,9 +449,9 @@ cv::Mat DoUltrasoundCalibration(const std::vector<cv::Point2d>& points,
 **********************************************************************************/
 
 /*********************Without Colume Normalisation of J*******************************/
-    Mat JT = J.t();
+    cv::Mat JT = J.t();
 
-    a += (JT * J + I * lambda).inv(DECOMP_SVD) * JT * (-F);
+    a += (JT * J + I * lambda).inv(cv::DECOMP_SVD) * JT * (-F);
 /**********************************************************************************/
 
     //Modifying
@@ -495,30 +486,27 @@ cv::Mat DoUltrasoundCalibration(const std::vector<cv::Point2d>& points,
     t3[3] = a.at<double>(11);
   }//end for times
 
-  delete [] Q2;
-  delete [] T2;
-
   double LSE =  norm(F) / sqrt(3 * number_of_scans);
-
 
   return a;
 }
 
 
-// TrackedImageData need to be changed to use quaternions-------------------------------------------------------------------
-void DoUltrasoundCalibration(const TrackedImageData& data,
-                             vtkMatrix4x4& pixelToMillimetreScale,
-                             vtkMatrix4x4& imageToSensorTransform
+//Using quaternion representaion-------------------------------------------------------------------
+void DoUltrasoundCalibration(const QuaternionTrackedImageData& data,
+                             double& pixelToMillimetreScaleX,
+                             double& pixelToMillimetreScaleY,
+                             TrackingQuaternions& imageToSensorTransform
                              )
 {
   MITK_INFO << "DoUltrasoundCalibration: Doing Ultrasound Calibration with "
             << data.size() << " samples.";
 
+  std::vector<cv::Point2d> points;
+  std::vector<TrackingQuaternions> tracking_data;
+
   int model_width = 300; // Input the roughly measured circle diameter
   cv::Mat model = CreateRingModel(model_width);
-
-  std::vector<cv::Point2d> points;
-  std::vector<cv::Matx44d> matrices; // To be changed...
 
   // Extract all 2D centres of circles
   for (int i = 0; i < data.size(); i++)
@@ -527,32 +515,87 @@ void DoUltrasoundCalibration(const TrackedImageData& data,
     cv::Point2d pixelLocation = niftk::FindCircleInImage(tmpImage, model);
 
     points.push_back(pixelLocation);
+    tracking_data.push_back(data[i].second);
+  }
 
-    // To be changed from here------------------------------------------------------
+  // Now do calibration.
+  cv::Mat parameters = UltrasoundCalibration(points, tracking_data);
+
+  // Now copy into output
+  pixelToMillimetreScaleX = parameters.at<double>(0);
+  pixelToMillimetreScaleY = parameters.at<double>(1);
+
+  imageToSensorTransform.first[0] = parameters.at<double>(2);
+  imageToSensorTransform.first[1] = parameters.at<double>(3);
+  imageToSensorTransform.first[2] = parameters.at<double>(4);
+  imageToSensorTransform.first[3] = parameters.at<double>(5);
+
+  imageToSensorTransform.second[0] = 0;
+  imageToSensorTransform.second[1] = parameters.at<double>(6);
+  imageToSensorTransform.second[2] = parameters.at<double>(7);
+  imageToSensorTransform.second[3] = parameters.at<double>(8);
+
+}
+
+//-----------------------------------------------------------------------------
+std::vector<double> UltrasoundCalibration(const std::vector<cv::Point2d>& points,
+                                          const std::vector<cv::Matx44d>& matrices)
+{
+  // Feel free to simplify the method below to pass in cv::Mat here
+  // for example, .... if that helps things along.
+
+  std::vector<double> result;
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void DoUltrasoundCalibration(const TrackedImageData& data,
+                             vtkMatrix4x4& pixelToMillimetreScale,
+                             vtkMatrix4x4& imageToSensorTransform
+                             )
+{
+  MITK_INFO << "DoUltrasoundCalibration: Doing Ultrasound Calibration with "
+            << data.size() << " samples.";
+
+  std::vector<cv::Point2d> points;
+  std::vector<cv::Matx44d> matrices;
+
+  int model_width = 300; // Input the roughly measured circle diameter
+  cv::Mat model = CreateRingModel(model_width);
+
+  // Extract all 2D centres of circles
+  for (int i = 0; i < data.size(); i++)
+  {
+    // Feel free to use other OpenCV types.
+    // These are just some of the examples in Niftk.
+
+    cv::Mat tmpImage = niftk::MitkImageToOpenCVMat(data[i].first);
+    cv::Point2d pixelLocation = niftk::FindCircleInImage(tmpImage, model);
+
     vtkSmartPointer<vtkMatrix4x4> vtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
     data[i].second->GetVtkMatrix(*vtkMatrix);
 
     cv::Matx44d trackingMatrix;
     mitk::CopyToOpenCVMatrix(*vtkMatrix, trackingMatrix);
 
+    points.push_back(pixelLocation);
     matrices.push_back(trackingMatrix);
-    //-----------------------------------------------------------------------to here
   }
 
   // Now do calibration.
-  cv::Mat parameters = DoUltrasoundCalibration(points, matrices); // To be changed...
+  // Feel free to change return types.
+  std::vector<double> parameters = UltrasoundCalibration(points, matrices);
 
   // Now copy into output VTK matrices
   pixelToMillimetreScale.Identity();
-  pixelToMillimetreScale.SetElement(0, 0, parameters.at<double>(0));
-  pixelToMillimetreScale.SetElement(1, 1, parameters.at<double>(1));
+  pixelToMillimetreScale.SetElement(0, 0, 1 /* set scale here */);
+  pixelToMillimetreScale.SetElement(1, 1, 1 /* set scale here */);
 
   imageToSensorTransform.Identity();
   /* set rigid body matrix here */
-  // Use quaternions
-
-
 }
+
 
 //-----------------------------------------------------------------------------
 template <typename TPixel1, unsigned int VImageDimension1,
@@ -564,9 +607,6 @@ void ITKReconstructOneSlice(const itk::Image<TPixel1, VImageDimension1>* input,
   typedef typename itk::Image<TPixel2, VImageDimension2> ImageType2;
 
   // Iterate through input, writing to output.
-
-
-
 
 }
 
