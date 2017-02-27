@@ -36,7 +36,8 @@ NVidiaSDIDataType::NVidiaSDIDataType(unsigned int cookie,
 
 //-----------------------------------------------------------------------------
 NVidiaSDIDataType::NVidiaSDIDataType(const NVidiaSDIDataType& other)
-: m_MagicCookie(other.m_MagicCookie)
+: IGIDataType(other)
+, m_MagicCookie(other.m_MagicCookie)
 , m_SequenceNumber(other.m_SequenceNumber)
 , m_GpuArrivalTime(other.m_GpuArrivalTime)
 {
@@ -46,7 +47,8 @@ NVidiaSDIDataType::NVidiaSDIDataType(const NVidiaSDIDataType& other)
 
 //-----------------------------------------------------------------------------
 NVidiaSDIDataType::NVidiaSDIDataType(const NVidiaSDIDataType&& other)
-: m_MagicCookie(std::move(other.m_MagicCookie))
+: IGIDataType(other)
+, m_MagicCookie(std::move(other.m_MagicCookie))
 , m_SequenceNumber(std::move(other.m_SequenceNumber))
 , m_GpuArrivalTime(std::move(other.m_GpuArrivalTime))
 {
@@ -56,6 +58,7 @@ NVidiaSDIDataType::NVidiaSDIDataType(const NVidiaSDIDataType&& other)
 //-----------------------------------------------------------------------------
 NVidiaSDIDataType& NVidiaSDIDataType::operator=(const NVidiaSDIDataType& other)
 {
+  IGIDataType::operator=(other);
   m_MagicCookie = other.m_MagicCookie;
   m_SequenceNumber = other.m_SequenceNumber;
   m_GpuArrivalTime = other.m_GpuArrivalTime;
@@ -66,6 +69,7 @@ NVidiaSDIDataType& NVidiaSDIDataType::operator=(const NVidiaSDIDataType& other)
 //-----------------------------------------------------------------------------
 NVidiaSDIDataType& NVidiaSDIDataType::operator=(const NVidiaSDIDataType&& other)
 {
+  IGIDataType::operator=(other);
   m_MagicCookie = std::move(other.m_MagicCookie);
   m_SequenceNumber = std::move(other.m_SequenceNumber);
   m_GpuArrivalTime = std::move(other.m_GpuArrivalTime);
