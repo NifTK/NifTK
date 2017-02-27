@@ -45,6 +45,7 @@ QImageDataType::QImageDataType(QImage *image)
 
 //-----------------------------------------------------------------------------
 QImageDataType::QImageDataType(const QImageDataType& other)
+: IGIDataType(other)
 {
   this->CloneImage(other.m_Image);
 }
@@ -52,8 +53,9 @@ QImageDataType::QImageDataType(const QImageDataType& other)
 
 //-----------------------------------------------------------------------------
 QImageDataType::QImageDataType(QImageDataType&& other)
-: m_Image(other.m_Image)
+: IGIDataType(other)
 {
+  this->CloneImage(other.m_Image);
   other.m_Image = nullptr;
 }
 
