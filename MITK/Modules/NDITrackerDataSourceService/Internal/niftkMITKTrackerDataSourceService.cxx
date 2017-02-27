@@ -197,7 +197,7 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeTy
         m_Buffers.insert(std::make_pair(bufferNameAsStdString, std::move(newBuffer)));
       }
 
-      if (m_Buffers.find(bufferNameAsStdString) == m_Buffers.end())
+      if (m_Buffers.find(bufferNameAsStdString) != m_Buffers.end())
       {
         std::ostringstream  filename;
         filename << this->GetPlaybackDirectory().toStdString()

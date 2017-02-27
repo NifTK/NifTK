@@ -53,6 +53,11 @@ public:
    */
   void SetTrackingData(const std::vector<double>& transform);
 
+  /**
+  * \brief Overrides base class, but only copies IGITrackerDataType.
+  */
+  virtual void Clone(const IGIDataType&) override;
+
 private:
 
   std::string                   m_ToolName;

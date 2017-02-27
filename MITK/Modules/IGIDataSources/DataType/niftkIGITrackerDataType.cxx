@@ -33,6 +33,7 @@ IGITrackerDataType::IGITrackerDataType()
 
 //-----------------------------------------------------------------------------
 IGITrackerDataType::IGITrackerDataType(const IGITrackerDataType& other)
+: IGIDataType(other)
 {
   m_ToolName = other.m_ToolName;
   m_TrackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -42,6 +43,7 @@ IGITrackerDataType::IGITrackerDataType(const IGITrackerDataType& other)
 
 //-----------------------------------------------------------------------------
 IGITrackerDataType::IGITrackerDataType(IGITrackerDataType&& other)
+: IGIDataType(other)
 {
   m_ToolName = other.m_ToolName;
   m_TrackingMatrix = other.m_TrackingMatrix;
@@ -52,6 +54,7 @@ IGITrackerDataType::IGITrackerDataType(IGITrackerDataType&& other)
 //-----------------------------------------------------------------------------
 IGITrackerDataType& IGITrackerDataType::operator=(const IGITrackerDataType& other)
 {
+  IGIDataType::operator=(other);
   m_ToolName = other.m_ToolName;
   m_TrackingMatrix->DeepCopy(other.m_TrackingMatrix);
   return *this;
@@ -61,6 +64,7 @@ IGITrackerDataType& IGITrackerDataType::operator=(const IGITrackerDataType& othe
 //-----------------------------------------------------------------------------
 IGITrackerDataType& IGITrackerDataType::operator=(IGITrackerDataType&& other)
 {
+  IGIDataType::operator=(other);
   m_ToolName = other.m_ToolName;
   m_TrackingMatrix = other.m_TrackingMatrix;
   other.m_TrackingMatrix = nullptr;
@@ -94,6 +98,22 @@ vtkSmartPointer<vtkMatrix4x4> IGITrackerDataType::GetTrackingMatrix() const
   vtkSmartPointer<vtkMatrix4x4> tmp = vtkSmartPointer<vtkMatrix4x4>::New();
   tmp->DeepCopy(m_TrackingMatrix);
   return tmp;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGITrackerDataType::Clone(const IGIDataType& other)
+{
+  IGIDataType::Clone(other);
+  const IGITrackerDataType* tmp = dynamic_cast<const IGITrackerDataType*>(&other);
+  if (tmp != nullptr)
+  {
+    this->SetTrackingMatrix(tmp->m_TrackingMatrix);
+  }
+  else
+  {
+    mitkThrow() << "Incorrect data type provided";
+  }
 }
 
 } // end namespace
