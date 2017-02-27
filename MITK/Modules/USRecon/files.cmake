@@ -14,6 +14,7 @@
 
 set(CPP_FILES
   niftkUltrasoundProcessing.cxx
+  niftkQuaternion.cxx
 )
 
 
