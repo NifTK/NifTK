@@ -393,6 +393,14 @@ void SideViewerWidget::SetupUi(QWidget *parent)
   verticalLayout->setStretch(0, 1);
 }
 
+
+//-----------------------------------------------------------------------------
+SingleViewerWidget* SideViewerWidget::GetViewer() const
+{
+  return m_Viewer;
+}
+
+
 //-----------------------------------------------------------------------------
 void SideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
 {

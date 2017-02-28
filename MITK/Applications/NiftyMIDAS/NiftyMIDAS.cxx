@@ -32,6 +32,7 @@ public:
   static const QString PROP_BIND_WINDOWS;
   static const QString PROP_BIND_VIEWERS;
   static const QString PROP_ANNOTATION;
+  static const QString PROP_DISPLAY_CONVENTION;
 
   NiftyMIDAS(int argc, char **argv)
     : BaseApplication(argc, argv)
@@ -179,6 +180,31 @@ public:
     annotationOption.argument("[<viewers>:]<properties>").repeatable(true);
     annotationOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &NiftyMIDAS::HandleRepeatableOption));
     options.addOption(annotationOption);
+
+    Poco::Util::Option displayConventionOption("display-convention", "c",
+        "\n"
+        "Sets the display convention.\n"
+        "\n"
+        "The display convention tells how the displayed slices are oriented in the "
+        "individual render windows. Currently supported conventions are:\n"
+        "\n"
+        "  - 'radio' means radiological convention. Images are viewed as though\n"
+        "    looking upward from the feet of the subject. The subject's left is\n"
+        "    at screen right.\n"
+        "\n"
+        "  - 'neuro' means neurological convention. Images are viewed as though\n"
+        "    looking from the top of the head downward. The subject's left is at\n"
+        "    screen left.\n"
+        "\n"
+        "  - 'radio-x-flipped' is like 'radio' with the x (sagittal) axis flipped\n"
+        "    in the axial and coronal windows. Note that this is not equivalent with\n"
+        "    'neuro' as here the images are viewed as though looking upward from the\n"
+        "    feet of the subject, just the displayed image is mirrored on the y axis.\n"
+        "    The slice order, however, is the same as in 'radio'.\n"
+        "\n"
+        "The default display convention is 'radio'.\n");
+    displayConventionOption.argument("<display convention>").binding(PROP_DISPLAY_CONVENTION.toStdString());
+    options.addOption(displayConventionOption);
   }
 
   virtual Poco::Util::HelpFormatter* CreateHelpFormatter() override
@@ -247,6 +273,7 @@ const QString NiftyMIDAS::PROP_WINDOW_LAYOUT = "applicationArgs.window-layout";
 const QString NiftyMIDAS::PROP_BIND_WINDOWS = "applicationArgs.bind-windows";
 const QString NiftyMIDAS::PROP_BIND_VIEWERS = "applicationArgs.bind-viewers";
 const QString NiftyMIDAS::PROP_ANNOTATION = "applicationArgs.annotation";
+const QString NiftyMIDAS::PROP_DISPLAY_CONVENTION = "applicationArgs.display-convention";
 
 }
 

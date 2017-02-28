@@ -90,6 +90,12 @@ public:
   SingleViewerWidget(QWidget* parent = 0, mitk::RenderingManager* renderingManager = 0, const QString& name = "DnD-Viewer");
   virtual ~SingleViewerWidget();
 
+  /// \brief Gets the display convention of the viewer.
+  int GetDisplayConvention() const;
+
+  /// \brief Sets the display convention of the viewer.
+  void SetDisplayConvention(int displayConvention);
+
   /// \brief Returns the enabled flag.
   bool IsEnabled() const;
 
@@ -458,6 +464,8 @@ private:
   std::vector<mitk::Vector2D> GetCursorPositionsFromCentres(const std::vector<mitk::Vector2D>& centrePositions);
 
   mitk::RenderingManager::Pointer m_RenderingManager;
+
+  int m_DisplayConvention;
 
   QGridLayout* m_GridLayout;
   MultiWindowWidget* m_MultiWidget;

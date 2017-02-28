@@ -139,6 +139,12 @@ public:
   /// \brief Sets the list of properties to display as annotation.
   void SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation);
 
+  /// \brief Gets the display convention of the viewer.
+  int GetDisplayConvention() const;
+
+  /// \brief Sets the display convention of the viewer.
+  void SetDisplayConvention(int displayConvention);
+
   /// \brief Initialises the geometry in the QmitkStdMultiWidget base class.
   /// This has been a difficult method to get to work properly. Developers should look at the code comments.
   void SetTimeGeometry(const mitk::TimeGeometry* timeGeometry);
@@ -474,6 +480,12 @@ private:
   /// \brief Callback function that gets called by the mitk::FocusManager to indicate the currently focused window.
   void OnFocusChanged();
 
+  /// \brief Initialises the annotations that shows the anatomical directions on each side of each window.
+  void InitialiseDirectionAnnotations();
+
+  /// \brief Updates the annotations that shows the anatomical directions on each side of each window.
+  void UpdateDirectionAnnotations() const;
+
   /// \brief Initialises the annotations that show the selected world position in the 2D windows.
   void InitialisePositionAnnotations();
 
@@ -517,6 +529,8 @@ private:
   int m_TimeStep;
 
   std::vector<mitk::Vector2D> m_CursorPositions;
+
+  int m_DisplayConvention;
 
   std::vector<const mitk::PlaneGeometry*> m_WorldGeometries;
   std::vector<mitk::Vector2D> m_RenderWindowSizes;

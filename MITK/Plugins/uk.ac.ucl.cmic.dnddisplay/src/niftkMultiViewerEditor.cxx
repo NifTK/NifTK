@@ -60,6 +60,7 @@ public:
   void ProcessBindWindowsOption();
   void ProcessBindViewersOption();
   void ProcessAnnotationOption();
+  void ProcessDisplayConventionOption();
 
   void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
 
@@ -201,6 +202,7 @@ void MultiViewerEditorPrivate::ProcessOptions()
   this->ProcessBindWindowsOption();
   this->ProcessBindViewersOption();
   this->ProcessAnnotationOption();
+  this->ProcessDisplayConventionOption();
 
   s_OptionsProcessed = true;
 }
@@ -819,6 +821,42 @@ void MultiViewerEditorPrivate::ProcessAnnotationOption()
       viewer->SetPropertiesForAnnotation(properties);
     }
   }
+}
+
+
+// --------------------------------------------------------------------------
+void MultiViewerEditorPrivate::ProcessDisplayConventionOption()
+{
+  ctkPluginContext* pluginContext = PluginActivator::GetInstance()->GetContext();
+
+  QString displayConventionArg = pluginContext->getProperty("applicationArgs.display-convention").toString();
+
+  if (!displayConventionArg.isNull())
+  {
+    int displayConvention;
+
+    if (displayConventionArg == "radio")
+    {
+      displayConvention = DISPLAY_CONVENTION_RADIO;
+    }
+    else if (displayConventionArg == "neuro")
+    {
+      displayConvention = DISPLAY_CONVENTION_NEURO;
+    }
+    else if (displayConventionArg == "radio-x-flipped")
+    {
+      displayConvention = DISPLAY_CONVENTION_RADIO_X_FLIPPED;
+    }
+    else
+    {
+      MITK_ERROR << "Invalid display convention: " << displayConventionArg.toStdString();
+      MITK_ERROR << "Supported conventions are: 'radio', 'neuro' and 'radio-x-flipped'.";
+      return;
+    }
+
+    m_MultiViewer->SetDisplayConvention(displayConvention);
+  }
+
 }
 
 

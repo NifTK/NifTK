@@ -22,8 +22,10 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkTextProperty.h>
-#include <QmitkRenderWindow.h>
+
 #include <QGridLayout>
+
+#include <usGetModuleContext.h>
 
 #include <mitkGlobalInteraction.h>
 #include <mitkImage.h>
@@ -40,6 +42,8 @@
 #include <vtkMitkRectangleProp.h>
 
 #include <vtkSideAnnotation.h>
+
+#include <QmitkRenderWindow.h>
 
 
 namespace niftk
@@ -108,6 +112,7 @@ MultiWindowWidget::MultiWindowWidget(
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
 , m_OrientationString("---")
+, m_DisplayConvention(DISPLAY_CONVENTION_RADIO)
 , m_WorldGeometries(3)
 , m_RenderWindowSizes(3)
 , m_Origins(3)
@@ -187,40 +192,13 @@ MultiWindowWidget::MultiWindowWidget(
   this->mitkWidget3->setAcceptDrops(true);
   this->mitkWidget4->setAcceptDrops(true);
 
-  // Set these off, as it wont matter until there is an image dropped, with a specific layout and orientation.
+  // Set these off, as it won't matter until there is an image dropped, with a specific layout and orientation.
   for (int i = 0; i < 4; ++i)
   {
     this->SetDecorationProperties("", this->GetDecorationColor(i), i);
   }
 
-  for (int i = 0; i < 3; ++i)
-  {
-    m_DirectionAnnotations[i] = vtkSideAnnotation::New();
-    m_DirectionAnnotations[i]->SetMaximumFontSize(16);
-    m_DirectionAnnotations[i]->GetTextProperty()->BoldOn();
-    m_DirectionAnnotationRenderers[i] = vtkRenderer::New();
-    m_DirectionAnnotationRenderers[i]->AddActor(m_DirectionAnnotations[i]);
-    m_DirectionAnnotationRenderers[i]->InteractiveOff();
-    mitk::VtkLayerController::GetInstance(m_RenderWindows[i]->GetRenderWindow())->InsertForegroundRenderer(m_DirectionAnnotationRenderers[i], true);
-  }
-
-  double axialColour[3] = {1.0, 0.0, 0.0};
-  double sagittalColour[3] = {0.0, 1.0, 0.0};
-  double coronalColour[3] = {0.295, 0.295, 1.0};
-
-  m_DirectionAnnotations[AXIAL]->SetColour(0, coronalColour);
-  m_DirectionAnnotations[AXIAL]->SetColour(1, sagittalColour);
-  m_DirectionAnnotations[AXIAL]->SetColour(2, coronalColour);
-  m_DirectionAnnotations[AXIAL]->SetColour(3, sagittalColour);
-  m_DirectionAnnotations[SAGITTAL]->SetColour(0, axialColour);
-  m_DirectionAnnotations[SAGITTAL]->SetColour(1, coronalColour);
-  m_DirectionAnnotations[SAGITTAL]->SetColour(2, axialColour);
-  m_DirectionAnnotations[SAGITTAL]->SetColour(3, coronalColour);
-  m_DirectionAnnotations[CORONAL]->SetColour(0, axialColour);
-  m_DirectionAnnotations[CORONAL]->SetColour(1, sagittalColour);
-  m_DirectionAnnotations[CORONAL]->SetColour(2, axialColour);
-  m_DirectionAnnotations[CORONAL]->SetColour(3, sagittalColour);
-
+  this->InitialiseDirectionAnnotations();
   this->InitialisePositionAnnotations();
   this->InitialiseIntensityAnnotations();
   this->InitialisePropertyAnnotations();
@@ -1079,6 +1057,26 @@ void MultiWindowWidget::FitRenderWindow(int windowIndex, double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
+int MultiWindowWidget::GetDisplayConvention() const
+{
+  return m_DisplayConvention;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::SetDisplayConvention(int displayConvention)
+{
+  if (displayConvention != m_DisplayConvention)
+  {
+    m_DisplayConvention = displayConvention;
+
+    /// Note that this works because there is equality check in this function by purpose.
+    this->SetTimeGeometry(m_TimeGeometry);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 {
   /// We only do a nullptr check but no equality check so that the user can
@@ -1105,27 +1103,7 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
     this->SetDecorationProperties("Coronal", this->GetDecorationColor(2), 2);
     this->SetDecorationProperties("3D", this->GetDecorationColor(3), 3);
 
-    /// The place of the direction annotations on the render window:
-    ///
-    /// +----0----+
-    /// |         |
-    /// 3         1
-    /// |         |
-    /// +----2----+
-    m_DirectionAnnotations[AXIAL]->SetText(0, "A");
-    m_DirectionAnnotations[AXIAL]->SetText(2, "P");
-    m_DirectionAnnotations[AXIAL]->SetText(3, "R");
-    m_DirectionAnnotations[AXIAL]->SetText(1, "L");
-
-    m_DirectionAnnotations[SAGITTAL]->SetText(0, "S");
-    m_DirectionAnnotations[SAGITTAL]->SetText(2, "I");
-    m_DirectionAnnotations[SAGITTAL]->SetText(3, "A");
-    m_DirectionAnnotations[SAGITTAL]->SetText(1, "P");
-
-    m_DirectionAnnotations[CORONAL]->SetText(0, "S");
-    m_DirectionAnnotations[CORONAL]->SetText(2, "I");
-    m_DirectionAnnotations[CORONAL]->SetText(3, "R");
-    m_DirectionAnnotations[CORONAL]->SetText(1, "L");
+    this->UpdateDirectionAnnotations();
 
     // If m_RenderingManager is a local rendering manager
     // not the global singleton instance, then we never have to worry about this.
@@ -1183,7 +1161,35 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
       mitk::SliceNavigationController* snc = renderer->GetSliceNavigationController();
       snc->SetViewDirectionToDefault();
       snc->SetInputWorldTimeGeometry(m_TimeGeometry);
-      snc->Update();
+
+      mitk::SliceNavigationController::ViewDirection viewDirection;
+      bool top, frontside, rotated;
+      if (i == 0)
+      {
+        /// Axial
+        viewDirection = mitk::SliceNavigationController::Axial;
+        top = m_DisplayConvention & DISPLAY_CONVENTION_AXIAL_TOP;
+        frontside = m_DisplayConvention & DISPLAY_CONVENTION_AXIAL_FRONTSIDE;
+        rotated = m_DisplayConvention & DISPLAY_CONVENTION_AXIAL_ROTATED;
+      }
+      else if (i == 1)
+      {
+        /// Sagittal
+        viewDirection = mitk::SliceNavigationController::Sagittal;
+        top = m_DisplayConvention & DISPLAY_CONVENTION_SAGITTAL_TOP;
+        frontside = m_DisplayConvention & DISPLAY_CONVENTION_SAGITTAL_FRONTSIDE;
+        rotated = m_DisplayConvention & DISPLAY_CONVENTION_SAGITTAL_ROTATED;
+      }
+      else
+      {
+        /// Coronal
+        viewDirection = mitk::SliceNavigationController::Frontal;
+        top = m_DisplayConvention & DISPLAY_CONVENTION_CORONAL_TOP;
+        frontside = m_DisplayConvention & DISPLAY_CONVENTION_CORONAL_FRONTSIDE;
+        rotated = m_DisplayConvention & DISPLAY_CONVENTION_CORONAL_ROTATED;
+      }
+
+      snc->Update(viewDirection, top, frontside, rotated);
 
       /// Now that the geometry is established, we set to middle slice. In case of image geometry
       /// and even slice numbers, the selected position must be in the centre, returned by
@@ -1934,33 +1940,27 @@ void MultiWindowWidget::MoveSlice(int windowIndex, int slices, bool restart)
     /// to the slice behind the current one (previous slice), and scrolling down
     /// should go to the slice ahead the current one (next slice).
     ///
-    /// For example, the coronal window shows the patient facing towards us.
-    /// Scrolling up should go to the slice behind, that is the next slice
-    /// towards the patient's back, but this slice is closer to the world origin.
-    /// In sagittal window we see the patient from his left, so scrolling up
-    /// has to go towards his right, that is we are moving away from the world
-    /// origin.
+    /// For example, in radiological convention the coronal window shows the
+    /// patient facing towards us. Scrolling up should go to the slice behind,
+    /// that is the next slice towards the patient's back. In sagittal window we
+    /// see the patient from his left, so scrolling up has to go towards his right.
     ///
-    /// So, even if the plus and minus ones below look kind of arbitrary, they
-    /// are not. However, they assume that the renderer geometries are initialised
-    /// following a certain convention.
+    /// In neurological convention the view point is behind the patient, that
+    /// turns the order of the slices. For example in the coronal window scrolling
+    /// up should go to the next slice towards the patient's face.
     ///
     /// Now we could use the slice navigation controller index here, that would
     /// be probably simpler and more flexible. However, the renderer initialisation
     /// suffered from a few bugs in the past and we could not rely on the SNC indices.
 
-    int upDirection;
-    if (windowIndex == AXIAL)
+    int worldAxis = windowIndex == SAGITTAL ? 0 : windowIndex == CORONAL ? 1 : 2;
+    int upDirection = m_UpDirections[worldAxis];
+
+    if ((worldAxis == 0 && !(m_DisplayConvention & DISPLAY_CONVENTION_SAGITTAL_TOP))
+        || (worldAxis == 1 && !(m_DisplayConvention & DISPLAY_CONVENTION_CORONAL_TOP))
+        || (worldAxis == 2 && !(m_DisplayConvention & DISPLAY_CONVENTION_AXIAL_TOP)))
     {
-      upDirection = -1 * m_UpDirections[2];
-    }
-    else if (windowIndex == SAGITTAL)
-    {
-      upDirection = +1 * m_UpDirections[0];
-    }
-    else if (windowIndex == CORONAL)
-    {
-      upDirection = -1 * m_UpDirections[1];
+      upDirection *= -1;
     }
 
     int nextSlice = slice + upDirection * slices;
@@ -2063,6 +2063,39 @@ void MultiWindowWidget::SetSelectedPosition(const mitk::Point3D& selectedPositio
 
 
 //-----------------------------------------------------------------------------
+void MultiWindowWidget::InitialiseDirectionAnnotations()
+{
+  for (int i = 0; i < 3; ++i)
+  {
+    m_DirectionAnnotations[i] = vtkSideAnnotation::New();
+    m_DirectionAnnotations[i]->SetMaximumFontSize(16);
+    m_DirectionAnnotations[i]->GetTextProperty()->BoldOn();
+    m_DirectionAnnotationRenderers[i] = vtkRenderer::New();
+    m_DirectionAnnotationRenderers[i]->AddActor(m_DirectionAnnotations[i]);
+    m_DirectionAnnotationRenderers[i]->InteractiveOff();
+    mitk::VtkLayerController::GetInstance(m_RenderWindows[i]->GetRenderWindow())->InsertForegroundRenderer(m_DirectionAnnotationRenderers[i], true);
+  }
+
+  double axialColour[3] = {1.0, 0.0, 0.0};
+  double sagittalColour[3] = {0.0, 1.0, 0.0};
+  double coronalColour[3] = {0.295, 0.295, 1.0};
+
+  m_DirectionAnnotations[AXIAL]->SetColour(0, coronalColour);
+  m_DirectionAnnotations[AXIAL]->SetColour(1, sagittalColour);
+  m_DirectionAnnotations[AXIAL]->SetColour(2, coronalColour);
+  m_DirectionAnnotations[AXIAL]->SetColour(3, sagittalColour);
+  m_DirectionAnnotations[SAGITTAL]->SetColour(0, axialColour);
+  m_DirectionAnnotations[SAGITTAL]->SetColour(1, coronalColour);
+  m_DirectionAnnotations[SAGITTAL]->SetColour(2, axialColour);
+  m_DirectionAnnotations[SAGITTAL]->SetColour(3, coronalColour);
+  m_DirectionAnnotations[CORONAL]->SetColour(0, axialColour);
+  m_DirectionAnnotations[CORONAL]->SetColour(1, sagittalColour);
+  m_DirectionAnnotations[CORONAL]->SetColour(2, axialColour);
+  m_DirectionAnnotations[CORONAL]->SetColour(3, sagittalColour);
+}
+
+
+//-----------------------------------------------------------------------------
 void MultiWindowWidget::InitialisePositionAnnotations()
 {
   for (int i = 0; i < 3; ++i)
@@ -2130,6 +2163,88 @@ void MultiWindowWidget::InitialisePropertyAnnotations()
 
     overlayManager->AddOverlay(annotation.GetPointer(), renderer);
     overlayManager->SetLayouter(annotation.GetPointer(), mitk::Overlay2DLayouter::STANDARD_2D_TOPLEFT(), renderer);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::UpdateDirectionAnnotations() const
+{
+  /// The place of the direction annotations on the render window:
+  ///
+  /// +----0----+
+  /// |         |
+  /// 3         1
+  /// |         |
+  /// +----2----+
+
+  if (m_DisplayConvention & DISPLAY_CONVENTION_AXIAL_ROTATED)
+  {
+    m_DirectionAnnotations[AXIAL]->SetText(0, "A");
+    m_DirectionAnnotations[AXIAL]->SetText(2, "P");
+  }
+  else
+  {
+    m_DirectionAnnotations[AXIAL]->SetText(0, "P");
+    m_DirectionAnnotations[AXIAL]->SetText(2, "A");
+  }
+  /// 'frontside' flips only the x axis, 'rotated' flips both the x and y axes.
+  /// If both applied, the x axis is not flipped, the sides are not swapped.
+  if (!!(m_DisplayConvention & DISPLAY_CONVENTION_AXIAL_FRONTSIDE) != !!(m_DisplayConvention & DISPLAY_CONVENTION_AXIAL_ROTATED))
+  {
+    m_DirectionAnnotations[AXIAL]->SetText(3, "R");
+    m_DirectionAnnotations[AXIAL]->SetText(1, "L");
+  }
+  else
+  {
+    m_DirectionAnnotations[AXIAL]->SetText(3, "L");
+    m_DirectionAnnotations[AXIAL]->SetText(1, "R");
+  }
+
+  if (m_DisplayConvention & DISPLAY_CONVENTION_SAGITTAL_ROTATED)
+  {
+    m_DirectionAnnotations[SAGITTAL]->SetText(0, "I");
+    m_DirectionAnnotations[SAGITTAL]->SetText(2, "S");
+  }
+  else
+  {
+    m_DirectionAnnotations[SAGITTAL]->SetText(0, "S");
+    m_DirectionAnnotations[SAGITTAL]->SetText(2, "I");
+  }
+  /// 'frontside' flips only the x axis, 'rotated' flips both the x and y axes.
+  /// If both applied, the x axis is not flipped, the sides are not swapped.
+  if (!!(m_DisplayConvention & DISPLAY_CONVENTION_SAGITTAL_FRONTSIDE) != !!(m_DisplayConvention & DISPLAY_CONVENTION_SAGITTAL_ROTATED))
+  {
+    m_DirectionAnnotations[SAGITTAL]->SetText(3, "A");
+    m_DirectionAnnotations[SAGITTAL]->SetText(1, "P");
+  }
+  else
+  {
+    m_DirectionAnnotations[SAGITTAL]->SetText(3, "P");
+    m_DirectionAnnotations[SAGITTAL]->SetText(1, "A");
+  }
+
+  if (m_DisplayConvention & DISPLAY_CONVENTION_CORONAL_ROTATED)
+  {
+    m_DirectionAnnotations[CORONAL]->SetText(0, "I");
+    m_DirectionAnnotations[CORONAL]->SetText(2, "S");
+  }
+  else
+  {
+    m_DirectionAnnotations[CORONAL]->SetText(0, "S");
+    m_DirectionAnnotations[CORONAL]->SetText(2, "I");
+  }
+  /// 'frontside' flips only the x axis, 'rotated' flips both the x and y axes.
+  /// If both applied, the x axis is not flipped, the sides are not swapped.
+  if (!!(m_DisplayConvention & DISPLAY_CONVENTION_CORONAL_FRONTSIDE) != !!(m_DisplayConvention & DISPLAY_CONVENTION_CORONAL_ROTATED))
+  {
+    m_DirectionAnnotations[CORONAL]->SetText(3, "R");
+    m_DirectionAnnotations[CORONAL]->SetText(1, "L");
+  }
+  else
+  {
+    m_DirectionAnnotations[CORONAL]->SetText(3, "L");
+    m_DirectionAnnotations[CORONAL]->SetText(1, "R");
   }
 }
 

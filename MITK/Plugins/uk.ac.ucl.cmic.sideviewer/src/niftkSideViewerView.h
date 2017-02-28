@@ -32,6 +32,7 @@ class QmitkRenderWindow;
 namespace niftk
 {
 class SideViewerWidget;
+class SideViewerViewPrivate;
 
 /**
  * \class SideViewerView
@@ -72,14 +73,16 @@ protected:
   /// \brief Derived classes decide which preferences are actually read.
   virtual QString GetPreferencesNodeName();
 
+private slots:
+
+  void ProcessOptions();
+
 private:
 
-  /// \brief Rendering manager of the internal viewer.
-  /// This class holds a smart pointer so that it does not get destroyed too early.
-  mitk::RenderingManager::Pointer m_RenderingManager;
+  const QScopedPointer<SideViewerViewPrivate> d;
 
-  /// \brief Provides an additional view of the segmented image, so plugin can be used on second monitor.
-  SideViewerWidget *m_SideViewerWidget;
+  friend class SideViewerViewPrivate;
+
 };
 
 }
