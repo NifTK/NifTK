@@ -29,29 +29,40 @@ class OpenCVVideoDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(OpenCVVideoDataType, IGIDataType)
-  itkNewMacro(OpenCVVideoDataType)
+  /**
+   * \brief Default constructor, so internal image is null.
+   */
+  OpenCVVideoDataType();
 
   /**
-  * \brief Used for loading in an image.
+  * \brief If you provide an image, this OpenCVVideoDataType does a shallow copy of just pointer.
   */
-  void CloneImage(const IplImage *image);
+  OpenCVVideoDataType(IplImage *image);
+
+  virtual ~OpenCVVideoDataType();
+  OpenCVVideoDataType(const OpenCVVideoDataType&);             // Copy constructor
+  OpenCVVideoDataType& operator=(const OpenCVVideoDataType&);  // Copy assignment
+  OpenCVVideoDataType(OpenCVVideoDataType&&);                  // Move constructor
+  OpenCVVideoDataType& operator=(OpenCVVideoDataType&&);       // Move assignment
 
   /**
   * \brief Returns the internal image, so do not modify it.
   */
-  const IplImage* GetImage();
+  const IplImage* GetImage() const;
 
-protected:
+  /**
+  * \brief Clones/Copies the provided image;
+  */
+  void SetImage(const IplImage *image);
 
-  OpenCVVideoDataType(); // Purposefully hidden.
-  virtual ~OpenCVVideoDataType(); // Purposefully hidden.
-
-  OpenCVVideoDataType(const OpenCVVideoDataType&); // Purposefully not implemented.
-  OpenCVVideoDataType& operator=(const OpenCVVideoDataType&); // Purposefully not implemented.
+  /**
+   * \brief Overrides base class, but only copies OpenCVVideoDataType.
+   */
+  virtual void Clone(const IGIDataType&) override;
 
 private:
 
+  void CloneImage(const IplImage *image);
   IplImage *m_Image;
 
 };

@@ -28,23 +28,19 @@ class QtAudioDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(QtAudioDataType, IGIDataType)
-  itkNewMacro(QtAudioDataType)
+  QtAudioDataType();
+  virtual ~QtAudioDataType();
+  QtAudioDataType(const QtAudioDataType&);             // Copy constructor
+  QtAudioDataType& operator=(const QtAudioDataType&);  // Copy assignment
+  QtAudioDataType(QtAudioDataType&&);                  // Move constructor
+  QtAudioDataType& operator=(QtAudioDataType&&);       // Move assignment
 
-  void SetBlob(const char* blob, std::size_t length);
-  std::pair<const char*, std::size_t> GetBlob() const;
-
-protected:
-
-  QtAudioDataType(); // Purposefully hidden.
-  virtual ~QtAudioDataType(); // Purposefully hidden.
-
-  QtAudioDataType(const QtAudioDataType&); // Purposefully not implemented.
-  QtAudioDataType& operator=(const QtAudioDataType&); // Purposefully not implemented.
+  void SetBlob(char* blob, std::size_t length);
+  std::pair<char*, std::size_t> GetBlob() const;
 
 private:
-  const char*   m_AudioBlob;
-  std::size_t   m_Length;
+  char*       m_AudioBlob;
+  std::size_t m_Length;
 };
 
 } // end namespace

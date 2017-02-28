@@ -68,8 +68,8 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
                         this, SLOT(OnFreezeTableHeaderClicked(int)));
   assert(ok);
   ok = QObject::connect(m_Manager,
-    SIGNAL(UpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >)),
-    this, SLOT(OnUpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >)));
+    SIGNAL(UpdateFinishedDataSources(niftk::IGIDataSourceI::IGITimeType, QList< QList<IGIDataItemInfo> >)),
+    this, SLOT(OnUpdateFinishedDataSources(niftk::IGIDataSourceI::IGITimeType, QList< QList<IGIDataItemInfo> >)));
   assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedRendering()),
                         this, SIGNAL(UpdateFinishedRendering()));
@@ -114,8 +114,8 @@ IGIDataSourceManagerWidget::~IGIDataSourceManagerWidget()
                            this, SLOT(OnFreezeTableHeaderClicked(int)));
   assert(ok);
   ok = QObject::disconnect(m_Manager,
-    SIGNAL(UpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >)),
-    this, SLOT(OnUpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >)));
+    SIGNAL(UpdateFinishedDataSources(niftk::IGIDataSourceI::IGITimeType, QList< QList<IGIDataItemInfo> >)),
+    this, SLOT(OnUpdateFinishedDataSources(niftk::IGIDataSourceI::IGITimeType, QList< QList<IGIDataItemInfo> >)));
   assert(ok);
   ok = QObject::disconnect(m_Manager, SIGNAL(UpdateFinishedRendering()),
                         this, SIGNAL(UpdateFinishedRendering()));
@@ -295,7 +295,7 @@ void IGIDataSourceManagerWidget::OnFreezeTableHeaderClicked(int section)
 
 //-----------------------------------------------------------------------------
 void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(
-    niftk::IGIDataType::IGITimeType timeNow, QList< QList<IGIDataItemInfo> > infos)
+    niftk::IGIDataSourceI::IGITimeType timeNow, QList< QList<IGIDataItemInfo> > infos)
 {
   emit UpdateGuiFinishedDataSources (timeNow);
 

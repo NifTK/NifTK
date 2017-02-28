@@ -56,7 +56,7 @@ DataSourcesView::~DataSourcesView()
     }
 
     bool ok = false;
-    ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
+    ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataSourceI::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataSourceI::IGITimeType)));
     assert(ok);
     ok = QObject::disconnect(m_DataSourceManagerWidget, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)));
     assert(ok);
@@ -104,7 +104,7 @@ void DataSourcesView::CreateQtPartControl( QWidget *parent )
   this->RetrievePreferenceValues();
 
   bool ok = false;
-  ok = QObject::connect(m_DataSourceManagerWidget, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType)));
+  ok = QObject::connect(m_DataSourceManagerWidget, SIGNAL(UpdateGuiFinishedDataSources(niftk::IGIDataSourceI::IGITimeType)), this, SLOT(OnUpdateGuiEnd(niftk::IGIDataSourceI::IGITimeType)));
   assert(ok);
   ok = QObject::connect(m_DataSourceManagerWidget, SIGNAL(RecordingStarted(QString)), this, SLOT(OnRecordingStarted(QString)), Qt::QueuedConnection);
   assert(ok);
@@ -160,7 +160,7 @@ void DataSourcesView::RetrievePreferenceValues()
 
 
 //-----------------------------------------------------------------------------
-void DataSourcesView::OnUpdateGuiEnd(niftk::IGIDataType::IGITimeType timeStamp)
+void DataSourcesView::OnUpdateGuiEnd(niftk::IGIDataSourceI::IGITimeType timeStamp)
 {
   ctkDictionary properties;
   properties["timeStamp"] = timeStamp;

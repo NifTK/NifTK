@@ -13,7 +13,6 @@
 =============================================================================*/
 
 #include "niftkOpenCVVideoDataSourceService.h"
-#include "niftkOpenCVVideoDataType.h"
 #include <niftkOpenCVImageConversion.h>
 #include <mitkExceptionMacro.h>
 
@@ -25,7 +24,10 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: SingleFrameDataSourceService(QString("OpenCV-"), factoryName, properties, dataStorage)
+: SingleFrameDataSourceService(QString("OpenCV-"), factoryName,
+                               25, // frames per second
+                               50, // ring buffer size,
+                               properties, dataStorage)
 , m_VideoSource(nullptr)
 , m_DataGrabbingThread(nullptr)
 {
@@ -76,13 +78,15 @@ OpenCVVideoDataSourceService::~OpenCVVideoDataSourceService()
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataType::Pointer OpenCVVideoDataSourceService::GrabImage()
+std::unique_ptr<niftk::IGIDataType> OpenCVVideoDataSourceService::GrabImage()
 {
   if (m_VideoSource.IsNull())
   {
     mitkThrow() << "Video source is null. This should not happen! It's most likely a race-condition.";
   }
 
+  // Here, I'm assuming that MITK returns a pointer to the image
+  // that was just fetched, and we do not have the right to claim this buffer.
   m_VideoSource->FetchFrame();
   const IplImage* img = m_VideoSource->GetCurrentFrame();
   if (img == NULL)
@@ -90,21 +94,24 @@ niftk::IGIDataType::Pointer OpenCVVideoDataSourceService::GrabImage()
     mitkThrow() << "Failed to get a valid video frame!";
   }
 
-  niftk::OpenCVVideoDataType::Pointer wrapper = niftk::OpenCVVideoDataType::New();
-  wrapper->CloneImage(img);
+  // So, here we clone the image.
+  niftk::OpenCVVideoDataType *wrapper = new niftk::OpenCVVideoDataType();
+  wrapper->SetImage(img);
 
-  return wrapper.GetPointer();
+  // This method is therefore a factory for new images.
+  std::unique_ptr<niftk::IGIDataType> result(wrapper);
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
 void OpenCVVideoDataSourceService::SaveImage(const std::string& filename,
-                                             niftk::IGIDataType::Pointer data)
+                                             niftk::IGIDataType& data)
 {
-  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(data.GetPointer());
-  if (dataType.IsNull())
+  niftk::OpenCVVideoDataType *dataType = dynamic_cast<niftk::OpenCVVideoDataType*>(&data);
+  if (dataType == nullptr)
   {
-    mitkThrow() << "Failed to save OpenCVVideoDataType as the data received was the wrong type!";
+    mitkThrow() << "Failed to save OpenCVVideoDataType as the input data was the wrong type!";
   }
 
   const IplImage* imageFrame = dataType->GetImage();
@@ -119,42 +126,37 @@ void OpenCVVideoDataSourceService::SaveImage(const std::string& filename,
     mitkThrow() << "Failed to save OpenCVVideoDataType to file:" << filename;
   }
 
-  data->SetIsSaved(true);
+  data.SetIsSaved(true);
 }
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataType::Pointer OpenCVVideoDataSourceService::LoadImage(const std::string& filename)
+std::unique_ptr<niftk::IGIDataType> OpenCVVideoDataSourceService::LoadImage(const std::string& filename)
 {
   IplImage* img = cvLoadImage(filename.c_str());
-  if (img)
-  {
-    niftk::OpenCVVideoDataType::Pointer wrapper = niftk::OpenCVVideoDataType::New();
-    wrapper->CloneImage(img);
-
-    cvReleaseImage(&img);
-
-    return wrapper.GetPointer();
-  }
-  else
+  if (img == nullptr)
   {
     mitkThrow() << "Failed to load image:" << filename;
   }
+  std::unique_ptr<niftk::IGIDataType> result(new niftk::OpenCVVideoDataType(img));
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Image::Pointer OpenCVVideoDataSourceService::ConvertImage(niftk::IGIDataType::Pointer inputImage,
-                                                                unsigned int& outputNumberOfBytes)
+mitk::Image::Pointer OpenCVVideoDataSourceService::RetrieveImage(
+    const niftk::IGIDataSourceI::IGITimeType& requestedTime,
+    niftk::IGIDataSourceI::IGITimeType& actualTime,
+    unsigned int& outputNumberOfBytes)
 {
-  niftk::OpenCVVideoDataType::Pointer dataType = static_cast<niftk::OpenCVVideoDataType*>(inputImage.GetPointer());
-  if (dataType.IsNull())
+  bool gotFromBuffer = m_Buffer.CopyOutItem(requestedTime, m_CachedImage);
+  if (!gotFromBuffer)
   {
-    this->SetStatus("Failed");
-    mitkThrow() << "Failed to extract image!";
+    MITK_INFO << "OpenCVVideoDataSourceService: Failed to find data for time:" << requestedTime;
+    return nullptr;
   }
 
-  const IplImage* img = dataType->GetImage();
+  const IplImage* img = m_CachedImage.GetImage();
   if (img != nullptr)
   {
     // OpenCV's cannonical channel layout is bgr (instead of rgb),
@@ -201,9 +203,9 @@ mitk::Image::Pointer OpenCVVideoDataSourceService::ConvertImage(niftk::IGIDataTy
   #endif
 
     outputNumberOfBytes = rgbOpenCVImage->width * rgbOpenCVImage->height * 3;
+    actualTime = m_CachedImage.GetTimeStampInNanoSeconds();
 
     cvReleaseImage(&rgbOpenCVImage);
-
     return convertedImage;
   }
   else

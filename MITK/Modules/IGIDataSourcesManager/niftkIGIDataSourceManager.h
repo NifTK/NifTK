@@ -211,8 +211,8 @@ public:
   */
   void StartPlayback(const QString& directoryPrefix,
                      const QString& descriptorPath,
-                     IGIDataType::IGITimeType& startTime,
-                     IGIDataType::IGITimeType& endTime,
+                     IGIDataSourceI::IGITimeType& startTime,
+                     IGIDataSourceI::IGITimeType& endTime,
                      int& sliderMax,
                      int& sliderSingleStep,
                      int& sliderPageStep,
@@ -232,13 +232,13 @@ public:
   /**
   * \brief If the user moves the time slider, we calculate a corresponding time.
   */
-  IGIDataType::IGITimeType ComputeTimeFromSlider(int sliderValue) const;
+  IGIDataSourceI::IGITimeType ComputeTimeFromSlider(int sliderValue) const;
 
   /**
   * \brief Sets the current time of the manager to time,
   * and the next available update pulse will trigger a refresh.
   */
-  void SetPlaybackTime(const IGIDataType::IGITimeType& time);
+  void SetPlaybackTime(const IGIDataSourceI::IGITimeType& time);
 
   /**
   * \brief Requests the manager to grab the currently focussed screen.
@@ -276,7 +276,7 @@ signals:
   /**
   * \brief Emmitted when this manager has asked each data source to update, and they have all updated.
   */
-  void UpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >);
+  void UpdateFinishedDataSources(niftk::IGIDataSourceI::IGITimeType, QList< QList<IGIDataItemInfo> >);
 
   /**
   * \brief Emmitted when this manager has called for rendering to be updated, and that call has completed.
@@ -379,15 +379,15 @@ private:
   igtl::TimeStamp::Pointer                                         m_TimeStampGenerator;
   bool                                                             m_IsPlayingBack;
   bool                                                             m_IsPlayingBackAutomatically;
-  niftk::IGIDataType::IGITimeType                                  m_CurrentTime;
+  niftk::IGIDataSourceI::IGITimeType                               m_CurrentTime;
 
   int                                                              m_PlaybackSliderValue;
   int                                                              m_PlaybackSliderMaxValue;
 
   // Slider position is relative to this base value.
   // Slider can only represent int values, but we need all 64 bit.
-  niftk::IGIDataType::IGITimeType                                  m_PlaybackSliderBase;
-  niftk::IGIDataType::IGITimeType                                  m_PlaybackSliderFactor;
+  niftk::IGIDataSourceI::IGITimeType                               m_PlaybackSliderBase;
+  niftk::IGIDataSourceI::IGITimeType                               m_PlaybackSliderFactor;
 
   bool                                                             m_IsGrabbingScreen;
   QString                                                          m_ScreenGrabDir;

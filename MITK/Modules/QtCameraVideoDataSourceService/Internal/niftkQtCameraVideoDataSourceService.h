@@ -53,7 +53,7 @@ protected:
   /**
    * \see niftk::SingleFrameDataSourceService::GrabImage().
    */
-  virtual niftk::IGIDataType::Pointer GrabImage() override;
+  virtual std::unique_ptr<niftk::IGIDataType> GrabImage() override;
 
 private slots:
 

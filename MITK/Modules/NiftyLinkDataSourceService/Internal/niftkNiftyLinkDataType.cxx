@@ -20,15 +20,55 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-NiftyLinkDataType::NiftyLinkDataType()
-: m_Message(NULL)
+NiftyLinkDataType::~NiftyLinkDataType()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-NiftyLinkDataType::~NiftyLinkDataType()
+NiftyLinkDataType::NiftyLinkDataType()
+: m_Message(nullptr)
 {
+
+}
+
+
+//-----------------------------------------------------------------------------
+NiftyLinkDataType::NiftyLinkDataType(niftk::NiftyLinkMessageContainer::Pointer message)
+: m_Message(message)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+NiftyLinkDataType::NiftyLinkDataType(const NiftyLinkDataType& other)
+{
+  m_Message = other.m_Message;
+}
+
+
+//-----------------------------------------------------------------------------
+NiftyLinkDataType::NiftyLinkDataType(NiftyLinkDataType&& other)
+{
+  m_Message = other.m_Message;
+  other.m_Message = nullptr;
+}
+
+
+//-----------------------------------------------------------------------------
+NiftyLinkDataType& NiftyLinkDataType::operator=(const NiftyLinkDataType& other)
+{
+  m_Message = other.m_Message;
+  return *this;
+}
+
+
+//-----------------------------------------------------------------------------
+NiftyLinkDataType& NiftyLinkDataType::operator=(NiftyLinkDataType&& other)
+{
+  m_Message = other.m_Message;
+  other.m_Message = nullptr;
+  return *this;
 }
 
 
@@ -37,18 +77,34 @@ bool NiftyLinkDataType::IsFastToSave()
 {
   bool isFast = true;
 
-  if (m_Message.data() == NULL)
+  if (m_Message.data() == nullptr)
   {
     mitkThrow() << "Message is Null";
   }
 
   // Currently assuming, just TDATA and IMAGE.
 
-  if (dynamic_cast<igtl::ImageMessage*>(m_Message->GetMessage().GetPointer()) != NULL)
+  if (dynamic_cast<igtl::ImageMessage*>(m_Message->GetMessage().GetPointer()) != nullptr)
   {
     isFast = false;
   }
   return isFast;
+}
+
+
+//-----------------------------------------------------------------------------
+void NiftyLinkDataType::Clone(const IGIDataType& other)
+{
+  IGIDataType::Clone(other);
+  const NiftyLinkDataType* tmp = dynamic_cast<const NiftyLinkDataType*>(&other);
+  if (tmp != nullptr)
+  {
+    m_Message = tmp->m_Message;
+  }
+  else
+  {
+    mitkThrow() << "Incorrect data type provided";
+  }
 }
 
 } // end namespace

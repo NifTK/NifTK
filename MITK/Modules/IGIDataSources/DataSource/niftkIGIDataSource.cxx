@@ -235,8 +235,8 @@ void IGIDataSource::StopRecording()
 
 
 //-----------------------------------------------------------------------------
-void IGIDataSource::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                                  niftk::IGIDataType::IGITimeType lastTimeStamp)
+void IGIDataSource::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                                  niftk::IGIDataSourceI::IGITimeType lastTimeStamp)
 {
   this->SetIsPlayingBack(true);
   this->Modified();
@@ -252,7 +252,7 @@ void IGIDataSource::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataType::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
+niftk::IGIDataSourceI::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
 {
   return m_SystemTimeService->GetSystemTimeInNanoseconds();
 }
@@ -296,8 +296,8 @@ mitk::DataNode::Pointer IGIDataSource::GetDataNode(const QString& name, const bo
 
 
 //-----------------------------------------------------------------------------
-bool IGIDataSource::IsLate(const niftk::IGIDataType::IGITimeType& requested,
-                           const niftk::IGIDataType::IGITimeType& actual
+bool IGIDataSource::IsLate(const niftk::IGIDataSourceI::IGITimeType& requested,
+                           const niftk::IGIDataSourceI::IGITimeType& actual
                           ) const
 {
   if (actual > requested)
@@ -309,8 +309,8 @@ bool IGIDataSource::IsLate(const niftk::IGIDataType::IGITimeType& requested,
 
 
 //-----------------------------------------------------------------------------
-unsigned int IGIDataSource::GetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& requested,
-                                                 const niftk::IGIDataType::IGITimeType& actual
+unsigned int IGIDataSource::GetLagInMilliseconds(const niftk::IGIDataSourceI::IGITimeType& requested,
+                                                 const niftk::IGIDataSourceI::IGITimeType& actual
                                                 ) const
 {
   if (actual > requested)

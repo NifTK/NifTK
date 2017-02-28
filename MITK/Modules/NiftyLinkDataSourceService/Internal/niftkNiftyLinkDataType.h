@@ -24,36 +24,35 @@ namespace niftk
 /**
  * \class QmitkIGINiftyLinkDataType
  * \brief Data wrapper for messages coming from NiftyLink.
+ *
+ * Note: Copy/Move operations are shallow copies of message pointers.
  */
 class NiftyLinkDataType : public IGIDataType
 {
 
 public:
 
-  mitkClassMacro(NiftyLinkDataType, IGIDataType)
-  itkNewMacro(NiftyLinkDataType)
+  NiftyLinkDataType();
+  NiftyLinkDataType(niftk::NiftyLinkMessageContainer::Pointer message);
+  virtual ~NiftyLinkDataType();
 
-  virtual void* GetData() const override { return m_Message.data(); }
+  NiftyLinkDataType(const NiftyLinkDataType&);             // Copy constructor
+  NiftyLinkDataType& operator=(const NiftyLinkDataType&);  // Copy assignment
+  NiftyLinkDataType(NiftyLinkDataType&&);                  // Move constructor
+  NiftyLinkDataType& operator=(NiftyLinkDataType&&);       // Move assignment
 
   niftk::NiftyLinkMessageContainer::Pointer GetMessageContainer() const { return m_Message; }
-  void SetMessageContainer(niftk::NiftyLinkMessageContainer::Pointer message)
-  {
-    m_Message = message;
-    this->Modified();
-  }
+  void SetMessageContainer(niftk::NiftyLinkMessageContainer::Pointer p) { m_Message = p;}
 
   /**
-  * \brief Meaning, can we save to disk in under 40 ms?
+  * \brief Meaning, can we save to disk in under 40 ms (25fps).
   */
   bool IsFastToSave();
 
-protected:
-
-  NiftyLinkDataType(); // Purposefully hidden.
-  virtual ~NiftyLinkDataType(); // Purposefully hidden.
-
-  NiftyLinkDataType(const NiftyLinkDataType&); // Purposefully not implemented.
-  NiftyLinkDataType& operator=(const NiftyLinkDataType&); // Purposefully not implemented.
+  /**
+   * \brief Overrides base class, but only copies NiftyLinkDataType.
+   */
+  virtual void Clone(const IGIDataType&) override;
 
 private:
 

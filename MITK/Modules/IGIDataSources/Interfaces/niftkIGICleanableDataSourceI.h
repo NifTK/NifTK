@@ -32,8 +32,8 @@ public:
 
 protected:
 
-  IGICleanableDataSourceI(); // Purposefully hidden.
-  virtual ~IGICleanableDataSourceI(); // Purposefully hidden.
+  IGICleanableDataSourceI() {} // Purposefully hidden.
+  virtual ~IGICleanableDataSourceI() {} // Purposefully hidden.
 
   IGICleanableDataSourceI(const IGICleanableDataSourceI&); // Purposefully not implemented.
   IGICleanableDataSourceI& operator=(const IGICleanableDataSourceI&); // Purposefully not implemented.

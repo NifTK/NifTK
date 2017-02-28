@@ -25,34 +25,45 @@ namespace niftk
 /**
  * \class QImageDataType
  * \brief Class to represent a frame of video/ultrasound data using QImage.
- *
- * Note: These objects are only designed to be initialised with image data once.
  */
 class NIFTKIGIDATASOURCES_EXPORT QImageDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(QImageDataType, IGIDataType)
-  itkNewMacro(QImageDataType)
+  /**
+   * \brief Default constructor, so internal image is null.
+   */
+  QImageDataType();
 
-  void DeepCopy(const QImage& image);
-  void ShallowCopy(const QImage& image);
+  /**
+  * \brief If you provide an image, this QImageDataType does a shallow copy of just pointer.
+  */
+  QImageDataType(QImage *image);
+
+  virtual ~QImageDataType();
+  QImageDataType(const QImageDataType&);             // Copy constructor
+  QImageDataType& operator=(const QImageDataType&);  // Copy assignment
+  QImageDataType(QImageDataType&&);                  // Move constructor
+  QImageDataType& operator=(QImageDataType&&);       // Move assignment
 
   /**
   * \brief Returns the internal image, so do not modify it.
   */
-  const QImage* GetImage();
+  const QImage* GetImage() const;
 
-protected:
+  /**
+  * \brief Clones/Copies the provided image;
+  */
+  void SetImage(const QImage *image);
 
-  QImageDataType(); // Purposefully hidden.
-  virtual ~QImageDataType(); // Purposefully hidden.
-
-  QImageDataType(const QImageDataType&); // Purposefully not implemented.
-  QImageDataType& operator=(const QImageDataType&); // Purposefully not implemented.
+  /**
+  * \brief Overrides base class, but only copies QImageDataType.
+  */
+  virtual void Clone(const IGIDataType&) override;
 
 private:
 
+  void CloneImage(const QImage *image);
   QImage *m_Image;
 
 };

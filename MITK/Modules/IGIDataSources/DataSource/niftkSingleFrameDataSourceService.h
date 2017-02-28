@@ -17,16 +17,14 @@
 #include <niftkIGIDataSourcesExports.h>
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
-#include <niftkIGIDataSourceBuffer.h>
 #include <niftkIGILocalDataSourceI.h>
-#include <niftkIGICleanableDataSourceI.h>
-#include <niftkIGIDataSourceBackgroundDeleteThread.h>
-#include <niftkIGIBufferedSaveableDataSourceI.h>
+#include <niftkIGIDataSourceRingBuffer.h>
 #include <mitkImage.h>
 
 #include <QObject>
 #include <QMutex>
 #include <QString>
+#include <memory>
 
 namespace niftk
 {
@@ -44,8 +42,6 @@ class NIFTKIGIDATASOURCES_EXPORT SingleFrameDataSourceService
     : public QObject
     , public IGIDataSource
     , public IGILocalDataSourceI
-    , public IGICleanableDataSourceI
-    , public IGIBufferedSaveableDataSourceI
 {
 
 public:
@@ -55,14 +51,14 @@ public:
   /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
-  bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
+  bool ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                         niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore) override;
 
   /**
   * \see  IGIDataSourceI::StartPlayback()
   */
-  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                             niftk::IGIDataType::IGITimeType lastTimeStamp) override;
+  virtual void StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                             niftk::IGIDataSourceI::IGITimeType lastTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::StopPlayback()
@@ -72,7 +68,7 @@ public:
   /**
   * \see IGIDataSourceI::PlaybackData()
   */
-  void PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp) override;
+  void PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp) override;
 
   /**
   * \brief IGIDataSourceI::SetProperties()
@@ -87,12 +83,7 @@ public:
   /**
   * \see IGIDataSourceI::Update()
   */
-  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
-
-  /**
-  * \see niftk::IGICleanableDataSourceI::CleanBuffer()
-  */
-  virtual void CleanBuffer() override;
+  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time) override;
 
   /**
   * \see niftk::IGILocalDataSourceI::GrabData()
@@ -102,53 +93,62 @@ public:
 protected:
 
   SingleFrameDataSourceService(QString deviceName,
-                                    QString factoryName,
-                                    const IGIDataSourceProperties& properties,
-                                    mitk::DataStorage::Pointer dataStorage
-                                   );
+                               QString factoryName,
+                               unsigned int framesPerSecond,
+                               unsigned int bufferSize,
+                               const IGIDataSourceProperties& properties,
+                               mitk::DataStorage::Pointer dataStorage
+                              );
   virtual ~SingleFrameDataSourceService();
 
   /**
    * \brief Derived classes implement this to grab a new image.
+   *
+   * The GrabImage method functions like a factory, returning a new,
+   * heap allocated data type.
    */
-  virtual niftk::IGIDataType::Pointer GrabImage() = 0;
-
-  /**
-   * \brief Derived classes must save the item to the given filename.
-   */
-  virtual void SaveImage(const std::string& filename, niftk::IGIDataType::Pointer item) = 0;
-
-  /**
-   * \brief Derived classes must load the image at the given filename.
-   */
-  virtual niftk::IGIDataType::Pointer LoadImage(const std::string& filename) = 0;
+  virtual std::unique_ptr<niftk::IGIDataType> GrabImage() = 0;
 
   /**
    * \brief Derived classes must implement this to convert the IGIDataType to an mitk::Image.
    */
-  virtual mitk::Image::Pointer ConvertImage(niftk::IGIDataType::Pointer inputImage,
-                                            unsigned int& outputNumberOfBytes) = 0;
+  virtual mitk::Image::Pointer RetrieveImage(const niftk::IGIDataSourceI::IGITimeType& requested,
+                                             niftk::IGIDataSourceI::IGITimeType& actualTime,
+                                             unsigned int& outputNumberOfBytes) = 0;
 
-  static niftk::IGIDataSourceLocker                        s_Lock;
-  int GetChannelNumber() const                             { return m_ChannelNumber;}
-  int GetApproximateIntervalInMilliseconds() const         { return m_ApproxIntervalInMilliseconds; } // default 40ms.
+  /**
+   * \brief Derived classes must save the item to the given filename.
+   */
+  virtual void SaveImage(const std::string& filename, niftk::IGIDataType& item) = 0;
+
+  /**
+   * \brief Derived classes must load the image at the given filename.
+   *
+   * The GrabImage method functions like a factory, returning a new,
+   * heap allocated data type.
+   */
+  virtual std::unique_ptr<niftk::IGIDataType> LoadImage(const std::string& filename) = 0;
+
+  int GetChannelNumber() const                              { return m_ChannelNumber;}
+  int GetApproximateIntervalInMilliseconds() const          { return m_ApproxIntervalInMilliseconds; } // default 40ms.
   void SetApproximateIntervalInMilliseconds(const int& ms);
+
+  static niftk::IGIDataSourceLocker                         s_Lock;
+  niftk::IGIDataSourceRingBuffer                            m_Buffer;
 
 private:
 
   SingleFrameDataSourceService(const SingleFrameDataSourceService&); // deliberately not implemented
   SingleFrameDataSourceService& operator=(const SingleFrameDataSourceService&); // deliberately not impl'd.
 
-  void SaveItem(niftk::IGIDataType::Pointer item) override;
+  void SaveItem(niftk::IGIDataType& item);
 
-  QMutex                                          m_Lock;
-  int                                             m_ChannelNumber;
-  niftk::IGIDataType::IGIIndexType                m_FrameId;
-  niftk::IGIDataSourceBuffer::Pointer             m_Buffer;
-  niftk::IGIDataSourceBackgroundDeleteThread*     m_BackgroundDeleteThread;
-  std::set<niftk::IGIDataType::IGITimeType>       m_PlaybackIndex;
-  int                                             m_ApproxIntervalInMilliseconds;
-  QString                                         m_FileExtension;
+  QMutex                                       m_Lock;
+  int                                          m_ChannelNumber;
+  niftk::IGIDataSourceI::IGIIndexType          m_FrameId;
+  std::set<niftk::IGIDataSourceI::IGITimeType> m_PlaybackIndex;
+  int                                          m_ApproxIntervalInMilliseconds;
+  QString                                      m_FileExtension;
 
 }; // end class
 

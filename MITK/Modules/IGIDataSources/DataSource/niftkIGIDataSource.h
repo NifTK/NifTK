@@ -16,10 +16,9 @@
 #define niftkIGIDataSource_h
 
 #include <niftkIGIDataSourcesExports.h>
-#include <niftkIGIDataType.h>
-#include <niftkSystemTimeServiceRAII.h>
 #include <niftkIGIDataSourceI.h>
 #include <niftkSystemTimeServiceI.h>
+#include <niftkSystemTimeServiceRAII.h>
 
 #include <mitkDataStorage.h>
 #include <mitkServiceInterface.h>
@@ -83,8 +82,8 @@ public:
   /**
   * \see IGIDataSourceI::StartPlayback()
   */
-  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                             niftk::IGIDataType::IGITimeType lastTimeStamp) override;
+  virtual void StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                             niftk::IGIDataSourceI::IGITimeType lastTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::StopPlayback()
@@ -134,8 +133,8 @@ public:
   itkGetConstMacro(IsRecording, bool);
   itkGetConstMacro(IsPlayingBack, bool);
 
-  itkSetMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
-  itkGetConstMacro(TimeStampTolerance, niftk::IGIDataType::IGITimeType);
+  itkSetMacro(TimeStampTolerance, niftk::IGIDataSourceI::IGITimeType);
+  itkGetConstMacro(TimeStampTolerance, niftk::IGIDataSourceI::IGITimeType);
 
 protected:
 
@@ -161,15 +160,15 @@ protected:
   * \brief Returns true if the delay between requested and actual is
   * greater than the TimeStampTolerance, and false otherwise.
   */
-  bool IsLate(const niftk::IGIDataType::IGITimeType& requested,
-              const niftk::IGIDataType::IGITimeType& actual
+  bool IsLate(const niftk::IGIDataSourceI::IGITimeType& requested,
+              const niftk::IGIDataSourceI::IGITimeType& actual
               ) const;
 
   /**
   * \brief Simply checks the difference in time, and converts to milliseconds.
   */
-  unsigned int GetLagInMilliseconds(const niftk::IGIDataType::IGITimeType& requested,
-                                    const niftk::IGIDataType::IGITimeType& actual
+  unsigned int GetLagInMilliseconds(const niftk::IGIDataSourceI::IGITimeType& requested,
+                                    const niftk::IGIDataSourceI::IGITimeType& actual
                                    ) const;
 
   /**
@@ -180,7 +179,7 @@ protected:
   /**
   * \brief Queries the internal igtl::TimeStamp to get an up-to-date timestamp.
   */
-  niftk::IGIDataType::IGITimeType GetTimeStampInNanoseconds();
+  niftk::IGIDataSourceI::IGITimeType GetTimeStampInNanoseconds();
 
   itkSetMacro(IsRecording, bool);
   itkSetMacro(IsPlayingBack, bool);
@@ -190,20 +189,20 @@ protected:
 
 private:
 
-  niftk::SystemTimeServiceRAII     *m_SystemTimeService;
-  mitk::DataStorage::Pointer        m_DataStorage;
-  std::set<mitk::DataNode::Pointer> m_DataNodes;
-  us::ServiceRegistration<Self>     m_MicroServiceRegistration;
-  QString                           m_Name;
-  QString                           m_FactoryName;
-  QString                           m_Status;
-  QString                           m_Description;
-  QString                           m_RecordingLocation;
-  QString                           m_PlaybackSourceName;
-  niftk::IGIDataType::IGITimeType   m_TimeStampTolerance; // nanoseconds.
-  bool                              m_ShouldUpdate;
-  bool                              m_IsRecording;
-  bool                              m_IsPlayingBack;
+  niftk::SystemTimeServiceRAII      *m_SystemTimeService;
+  mitk::DataStorage::Pointer         m_DataStorage;
+  std::set<mitk::DataNode::Pointer>  m_DataNodes;
+  us::ServiceRegistration<Self>      m_MicroServiceRegistration;
+  QString                            m_Name;
+  QString                            m_FactoryName;
+  QString                            m_Status;
+  QString                            m_Description;
+  QString                            m_RecordingLocation;
+  QString                            m_PlaybackSourceName;
+  niftk::IGIDataSourceI::IGITimeType m_TimeStampTolerance; // nanoseconds.
+  bool                               m_ShouldUpdate;
+  bool                               m_IsRecording;
+  bool                               m_IsPlayingBack;
 };
 
 } // end namespace

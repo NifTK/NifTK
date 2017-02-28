@@ -16,11 +16,7 @@
 #define niftkIGIDataType_h
 
 #include "niftkIGIDataSourcesExports.h"
-#include <niftkSystemTimeServiceI.h>
-#include <mitkCommon.h>
-#include <itkVersion.h>
-#include <itkObject.h>
-#include <itkObjectFactoryBase.h>
+#include <niftkIGIDataSourceI.h>
 
 namespace niftk
 {
@@ -31,56 +27,49 @@ namespace niftk
 * containing tracking data, video frames or ultrasound frames.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
+*
+* Note: This class, and hence derived classes, must implement a full set of
+* copy and move constructors and assignment operators.
 */
-class NIFTKIGIDATASOURCES_EXPORT IGIDataType : public itk::Object
+class NIFTKIGIDATASOURCES_EXPORT IGIDataType
 {
 public:
 
-  typedef SystemTimeServiceI::TimeType IGITimeType;
-  typedef unsigned long int IGIIndexType;
+  IGIDataType();
+  virtual ~IGIDataType();
+  IGIDataType(const IGIDataType&);             // Copy constructor
+  IGIDataType& operator=(const IGIDataType&);  // Copy assignment
+  IGIDataType(IGIDataType&&);                  // Move constructor
+  IGIDataType& operator=(IGIDataType&&);       // Move assignment
 
-  mitkClassMacroItkParent(IGIDataType, itk::Object)
-  itkNewMacro(IGIDataType)
+  niftk::IGIDataSourceI::IGITimeType GetTimeStampInNanoSeconds() const { return m_TimeStamp; }
+  void SetTimeStampInNanoSeconds(const niftk::IGIDataSourceI::IGITimeType& time) { m_TimeStamp = time; }
 
-  IGITimeType GetTimeStampInNanoSeconds() const;
-  void SetTimeStampInNanoSeconds(const IGITimeType& time);
+  niftk::IGIDataSourceI::IGITimeType GetDuration() const { return m_Duration; }
+  void SetDuration(const niftk::IGIDataSourceI::IGITimeType& duration) { m_Duration = duration; }
 
-  itkSetMacro(Duration, IGITimeType);
-  itkGetMacro(Duration, IGITimeType);
+  niftk::IGIDataSourceI::IGIIndexType GetFrameId() const { return m_FrameId; }
+  void SetFrameId(const niftk::IGIDataSourceI::IGIIndexType& id) { m_FrameId = id; }
 
-  itkSetMacro(FrameId, IGIIndexType);
-  itkGetMacro(FrameId, IGIIndexType);
+  bool GetIsSaved() const { return m_IsSaved; }
+  void SetIsSaved(bool isSaved) { m_IsSaved = isSaved; }
 
-  itkSetMacro(IsSaved, bool);
-  itkGetMacro(IsSaved, bool);
+  bool GetShouldBeSaved() const { return m_ShouldBeSaved; }
+  void SetShouldBeSaved(bool shouldBe) { m_ShouldBeSaved = shouldBe; }
 
-  itkSetMacro(ShouldBeSaved, bool);
-  itkGetMacro(ShouldBeSaved, bool);
+  std::string GetFileName() const { return m_FileName; }
+  void SetFileName(const std::string& fileName) { m_FileName = fileName; }
 
-  itkSetMacro(FileName, std::string);
-  itkGetMacro(FileName, std::string);
-
-  /**
-  * \brief This object can contain any data, and derived classes should override this.
-  */
-  virtual void* GetData() const { return NULL; }
-
-protected:
-
-  IGIDataType(); // Purposefully hidden.
-  virtual ~IGIDataType(); // Purposefully hidden.
-
-  IGIDataType(const IGIDataType&); // Purposefully not implemented.
-  IGIDataType& operator=(const IGIDataType&); // Purposefully not implemented.
+  virtual void Clone(const IGIDataType&);
 
 private:
 
-  IGITimeType  m_TimeStamp;
-  IGITimeType  m_Duration;
-  IGIIndexType m_FrameId;
-  bool         m_IsSaved;
-  bool         m_ShouldBeSaved;
-  std::string  m_FileName;
+  niftk::IGIDataSourceI::IGITimeType  m_TimeStamp;
+  niftk::IGIDataSourceI::IGITimeType  m_Duration;
+  niftk::IGIDataSourceI::IGIIndexType m_FrameId;
+  bool                                m_IsSaved;
+  bool                                m_ShouldBeSaved;
+  std::string                         m_FileName;
 };
 
 } // end namespace

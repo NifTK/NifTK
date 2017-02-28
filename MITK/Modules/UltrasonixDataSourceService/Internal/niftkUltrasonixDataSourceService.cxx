@@ -77,6 +77,28 @@ UltrasonixDataSourceInterface::UltrasonixDataSourceInterface(UltrasonixDataSourc
   m_Ulterius = new ulterius;
   m_Ulterius->setCallback(NewDataCallBack);
   m_Ulterius->setParamCallback(ParamCallBack);
+
+  for (int i = 0; i < 256; i++)
+  {
+    m_DefaultLUT.push_back(qRgb(i, i, i));
+  }
+
+  m_UDataMask = QVariant::fromValue(0x00000004);
+}
+
+
+//-----------------------------------------------------------------------------
+QVariant UltrasonixDataSourceInterface::GetUDataMask() const
+{
+  return m_UDataMask;
+}
+
+
+//-----------------------------------------------------------------------------
+void UltrasonixDataSourceInterface::SetUDataMask(QVariant value)
+{
+  m_UDataMask = value;
+  m_Ulterius->setDataToAcquire(uData(value.toInt()));
 }
 
 
@@ -109,21 +131,9 @@ bool UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, 
     {
       // This should set the alpha channel to 1, leaving other pixels (RGB) unchanged.
       // use with QImage::Format_ARGB32
-      // ((unsigned int*)m_Buffer)[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000;
-
-      // Or do it this way, and we are outputing QImage::Format_RGB888
-      readFrom++;
-      *writeTo = *readFrom;
-      writeTo++;
-      readFrom++;
-      *writeTo = *readFrom;
-      writeTo++;
-      readFrom++;
-      *writeTo = *readFrom;
-      writeTo++;
-      readFrom++;
+      ((unsigned int*)m_Buffer)[i] = static_cast<unsigned int*>(data)[i] | 0xFF000000;
     }
-    QImage image(m_Buffer, desc.w, desc.h, QImage::Format_RGB888);
+    QImage image(m_Buffer, desc.w, desc.h, QImage::Format_ARGB32);
     m_Service->ProcessImage(image);
   }
   else if (desc.ss == 8)
@@ -132,6 +142,7 @@ bool UltrasonixDataSourceInterface::ProcessBuffer(void *data, int type, int sz, 
     QImage image(static_cast<unsigned char*>(data), desc.w, desc.h, QImage::Format_Grayscale8);
 #else
     QImage image(static_cast<unsigned char*>(data), desc.w, desc.h, QImage::Format_Indexed8);
+    image.setColorTable(m_DefaultLUT);
 #endif
     m_Service->ProcessImage(image);
   }
@@ -187,7 +198,7 @@ void UltrasonixDataSourceInterface::Connect(const QString& host)
   {
     m_Ulterius->toggleFreeze();
   }
-  m_Ulterius->setDataToAcquire(udtBPost32);
+  m_Ulterius->setDataToAcquire(this->GetUDataMask().toInt());
 }
 
 
@@ -212,7 +223,13 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: QImageDataSourceService(QString("Ultrasonix-"), factoryName, properties, dataStorage)
+: QImageDataSourceService(QString("Ultrasonix-"),
+                          factoryName,
+                          40, // expected frames per second (ignored, as SDK uses a callback).
+                          80, // ring buffer size
+                          properties,
+                          dataStorage
+                         )
 , m_Ultrasonix(nullptr)
 {
   this->SetStatus("Initialising");
@@ -256,6 +273,8 @@ UltrasonixDataSourceService::~UltrasonixDataSourceService()
 //-----------------------------------------------------------------------------
 void UltrasonixDataSourceService::ProcessImage(const QImage& image)
 {
+  // Note: We can't take ownership of input image.
+
   m_TemporaryImage = new QImage(image); // should just wrap without copy.
   this->GrabData();
   delete m_TemporaryImage;              // then we delete this temporary wrapper.
@@ -263,11 +282,38 @@ void UltrasonixDataSourceService::ProcessImage(const QImage& image)
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataType::Pointer UltrasonixDataSourceService::GrabImage()
+std::unique_ptr<niftk::IGIDataType> UltrasonixDataSourceService::GrabImage()
 {
-  niftk::QImageDataType::Pointer image = niftk::QImageDataType::New();
-  image->DeepCopy(*m_TemporaryImage);  // this should be the only copy in the pipeline.
-  return image.GetPointer();
+  // So this method has to create a clone, to pass as a return
+  // value, like a factory method would do.
+
+  niftk::QImageDataType* wrapper = new niftk::QImageDataType();
+  wrapper->SetImage(m_TemporaryImage); // clones it.
+
+  std::unique_ptr<niftk::IGIDataType> result(wrapper);
+  return result;
 }
+
+//-----------------------------------------------------------------------------
+void UltrasonixDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
+{
+  niftk::SingleFrameDataSourceService::SetProperties(properties);
+  if (properties.contains("uData"))
+  {
+    QVariant uDataMask = properties.value("uData");
+    m_Ultrasonix->SetUDataMask(uDataMask);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+IGIDataSourceProperties UltrasonixDataSourceService::GetProperties() const
+{
+  IGIDataSourceProperties props = niftk::SingleFrameDataSourceService::GetProperties();
+  props.insert("uData", m_Ultrasonix->GetUDataMask());
+
+  return props;
+}
+
 
 } // end namespace

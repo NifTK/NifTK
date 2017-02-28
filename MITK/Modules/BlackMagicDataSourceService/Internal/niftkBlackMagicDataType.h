@@ -30,30 +30,18 @@ class BlackMagicDataType : public IGIDataType
 {
 public:
 
-  mitkClassMacro(BlackMagicDataType, IGIDataType)
-  itkNewMacro(BlackMagicDataType)
 
-  /**
-  * \brief Used for loading in an image.
-  */
-  //void CloneImage(const IplImage *image);
-
-  /**
-  * \brief Returns the internal image, so do not modify it.
-  */
-  //const IplImage* GetImage();
-
-protected:
-
-  BlackMagicDataType(); // Purposefully hidden.
-  virtual ~BlackMagicDataType(); // Purposefully hidden.
-
-  BlackMagicDataType(const BlackMagicDataType&); // Purposefully not implemented.
-  BlackMagicDataType& operator=(const BlackMagicDataType&); // Purposefully not implemented.
+  BlackMagicDataType();
+  virtual ~BlackMagicDataType();
+  BlackMagicDataType(const BlackMagicDataType&);             // Copy constructor
+  BlackMagicDataType& operator=(const BlackMagicDataType&);  // Copy assignment
+  BlackMagicDataType(BlackMagicDataType&&);                  // Move constructor
+  BlackMagicDataType& operator=(BlackMagicDataType&&);       // Move assignment
 
 private:
 
   // Use any data type you like.
+  // Just make sure copy/move works.
   // IplImage *m_Image;
 
 };

@@ -16,7 +16,7 @@
 #define niftkIGIDataSourceI_h
 
 #include "niftkIGIDataSourcesExports.h"
-#include <niftkIGIDataType.h>
+#include <niftkSystemTimeServiceI.h>
 
 #include <mitkCommon.h>
 #include <itkVersion.h>
@@ -72,6 +72,9 @@ class NIFTKIGIDATASOURCES_EXPORT IGIDataSourceI : public itk::Object
 
 public:
 
+  typedef SystemTimeServiceI::TimeType IGITimeType;
+  typedef unsigned long int            IGIIndexType;
+
   mitkClassMacroItkParent(IGIDataSourceI, itk::Object)
 
   /**
@@ -111,8 +114,8 @@ public:
   * \param firstTimeStamp specifies the minimum time of the recording session.
   * \param lastTimeStamp specifies the maximum time of the recording session.
   */
-  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                             niftk::IGIDataType::IGITimeType lastTimeStamp) = 0;
+  virtual void StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                             niftk::IGIDataSourceI::IGITimeType lastTimeStamp) = 0;
 
   /**
   * \brief Stops the playback process, so after this call, implementing data sources
@@ -126,7 +129,7 @@ public:
   * This is expected to just load data into internal buffers. It should then be
   * up to the Update() method to update data storage.
   */
-  virtual void PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp) = 0;
+  virtual void PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp) = 0;
 
   /**
   * \brief Set the root directory of the recording session.
@@ -187,7 +190,7 @@ public:
   * status of a specific tool. This means that as the number of visible items changes,
   * this array may change size.
   */
-  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) = 0;
+  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time) = 0;
 
   /**
    * Checks whether the previously recorded data is readable, and returns the time-range for it.
@@ -199,8 +202,8 @@ public:
    * \see SetRecordingLocation
    * \see SetPlaybackSourceName
    */
-  virtual bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                 niftk::IGIDataType::IGITimeType* lastTimeStampInStore) = 0;
+  virtual bool ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                                 niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore) = 0;
 
   /**
   * \brief Allows you to set properties, but the implementor is free to ignore them.
@@ -214,8 +217,8 @@ public:
 
 protected:
 
-  IGIDataSourceI();
-  virtual ~IGIDataSourceI();
+  IGIDataSourceI() {} // Purposefully hidden.
+  virtual ~IGIDataSourceI() {} // Purposefully hidden.
 
 private:
 

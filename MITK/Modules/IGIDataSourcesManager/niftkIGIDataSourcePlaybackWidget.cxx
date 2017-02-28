@@ -192,8 +192,8 @@ void IGIDataSourcePlaybackWidget::OnPlayStart()
     {
       try
       {
-        IGIDataType::IGITimeType overallStartTime = std::numeric_limits<IGIDataType::IGITimeType>::max();
-        IGIDataType::IGITimeType overallEndTime   = std::numeric_limits<IGIDataType::IGITimeType>::min();
+        IGIDataSourceI::IGITimeType overallStartTime = std::numeric_limits<IGIDataSourceI::IGITimeType>::max();
+        IGIDataSourceI::IGITimeType overallEndTime   = std::numeric_limits<IGIDataSourceI::IGITimeType>::min();
         int sliderMaximum = 0;
         int sliderSingleStep = 0;
         int sliderPageStep = 0;
@@ -454,7 +454,7 @@ void IGIDataSourcePlaybackWidget::OnStartPushButtonClicked(bool /*isChecked*/)
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnSliderReleased()
 {
-  IGIDataType::IGITimeType time = m_Manager->ComputeTimeFromSlider(m_PlaybackSlider->value());
+  IGIDataSourceI::IGITimeType time = m_Manager->ComputeTimeFromSlider(m_PlaybackSlider->value());
   m_Manager->SetPlaybackTime(time);
 }
 

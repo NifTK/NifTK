@@ -16,7 +16,6 @@
 
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
-#include <niftkIGILocalDataSourceI.h>
 
 #include <QObject>
 #include <QSet>
@@ -53,13 +52,13 @@ public:
   /**
   * \see  IGIDataSourceI::StartPlayback()
   */
-  virtual void StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                             niftk::IGIDataType::IGITimeType lastTimeStamp) override;
+  virtual void StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                             niftk::IGIDataSourceI::IGITimeType lastTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::PlaybackData()
   */
-  void PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp) override;
+  void PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::StopPlayback()
@@ -69,13 +68,13 @@ public:
   /**
   * \see IGIDataSourceI::Update()
   */
-  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataType::IGITimeType& time) override;
+  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time) override;
 
   /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
-  bool ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                         niftk::IGIDataType::IGITimeType* lastTimeStampInStore) override;
+  bool ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                         niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore) override;
 
   /**
   * \see IGIDataSourceI::StartRecording()
@@ -121,7 +120,7 @@ private:
   static niftk::IGIDataSourceLocker               s_Lock;
   QMutex                                          m_Lock;
   int                                             m_SourceNumber;
-  niftk::IGIDataType::IGIIndexType                m_FrameId;
+  niftk::IGIDataSourceI::IGIIndexType             m_FrameId;
 
   QAudioInput*                                    m_InputDevice;
   QIODevice*                                      m_InputStream;      // we do not own this one!

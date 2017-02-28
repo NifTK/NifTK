@@ -39,6 +39,8 @@ public:
   bool IsConnected() const;
   bool ProcessBuffer(void *data, int type, int sz, bool cine, int frmnum);
   bool ProcessParameterChange(void* paramID, int x, int y);
+  QVariant GetUDataMask() const;
+  void SetUDataMask(QVariant value);
 
 private:
   UltrasonixDataSourceInterface(UltrasonixDataSourceService* serviceObj);
@@ -46,6 +48,8 @@ private:
   ulterius*                             m_Ulterius;
   UltrasonixDataSourceService*          m_Service;
   unsigned char*                        m_Buffer;
+  QVector<QRgb>                         m_DefaultLUT;
+  QVariant                              m_UDataMask;
 
   static bool NewDataCallBack(void *data, int type, int sz, bool cine, int frmnum);
   static bool ParamCallBack(void* paramID, int x, int y);
@@ -70,6 +74,16 @@ public:
 
   void ProcessImage(const QImage& image);
 
+    /**
+  * \brief IGIDataSourceI::SetProperties()
+  */
+  virtual void SetProperties(const IGIDataSourceProperties& properties) override;
+
+  /**
+  * \brief IGIDataSourceI::GetProperties()
+  */
+  virtual IGIDataSourceProperties GetProperties() const override;
+
 protected:
 
   UltrasonixDataSourceService(QString factoryName,
@@ -82,7 +96,7 @@ protected:
   /**
    * \see niftk::SingleFrameDataSourceService::GrabImage().
    */
-  virtual niftk::IGIDataType::Pointer GrabImage() override;
+  virtual std::unique_ptr<niftk::IGIDataType> GrabImage() override;
 
 private:
 

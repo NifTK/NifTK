@@ -14,7 +14,7 @@
 
 #include "niftkUltrasonixDataSourceFactory.h"
 #include "niftkUltrasonixDataSourceService.h"
-#include <niftkLagDialog.h>
+#include "niftkUltrasonixConfigDialog.h"
 #include <niftkIPHostExtensionDialog.h>
 
 namespace niftk
@@ -64,7 +64,7 @@ IGIConfigurationDialog* UltrasonixDataSourceFactory::CreateConfigurationDialog(Q
                                                                                 niftk::IGIDataSourceI::Pointer service
                                                                                 ) const
 {
-  return new niftk::LagDialog(parent, service);
+  return new niftk::UltrasonixConfigDialog(parent, service);
 }
 
 

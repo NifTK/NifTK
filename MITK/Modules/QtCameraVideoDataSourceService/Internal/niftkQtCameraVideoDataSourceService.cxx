@@ -28,7 +28,13 @@ QtCameraVideoDataSourceService::QtCameraVideoDataSourceService(
     QString factoryName,
     const IGIDataSourceProperties& properties,
     mitk::DataStorage::Pointer dataStorage)
-: QImageDataSourceService(QString("QtVideo-"), factoryName, properties, dataStorage)
+: QImageDataSourceService(QString("QtVideo-"),
+                          factoryName,
+                          25, // expected frames per second (ignored, as Qt uses a signal).
+                          50, // ring buffer size,
+                          properties,
+                          dataStorage
+                         )
 , m_Camera(nullptr)
 , m_CameraFrameGrabber(nullptr)
 {
@@ -85,17 +91,24 @@ QtCameraVideoDataSourceService::~QtCameraVideoDataSourceService()
 
 
 //-----------------------------------------------------------------------------
-niftk::IGIDataType::Pointer QtCameraVideoDataSourceService::GrabImage()
+std::unique_ptr<niftk::IGIDataType> QtCameraVideoDataSourceService::GrabImage()
 {
-  niftk::QImageDataType::Pointer wrapper = niftk::QImageDataType::New();
-  wrapper->ShallowCopy(*m_TemporaryWrapper);
-  return wrapper.GetPointer();
+  // So this method has to create a clone, to pass as a return
+  // value, like a factory method would do.
+
+  niftk::QImageDataType* wrapper = new niftk::QImageDataType();
+  wrapper->SetImage(m_TemporaryWrapper); // clones it.
+
+  std::unique_ptr<niftk::IGIDataType> result(wrapper);
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
 void QtCameraVideoDataSourceService::OnFrameAvailable(const QImage &image)
 {
+  // Note: We can't take ownership of input image.
+
   m_TemporaryWrapper = new QImage(image); // should just wrap without copy.
   this->GrabData();
   delete m_TemporaryWrapper;              // then we delete this temporary wrapper.

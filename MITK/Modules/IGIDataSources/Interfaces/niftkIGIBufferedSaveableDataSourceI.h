@@ -29,12 +29,12 @@ class NIFTKIGIDATASOURCES_EXPORT IGIBufferedSaveableDataSourceI
 {
 public:
 
-  virtual void SaveItem(niftk::IGIDataType::Pointer item) = 0;
+  virtual void SaveItem(niftk::IGIDataType& item) = 0;
 
 protected:
 
-  IGIBufferedSaveableDataSourceI(); // Purposefully hidden.
-  virtual ~IGIBufferedSaveableDataSourceI(); // Purposefully hidden.
+  IGIBufferedSaveableDataSourceI() {} // Purposefully hidden.
+  virtual ~IGIBufferedSaveableDataSourceI() {} // Purposefully hidden.
 
   IGIBufferedSaveableDataSourceI(const IGIBufferedSaveableDataSourceI&); // Purposefully not implemented.
   IGIBufferedSaveableDataSourceI& operator=(const IGIBufferedSaveableDataSourceI&); // Purposefully not implemented.

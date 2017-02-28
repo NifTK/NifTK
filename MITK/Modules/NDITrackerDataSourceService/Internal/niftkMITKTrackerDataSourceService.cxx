@@ -13,7 +13,6 @@
 =============================================================================*/
 
 #include "niftkMITKTrackerDataSourceService.h"
-#include "niftkIGITrackerDataType.h"
 #include <niftkIGIDataSourceUtils.h>
 #include <niftkCoordinateAxesData.h>
 #include <niftkFileIOUtils.h>
@@ -41,10 +40,9 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
                 factoryName.toStdString(),
                 dataStorage)
 , m_Lock(QMutex::Recursive)
-, m_FrameId(0)
-, m_BackgroundDeleteThread(NULL)
-, m_DataGrabbingThread(NULL)
 , m_Lag(0)
+, m_FrameId(0)
+, m_DataGrabbingThread(NULL)
 , m_Tracker(tracker)
 {
   if (m_Tracker.IsNull())
@@ -59,22 +57,12 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
 
   // Set the interval based on desired number of frames per second.
   // eg. 25 fps = 40 milliseconds.
-  // However: If system slows down (eg. saving images), then Qt will
-  // drop clock ticks, so in effect, you will get less than this.
   int defaultFramesPerSecond = m_Tracker->GetPreferredFramesPerSecond();
   int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
 
   this->SetTimeStampTolerance(intervalInMilliseconds*1000000*5);
   this->SetProperties(properties);
   this->SetShouldUpdate(true);
-
-  m_BackgroundDeleteThread = new niftk::IGIDataSourceBackgroundDeleteThread(NULL, this);
-  m_BackgroundDeleteThread->SetInterval(1000); // try deleting data every 1 second.
-  m_BackgroundDeleteThread->start();
-  if (!m_BackgroundDeleteThread->isRunning())
-  {
-    mitkThrow() << "Failed to start background deleting thread";
-  }
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
   m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
@@ -95,9 +83,6 @@ MITKTrackerDataSourceService::~MITKTrackerDataSourceService()
 {
   m_DataGrabbingThread->ForciblyStop();
   delete m_DataGrabbingThread;
-
-  m_BackgroundDeleteThread->ForciblyStop();
-  delete m_BackgroundDeleteThread;
 
   s_Lock.RemoveSource(m_TrackerNumber);
 }
@@ -136,25 +121,11 @@ IGIDataSourceProperties MITKTrackerDataSourceService::GetProperties() const
 
 
 //-----------------------------------------------------------------------------
-void MITKTrackerDataSourceService::CleanBuffer()
-{
-  QMutexLocker locker(&m_Lock);
-
-  // Buffer itself should be threadsafe. Clean all buffers.
-  QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
-  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
-  {
-    (*iter)->CleanBuffer();
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >
+QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >
 MITKTrackerDataSourceService::GetPlaybackIndex(QString directory)
 {
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> > bufferToTimeStamp;
-  QMap<QString, QHash<niftk::IGIDataType::IGITimeType, QStringList> > bufferToTimeStampToFileNames;
+  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> > bufferToTimeStamp;
+  QMap<QString, QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> > bufferToTimeStampToFileNames;
 
   niftk::GetPlaybackIndex(directory, QString(".txt"), bufferToTimeStamp, bufferToTimeStampToFileNames);
   return bufferToTimeStamp;
@@ -162,8 +133,8 @@ MITKTrackerDataSourceService::GetPlaybackIndex(QString directory)
 
 
 //-----------------------------------------------------------------------------
-bool MITKTrackerDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                                     niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+bool MITKTrackerDataSourceService::ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                                                     niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
   QString path = this->GetPlaybackDirectory();
   return niftk::ProbeRecordedData(path, QString(".txt"), firstTimeStampInStore, lastTimeStampInStore);
@@ -171,8 +142,8 @@ bool MITKTrackerDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITime
 
 
 //-----------------------------------------------------------------------------
-void MITKTrackerDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                                                 niftk::IGIDataType::IGITimeType lastTimeStamp)
+void MITKTrackerDataSourceService::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                                                 niftk::IGIDataSourceI::IGITimeType lastTimeStamp)
 {
   QMutexLocker locker(&m_Lock);
 
@@ -196,19 +167,20 @@ void MITKTrackerDataSourceService::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
+void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp)
 {
   assert(this->GetIsPlayingBack());
   assert(m_PlaybackIndex.size() > 0); // Should have failed probing if no data.
 
   // This will find us the timestamp right after the requested one.
   // Remember we have multiple buffers!
-  QMap<QString, std::set<niftk::IGIDataType::IGITimeType> >::iterator playbackIter;
+  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >::iterator playbackIter;
   for(playbackIter = m_PlaybackIndex.begin(); playbackIter != m_PlaybackIndex.end(); ++playbackIter)
   {
     QString bufferName = playbackIter.key();
+    std::string bufferNameAsStdString = bufferName.toStdString();
 
-    std::set<niftk::IGIDataType::IGITimeType>::const_iterator i =
+    std::set<niftk::IGIDataSourceI::IGITimeType>::const_iterator i =
       m_PlaybackIndex[bufferName].upper_bound(requestedTimeStamp);
 
     if (i != m_PlaybackIndex[bufferName].begin())
@@ -217,16 +189,15 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
     }
     if (i != m_PlaybackIndex[bufferName].end())
     {
-      if (!m_Buffers.contains(bufferName))
+      if (m_Buffers.find(bufferNameAsStdString) == m_Buffers.end())
       {
-        niftk::IGIDataSourceBuffer::Pointer newBuffer =
-          niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
-
+        std::unique_ptr<niftk::IGIDataSourceRingBuffer> newBuffer(
+              new niftk::IGIDataSourceRingBuffer(m_Tracker->GetPreferredFramesPerSecond() * 2));
         newBuffer->SetLagInMilliseconds(m_Lag);
-        m_Buffers.insert(bufferName, newBuffer);
+        m_Buffers.insert(std::make_pair(bufferNameAsStdString, std::move(newBuffer)));
       }
 
-      if (!m_Buffers[bufferName]->Contains(*i))
+      if (m_Buffers.find(bufferNameAsStdString) != m_Buffers.end())
       {
         std::ostringstream  filename;
         filename << this->GetPlaybackDirectory().toStdString()
@@ -252,15 +223,17 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
             }
           }
 
-          niftk::IGITrackerDataType::Pointer wrapper = niftk::IGITrackerDataType::New();
-          wrapper->SetTimeStampInNanoSeconds(*i);
-          wrapper->SetTrackingData(matrix);
-          wrapper->SetFrameId(m_FrameId++);
-          wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-          wrapper->SetShouldBeSaved(false);
+          niftk::IGITrackerDataType *trackerData = new niftk::IGITrackerDataType();
+          trackerData->SetTimeStampInNanoSeconds(*i);
+          trackerData->SetTrackingMatrix(matrix);
+          trackerData->SetFrameId(m_FrameId++);
+          trackerData->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+          trackerData->SetShouldBeSaved(false);
+
+          std::unique_ptr<niftk::IGIDataType> wrapper(trackerData);
 
           // Buffer itself should be threadsafe, so I'm not locking anything here.
-          m_Buffers[bufferName]->AddToBuffer(wrapper.GetPointer());
+          m_Buffers[bufferNameAsStdString]->AddToBuffer(wrapper);
 
         } // end if file open
       } // end if item not already in buffer
@@ -275,20 +248,19 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType 
 //-----------------------------------------------------------------------------
 void MITKTrackerDataSourceService::GrabData()
 {
-  {
-    QMutexLocker locker(&m_Lock);
+  QMutexLocker locker(&m_Lock);
 
-    if (this->GetIsPlayingBack())
-    {
-      return;
-    }
+  if (this->GetIsPlayingBack())
+  {
+    return;
   }
+
   if (m_Tracker.IsNull())
   {
     mitkThrow() << "Tracker is null. This should not happen! It's a programming bug.";
   }
 
-  niftk::IGIDataType::IGITimeType timeCreated = this->GetTimeStampInNanoseconds();
+  niftk::IGIDataSourceI::IGITimeType timeCreated = this->GetTimeStampInNanoseconds();
 
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result = m_Tracker->GetTrackingData();
   if (!result.empty())
@@ -297,23 +269,23 @@ void MITKTrackerDataSourceService::GrabData()
     for (iter = result.begin(); iter != result.end(); ++iter)
     {
       std::string toolName = (*iter).first;
-      QString toolNameAsQString = QString::fromStdString(toolName);
 
-      niftk::IGITrackerDataType::Pointer wrapper = niftk::IGITrackerDataType::New();
-      wrapper->SetToolName(toolName);
-      wrapper->SetTrackingData((*iter).second);
-      wrapper->SetTimeStampInNanoSeconds(timeCreated);
-      wrapper->SetFrameId(m_FrameId++);
-      wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-      wrapper->SetShouldBeSaved(this->GetIsRecording());
+      niftk::IGITrackerDataType *trackerData = new niftk::IGITrackerDataType();
+      trackerData->SetToolName(toolName);
+      trackerData->SetTrackingMatrix((*iter).second);
+      trackerData->SetTimeStampInNanoSeconds(timeCreated);
+      trackerData->SetFrameId(m_FrameId++);
+      trackerData->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+      trackerData->SetShouldBeSaved(this->GetIsRecording());
 
-      if (!m_Buffers.contains(toolNameAsQString))
+      std::unique_ptr<niftk::IGIDataType> wrapper(trackerData);
+
+      if (m_Buffers.find(toolName) == m_Buffers.end())
       {
-        niftk::IGIDataSourceBuffer::Pointer newBuffer =
-          niftk::IGIDataSourceBuffer::New(m_Tracker->GetPreferredFramesPerSecond() * 2);
-
+        std::unique_ptr<niftk::IGIDataSourceRingBuffer> newBuffer(
+              new niftk::IGIDataSourceRingBuffer(m_Tracker->GetPreferredFramesPerSecond() * 2));
         newBuffer->SetLagInMilliseconds(m_Lag);
-        m_Buffers.insert(toolNameAsQString, newBuffer);
+        m_Buffers.insert(std::make_pair(toolName, std::move(newBuffer)));
       }
 
       // Save synchronously.
@@ -321,35 +293,30 @@ void MITKTrackerDataSourceService::GrabData()
       // the QTimers just won't keep up, and start missing pulses.
       if (this->GetIsRecording())
       {
-        this->SaveItem(wrapper.GetPointer());
+        this->SaveItem(wrapper);
         this->SetStatus("Saving");
       }
       else
       {
         this->SetStatus("Grabbing");
       }
-
-      // Putting this after the save, as we don't want to
-      // add to the buffer in this grabbing thread, then the
-      // m_BackgroundDeleteThread deletes the object while
-      // we are trying to save the data.
-      m_Buffers[toolNameAsQString]->AddToBuffer(wrapper.GetPointer());
+      m_Buffers[toolName]->AddToBuffer(wrapper);
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void MITKTrackerDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
+void MITKTrackerDataSourceService::SaveItem(const std::unique_ptr<niftk::IGIDataType>& item)
 {
 
-  niftk::IGITrackerDataType::Pointer dataType = static_cast<niftk::IGITrackerDataType*>(data.GetPointer());
-  if (dataType.IsNull())
+  niftk::IGITrackerDataType* data = dynamic_cast<niftk::IGITrackerDataType*>(item.get());
+  if (data == nullptr)
   {
     mitkThrow() << "Failed to save IGITrackerDataType as the data received was the wrong type!";
   }
 
-  vtkSmartPointer<vtkMatrix4x4> matrix = dataType->GetTrackingData();
+  vtkSmartPointer<vtkMatrix4x4> matrix = data->GetTrackingMatrix();
   if (matrix == NULL)
   {
     mitkThrow() << "Failed to save IGITrackerDataType as the tracking matrix was NULL!";
@@ -359,7 +326,7 @@ void MITKTrackerDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 
   QString toolPath = directoryPath
       + niftk::GetPreferredSlash()
-      + QString::fromStdString(dataType->GetToolName())
+      + QString::fromStdString(data->GetToolName())
       + niftk::GetPreferredSlash();
 
   QDir directory(toolPath);
@@ -382,7 +349,7 @@ void MITKTrackerDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
+std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::IGIDataSourceI::IGITimeType& time)
 {
   std::vector<IGIDataItemInfo> infos;
 
@@ -395,7 +362,7 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
 
   // Early exit if no buffers, which means that
   // the tracker is created, but has not seen anything to track yet.
-  if (m_Buffers.isEmpty())
+  if (m_Buffers.empty())
   {
     return infos;
   }
@@ -405,10 +372,10 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
     return infos;
   }
 
-  QMap<QString, niftk::IGIDataSourceBuffer::Pointer>::iterator iter;
+  std::map<std::string, std::unique_ptr<niftk::IGIDataSourceRingBuffer> >::iterator iter;
   for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
   {
-    QString bufferName = iter.key();
+    std::string bufferName = iter->first;
 
     if (m_Buffers[bufferName]->GetBufferSize() == 0)
     {
@@ -420,22 +387,21 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
       continue;
     }
 
-    niftk::IGITrackerDataType::Pointer dataType =
-      dynamic_cast<niftk::IGITrackerDataType*>(m_Buffers[bufferName]->GetItem(time).GetPointer());
+    // Update frame rate:
+    m_Buffers[bufferName]->UpdateFrameRate();
 
-    if (dataType.IsNull())
+    bool gotFromBuffer = m_Buffers[bufferName]->CopyOutItem(time, m_CachedDataType);
+    if (!gotFromBuffer)
     {
-      MITK_DEBUG << "Failed to find data for time " << time
-                 << ", size=" << m_Buffers[bufferName]->GetBufferSize()
-                 << ", last=" << m_Buffers[bufferName]->GetLastTimeStamp() << std::endl;
-      continue;
+      MITK_INFO << "MITKTrackerDataSourceService: Failed to find data for time:" << time;
+      return infos;
     }
 
-    mitk::DataNode::Pointer node = this->GetDataNode(bufferName);
+    mitk::DataNode::Pointer node = this->GetDataNode(QString::fromStdString(bufferName));
     if (node.IsNull())
     {
       // The above call to GetDataNode should always retrieve one, or create it.
-      mitkThrow() << "Can't find mitk::DataNode with name " << bufferName.toStdString();
+      mitkThrow() << "Can't find mitk::DataNode with name " << bufferName;
     }
 
     CoordinateAxesData::Pointer coords = dynamic_cast<CoordinateAxesData*>(node->GetData());
@@ -450,7 +416,7 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
       this->GetDataStorage()->Add(node);
     }
 
-    vtkSmartPointer<vtkMatrix4x4> matrix = dataType->GetTrackingData();
+    vtkSmartPointer<vtkMatrix4x4> matrix = m_CachedDataType.GetTrackingMatrix();
     coords->SetVtkMatrix(*matrix);
 
     // We tell the node that it is modified so the next rendering event
@@ -461,8 +427,8 @@ std::vector<IGIDataItemInfo> MITKTrackerDataSourceService::Update(const niftk::I
     IGIDataItemInfo info;
     info.m_Name = this->GetName();
     info.m_FramesPerSecond = m_Buffers[bufferName]->GetFrameRate();
-    info.m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
-    info.m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
+    info.m_IsLate = this->IsLate(time, m_CachedDataType.GetTimeStampInNanoSeconds());
+    info.m_LagInMilliseconds = this->GetLagInMilliseconds(time, m_CachedDataType.GetTimeStampInNanoSeconds());
     infos.push_back(info);
   }
 

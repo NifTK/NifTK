@@ -73,14 +73,8 @@ IGIDataSourceProperties BlackMagicDataSourceService::GetProperties() const
 
 
 //-----------------------------------------------------------------------------
-void BlackMagicDataSourceService::CleanBuffer()
-{
-}
-
-
-//-----------------------------------------------------------------------------
-void BlackMagicDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                                                 niftk::IGIDataType::IGITimeType lastTimeStamp)
+void BlackMagicDataSourceService::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                                                 niftk::IGIDataSourceI::IGITimeType lastTimeStamp)
 {
 }
 
@@ -92,17 +86,17 @@ void BlackMagicDataSourceService::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-void BlackMagicDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
+void BlackMagicDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp)
 {
 }
 
 
 //-----------------------------------------------------------------------------
-bool BlackMagicDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                                    niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+bool BlackMagicDataSourceService::ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                                                    niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
-  niftk::IGIDataType::IGITimeType  firstTimeStampFound = 0;
-  niftk::IGIDataType::IGITimeType  lastTimeStampFound  = 0;
+  niftk::IGIDataSourceI::IGITimeType  firstTimeStampFound = 0;
+  niftk::IGIDataSourceI::IGITimeType  lastTimeStampFound  = 0;
 
   return firstTimeStampFound != 0;
 }
@@ -132,13 +126,7 @@ void BlackMagicDataSourceService::GrabData()
 
 
 //-----------------------------------------------------------------------------
-void BlackMagicDataSourceService::SaveItem(niftk::IGIDataType::Pointer data)
-{
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> BlackMagicDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
+std::vector<IGIDataItemInfo> BlackMagicDataSourceService::Update(const niftk::IGIDataSourceI::IGITimeType& time)
 {
   std::vector<IGIDataItemInfo> infos;
 

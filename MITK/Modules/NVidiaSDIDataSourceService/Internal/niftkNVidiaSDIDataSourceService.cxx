@@ -44,7 +44,7 @@ NVidiaSDIDataSourceService::NVidiaSDIDataSourceService(
                 dataStorage)
 , m_Lock(QMutex::Recursive)
 , m_FrameId(0)
-, m_Buffer(0)
+, m_Buffer(50)
 , m_DataGrabbingThread(0)
 , m_BackgroundDeleteThread(0)
 , m_Pimpl(0), m_MipmapLevel(0), m_MostRecentSequenceNumber(1)
@@ -68,7 +68,6 @@ NVidiaSDIDataSourceService::NVidiaSDIDataSourceService(
     QString deviceName = this->GetName();
     m_ChannelNumber = (deviceName.remove(0, 10)).toInt(); // Should match string NVidiaSDI- above
 
-    m_Buffer = niftk::IGIDataSourceBuffer::New(50);
     m_Pimpl = new NVidiaSDIDataSourceImpl;
 
     bool ok = false;
@@ -159,7 +158,7 @@ void NVidiaSDIDataSourceService::SetProperties(const IGIDataSourceProperties& pr
   if (properties.contains("lag"))
   {
     int milliseconds = (properties.value("lag")).toInt();
-    m_Buffer->SetLagInMilliseconds(milliseconds);
+    m_Buffer.SetLagInMilliseconds(milliseconds);
 
     MITK_INFO << "NVidiaSDIDataSourceService(" << this->GetName().toStdString()
               << "): Set lag to " << milliseconds << " ms.";
@@ -171,25 +170,25 @@ void NVidiaSDIDataSourceService::SetProperties(const IGIDataSourceProperties& pr
 IGIDataSourceProperties NVidiaSDIDataSourceService::GetProperties() const
 {
   IGIDataSourceProperties props;
-  props.insert("lag", m_Buffer->GetLagInMilliseconds());
+  props.insert("lag", m_Buffer.GetLagInMilliseconds());
 
   MITK_INFO << "NVidiaSDIDataSourceService(:" << this->GetName().toStdString()
-            << "):Retrieved current value of lag as " << m_Buffer->GetLagInMilliseconds();
+            << "):Retrieved current value of lag as " << m_Buffer.GetLagInMilliseconds();
 
   return props;
 }
 
 
 //-----------------------------------------------------------------------------
-void NVidiaSDIDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType firstTimeStamp,
-                                               niftk::IGIDataType::IGITimeType lastTimeStamp)
+void NVidiaSDIDataSourceService::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
+                                               niftk::IGIDataSourceI::IGITimeType lastTimeStamp)
 {
   // if we dont have decoder then other things should have failed earlier
   // and this method should not have been called.
   assert(m_Pimpl);
 
   IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
-  m_Buffer->DestroyBuffer();
+  m_Buffer.DestroyBuffer();
 
   m_MostRecentlyUpdatedTimeStamp = 0;
 
@@ -198,7 +197,7 @@ void NVidiaSDIDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType f
   QDir directory(recordingDir);
   if (directory.exists())
   {
-    std::set<niftk::IGIDataType::IGITimeType> timeStamps;
+    std::set<niftk::IGIDataSourceI::IGITimeType> timeStamps;
     bool ok = InitWithRecordedData(m_PlaybackIndex, recordingDir.toStdString(), 0, 0, true);
     assert(ok);
 
@@ -221,7 +220,7 @@ void NVidiaSDIDataSourceService::StartPlayback(niftk::IGIDataType::IGITimeType f
 void NVidiaSDIDataSourceService::StopPlayback()
 {
   m_PlaybackIndex.clear();
-  m_Buffer->DestroyBuffer();
+  m_Buffer.DestroyBuffer();
 
   this->SetIsPlayingBack(false);
   m_Pimpl->SetPlayback(false);
@@ -232,7 +231,7 @@ void NVidiaSDIDataSourceService::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-void NVidiaSDIDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType requestedTimeStamp)
+void NVidiaSDIDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp)
 {
   assert(GetIsPlayingBack());
 
@@ -250,14 +249,19 @@ void NVidiaSDIDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
       // gpu arrival time is bogus here. we've never used it for anything anyway.
       // also note: the pimpl decompressor index does not know anything about sequence numbers.
       // so we are using the frame number as a sequence number.
-      niftk::NVidiaSDIDataType::Pointer wrapper = niftk::NVidiaSDIDataType::New(m_Pimpl->GetCookie(), i->second.m_frameNumber[0], i->first);
-      wrapper->SetTimeStampInNanoSeconds(i->first);
-      wrapper->SetFrameId(m_FrameId++);
-      wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-      wrapper->SetShouldBeSaved(false);
+      niftk::NVidiaSDIDataType* videoData = new niftk::NVidiaSDIDataType(m_Pimpl->GetCookie(), i->second.m_frameNumber[0], i->first);
+      videoData->SetTimeStampInNanoSeconds(i->first);
+      videoData->SetFrameId(m_FrameId++);
+      videoData->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+      videoData->SetShouldBeSaved(false);
 
       m_MostRecentSequenceNumber = 1;
-      m_Buffer->AddToBuffer(wrapper.GetPointer());
+
+      std::unique_ptr<niftk::IGIDataType> wrapper(videoData);
+
+      // Buffer itself should be threadsafe, so I'm not locking anything here.
+      m_Buffer.AddToBuffer(wrapper);
+
       this->SetStatus("Playing back");
 
       m_MostRecentlyPlayedbackTimeStamp = requestedTimeStamp;
@@ -267,8 +271,8 @@ void NVidiaSDIDataSourceService::PlaybackData(niftk::IGIDataType::IGITimeType re
 
 
 //-----------------------------------------------------------------------------
-bool NVidiaSDIDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeType* firstTimeStampInStore,
-                                                   niftk::IGIDataType::IGITimeType* lastTimeStampInStore)
+bool NVidiaSDIDataSourceService::ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                                                   niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
   // nothing we can do if we dont have suitable decoder bits
   if (m_Pimpl == 0)
@@ -279,7 +283,7 @@ bool NVidiaSDIDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeTy
   bool  ok = false;
   try
   {
-    std::map<niftk::IGIDataType::IGITimeType, PlaybackPerFrameInfo> index;
+    std::map<niftk::IGIDataSourceI::IGITimeType, PlaybackPerFrameInfo> index;
 
     QString path = this->GetPlaybackDirectory();
     ok = InitWithRecordedData(index, path.toStdString(), firstTimeStampInStore, lastTimeStampInStore, false);
@@ -297,7 +301,7 @@ bool NVidiaSDIDataSourceService::ProbeRecordedData(niftk::IGIDataType::IGITimeTy
 void NVidiaSDIDataSourceService::CleanBuffer()
 {
   // Buffer itself should be threadsafe.
-  m_Buffer->CleanBuffer();
+  m_Buffer.CleanBuffer();
 }
 
 
@@ -336,21 +340,23 @@ void NVidiaSDIDataSourceService::GrabData()
       sn = m_Pimpl->GetNextSequenceNumber(m_MostRecentSequenceNumber);
       if (sn.sequence_number != 0)
       {
-        niftk::NVidiaSDIDataType::Pointer wrapper = niftk::NVidiaSDIDataType::New(cookie, sn.sequence_number, sn.arrival_time);
-        wrapper->SetTimeStampInNanoSeconds(sn.id);
-        wrapper->SetFrameId(m_FrameId++);
-        wrapper->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
-        wrapper->SetShouldBeSaved(this->GetIsRecording());
+        niftk::NVidiaSDIDataType* videoData = new niftk::NVidiaSDIDataType(cookie, sn.sequence_number, sn.arrival_time);
+        videoData->SetTimeStampInNanoSeconds(sn.id);
+        videoData->SetFrameId(m_FrameId++);
+        videoData->SetDuration(this->GetTimeStampTolerance()); // nanoseconds
+        videoData->SetShouldBeSaved(this->GetIsRecording());
         m_MostRecentSequenceNumber = sn.sequence_number;
+
+        std::unique_ptr<niftk::IGIDataType> wrapper(videoData);
 
         // Save synchronously.
         // This has the side effect that if saving is too slow,
         // the QTimers just won't keep up, and start missing pulses.
         if (this->GetIsRecording())
         {
-          this->SaveItem(wrapper.GetPointer());
+          this->SaveItem(*videoData);
         }
-        m_Buffer->AddToBuffer(wrapper.GetPointer());
+        m_Buffer.AddToBuffer(wrapper);
       }
     }
   }
@@ -372,13 +378,13 @@ void NVidiaSDIDataSourceService::GrabData()
 
 
 //-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGIDataType::IGITimeType& time)
+std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGIDataSourceI::IGITimeType& time)
 {
   std::vector<IGIDataItemInfo> infos;
 
   IGIDataItemInfo info;
   info.m_Name = this->GetName();
-  info.m_FramesPerSecond = m_Buffer->GetFrameRate();
+  info.m_FramesPerSecond = m_Buffer.GetFrameRate();
   info.m_IsLate = true;
   info.m_LagInMilliseconds = 0;
   infos.push_back(info);
@@ -390,24 +396,27 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
     this->PlaybackData(time);
   }
 
-  if (m_Buffer->GetBufferSize() == 0)
+  if (m_Buffer.GetBufferSize() == 0)
   {
     return infos;
   }
 
-  if(m_Buffer->GetFirstTimeStamp() > time)
+  if(m_Buffer.GetFirstTimeStamp() > time)
   {
     MITK_DEBUG << "NVidiaSDIDataSourceService::Update(), requested time is before buffer time! "
-               << " Buffer size=" << m_Buffer->GetBufferSize()
+               << " Buffer size=" << m_Buffer.GetBufferSize()
                << ", time=" << time
-               << ", firstTime=" << m_Buffer->GetFirstTimeStamp();
+               << ", firstTime=" << m_Buffer.GetFirstTimeStamp();
     return infos;
   }
 
-  niftk::NVidiaSDIDataType::Pointer dataType = static_cast<niftk::NVidiaSDIDataType*>(m_Buffer->GetItem(time).GetPointer());
-  if (dataType.IsNull())
+  m_Buffer.UpdateFrameRate();
+
+  niftk::NVidiaSDIDataType dataType(0,0,0);
+  bool gotFromBuffer = m_Buffer.CopyOutItem(time, dataType);
+  if (!gotFromBuffer)
   {
-    MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffer->GetBufferSize() << ", last=" << m_Buffer->GetLastTimeStamp() << std::endl;
+    MITK_DEBUG << "Failed to find data for time " << time << ", size=" << m_Buffer.GetBufferSize() << ", last=" << m_Buffer.GetLastTimeStamp() << std::endl;
     return infos;
   }
 
@@ -420,12 +429,12 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
   // until i've figured out suitable error handling lets just assert
   assert(m_Pimpl);
 
-  if (m_Pimpl->GetCookie() == dataType->GetCookie())
+  if (m_Pimpl->GetCookie() == dataType.GetCookie())
   {
     // we cache data storage updates, mainly for decompression.
     // its current implementation is quite heavy-weight and Update() will be called
     // at the GUI refresh rate, even if no new timestamp has been selected.
-    if (m_MostRecentlyUpdatedTimeStamp != dataType->GetTimeStampInNanoSeconds())
+    if (m_MostRecentlyUpdatedTimeStamp != dataType.GetTimeStampInNanoSeconds())
     {
       std::pair<int, int> captureformat = m_Pimpl->GetCaptureFormat();
       int                 numstreams    = m_Pimpl->GetStreamCount();
@@ -449,7 +458,7 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
       }
 
       // one massive image, with all streams stacked in
-      m_CachedUpdate.second = m_Pimpl->GetRGBAImage(dataType->GetSequenceNumber(), m_CachedUpdate.first);
+      m_CachedUpdate.second = m_Pimpl->GetRGBAImage(dataType.GetSequenceNumber(), m_CachedUpdate.first);
     }
 
     // if copy-out failed then capture setup is broken, e.g. someone unplugged a cable
@@ -601,7 +610,7 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
         node->Modified();
       } // for
 
-      m_MostRecentlyUpdatedTimeStamp = dataType->GetTimeStampInNanoSeconds();
+      m_MostRecentlyUpdatedTimeStamp = dataType.GetTimeStampInNanoSeconds();
     }
     else
     {
@@ -614,22 +623,22 @@ std::vector<IGIDataItemInfo> NVidiaSDIDataSourceService::Update(const niftk::IGI
     // this is not an error. there are simply stale IGINVidiaDataType in flight.
   }
 
-  infos[0].m_IsLate = this->IsLate(time, dataType->GetTimeStampInNanoSeconds());
-  infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType->GetTimeStampInNanoSeconds());
+  infos[0].m_IsLate = this->IsLate(time, dataType.GetTimeStampInNanoSeconds());
+  infos[0].m_LagInMilliseconds = this->GetLagInMilliseconds(time, dataType.GetTimeStampInNanoSeconds());
   return infos;
 }
 
 
 //-----------------------------------------------------------------------------
-void NVidiaSDIDataSourceService::SaveItem(niftk::IGIDataType::Pointer item)
+void NVidiaSDIDataSourceService::SaveItem(niftk::IGIDataType& item)
 {
   assert(m_Pimpl != 0);
 
   // cannot record while playing back
   assert(!GetIsPlayingBack());
 
-  niftk::NVidiaSDIDataType::Pointer dataType = static_cast<niftk::NVidiaSDIDataType*>(item.GetPointer());
-  if (dataType.IsNull())
+  niftk::NVidiaSDIDataType* dataType = dynamic_cast<niftk::NVidiaSDIDataType*>(&item);
+  if (dataType == nullptr)
   {
     mitkThrow() << "Failed to save NVidiaSDIDataSourceService as the data received was the wrong type!";
   }
@@ -836,13 +845,13 @@ int NVidiaSDIDataSourceService::GetTextureId(int stream)
 
 //-----------------------------------------------------------------------------
 bool NVidiaSDIDataSourceService::InitWithRecordedData(
-  std::map<niftk::IGIDataType::IGITimeType, PlaybackPerFrameInfo>& index, 
+  std::map<niftk::IGIDataSourceI::IGITimeType, PlaybackPerFrameInfo>& index, 
   const std::string& path, 
-  niftk::IGIDataType::IGITimeType* firstTimeStampInStore, 
-  niftk::IGIDataType::IGITimeType* lastTimeStampInStore, bool forReal)
+  niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore, 
+  niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore, bool forReal)
 {
-  niftk::IGIDataType::IGITimeType firstTimeStampFound = 0;
-  niftk::IGIDataType::IGITimeType lastTimeStampFound  = 0;
+  niftk::IGIDataSourceI::IGITimeType firstTimeStampFound = 0;
+  niftk::IGIDataSourceI::IGITimeType lastTimeStampFound  = 0;
 
   try
   {
@@ -882,10 +891,10 @@ bool NVidiaSDIDataSourceService::InitWithRecordedData(
             mitkThrow() << "Frame map has been tampered with";
           }
 
-          unsigned int                    framenumber     = -1;
-          unsigned int                    sequencenumber  = -1;
-          unsigned int                    channelnumber   = -1;
-          niftk::IGIDataType::IGITimeType timestamp       = -1;
+          unsigned int                       framenumber     = -1;
+          unsigned int                       sequencenumber  = -1;
+          unsigned int                       channelnumber   = -1;
+          niftk::IGIDataSourceI::IGITimeType timestamp       = -1;
 
           while (framemapfile.good())
           {

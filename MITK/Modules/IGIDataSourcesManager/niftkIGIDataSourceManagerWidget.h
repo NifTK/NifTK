@@ -99,7 +99,7 @@ signals:
   /**
   * \brief Emmitted when the manager has asked each data source to update, and they have all updated.
   */
-  void UpdateGuiFinishedDataSources(niftk::IGIDataType::IGITimeType);
+  void UpdateGuiFinishedDataSources(niftk::IGIDataSourceI::IGITimeType);
 
   /**
   * \brief Passed through from niftk::IGIDataSourceManager::UpdateFinishedRendering()
@@ -138,7 +138,7 @@ private slots:
   * \brief Called from niftk::IGIDataSourceManager,
   * and used to update the data sources table.
   */
-  void OnUpdateFinishedDataSources(niftk::IGIDataType::IGITimeType, QList< QList<IGIDataItemInfo> >);
+  void OnUpdateFinishedDataSources(niftk::IGIDataSourceI::IGITimeType, QList< QList<IGIDataItemInfo> >);
 
   /**
   * \brief Called from niftk::IGIDataSourceManager to display status updates.

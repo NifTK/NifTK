@@ -16,8 +16,8 @@ set(CPP_FILES
   Internal/niftkOpenCVCameraDialog.cxx
   Internal/niftkOpenCVVideoDataSourceFactory.cxx
   Internal/niftkOpenCVVideoDataSourceActivator.cxx
-  Internal/niftkOpenCVVideoDataSourceService.cxx
   Internal/niftkOpenCVVideoDataType.cxx
+  Internal/niftkOpenCVVideoDataSourceService.cxx
 )
 
 set(MOC_H_FILES

@@ -12,22 +12,33 @@
 
 =============================================================================*/
 
-#include "niftkIGICleanableDataSourceI.h"
+#ifndef niftkUltrasonixConfigDialog_h
+#define niftkUltrasonixConfigDialog_h
+
+#include "niftkIGIConfigurationDialog.h"
+#include <ui_niftkUltrasonixConfigDialog.h>
 
 namespace niftk
 {
 
-//-----------------------------------------------------------------------------
-IGICleanableDataSourceI::IGICleanableDataSourceI()
+class UltrasonixConfigDialog : public IGIConfigurationDialog,
+                               public Ui_niftkUltrasonixConfigDialog
+
 {
+  Q_OBJECT
 
-}
+public:
 
+  UltrasonixConfigDialog(QWidget *parent, niftk::IGIDataSourceI::Pointer service);
+  ~UltrasonixConfigDialog();
 
-//-----------------------------------------------------------------------------
-IGICleanableDataSourceI::~IGICleanableDataSourceI()
-{
+private slots:
 
-}
+  void OnOKClicked();
+
+private:
+};
 
 } // end namespace
+
+#endif
