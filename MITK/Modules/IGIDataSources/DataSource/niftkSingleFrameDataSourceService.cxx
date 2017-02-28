@@ -337,8 +337,10 @@ std::vector<IGIDataItemInfo> SingleFrameDataSourceService::Update(const niftk::I
     haswrongsize |= imageInNode->GetDimension(1) != convertedImage->GetDimension(1);
     haswrongsize |= imageInNode->GetDimension(2) != 1;
     // check image type as well.
-    haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent()   != convertedImage->GetPixelType().GetBitsPerComponent();
-    haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents() != convertedImage->GetPixelType().GetNumberOfComponents();
+    haswrongsize |= imageInNode->GetPixelType().GetBitsPerComponent()
+      != convertedImage->GetPixelType().GetBitsPerComponent();
+    haswrongsize |= imageInNode->GetPixelType().GetNumberOfComponents()
+      != convertedImage->GetPixelType().GetNumberOfComponents();
 
     if (haswrongsize)
     {
