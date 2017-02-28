@@ -24,10 +24,15 @@ std::vector<mitk::CustomMimeType*> CoreIOMimeTypes::Get()
 {
   std::vector<mitk::CustomMimeType*> mimeTypes;
 
-  // order matters here (descending rank for mime types)
+  /// Order matters here. Mimetypes with higher rank or equal rank but lower ID have priority.
+  /// NifTK mimetypes are registered with the same rank, see niftk::CoreIOActivator::Load().
+  /// Therefore, to prioritise a mimetype, you need to move it towards the beginning of the
+  /// following list, so that it gets a lower ID. The order determines for instance the order
+  /// of the file types in the file save dialog.
+
   mimeTypes.push_back(TRANSFORM4X4_MIMETYPE().Clone());
-  mimeTypes.push_back(ANALYZE_MIMETYPE().Clone());
   mimeTypes.push_back(NIFTI_MIMETYPE().Clone());
+  mimeTypes.push_back(ANALYZE_MIMETYPE().Clone());
   mimeTypes.push_back(INRIA_MIMETYPE().Clone());
   mimeTypes.push_back(PNM_MIMETYPE().Clone());
   mimeTypes.push_back(LABELMAP_MIMETYPE().Clone());
@@ -162,7 +167,7 @@ mitk::CustomMimeType CoreIOMimeTypes::PNM_MIMETYPE()
   mimeType.AddExtension("ppm");
   mimeType.AddExtension("pbm");
   mimeType.AddExtension("pgm");
-  
+
   return mimeType;
 }
 
@@ -253,7 +258,7 @@ mitk::CustomMimeType CoreIOMimeTypes::LABELMAP_MIMETYPE()
   mimeType.SetComment("Label Map format");
   mimeType.SetCategory(category);
   mimeType.AddExtension("txt");
-    
+
   return mimeType;
 }
 
