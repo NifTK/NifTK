@@ -770,7 +770,7 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
       //Set the vtkMatrix here...
 
       mitk::BaseGeometry* imageGeometry = image2D->GetGeometry();
-      imageGeometry->SetIndexToWorldTransformByVtkMatrix(newDirectionMatrix); //Problematic!
+      imageGeometry->SetIndexToWorldTransformByVtkMatrix(newDirectionMatrix); //Problematic! Can use the old one?
 
 
     try
