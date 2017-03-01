@@ -187,8 +187,8 @@ void ProjectPointsOnStereoVideo::FindVideoData(mitk::VideoTrackerMatching::Point
       }
       double fps = static_cast<double>(m_Capture->get(CV_CAP_PROP_FPS));
       double halfFPS = fps/2.0;
-      m_LeftWriter =cvCreateVideoWriter(std::string( m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) +  "_leftchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
-      m_RightWriter =cvCreateVideoWriter(std::string(m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) + "_rightchannel.avi").c_str(), CV_FOURCC('D','I','V','X'),halfFPS,S, true);
+      m_LeftWriter = mitk::CreateVideoWriter(std::string( m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) +  "_leftchannel.avi").c_str(),halfFPS,S);
+      m_RightWriter = mitk::CreateVideoWriter(std::string(m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) + "_rightchannel.avi").c_str(),halfFPS,S);
     }
   }
   return;
@@ -297,17 +297,6 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   int key = 0;
   bool drawProjection = true;
   IplImage *smallimage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int) m_VideoHeight/2.0), 8,3);
-  IplImage *videoOutImage;
-
-  if ( m_CorrectVideoAspectRatioByHalvingWidth )
-  {
-    videoOutImage = cvCreateImage (cvSize((int)m_VideoWidth/2.0, (int)m_VideoHeight), 8,3);
-  }
-  else
-  {
-    videoOutImage = cvCreateImage (cvSize((int)m_VideoWidth, (int)m_VideoHeight), 8,3);
-  }
-
   std::vector < cv::Point3d > lastFrameTrackerOrigin;
   std::vector < cv::Point3d > lastFrameCameraOrigin;
   std::vector < unsigned long long > lastFrameTimeStamp;
@@ -542,12 +531,13 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
               IplImage image(videoImage);
               if ( m_CorrectVideoAspectRatioByHalvingWidth )
               {
-                cvResize (&image, videoOutImage,CV_INTER_LINEAR);
-                cvWriteFrame(m_LeftWriter,videoOutImage);
+                cv::Mat videoOutImage;
+                cv::resize(videoImage, videoOutImage, cv::Size(0, 0), 0.5, 1.0, cv::INTER_LINEAR);
+                m_LeftWriter->write(videoOutImage);
               }
               else
               {
-                cvWriteFrame(m_LeftWriter,&image);
+                m_LeftWriter->write(videoImage);
               }
             }
           }
@@ -555,15 +545,15 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           {
             if ( framenumber%2 != 0 )
             {
-              IplImage image(videoImage);
               if ( m_CorrectVideoAspectRatioByHalvingWidth )
               {
-                cvResize (&image, videoOutImage,CV_INTER_LINEAR);
-                cvWriteFrame(m_RightWriter,videoOutImage);
+                cv::Mat videoOutImage;
+                cv::resize(videoImage, videoOutImage, cv::Size(0, 0), 0.5, 1.0, cv::INTER_LINEAR);
+                m_RightWriter->write(videoOutImage);
               }
               else
               {
-                cvWriteFrame(m_RightWriter,&image);
+                m_RightWriter->write(videoImage);
               }
             }
           }
@@ -596,11 +586,11 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
   }
   if ( m_LeftWriter != NULL )
   {
-    cvReleaseVideoWriter(&m_LeftWriter);
+    m_LeftWriter->release();
   }
   if ( m_RightWriter != NULL )
   {
-    cvReleaseVideoWriter(&m_RightWriter);
+    m_RightWriter->release();
   }
 
   if ( tracks_out.is_open() )

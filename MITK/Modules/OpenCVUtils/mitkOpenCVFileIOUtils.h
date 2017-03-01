@@ -70,13 +70,30 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT bool SaveTrackerMatrix(const std::string& f
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool SaveTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix);
 
 /**
- * \brief Attempts to open a video capture and checks for errors. see trac 3718. This 
+ * \brief Attempts to open a video capture and checks for errors. see trac 3718. This
  * attempts to avoid problems caused by the subtle decoding errors.
  * \param the filename
  * \param ignore errors, false by default
  * @return the video capture object
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT cv::VideoCapture* InitialiseVideoCapture(std::string filename, bool ignoreErrors = false);
+
+/**
+ * \brief Checks for errors when using a given video writer codec,
+ * returns true if no errors.
+ * \param the codec
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT bool TestVideoWriterCodec (int codec);
+
+/**
+ * \brief Attempts to create a video writer and checks for errors.
+ * \param the filename
+ * @return the video writer object
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT cv::VideoWriter* CreateVideoWriter(std::string filename,
+    double frameRate , cv::Size imageSize,
+    int codec = CV_FOURCC('M','P','G','1'),
+    bool isColour = true);
 
 /**
  * \brief Loads points from a directory, where each point is in a separate file, and the filename is a timestamp.
@@ -106,7 +123,7 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT void SaveTimeStampedPoints(const std::vecto
 extern "C++" NIFTKOPENCVUTILS_EXPORT void SavePickedObjects ( const std::vector < mitk::PickedObject > & points, std::ostream& os );
 
 /**
- * \brief Loads a vector of picked objects 
+ * \brief Loads a vector of picked objects
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is );
 
@@ -182,7 +199,7 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadHandeyeFromPlainText ( const std::
 extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::PickedPointList::Pointer LoadPickedPointListFromDirectoryOfMPSFiles (
     const std::string& directoryName ,
     unsigned int frameNumber = 0 ,
-    unsigned long long timestamp = 0, 
+    unsigned long long timestamp = 0,
     std::string channel = "world",
     cv::Scalar scalar = cv::Scalar ( 255, 255, 255 ) );
 

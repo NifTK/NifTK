@@ -260,8 +260,8 @@ private:
   std::vector < mitk::PickedObject >                           m_TriangulationErrors; // the triangulation errors
 
   cv::VideoCapture*             m_Capture;
-  CvVideoWriter*                m_LeftWriter;
-  CvVideoWriter*                m_RightWriter;
+  cv::VideoWriter*              m_LeftWriter;
+  cv::VideoWriter*              m_RightWriter;
 
   double                        m_AllowablePointMatchingRatio; // the minimum allowable ratio between the 2 nearest points when matching points on screen
 

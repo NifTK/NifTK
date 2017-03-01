@@ -250,24 +250,116 @@ cv::VideoCapture* InitialiseVideoCapture ( std::string filename , bool ignoreErr
   }
   //try and get some information about the capture, if these calls fail it may be that
   //the capture may still work but will exhibit undesirable behaviour, see trac 3718
-  int m_VideoWidth = capture->get(CV_CAP_PROP_FRAME_WIDTH);
-  int m_VideoHeight = capture->get(CV_CAP_PROP_FRAME_HEIGHT);
+  int videoWidth = capture->get(CV_CAP_PROP_FRAME_WIDTH);
+  int videoHeight = capture->get(CV_CAP_PROP_FRAME_HEIGHT);
 
-  if ( m_VideoWidth == 0 || m_VideoHeight == 0 )
+  if ( videoWidth == 0 || videoHeight == 0 )
   {
-    if ( ! ignoreErrors )
+    //try a bit harder
+    MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding, trying again with getting a frame.";
+    cv::Mat videoImage;
+    if ( capture->read(videoImage) )
     {
-      mitkThrow() << "Problem opening video file for capture. You may want to try rebuilding openCV with ffmpeg support or if available and you're feeling brave over riding video read errors with an ignoreVideoErrors parameter.";
+      videoWidth = videoImage.cols;
+      videoHeight = videoImage.rows;
     }
     else
     {
-      MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding but persevering any way as ignoreErrors is set true";
+      MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding, trying again with getting a frame, after hard coding the codec to h264.";
+      //try forcing the codec to what we commonly use
+      capture->set(CV_CAP_PROP_FOURCC, CV_FOURCC('h','2','6','4'));
+      if ( capture->read(videoImage) )
+      {
+        videoWidth = videoImage.cols;
+        videoHeight = videoImage.rows;
+      }
     }
+    if ( videoWidth == 0 || videoHeight == 0 )
+    {
+      if ( ! ignoreErrors )
+      {
+        mitkThrow() << "Problem opening video file for capture. You may want to try rebuilding openCV with ffmpeg support or if available and you're feeling brave over riding video read errors with an ignoreVideoErrors parameter.";
+      }
+      else
+      {
+        MITK_WARN << "mitk::InitialiseVideo detected errors with video file decoding but persevering any way as ignoreErrors is set true";
+      }
+    }
+    //try and return to the start
+    capture->set(CV_CAP_PROP_POS_FRAMES,0);
   }
-
+  MITK_INFO << "Opened " << filename << " for capture using codec " << capture->get(CV_CAP_PROP_FOURCC);
   return capture;
 }
 
+//---------------------------------------------------------------------------
+bool TestVideoWriterCodec ( int codec )
+{
+
+  cv::VideoWriter* writer = new cv::VideoWriter;
+  std::string outfile = niftk::CreateUniqueTempFileName ( "video", ".avi" );
+  double framerate = 25.0;
+  cv::Size2i size = cv::Size2i (640,480);
+  bool isColour = true;
+  bool ok = false;
+  try
+  {
+    writer->open (outfile, codec, framerate, size, isColour);
+
+    cv::Mat frame = cv::Mat::eye(size, CV_8UC3);
+    for ( unsigned int i = 0 ; i < 2 ; i ++ )
+    {
+      writer->write(frame);
+    }
+    writer->release();
+
+    if ( ! (niftk::FileIsEmpty(outfile)))
+    {
+      //on mac, we get a file size of 128 returned even when the video writer fails, I don't know why
+      if ( ! (  niftk::FileSize(outfile) == 128 ) )
+      {
+        MITK_INFO << "TestVideoWriterCodec OK: " << outfile << " is not empty: " << niftk::FileSize(outfile);
+        ok = true;
+      }
+      else
+      {
+        MITK_INFO << "TestVideoWriterCodec FAIL: " << outfile << " has size " <<  niftk::FileSize(outfile);
+      }
+    }
+    else
+    {
+      MITK_INFO << "TestVideoWriterCodec FAIL: " << outfile << " is empty: " << niftk::FileSize(outfile);
+    }
+  }
+  catch (...)
+  {
+    MITK_INFO << "TestVideoWriterCodec FAIL: Caught an exception: " << outfile;
+    ok = false;
+  }
+  niftk::FileDelete (outfile);
+  return ok;
+}
+
+//---------------------------------------------------------------------------
+cv::VideoWriter* CreateVideoWriter ( std::string filename , double framesPerSecond,
+   cv::Size imageSize, int codec, bool isColour )
+{
+
+  cv::VideoWriter* writer = new cv::VideoWriter;
+  //test the codec
+  if ( mitk::TestVideoWriterCodec ( codec ) )
+  {
+    writer->open (filename, codec, framesPerSecond, imageSize, isColour);
+  }
+  else
+  {
+    MITK_INFO << "Failed to write to " << filename << "using codec " << codec << "falling back to MJPEG";
+    codec = CV_FOURCC ('M','J','P','G');
+    writer->open(filename, codec, framesPerSecond, imageSize, isColour);
+  }
+
+  return writer;
+}
 
 //---------------------------------------------------------------------------
 std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(const std::string& directory)

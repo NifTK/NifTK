@@ -14,6 +14,8 @@
 
 #include "mitkBaseVideoProcessor.h"
 
+#include <mitkOpenCVFileIOUtils.h>
+
 namespace mitk
 {
 
@@ -108,20 +110,12 @@ void BaseVideoProcessor::Initialize()
     CvSize outputSize = this->GetOutputImageSize();
 
     int outputFps = 25;
-    int outputCodec = CV_FOURCC('D', 'I', 'V', 'X');
-
-    codec1 = static_cast<char>(outputCodec & 0XFF);
-    codec2 = static_cast<char>((outputCodec & 0XFF00) >> 8);
-    codec3 = static_cast<char>((outputCodec & 0XFF0000) >> 16);
-    codec4 = static_cast<char>((outputCodec & 0XFF000000) >> 24);
-
-    char outputCodecCode[] = {codec1, codec2, codec3, codec4, 0};
 
     std::cout << "Input codec=" << inputCodec << ", " << inputCodecCode << ", fps=" << fps << ", size=(" << sizeX << ", " << sizeY << ")" << std::endl;
-    std::cout << "Output codec=" << outputCodec << ", " << outputCodecCode << ", fps=" << outputFps << ", size=(" << sizeX << ", " << sizeY << ")" << std::endl;
+    std::cout << "Output fps=" << outputFps << ", size=(" << sizeX << ", " << sizeY << ")" << std::endl;
     std::cout << "Output file=" << m_OutputFileName << std::endl;
 
-    m_Writer = cvCreateVideoWriter(m_OutputFileName.c_str(), outputCodec, outputFps, outputSize);
+    m_Writer = (CvVideoWriter*)mitk::CreateVideoWriter(m_OutputFileName.c_str(), outputFps, outputSize);
     if (m_Writer == NULL)
     {
       throw std::logic_error("Could not create video writer.");

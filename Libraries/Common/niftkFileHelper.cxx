@@ -136,7 +136,7 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
     p_namebuffer[pathTmpLength] = 0;
 
     if (mkstemps(p_namebuffer, suffix.length()) < 0) {
-      throw niftk::IOException("Failed to create unique temp. file.");
+      throw niftk::IOException("Failed to create unique temp. file. using mkstemps.");
     }
 
     tmpFileName = fs::path(p_namebuffer);
@@ -146,10 +146,10 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
   }
 #else
   {
+    srand(time(NULL));
     const int maxTries = 10;
 
     int currTry;
-
 
     /*
      * Custom implementation of mkstemps
@@ -178,16 +178,21 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
             *i_char = rand()%('9' - '0') + '0';
           }
       }
-
+      std::cout << "Trying unique name : " << fs::path(tmpPath).string() << std::endl;
       if (!fs::exists(tmpPath)) {
         std::ofstream(tmpPath.c_str());
         tmpFileName = fs::path(tmpPath);
         break;
       }
+      else
+      {
+        std::cout << fs::path(tmpPath).string() << "Exists" << std::endl;
+      }
+
     }
 
     if (currTry == maxTries) {
-      throw niftk::IOException("Failed to create unique temp. file.");
+      throw niftk::IOException("Failed to create unique temp. file. using our own custom mkstemps.");
     }
 
     return tmpFileName.string();
