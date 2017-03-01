@@ -21,7 +21,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <cv.h>
-#include "niftkQuaternion.h"
+#include <niftkQuaternion.h>
 
 namespace niftk
 {
@@ -55,8 +55,9 @@ NIFTKUSRECON_EXPORT void DoUltrasoundCalibration(const QuaternionTrackedImageDat
                                                  TrackingQuaternions& imageToSensorTransform
                                                 );
 
+//Calibration using transformation matrix - not implemented yet.
 std::vector<double> UltrasoundCalibration(const std::vector<cv::Point2d>& points,
-                                            const std::vector<cv::Matx44d>& matrices);
+                                          const std::vector<cv::Matx44d>& matrices);
 
 NIFTKUSRECON_EXPORT void DoUltrasoundCalibration(const TrackedImageData& data,
                                                  vtkMatrix4x4& pixelToMillimetreScale,
