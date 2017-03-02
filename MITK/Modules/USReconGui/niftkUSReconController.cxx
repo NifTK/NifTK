@@ -186,8 +186,11 @@ void USReconController::CaptureImages()
     vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
     transform->GetVtkMatrix(*vtkMat);
 
-    RotationTranslation rotationTranslation;
-    niftk::ConvertMatrixToRotationAndTranslation(*vtkMat, rotationTranslation);
+    mitk::Point4D rotationQuaternion;
+    mitk::Vector3D translationVector;
+    niftk::ConvertMatrixToRotationAndTranslation(*vtkMat, rotationQuaternion, translationVector);
+
+    RotationTranslation rotationTranslation(rotationQuaternion, translationVector);
 
     d->m_TrackedImages.push_back(TrackedImage(clonedImage, rotationTranslation));
     d->m_GUI->SetNumberOfFramesLabel(d->m_TrackedImages.size());
@@ -276,7 +279,9 @@ void USReconController::OnSaveDataPressed()
       mitk::IOUtil::Save(d->m_TrackedImages[i].first, imageFileName.str());
 
       vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
-      niftk::ConvertRotationAndTranslationToMatrix(d->m_TrackedImages[i].second, vtkMat);
+      niftk::ConvertRotationAndTranslationToMatrix(d->m_TrackedImages[i].second.first,
+                                                   d->m_TrackedImages[i].second.second,
+                                                   *vtkMat);
 
       niftk::CoordinateAxesData::Pointer transform = niftk::CoordinateAxesData::New();
       transform->SetVtkMatrix(*vtkMat);
@@ -288,7 +293,7 @@ void USReconController::OnSaveDataPressed()
                        << i
                        << ".4x4";
 
-      mitk::IOUtil::Save(transform, fileName.str());
+      mitk::IOUtil::Save(transform, trackingFileName.str());
     }
     previous = dirName;
   }
@@ -328,7 +333,9 @@ void USReconController::OnCalibratePressed()
   d->m_GUI->SetScalingMatrix(*scalingMatrix);
 
   vtkSmartPointer<vtkMatrix4x4> rigidMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  ConvertRotationAndTranslationToMatrix(imageToSensorTransform, *rigidMatrix);
+  ConvertRotationAndTranslationToMatrix(imageToSensorTransform.first,
+                                        imageToSensorTransform.second,
+                                        *rigidMatrix);
 
   d->m_GUI->SetRigidMatrix(*rigidMatrix);
 }
@@ -372,12 +379,23 @@ void USReconController::DoReconstructionInBackground()
   scaleFactors[1] = scalingMatrix->GetElement(1, 1);
 
   vtkSmartPointer<vtkMatrix4x4> rigidMatrix = d->m_GUI->GetRigidMatrix();
+
+
   niftk::RotationTranslation imageToSensorTransform;
-  ConvertMatrixToRotationAndTranslation(*rigidMatrix, imageToSensorTransform);
+  ConvertMatrixToRotationAndTranslation(*rigidMatrix,
+                                        imageToSensorTransform.first,
+                                        imageToSensorTransform.second
+                                        );
+
+  mitk::Vector3D voxelSpacing;
+  voxelSpacing[0] = 0.3;
+  voxelSpacing[1] = 0.3;
+  voxelSpacing[2] = 0.3;
 
   mitk::Image::Pointer newImage = niftk::DoUltrasoundReconstruction(d->m_TrackedImages,
                                                                     scaleFactors,
-                                                                    imageToSensorTransform
+                                                                    imageToSensorTransform,
+                                                                    voxelSpacing
                                                                    );
   if (newImage.IsNotNull())
   {

@@ -556,6 +556,19 @@ void DoUltrasoundCalibration(const TrackedImageData& data,
 
 
 //-----------------------------------------------------------------------------
+void DoUltrasoundReconstructionFor1Slice(mitk::Image::ConstPointer image2D,
+                                         mitk::Image::Pointer accumulatorImage,
+                                         mitk::Image::Pointer counterImage,
+                                         mitk::Image::Pointer image3D
+                                         )
+{
+  // At this point, image2D, image 3D are definitely unsigned char,
+  // and accumulatorImage and counterImage are double.
+
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
                                                 const mitk::Point2D& pixelScaleFactors,
                                                 const RotationTranslation& imageToSensorTransform,
@@ -568,6 +581,18 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   if (data.size() == 0)
   {
     mitkThrow() << "No reconstruction data provided.";
+  }
+  mitk::PixelType pixelType = data[0].first->GetPixelType();
+  mitk::PixelType unsignedCharPixelType = mitk::MakeScalarPixelType<unsigned char>();
+
+  if (pixelType != unsignedCharPixelType)
+  {
+    mitkThrow() << "Ultrasound images should be unsigned char.";
+  }
+
+  if (data[0].first->GetPixelType().GetNumberOfComponents() != 1)
+  {
+    mitkThrow() << "Ultrasound images should have 1 component (i.e. greyscale not RGB)";
   }
 
   vtkSmartPointer<vtkMatrix4x4> scalingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -619,10 +644,6 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
     if (data[num].first->GetDimensions()[2] != 1)
     {
       mitkThrow() << "Ultrasound images should be 3D, with 1 slice.";
-    }
-    if (data[num].first->GetNumberOfChannels() != 1)
-    {
-      mitkThrow() << "Ultrasound images should have 1 component (i.e. greyscale not RGB)";
     }
 
     niftk::ConvertRotationAndTranslationToMatrix(data[num].second.first,
@@ -684,17 +705,35 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   dims[1] = (maxCornerInMillimetres[1] - minCornerInMillimetres[1]) / voxelSpacing[1] + 1; // Number of voxels in y
   dims[2] = (maxCornerInMillimetres[2] - minCornerInMillimetres[2]) / voxelSpacing[2] + 1; // Number of voxels in z
 
-  mitk::PixelType pixelType = data[0].first->GetPixelType();
+  MITK_INFO << "DoUltrasoundReconstruction creating 3 volumes of ("
+            << dims[0] << ", " << dims[1] << ", " << dims[2] << "), "
+            << "with resolution "
+            << voxelSpacing[0] << "x" << voxelSpacing[1] << "x" << voxelSpacing[2]
+            << "mm." << std::endl;
 
+  // This will be the output image.
   mitk::Image::Pointer image3D = mitk::Image::New();
   image3D->Initialize(pixelType, 3, dims);
   image3D->SetSpacing(voxelSpacing);
   image3D->SetOrigin(origin);
 
+  // Working images are double.
+  mitk::PixelType doublePixelType = mitk::MakeScalarPixelType<double>();
+
+  mitk::Image::Pointer accumulatorImage = mitk::Image::New();
+  accumulatorImage->Initialize(doublePixelType, 3, dims);
+  accumulatorImage->SetSpacing(voxelSpacing);
+  accumulatorImage->SetOrigin(origin);
+
+  mitk::Image::Pointer counterImage = mitk::Image::New();
+  counterImage->Initialize(doublePixelType, 3, dims);
+  counterImage->SetSpacing(voxelSpacing);
+  counterImage->SetOrigin(origin);
+
   mitk::Vector3D pixelSpacing;
-  pixelSpacing[0] = pixelScaleFactors[0]; // Size of pixels in x in millimetres
-  pixelSpacing[1] = pixelScaleFactors[1]; // Size of pixels in y in millimetres
-  pixelSpacing[2] = 1.0;                  // Size of pixels in z in millimetres.
+  pixelSpacing[0] = pixelScaleFactors[0]; // Size of 2D pixels in x in millimetres
+  pixelSpacing[1] = pixelScaleFactors[1]; // Size of 2D pixels in y in millimetres
+  pixelSpacing[2] = 1.0;                  // Size of 2D pixels in z in millimetres.
                                           // Matt set this to 1. Im not sure if 0 will crash things.
 
   // Now iterate through each image/tracking, and put in volume.
@@ -736,8 +775,15 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
     image2D->SetSpacing(spacing);
     image2D->SetOrigin(newOrigin);
 */
+
+    // So, if indexToWorld worked for the computation of bounding boxes
+    // shown above, then it should also work for reconstruction.
     mitk::BaseGeometry* imageGeometry = image2D->GetGeometry();
     imageGeometry->SetIndexToWorldTransformByVtkMatrix(indexToWorld);
+
+    // Do reconstruction for each slice - go get a coffee :-)
+    mitk::Image::ConstPointer const2DImage = const_cast<const mitk::Image*>(image2D.GetPointer());
+    DoUltrasoundReconstructionFor1Slice(const2DImage, accumulatorImage, counterImage, image3D);
   }
 
   // And returns the image.
