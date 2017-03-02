@@ -11,10 +11,13 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
-
+#include <mitkPoint.h>
 #include <mitkVector.h>
 #include <mitkExceptionMacro.h>
-
+#include <niftkMITKMathsUtils.h>
+#include <niftkFileIOUtils.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 #include <niftkUltrasoundProcessing.h>
 #include <niftkUltrasoundBallCalibrationCLP.h>
 
@@ -23,8 +26,8 @@ int main(int argc, char** argv)
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  if (    matrixDirectory.length() == 0
-       || imageDirectory.length() == 0
+  if (    imageDirectory.length() == 0
+       || matrixDirectory.length() == 0
        || rigidMatrixFile.length() == 0
        || scalingMatrixFile.length() == 0
        )
@@ -35,6 +38,39 @@ int main(int argc, char** argv)
 
   try
   {
+    mitk::Point2D scaleFactors;
+    niftk::RotationTranslation imageToSensor;
+
+    // Loads all data - must throw exceptions on failure.
+    niftk::TrackedImageData data = niftk::LoadImageAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
+
+    // Runs calibration - must throw exceptions on failure.
+    niftk::DoUltrasoundCalibration(ballSize,      // command line arg
+                                   data,          // input data
+                                   scaleFactors,  // output scale factors
+                                   imageToSensor  // output trasnformation
+                                  );
+
+    // Convert outputs to matrices (only for consistency - I certainly dont mind if this changes).
+    vtkSmartPointer<vtkMatrix4x4> outputMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    niftk::ConvertRotationAndTranslationToMatrix(imageToSensor.first, imageToSensor.second, *outputMatrix);
+
+    bool savedRigid = niftk::SaveVtkMatrix4x4ToFile(rigidMatrixFile, *outputMatrix);
+    if (!savedRigid)
+    {
+      mitkThrow() << "Failed to save image to sensor transformation to file:" << rigidMatrixFile;
+    }
+
+    outputMatrix->Identity();
+    outputMatrix->SetElement(0, 0, scaleFactors[0]);
+    outputMatrix->SetElement(1, 1, scaleFactors[1]);
+
+    bool savedScaling = niftk::SaveVtkMatrix4x4ToFile(scalingMatrixFile, *outputMatrix);
+    if (!savedScaling)
+    {
+      mitkThrow() << "Failed to save scaling transformation to file:" << scalingMatrixFile;
+    }
+
     returnStatus = EXIT_SUCCESS;
   }
   catch (mitk::Exception& e)

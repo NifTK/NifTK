@@ -14,7 +14,11 @@
 
 #include <mitkVector.h>
 #include <mitkExceptionMacro.h>
-
+#include <mitkIOUtil.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
+#include <niftkMITKMathsUtils.h>
+#include <niftkFileIOUtils.h>
 #include <niftkUltrasoundProcessing.h>
 #include <niftkUltrasoundReconstructionCLP.h>
 
@@ -23,10 +27,11 @@ int main(int argc, char** argv)
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  if (    matrixDirectory.length() == 0
-       || imageDirectory.length() == 0
+  if (    imageDirectory.length() == 0
+       || matrixDirectory.length() == 0
        || rigidMatrixFile.length() == 0
        || scalingMatrixFile.length() == 0
+       || outputImage.length() == 0
        )
   {
     commandLine.getOutput()->usage(commandLine);
@@ -35,6 +40,28 @@ int main(int argc, char** argv)
 
   try
   {
+    niftk::TrackedImageData data = niftk::LoadImageAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
+    vtkSmartPointer<vtkMatrix4x4> rigidMatrix = niftk::LoadVtkMatrix4x4FromFile(rigidMatrixFile);
+    vtkSmartPointer<vtkMatrix4x4> scalingMatrix = niftk::LoadVtkMatrix4x4FromFile(scalingMatrixFile);
+
+    mitk::Point2D scaleFactors;
+    scaleFactors[0] = scalingMatrix->GetElement(0, 0);
+    scaleFactors[1] = scalingMatrix->GetElement(1, 1);
+
+    niftk::RotationTranslation imageToSensor;
+    niftk::ConvertMatrixToRotationAndTranslation(*rigidMatrix, imageToSensor.first, imageToSensor.second);
+
+    mitk::Vector3D spacing;
+    spacing[0] = voxelSize[0];
+    spacing[1] = voxelSize[1];
+    spacing[2] = voxelSize[2];
+
+    mitk::Image::Pointer volume = niftk::DoUltrasoundReconstruction(data,          // input data
+                                                                    scaleFactors,  // from calibration
+                                                                    imageToSensor, // from calibration
+                                                                    spacing);      // command line arg
+
+    mitk::IOUtil::Save(volume, outputImage);
     returnStatus = EXIT_SUCCESS;
   }
   catch (mitk::Exception& e)

@@ -14,12 +14,17 @@
 #include "niftkUltrasoundProcessing.h"
 #include <Internal/niftkQuaternion.h>
 #include <mitkExceptionMacro.h>
+#include <mitkIOUtil.h>
 #include <niftkOpenCVImageConversion.h>
 #include <niftkMITKMathsUtils.h>
+#include <niftkFileHelper.h>
+#include <niftkFileIOUtils.h>
 #include <mitkOpenCVMaths.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
 #include <mitkImageToItk.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 
 namespace niftk
 {
@@ -805,6 +810,25 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
 
   // And returns the image.
   return image3D;
+}
+
+
+//-----------------------------------------------------------------------------
+TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imageDir,
+                                                         const std::string& trackingDir
+                                                        )
+{
+  TrackedImageData outputData;
+
+  std::vector<std::string> imageFiles = niftk::GetFilesInDirectory(imageDir);
+  std::vector<std::string> trackingFiles = niftk::GetFilesInDirectory(trackingDir);
+
+  // Load images using mitk::IOUtil
+
+  // Load transformations and convert to quaternions like in niftkUltrasoundReconstruction.cxx
+
+  // this will incur a copy, but you wont copy images, you will copy smart pointers.
+  return outputData;
 }
 
 } // end namespace

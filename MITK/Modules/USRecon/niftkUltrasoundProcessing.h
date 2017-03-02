@@ -34,6 +34,13 @@ typedef std::pair<mitk::Image::Pointer,
 typedef std::vector<TrackedImage> TrackedImageData;
 
 /**
+* \brief Loads data from 2 directories.
+*/
+NIFTKUSRECON_EXPORT TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imageDir,
+                                                                             const std::string& trackingDir
+                                                                            );
+
+/**
 * \brief Entry point for Guofang's Ultrasound Calibration.
 */
 NIFTKUSRECON_EXPORT void DoUltrasoundCalibration(const int& modelWidth,
