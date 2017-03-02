@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Smart Liver.Calibration</category>
+  <title>Ultrasound Ball Calibration</title>
+  <description><![CDATA[Calibrates an US probe using a ping pong ball.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Guofang Xiao, Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <directory>
+      <name>matrixDirectory</name>
+      <flag>m</flag>
+      <longflag>matrixDirectory</longflag>
+      <description>Directory containing 4x4 tracking matrices in plain text files.</description>
+      <label>Matrix Directory</label>
+    </directory>
+    <directory>
+      <name>pointDirectory</name>
+      <flag>p</flag>
+      <longflag>pointDirectory</longflag>
+      <description>Directory containing 2D point locations in plain text files.</description>
+      <label>Points Directory</label>
+    </directory>
+    <file fileExtensions=".txt,.4x4">
+      <name>rigidMatrixFile</name>
+      <flag>r</flag>
+      <longflag>rigidMatrixFile</longflag>
+      <description>Output rigid matrix filename.</description>
+      <label>Output Rigid Matrix</label>
+      <default>calibRigid.4x4</default>
+      <channel>output</channel>
+    </file>
+    <file fileExtensions=".txt,.4x4">
+      <name>scalingMatrixFile</name>
+      <flag>s</flag>
+      <longflag>scalingMatrixFile</longflag>
+      <description>Output scaling matrix filename.</description>
+      <label>Output Scaling Matrix</label>
+      <default>calibScaling.4x4</default>
+      <channel>output</channel>
+    </file>
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Additional parameters]]></description>
+    <float>
+      <name>ballSize</name>
+      <flag>b</flag>
+      <longflag>ballSize</longflag>
+      <description>Size of ball in pixels.</description>
+      <label>Ball Size (pix)</label>
+      <default>300</default>
+      <channel>input</channel>
+    </float>
+  </parameters>
+
+</executable>

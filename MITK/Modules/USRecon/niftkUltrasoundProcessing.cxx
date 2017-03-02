@@ -498,7 +498,8 @@ cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
 
 
 //-------------------------------------------------------------------
-void DoUltrasoundCalibration(const TrackedImageData& data,
+void DoUltrasoundCalibration(const int& modelWidth,
+                             const TrackedImageData& data,
                              mitk::Point2D& pixelScaleFactors,
                              RotationTranslation& imageToSensorTransform
                             )
@@ -510,7 +511,6 @@ void DoUltrasoundCalibration(const TrackedImageData& data,
   std::vector<cv::Point2d> points;
   std::vector<TrackingQuaternions> trackingData;
 
-  int modelWidth = 300; // Input the roughly measured circle diameter
   cv::Mat model = CreateRingModel(modelWidth);
 
   // Extract all 2D centres of circles
@@ -564,7 +564,7 @@ void DoUltrasoundReconstructionFor1Slice(mitk::Image::ConstPointer image2D,
                                          )
 {
   // At this point, image2D, image 3D are definitely unsigned char,
-  // and accumulatorImage and counterImage are double.
+  // and accumulatorImage and counterImage are definitely double.
   // Also each image should have correct geometry.
   typedef unsigned char ImagePixelType;
   typedef double WorkingPixelType;
@@ -793,8 +793,9 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
     mitk::BaseGeometry* imageGeometry = image2D->GetGeometry();
     imageGeometry->SetIndexToWorldTransformByVtkMatrix(indexToWorld);
 
-    // Do reconstruction for each slice - go get a coffee :-)
     mitk::Image::ConstPointer const2DImage = const_cast<const mitk::Image*>(image2D.GetPointer());
+
+    // Do reconstruction for each slice - go get a coffee :-)
     DoUltrasoundReconstructionFor1Slice(const2DImage,
                                         accumulatorImage,
                                         counterImage,

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Smart Liver.Reconstruction</category>
+  <title>Ultrasound Reconstruction</title>
+  <description><![CDATA[Reconstructs an ultrasound volume.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Guofang Xiao, Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    <directory>
+      <name>matrixDirectory</name>
+      <flag>m</flag>
+      <longflag>matrixDirectory</longflag>
+      <description>Directory containing 4x4 tracking matrices in plain text files.</description>
+      <label>Matrix Directory</label>
+    </directory>
+    <directory>
+      <name>pointDirectory</name>
+      <flag>p</flag>
+      <longflag>pointDirectory</longflag>
+      <description>Directory containing 2D point locations in plain text files.</description>
+      <label>Points Directory</label>
+    </directory>
+    <file fileExtensions=".txt,.4x4">
+      <name>rigidMatrixFile</name>
+      <flag>r</flag>
+      <longflag>rigidMatrixFile</longflag>
+      <description>Input rigid matrix filename.</description>
+      <label>Input Rigid Matrix</label>
+      <default>calibRigid.4x4</default>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".txt,.4x4">
+      <name>scalingMatrixFile</name>
+      <flag>s</flag>
+      <longflag>scalingMatrixFile</longflag>
+      <description>Input scaling matrix filename.</description>
+      <label>Input Scaling Matrix</label>
+      <default>calibScaling.4x4</default>
+      <channel>input</channel>
+    </file>
+    <file fileExtensions=".nii">
+      <name>outputImage</name>
+      <flag>o</flag>
+      <longflag>outputImage</longflag>
+      <description>Output image.</description>
+      <label>Output Image</label>
+      <default>recon.nii</default>
+      <channel>output</channel>
+    </file>
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Additional parameters]]></description>
+    <float-vector>
+      <name>voxelSize</name>
+      <flag>v</flag>
+      <longflag>voxelSize</longflag>
+      <description>Voxel size for reconstructed volume.</description>
+      <label>Voxel Size (mm)</label>
+      <default>0.3,0.3,0.3</default>
+      <channel>input</channel>
+    </float-vector>
+  </parameters>
+
+</executable>

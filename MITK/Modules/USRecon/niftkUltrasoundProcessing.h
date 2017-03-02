@@ -36,7 +36,8 @@ typedef std::vector<TrackedImage> TrackedImageData;
 /**
 * \brief Entry point for Guofang's Ultrasound Calibration.
 */
-NIFTKUSRECON_EXPORT void DoUltrasoundCalibration(const TrackedImageData& data,
+NIFTKUSRECON_EXPORT void DoUltrasoundCalibration(const int& modelWidth,
+                                                 const TrackedImageData& data,
                                                  mitk::Point2D& pixelScaleFactors,
                                                  RotationTranslation& imageToSensorTransform
                                                 );

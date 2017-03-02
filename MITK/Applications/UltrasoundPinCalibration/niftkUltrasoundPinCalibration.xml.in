@@ -14,22 +14,34 @@
     <description><![CDATA[Input/output parameters]]></description>
     <directory>
       <name>matrixDirectory</name>
+      <flag>m</flag>
       <longflag>matrixDirectory</longflag>
       <description>Directory containing 4x4 tracking matrices in plain text files.</description>
       <label>Matrix Directory</label>
     </directory>
     <directory>
       <name>pointDirectory</name>
+      <flag>p</flag>
       <longflag>pointDirectory</longflag>
       <description>Directory containing 2D point locations in plain text files.</description>
       <label>Points Directory</label>
     </directory>
     <file fileExtensions=".txt,.4x4">
-      <name>outputMatrixFile</name>
-      <longflag>outputMatrixFile</longflag>
-      <description>Output matrix filename.</description>
-      <label>Output Matrix</label>
-      <default>calib.4x4</default>
+      <name>rigidMatrixFile</name>
+      <flag>r</flag>
+      <longflag>rigidMatrixFile</longflag>
+      <description>Output rigid matrix filename.</description>
+      <label>Output Rigid Matrix</label>
+      <default>calibRigid.4x4</default>
+      <channel>output</channel>
+    </file>
+    <file fileExtensions=".txt,.4x4">
+      <name>scalingMatrixFile</name>
+      <flag>s</flag>
+      <longflag>scalingMatrixFile</longflag>
+      <description>Output scaling matrix filename.</description>
+      <label>Output Scaling Matrix</label>
+      <default>calibScaling.4x4</default>
       <channel>output</channel>
     </file>
   </parameters>
