@@ -563,7 +563,6 @@ void DoUltrasoundCalibration(const int& modelWidth,
 //-----------------------------------------------------------------------------
 void DoUltrasoundReconstructionFor1Slice(mitk::Image::ConstPointer image2D,
                                          mitk::Image::Pointer accumulatorImage,
-                                         mitk::Image::Pointer counterImage,
                                          const vtkMatrix4x4& indexToWorldFor2DImage,
                                          mitk::Image::Pointer image3D
                                          )
@@ -571,16 +570,15 @@ void DoUltrasoundReconstructionFor1Slice(mitk::Image::ConstPointer image2D,
   // At this point, image2D, image 3D are definitely unsigned char,
   // and accumulatorImage and counterImage are definitely double.
   // Also each image should have correct geometry.
-  typedef unsigned char ImagePixelType;
-  typedef double WorkingPixelType;
+  typedef unsigned char InputPixelType;
+  typedef double OutputPixelType;
   const unsigned int dim = 3;
-  typedef itk::Image<ImagePixelType, dim> ImageType;
-  typedef itk::Image<WorkingPixelType, dim> WorkingType;
+  typedef itk::Image<InputPixelType, dim> InputImageType;
+  typedef itk::Image<OutputPixelType, dim> OutputImageType;
 
-  ImageType::ConstPointer itk2D = mitk::ImageToItkImage< ImagePixelType, dim >(image2D);
-  ImageType::Pointer itk3D = mitk::ImageToItkImage< ImagePixelType, dim >(image3D);
-  WorkingType::Pointer accumulator = mitk::ImageToItkImage< WorkingPixelType, dim >(accumulatorImage);
-  WorkingType::Pointer counter = mitk::ImageToItkImage< WorkingPixelType, dim >(accumulatorImage);
+  InputImageType::ConstPointer itk2D = mitk::ImageToItkImage< InputPixelType, dim >(image2D);
+  OutputImageType::Pointer itk3D = mitk::ImageToItkImage< OutputPixelType, dim >(image3D);
+  OutputImageType::Pointer accumulator = mitk::ImageToItkImage< OutputPixelType, dim >(accumulatorImage);
 
 }
 
@@ -742,11 +740,6 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   accumulatorImage->SetSpacing(voxelSpacing);
   accumulatorImage->SetOrigin(origin);
 
-  mitk::Image::Pointer counterImage = mitk::Image::New();
-  counterImage->Initialize(doublePixelType, 3, dims);
-  counterImage->SetSpacing(voxelSpacing);
-  counterImage->SetOrigin(origin);
-
   mitk::Vector3D pixelSpacing;
   pixelSpacing[0] = pixelScaleFactors[0]; // Size of 2D pixels in x in millimetres
   pixelSpacing[1] = pixelScaleFactors[1]; // Size of 2D pixels in y in millimetres
@@ -803,7 +796,6 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
     // Do reconstruction for each slice - go get a coffee :-)
     DoUltrasoundReconstructionFor1Slice(const2DImage,
                                         accumulatorImage,
-                                        counterImage,
                                         *indexToWorld, // might not be needed
                                         image3D);
   }
