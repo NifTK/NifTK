@@ -80,7 +80,7 @@ private:
 
   void CaptureImages();
   void DoReconstruction();
-  void DoReconstructionInBackground();
+  void DoReconstructionInBackground(); 
 };
 
 } // end namespace

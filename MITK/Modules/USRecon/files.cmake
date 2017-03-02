@@ -13,8 +13,8 @@
 #============================================================================*/
 
 set(CPP_FILES
+  Internal/niftkQuaternion.cxx
   niftkUltrasoundProcessing.cxx
-  niftkQuaternion.cxx
 )
 
 

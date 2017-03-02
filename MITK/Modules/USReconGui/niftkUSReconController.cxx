@@ -14,11 +14,14 @@
 
 #include "niftkUSReconController.h"
 #include <niftkUltrasoundProcessing.h>
+#include <niftkCoordinateAxesData.h>
 #include <Internal/niftkUSReconGUI.h>
 #include <mitkIOUtil.h>
 #include <niftkFileHelper.h>
+#include <niftkMITKMathsUtils.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <cv.h>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QFuture>
@@ -178,8 +181,15 @@ void USReconController::CaptureImages()
   if (imageNode.IsNotNull() && trackingNode.IsNotNull())
   {
     mitk::Image::Pointer clonedImage = dynamic_cast<mitk::Image*>(imageNode->GetData())->Clone();
-    niftk::CoordinateAxesData::Pointer clonedTransform = dynamic_cast<niftk::CoordinateAxesData*>(trackingNode->GetData())->Clone();
-    d->m_TrackedImages.push_back(TrackedImage(clonedImage, clonedTransform));
+    niftk::CoordinateAxesData::Pointer transform = dynamic_cast<niftk::CoordinateAxesData*>(trackingNode->GetData());
+
+    vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
+    transform->GetVtkMatrix(*vtkMat);
+
+    RotationTranslation rotationTranslation;
+    ConvertMatrixToRotationAndTranslation(*vtkMat, rotationTranslation);
+
+    d->m_TrackedImages.push_back(TrackedImage(clonedImage, rotationTranslation));
     d->m_GUI->SetNumberOfFramesLabel(d->m_TrackedImages.size());
   }
 }
@@ -254,51 +264,33 @@ void USReconController::OnSaveDataPressed()
 
   if (!dirName.isEmpty())
   {
-    bool savedSomething = false;
-
     for (int i = 0; i < d->m_TrackedImages.size(); i++)
     {
-      mitk::DataNode::Pointer imageNode = d->m_GUI->GetImageNode();
-      if (imageNode.IsNotNull())
-      {
-        std::ostringstream fileName;
-        fileName << dirName.toStdString()
-                 << niftk::GetFileSeparator()
-                 << "image-"
-                 << i
-                 << ".png";
+      std::ostringstream imageFileName;
+      imageFileName << dirName.toStdString()
+                    << niftk::GetFileSeparator()
+                    << "image-"
+                    << i
+                    << ".png";
 
-        mitk::IOUtil::Save(imageNode->GetData(), fileName.str());
-        savedSomething = true;
-      }
-      mitk::DataNode::Pointer trackingNode = d->m_GUI->GetTrackingNode();
-      if (trackingNode.IsNotNull())
-      {
-        std::ostringstream fileName;
-        fileName << dirName.toStdString()
-                 << niftk::GetFileSeparator()
-                 << "tracker-"
-                 << i
-                 << ".4x4";
+      mitk::IOUtil::Save(d->m_TrackedImages[i].first, imageFileName.str());
 
-        mitk::IOUtil::Save(trackingNode->GetData(), fileName.str());
-        savedSomething = true;
-      }
+      vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
+      ConvertRotationAndTranslationToMatrix(d->m_TrackedImages[i].second, vtkMat);
+
+      niftk::CoordinateAxesData::Pointer transform = niftk::CoordinateAxesData::New();
+      transform->SetVtkMatrix(*vtkMat);
+
+      std::ostringstream trackingFileName;
+      trackingFileName << dirName.toStdString()
+                       << niftk::GetFileSeparator()
+                       << "tracker-"
+                       << i
+                       << ".4x4";
+
+      mitk::IOUtil::Save(transform, fileName.str());
     }
-    if (savedSomething)
-    {
-      previous = dirName;
-    }
-    else
-    {
-      QMessageBox msgBox;
-      msgBox.setText("Failed to save!");
-      msgBox.setInformativeText("Failed to save tracked images, please check console.");
-      msgBox.setStandardButtons(QMessageBox::Ok);
-      msgBox.setDefaultButton(QMessageBox::Ok);
-      msgBox.exec();
-      return;
-    }
+    previous = dirName;
   }
 }
 
@@ -320,15 +312,24 @@ void USReconController::OnCalibratePressed()
     return;
   }
 
-  vtkSmartPointer<vtkMatrix4x4> scalingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  vtkSmartPointer<vtkMatrix4x4> rigidMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  mitk::Point2D scaleFactors;
+  niftk::RotationTranslation imageToSensorTransform;
 
   niftk::DoUltrasoundCalibration(d->m_TrackedImages,
-                                 *scalingMatrix,
-                                 *rigidMatrix
+                                 scaleFactors,
+                                 imageToSensorTransform
                                 );
 
+  vtkSmartPointer<vtkMatrix4x4> scalingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  scalingMatrix->Identity();
+  scalingMatrix->SetElement(0, 0, scaleFactors[0]);
+  scalingMatrix->SetElement(1, 1, scaleFactors[1]);
+
   d->m_GUI->SetScalingMatrix(*scalingMatrix);
+
+  vtkSmartPointer<vtkMatrix4x4> rigidMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  ConvertRotationAndTranslationToMatrix(imageToSensorTransform, *rigidMatrix);
+
   d->m_GUI->SetRigidMatrix(*rigidMatrix);
 }
 
@@ -366,18 +367,20 @@ void USReconController::DoReconstructionInBackground()
   MITK_INFO << "Running Ultrasound Reconstruction in Background";
 
   vtkSmartPointer<vtkMatrix4x4> scalingMatrix = d->m_GUI->GetScalingMatrix();
+  mitk::Point2D scaleFactors;
+  scaleFactors[0] = scalingMatrix->GetElement(0, 0);
+  scaleFactors[1] = scalingMatrix->GetElement(1, 1);
+
   vtkSmartPointer<vtkMatrix4x4> rigidMatrix = d->m_GUI->GetRigidMatrix();
-  vtkSmartPointer<vtkMatrix4x4> calibrationMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-  vtkMatrix4x4::Multiply4x4(rigidMatrix, scalingMatrix, calibrationMatrix);
+  niftk::RotationTranslation imageToSensorTransform;
+  ConvertMatrixToRotationAndTranslation(*rigidMatrix, imageToSensorTransform);
 
   mitk::Image::Pointer newImage = niftk::DoUltrasoundReconstruction(d->m_TrackedImages,
-                                                                    *calibrationMatrix
+                                                                    scaleFactors,
+                                                                    imageToSensorTransform
                                                                    );
   if (newImage.IsNotNull())
   {
-    // Temporary: Save image straight to disk.
-    // We can use any valid file type recognised by MITK/ITK file IO.
-
     std::ostringstream imageName;
     imageName << "reconstructed-"
               << d->m_ReconstructedId;
