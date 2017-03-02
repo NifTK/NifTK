@@ -187,7 +187,7 @@ void USReconController::CaptureImages()
     transform->GetVtkMatrix(*vtkMat);
 
     RotationTranslation rotationTranslation;
-    ConvertMatrixToRotationAndTranslation(*vtkMat, rotationTranslation);
+    niftk::ConvertMatrixToRotationAndTranslation(*vtkMat, rotationTranslation);
 
     d->m_TrackedImages.push_back(TrackedImage(clonedImage, rotationTranslation));
     d->m_GUI->SetNumberOfFramesLabel(d->m_TrackedImages.size());
@@ -276,7 +276,7 @@ void USReconController::OnSaveDataPressed()
       mitk::IOUtil::Save(d->m_TrackedImages[i].first, imageFileName.str());
 
       vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
-      ConvertRotationAndTranslationToMatrix(d->m_TrackedImages[i].second, vtkMat);
+      niftk::ConvertRotationAndTranslationToMatrix(d->m_TrackedImages[i].second, vtkMat);
 
       niftk::CoordinateAxesData::Pointer transform = niftk::CoordinateAxesData::New();
       transform->SetVtkMatrix(*vtkMat);

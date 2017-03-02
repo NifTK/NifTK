@@ -15,6 +15,7 @@
 #include <Internal/niftkQuaternion.h>
 #include <mitkExceptionMacro.h>
 #include <niftkOpenCVImageConversion.h>
+#include <niftkMITKMathsUtils.h>
 #include <mitkOpenCVMaths.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
@@ -557,7 +558,8 @@ void DoUltrasoundCalibration(const TrackedImageData& data,
 //-----------------------------------------------------------------------------
 mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
                                                 const mitk::Point2D& pixelScaleFactors,
-                                                const RotationTranslation& imageToSensorTransform
+                                                const RotationTranslation& imageToSensorTransform,
+                                                const mitk::Vector3D& voxelSpacing
                                                 )
 {
   MITK_INFO << "DoUltrasoundReconstruction: Doing Ultrasound Reconstruction with "
@@ -567,13 +569,21 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   {
     mitkThrow() << "No reconstruction data provided.";
   }
-/*
-  vtkSmartPointer<vtkMatrix4x4> pixelToSensorTransform = vtkSmartPointer<vtkMatrix4x4>::New();
-  pixelToSensorTransform->Identity();
 
-  vtkMatrix4x4::Multiply4x4(&imageToSensorTransform, &pixelToMillimetreScale, pixelToSensorTransform);
+  vtkSmartPointer<vtkMatrix4x4> scalingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  scalingMatrix->Identity();
+  scalingMatrix->SetElement(0, 0, pixelScaleFactors[0]);
+  scalingMatrix->SetElement(1, 1, pixelScaleFactors[1]);
 
-  niftk::CoordinateAxesData::Pointer trackingTransform;
+  vtkSmartPointer<vtkMatrix4x4> imageToSensorMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  niftk::ConvertRotationAndTranslationToMatrix(imageToSensorTransform.first,
+                                               imageToSensorTransform.second,
+                                               *imageToSensorMatrix
+                                               );
+
+  vtkSmartPointer<vtkMatrix4x4> pixelToSensorMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+
+  vtkMatrix4x4::Multiply4x4(imageToSensorMatrix, scalingMatrix, pixelToSensorMatrix);
 
   vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   trackingMatrix->Identity();
@@ -581,14 +591,19 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   vtkSmartPointer<vtkMatrix4x4> indexToWorld = vtkSmartPointer<vtkMatrix4x4>::New();
   indexToWorld->Identity();
 
-  // Calculate size of bounding box.
+  // Calculate size of bounding box, in millimetres.
+  // Here we use scaling, imageToSensor transform and tracking (sensorToWorld) transform.
   mitk::Point3D minCornerInMillimetres;
-  minCornerInMillimetres[0] = minCornerInMillimetres[1] = minCornerInMillimetres[2] = 1000000.0;
+  minCornerInMillimetres[0] = std::numeric_limits<double>::max();
+  minCornerInMillimetres[1] = std::numeric_limits<double>::max();
+  minCornerInMillimetres[2] = std::numeric_limits<double>::max();
 
   mitk::Point3D maxCornerInMillimetres;
-  maxCornerInMillimetres[0] = maxCornerInMillimetres[1] = maxCornerInMillimetres[2] = -1000000.0;
+  maxCornerInMillimetres[0] = std::numeric_limits<double>::min();
+  maxCornerInMillimetres[1] = std::numeric_limits<double>::min();
+  maxCornerInMillimetres[2] = std::numeric_limits<double>::min();
 
-  itk::Index<3> cornersIndexArray[4];
+  mitk::Point3I cornersIndexArray[4];
   mitk::Point3D cornersWorldArray[4];
  
   for (unsigned int num = 0; num < data.size(); num++)
@@ -605,14 +620,19 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
     {
       mitkThrow() << "Ultrasound images should be 3D, with 1 slice.";
     }
+    if (data[num].first->GetNumberOfChannels() != 1)
+    {
+      mitkThrow() << "Ultrasound images should have 1 component (i.e. greyscale not RGB)";
+    }
 
-    trackingTransform = data[num].second;
-    trackingTransform->GetVtkMatrix(*trackingMatrix);
+    niftk::ConvertRotationAndTranslationToMatrix(data[num].second.first,
+                                                 data[num].second.second,
+                                                 *trackingMatrix);
 
-    vtkMatrix4x4::Multiply4x4(trackingMatrix, pixelToSensorTransform, indexToWorld);
+    vtkMatrix4x4::Multiply4x4(trackingMatrix, pixelToSensorMatrix, indexToWorld);
 
-    unsigned int *dims;
-    dims = data[num].first->GetDimensions(); // dims[2] == 1 should be true
+    unsigned int *dims = data[num].first->GetDimensions();
+    assert(dims[2] == 1); // only checks in Debug mode though.
 
     cornersIndexArray[0][0] = 0;
     cornersIndexArray[0][1] = 0;
@@ -643,49 +663,53 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
       for (int j = 0; j < 3; j++)
       {
         if (cornersWorldArray[i][j] < minCornerInMillimetres[j])
+        {
           minCornerInMillimetres[j] = cornersWorldArray[i][j];
-        else
-          if (cornersWorldArray[i][j] > maxCornerInMillimetres[j])
-            maxCornerInMillimetres[j] = cornersWorldArray[i][j];
+        }
+        else if (cornersWorldArray[i][j] > maxCornerInMillimetres[j])
+        {
+          maxCornerInMillimetres[j] = cornersWorldArray[i][j];
+        }
       }
     }
-
   } // end for num
 
-  mitk::Vector3D spacing;
-  spacing[0] = 0.3; // Size of voxels in x in millimetres
-  spacing[1] = 0.3; // Size of voxels in y in millimetres
-  spacing[2] = 0.3; // Size of voxels in z in millimetres
-
   mitk::Point3D origin;
-  origin[0] = minCornerInMillimetres[0] - (0.5 * spacing[0]); // Origin position in millimetres.
-  origin[1] = minCornerInMillimetres[1] - (0.5 * spacing[1]); // Origin position in millimetres.
-  origin[2] = minCornerInMillimetres[2] - (0.5 * spacing[2]); // Origin position in millimetres.
+  origin[0] = minCornerInMillimetres[0] - (0.5 * voxelSpacing[0]); // Origin position in millimetres.
+  origin[1] = minCornerInMillimetres[1] - (0.5 * voxelSpacing[1]); // Origin position in millimetres.
+  origin[2] = minCornerInMillimetres[2] - (0.5 * voxelSpacing[2]); // Origin position in millimetres.
 
   unsigned int dims[3];
-  dims[0] = (maxCornerInMillimetres[0] - minCornerInMillimetres[0]) / spacing[0] + 1; // Number of voxels in x
-  dims[1] = (maxCornerInMillimetres[1] - minCornerInMillimetres[1]) / spacing[1] + 1; // Number of voxels in y
-  dims[2] = (maxCornerInMillimetres[2] - minCornerInMillimetres[2]) / spacing[2] + 1; // Number of voxels in z
+  dims[0] = (maxCornerInMillimetres[0] - minCornerInMillimetres[0]) / voxelSpacing[0] + 1; // Number of voxels in x
+  dims[1] = (maxCornerInMillimetres[1] - minCornerInMillimetres[1]) / voxelSpacing[1] + 1; // Number of voxels in y
+  dims[2] = (maxCornerInMillimetres[2] - minCornerInMillimetres[2]) / voxelSpacing[2] + 1; // Number of voxels in z
 
   mitk::PixelType pixelType = data[0].first->GetPixelType();
 
   mitk::Image::Pointer image3D = mitk::Image::New();
   image3D->Initialize(pixelType, 3, dims);
-  image3D->SetSpacing(spacing);
+  image3D->SetSpacing(voxelSpacing);
   image3D->SetOrigin(origin);
 
-  spacing[0] = pixelToMillimetreScale.Element[0][0]; // Size of pixels in x in millimetres
-  spacing[1] = pixelToMillimetreScale.Element[1][1]; // Size of pixels in y in millimetres
-  spacing[2] = 0.0; // Size of pixels in z in millimetres
+  mitk::Vector3D pixelSpacing;
+  pixelSpacing[0] = pixelScaleFactors[0]; // Size of pixels in x in millimetres
+  pixelSpacing[1] = pixelScaleFactors[1]; // Size of pixels in y in millimetres
+  pixelSpacing[2] = 1.0;                  // Size of pixels in z in millimetres.
+                                          // Matt set this to 1. Im not sure if 0 will crash things.
 
   // Now iterate through each image/tracking, and put in volume.
   for (unsigned int i = 0; i < data.size(); i++)
   {
     mitk::Image::Pointer image2D = data[i].first;
 
-    trackingTransform = data[i].second;
-    trackingTransform->GetVtkMatrix(*trackingMatrix);
+    niftk::ConvertRotationAndTranslationToMatrix(data[i].second.first,
+                                                 data[i].second.second,
+                                                 *trackingMatrix);
 
+    vtkMatrix4x4::Multiply4x4(trackingMatrix, pixelToSensorMatrix, indexToWorld);
+
+/* Matt - I dont think you need this.
+ *
     cv::Mat newOrigin(3, 1, CV_64F);
     cv::Mat newDirection(3, 3, CV_64F);
     cv::Mat trackingRotation(3, 3, CV_64F);
@@ -694,6 +718,7 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
     cv::Mat calibratedTranslation(3, 1, CV_64F);
 
     for(int row = 0; row < 3; row++)
+    {
       for(int col = 0; col < 4; col++)
       {
         trackingRotation.at<double>(row, col) = trackingMatrix->Element[row][col];
@@ -702,37 +727,19 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
         calibratedRotation.at<double>(row, col) = imageToSensorTransform.Element[row][col];
         calibratedTranslation.at<double>(row) = imageToSensorTransform.Element[row][3];
       }
-
-      newOrigin = trackingTranslation + trackingRotation * calibratedRotation;
-      newDirection = trackingRotation * calibratedRotation;
-  
-      vtkSmartPointer<vtkMatrix4x4> newDirectionMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-      image2D->SetSpacing(spacing);
-      image2D->SetOrigin(newOrigin);
-
-      vtkSmartPointer<vtkMatrix4x4> newDirectionMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-      
-      //Set the vtkMatrix here...
-
-      mitk::BaseGeometry* imageGeometry = image2D->GetGeometry();
-      imageGeometry->SetIndexToWorldTransformByVtkMatrix(newDirectionMatrix); //Problematic! Can use the old one?
-
-
-    try
-    {
-      AccessTwoImagesFixedDimensionByItk(image2D.GetPointer(),
-                                         image3D.GetPointer(),
-                                         ITKReconstructOneSlice,
-                                        3); // has to be 3D at this point.
     }
-    catch (const mitk::AccessByItkException &e)
-    {
-      MITK_ERROR << "ITKReconstructOneSlice: AccessTwoImagesFixedDimensionByItk failed to reconstruct "
-                 << " image data " << i << " due to."
-                 << e.what() << std::endl;
-    }
-  }
+
+    newOrigin = trackingTranslation + trackingRotation * calibratedRotation;
+    newDirection = trackingRotation * calibratedRotation;
+
+    vtkSmartPointer<vtkMatrix4x4> newDirectionMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    image2D->SetSpacing(spacing);
+    image2D->SetOrigin(newOrigin);
 */
+    mitk::BaseGeometry* imageGeometry = image2D->GetGeometry();
+    imageGeometry->SetIndexToWorldTransformByVtkMatrix(indexToWorld);
+  }
+
   // And returns the image.
   return image3D;
 }
