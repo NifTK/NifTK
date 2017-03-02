@@ -20,11 +20,11 @@
       <label>Matrix Directory</label>
     </directory>
     <directory>
-      <name>pointDirectory</name>
-      <flag>p</flag>
-      <longflag>pointDirectory</longflag>
-      <description>Directory containing 2D point locations in plain text files.</description>
-      <label>Points Directory</label>
+      <name>imageDirectory</name>
+      <flag>i</flag>
+      <longflag>imageDirectory</longflag>
+      <description>Directory containing 2D images in a format that can be loaded by MITK.</description>
+      <label>Images Directory</label>
     </directory>
     <file fileExtensions=".txt,.4x4">
       <name>rigidMatrixFile</name>

@@ -24,9 +24,9 @@ int main(int argc, char** argv)
   int returnStatus = EXIT_FAILURE;
 
   if (    matrixDirectory.length() == 0
+       || imageDirectory.length() == 0
        || rigidMatrixFile.length() == 0
        || scalingMatrixFile.length() == 0
-       || pointDirectory.length() == 0
        )
   {
     commandLine.getOutput()->usage(commandLine);
