@@ -19,7 +19,7 @@
 #include <mitkOpenCVMaths.h>
 #include <vtkMatrix4x4.h>
 #include <vtkSmartPointer.h>
-#include <mitkImageAccessByItk.h>
+#include <mitkImageToItk.h>
 
 namespace niftk
 {
@@ -559,11 +559,23 @@ void DoUltrasoundCalibration(const TrackedImageData& data,
 void DoUltrasoundReconstructionFor1Slice(mitk::Image::ConstPointer image2D,
                                          mitk::Image::Pointer accumulatorImage,
                                          mitk::Image::Pointer counterImage,
+                                         const vtkMatrix4x4& indexToWorldFor2DImage,
                                          mitk::Image::Pointer image3D
                                          )
 {
   // At this point, image2D, image 3D are definitely unsigned char,
   // and accumulatorImage and counterImage are double.
+  // Also each image should have correct geometry.
+  typedef unsigned char ImagePixelType;
+  typedef double WorkingPixelType;
+  const unsigned int dim = 3;
+  typedef itk::Image<ImagePixelType, dim> ImageType;
+  typedef itk::Image<WorkingPixelType, dim> WorkingType;
+
+  ImageType::ConstPointer itk2D = mitk::ImageToItkImage< ImagePixelType, dim >(image2D);
+  ImageType::Pointer itk3D = mitk::ImageToItkImage< ImagePixelType, dim >(image3D);
+  WorkingType::Pointer accumulator = mitk::ImageToItkImage< WorkingPixelType, dim >(accumulatorImage);
+  WorkingType::Pointer counter = mitk::ImageToItkImage< WorkingPixelType, dim >(accumulatorImage);
 
 }
 
@@ -783,7 +795,11 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
 
     // Do reconstruction for each slice - go get a coffee :-)
     mitk::Image::ConstPointer const2DImage = const_cast<const mitk::Image*>(image2D.GetPointer());
-    DoUltrasoundReconstructionFor1Slice(const2DImage, accumulatorImage, counterImage, image3D);
+    DoUltrasoundReconstructionFor1Slice(const2DImage,
+                                        accumulatorImage,
+                                        counterImage,
+                                        *indexToWorld, // might not be needed
+                                        image3D);
   }
 
   // And returns the image.
