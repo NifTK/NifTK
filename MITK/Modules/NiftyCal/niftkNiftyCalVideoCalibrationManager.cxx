@@ -1564,7 +1564,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
       }
       else
       {
-        niftk::ZhangMonoCameraCalibration(
+        rms = niftk::ZhangMonoCameraCalibration(
           m_ModelPoints,
           m_Points[1],
           imageSize,
