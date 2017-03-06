@@ -705,7 +705,7 @@ void NiftyCalVideoCalibrationManager::ConvertImage(
   }
 
   cv::Mat image = niftk::MitkImageToOpenCVMat(inputImage);
-  cv::cvtColor(image, outputImage, CV_BGR2GRAY);
+  cv::cvtColor(image, outputImage, CV_RGB2GRAY);
   m_ImageSize.width = image.cols;
   m_ImageSize.height = image.rows;
 }
@@ -719,6 +719,22 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   cv::Point2d scaleFactors;
   scaleFactors.x = m_ScaleFactorX;
   scaleFactors.y = m_ScaleFactorY;
+
+  // If we scale up using scaleFactors, (e.g. with 1920x540, we
+  // scale up to 1920x1080 using scaleFactors.x=1, scaleFactors.2)
+  // then once points are extracted, we normally scale
+  // the points down by the same amount. This is so that the calibration
+  // works with the original image. Also, this in effect means
+  // that the video images we are using have pixel dimensions (1,2)
+  // (for an example see the NVidiaSDI data source).
+  // However, Tsai's method must be done at isotropic resolution,
+  // due to the radial alignment constraint, so pixels must be
+  // isotropic in the x and y direction.
+  bool doRescaleAfterPointExtraction = true;
+  if (m_NumberOfSnapshotsForCalibrating == 1) // i.e. must be doing Tsai.
+  {
+    doRescaleAfterPointExtraction = false;
+  }
 
   cv::Mat copyOfImage1 = image.clone(); // Remember OpenCV reference counting.
   cv::Mat copyOfImage2 = image.clone(); // Remember OpenCV reference counting.
@@ -739,7 +755,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
 
     niftk::ChessboardPointDetector *chessboardDetector1 = new niftk::ChessboardPointDetector(internalCorners);
-    chessboardDetector1->SetImageScaleFactor(scaleFactors);
+    chessboardDetector1->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
     chessboardDetector1->SetImage(&copyOfImage1);
     chessboardDetector1->SetCaching(true);
 
@@ -757,7 +773,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
 
       niftk::ChessboardPointDetector *chessboardDetector2 =
         new niftk::ChessboardPointDetector(internalCorners);
-      chessboardDetector2->SetImageScaleFactor(scaleFactors);
+      chessboardDetector2->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
       chessboardDetector2->SetImage(&copyOfImage2);
       chessboardDetector2->SetCaching(false);
 
@@ -773,8 +789,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
 
     niftk::CirclesPointDetector *circlesDetector1 =
-      new niftk::CirclesPointDetector(internalCorners, cv::CALIB_CB_ASYMMETRIC_GRID);
-    circlesDetector1->SetImageScaleFactor(scaleFactors);
+      new niftk::CirclesPointDetector(internalCorners, cv::CALIB_CB_ASYMMETRIC_GRID | cv::CALIB_CB_CLUSTERING);
+    circlesDetector1->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
     circlesDetector1->SetImage(&copyOfImage1);
     circlesDetector1->SetCaching(true);
 
@@ -791,8 +807,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
       niftk::CirclesPointDetector *circlesDetector2 =
-        new niftk::CirclesPointDetector(internalCorners, cv::CALIB_CB_ASYMMETRIC_GRID);
-      circlesDetector2->SetImageScaleFactor(scaleFactors);
+        new niftk::CirclesPointDetector(internalCorners, cv::CALIB_CB_ASYMMETRIC_GRID | cv::CALIB_CB_CLUSTERING);
+      circlesDetector2->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
       circlesDetector2->SetImage(&copyOfImage2);
       circlesDetector2->SetCaching(false);
 
@@ -807,7 +823,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   {
     niftk::AprilTagsPointDetector *aprilTagsDetector1 =
       new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
-    aprilTagsDetector1->SetImageScaleFactor(scaleFactors);
+    aprilTagsDetector1->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
     aprilTagsDetector1->SetImage(&copyOfImage1);
     aprilTagsDetector1->SetCaching(true);
 
@@ -825,7 +841,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
 
       niftk::AprilTagsPointDetector *aprilTagsDetector2 =
         new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
-      aprilTagsDetector2->SetImageScaleFactor(scaleFactors);
+      aprilTagsDetector2->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
       aprilTagsDetector2->SetImage(&copyOfImage2);
       aprilTagsDetector2->SetCaching(false);
 
@@ -839,13 +855,13 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   else if (m_CalibrationPattern == TEMPLATE_MATCHING_CIRCLES)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
-    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 4.0, m_TemplateImage.rows / 4.0);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 10.0, m_TemplateImage.rows / 10.0);
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
     niftk::TemplateCirclesPointDetector *circlesIterativeDetector1
-        = new niftk::TemplateCirclesPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID);
+        = new niftk::TemplateCirclesPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID | cv::CALIB_CB_CLUSTERING);
     circlesIterativeDetector1->SetImage(&copyOfImage1);
-    circlesIterativeDetector1->SetImageScaleFactor(scaleFactors);
+    circlesIterativeDetector1->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
     circlesIterativeDetector1->SetTemplateImage(&m_TemplateImage);
     circlesIterativeDetector1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
     circlesIterativeDetector1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
@@ -856,6 +872,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     circlesIterativeDetector1->SetCaching(true);
 
     niftk::PointSet points = circlesIterativeDetector1->GetPoints();
+
     if (points.size() == m_GridSizeX * m_GridSizeY)
     {
       isSuccessful = true;
@@ -870,10 +887,12 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       niftk::TemplateCirclesPointDetector *circlesIterativeDetector2
           = new niftk::TemplateCirclesPointDetector(internalCorners,
                                                     offsetIfNotIterative,
-                                                    cv::CALIB_CB_ASYMMETRIC_GRID);
+                                                    cv::CALIB_CB_ASYMMETRIC_GRID
+                                                    | cv::CALIB_CB_CLUSTERING
+                                                    );
 
       circlesIterativeDetector2->SetImage(&copyOfImage2);
-      circlesIterativeDetector2->SetImageScaleFactor(scaleFactors);
+      circlesIterativeDetector2->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
       circlesIterativeDetector2->SetTemplateImage(&m_TemplateImage);
       circlesIterativeDetector2->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
       circlesIterativeDetector2->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
@@ -882,6 +901,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       circlesIterativeDetector2->SetUseInternalResampling(false);
       circlesIterativeDetector2->SetUseTemplateMatching(true);
       circlesIterativeDetector2->SetCaching(false);
+      circlesIterativeDetector2->SetInitialGuess(points);
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(circlesIterativeDetector2);
       m_ImagesForWarping[imageIndex].push_back(
@@ -893,16 +913,18 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   else if (m_CalibrationPattern == TEMPLATE_MATCHING_RINGS)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
-    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 4.0, m_TemplateImage.rows / 4.0);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 10.0, m_TemplateImage.rows / 10.0);
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
     niftk::TemplateRingsPointDetector *ringsIterativeDetector1
         = new niftk::TemplateRingsPointDetector(internalCorners,
                                                 offsetIfNotIterative,
-                                                cv::CALIB_CB_ASYMMETRIC_GRID);
+                                                cv::CALIB_CB_ASYMMETRIC_GRID
+                                                | cv::CALIB_CB_CLUSTERING
+                                                );
 
     ringsIterativeDetector1->SetImage(&copyOfImage1);
-    ringsIterativeDetector1->SetImageScaleFactor(scaleFactors);
+    ringsIterativeDetector1->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
     ringsIterativeDetector1->SetTemplateImage(&m_TemplateImage);
     ringsIterativeDetector1->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
     ringsIterativeDetector1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
@@ -913,6 +935,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     ringsIterativeDetector1->SetCaching(true);
 
     niftk::PointSet points = ringsIterativeDetector1->GetPoints();
+
     if (points.size() == m_GridSizeX * m_GridSizeY)
     {
       isSuccessful = true;
@@ -927,10 +950,12 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       niftk::TemplateRingsPointDetector *ringsIterativeDetector2
           = new niftk::TemplateRingsPointDetector(internalCorners,
                                                   offsetIfNotIterative,
-                                                  cv::CALIB_CB_ASYMMETRIC_GRID);
+                                                  cv::CALIB_CB_ASYMMETRIC_GRID
+                                                  | cv::CALIB_CB_CLUSTERING
+                                                 );
 
       ringsIterativeDetector2->SetImage(&copyOfImage2);
-      ringsIterativeDetector2->SetImageScaleFactor(scaleFactors);
+      ringsIterativeDetector2->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
       ringsIterativeDetector2->SetTemplateImage(&m_TemplateImage);
       ringsIterativeDetector2->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
       ringsIterativeDetector2->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
@@ -939,6 +964,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       ringsIterativeDetector2->SetUseInternalResampling(false);
       ringsIterativeDetector2->SetUseTemplateMatching(true);
       ringsIterativeDetector2->SetCaching(false);
+      ringsIterativeDetector2->SetInitialGuess(points);
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(ringsIterativeDetector2);
       m_ImagesForWarping[imageIndex].push_back(
@@ -947,18 +973,26 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
-  else if (m_CalibrationPattern == TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES)
+  else if (m_CalibrationPattern == CONTOUR_MATCHING_NON_COPLANAR_CIRCLES)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
-    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 4.0, m_TemplateImage.rows / 4.0);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 10.0, m_TemplateImage.rows / 10.0);
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
+    // We set no scaleFactors, as this method uses a two phase
+    // decorator pattern for the Tsai's method.
+    // So, the SideBySide detector uses the scale factors
+    // to scale up the image, as appropriate, so that each
+    // point detector already has a scaled image.
+    // So, each point detector requires no scale factors.
     cv::Point2d noScaleFactors(1, 1);
 
     std::unique_ptr<niftk::TemplateCirclesPointDetector> l1(
       new niftk::TemplateCirclesPointDetector(internalCorners,
                                               offsetIfNotIterative,
-                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+                                              cv::CALIB_CB_ASYMMETRIC_GRID
+                                              | cv::CALIB_CB_CLUSTERING
+                                              ));
 
     l1->SetImageScaleFactor(noScaleFactors);
     l1->SetTemplateImage(&m_TemplateImage);
@@ -966,14 +1000,16 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     l1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
     l1->SetMaxAreaInPixels(maxArea);
     l1->SetUseContours(true);
-    l1->SetUseInternalResampling(true);
-    l1->SetUseTemplateMatching(true);
+    l1->SetUseInternalResampling(false);
+    l1->SetUseTemplateMatching(false);
     l1->SetCaching(true);
 
     std::unique_ptr<niftk::TemplateCirclesPointDetector> r1(
       new niftk::TemplateCirclesPointDetector(internalCorners,
                                               offsetIfNotIterative,
-                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+                                              cv::CALIB_CB_ASYMMETRIC_GRID
+                                              | cv::CALIB_CB_CLUSTERING
+                                              ));
 
     r1->SetImageScaleFactor(noScaleFactors);
     r1->SetTemplateImage(&m_TemplateImage);
@@ -981,8 +1017,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     r1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
     r1->SetMaxAreaInPixels(maxArea);
     r1->SetUseContours(true);
-    r1->SetUseInternalResampling(true);
-    r1->SetUseTemplateMatching(true);
+    r1->SetUseInternalResampling(false);
+    r1->SetUseTemplateMatching(false);
     r1->SetCaching(true);
 
     std::unique_ptr<niftk::PointDetector> l2(l1.release());
@@ -990,11 +1026,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
 
     std::unique_ptr<niftk::SideBySideDetector> s1(new niftk::SideBySideDetector(l2, r2));
     s1->SetImage(&copyOfImage1);
-    s1->SetImageScaleFactor(scaleFactors);
+    s1->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
 
     std::unique_ptr<niftk::PointDetector> s2(s1.release());
 
-    niftk::PointSet points = s1->GetPoints();
+    niftk::PointSet points = s2->GetPoints();
 
     if (points.size() == 2 * m_GridSizeX * m_GridSizeY)
     {
@@ -1010,39 +1046,45 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       std::unique_ptr<niftk::TemplateCirclesPointDetector> l3(
         new niftk::TemplateCirclesPointDetector(internalCorners,
                                                 offsetIfNotIterative,
-                                                cv::CALIB_CB_ASYMMETRIC_GRID));
+                                                cv::CALIB_CB_ASYMMETRIC_GRID
+                                                | cv::CALIB_CB_CLUSTERING
+                                                ));
 
       l3->SetImageScaleFactor(noScaleFactors);
       l3->SetTemplateImage(&m_TemplateImage);
       l3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
       l3->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
       l3->SetMaxAreaInPixels(maxArea);
-      l3->SetUseContours(false);
+      l3->SetUseContours(true);
       l3->SetUseInternalResampling(false);
-      l3->SetUseTemplateMatching(true);
+      l3->SetUseTemplateMatching(false);
       l3->SetCaching(false);
+      l3->SetInitialGuess(points);
 
       std::unique_ptr<niftk::TemplateCirclesPointDetector> r3(
         new niftk::TemplateCirclesPointDetector(internalCorners,
                                                 offsetIfNotIterative,
-                                                cv::CALIB_CB_ASYMMETRIC_GRID));
+                                                cv::CALIB_CB_ASYMMETRIC_GRID
+                                                | cv::CALIB_CB_CLUSTERING
+                                                ));
 
       r3->SetImageScaleFactor(noScaleFactors);
       r3->SetTemplateImage(&m_TemplateImage);
       r3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
       r3->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
       r3->SetMaxAreaInPixels(maxArea);
-      r3->SetUseContours(false);
+      r3->SetUseContours(true);
       r3->SetUseInternalResampling(false);
-      r3->SetUseTemplateMatching(true);
+      r3->SetUseTemplateMatching(false);
       r3->SetCaching(false);
+      r3->SetInitialGuess(points);
 
       std::unique_ptr<niftk::PointDetector> l4(l3.release());
       std::unique_ptr<niftk::PointDetector> r4(r3.release());
 
       std::unique_ptr<niftk::SideBySideDetector> s3(new niftk::SideBySideDetector(l4, r4));
       s3->SetImage(&copyOfImage2);
-      s3->SetImageScaleFactor(scaleFactors);
+      s3->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
 
       std::unique_ptr<niftk::PointDetector> s4(s3.release());
 
@@ -1053,18 +1095,26 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
-  else if (m_CalibrationPattern == TEMPLATE_MATCHING_NON_COPLANAR_RINGS)
+  else if (m_CalibrationPattern == CONTOUR_MATCHING_NON_COPLANAR_RINGS)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
-    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 4.0, m_TemplateImage.rows / 4.0);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 10.0, m_TemplateImage.rows / 10.0);
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
+    // We set no scaleFactors, as this method uses a two phase
+    // decorator pattern for the Tsai's method.
+    // So, the SideBySide detector uses the scale factors
+    // to scale up the image, as appropriate, so that each
+    // point detector already has a scaled image.
+    // So, each point detector requires no scale factors.
     cv::Point2d noScaleFactors(1, 1);
 
     std::unique_ptr<niftk::TemplateRingsPointDetector> l1(
       new niftk::TemplateRingsPointDetector(internalCorners,
                                             offsetIfNotIterative,
-                                            cv::CALIB_CB_ASYMMETRIC_GRID));
+                                            cv::CALIB_CB_ASYMMETRIC_GRID
+                                            | cv::CALIB_CB_CLUSTERING
+                                            ));
 
     l1->SetImageScaleFactor(noScaleFactors);
     l1->SetTemplateImage(&m_TemplateImage);
@@ -1072,14 +1122,16 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     l1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
     l1->SetMaxAreaInPixels(maxArea);
     l1->SetUseContours(true);
-    l1->SetUseInternalResampling(true);
-    l1->SetUseTemplateMatching(true);
+    l1->SetUseInternalResampling(false);
+    l1->SetUseTemplateMatching(false);
     l1->SetCaching(true);
 
     std::unique_ptr<niftk::TemplateRingsPointDetector> r1(
       new niftk::TemplateRingsPointDetector(internalCorners,
                                             offsetIfNotIterative,
-                                            cv::CALIB_CB_ASYMMETRIC_GRID));
+                                            cv::CALIB_CB_ASYMMETRIC_GRID
+                                            | cv::CALIB_CB_CLUSTERING
+                                            ));
 
     r1->SetImageScaleFactor(noScaleFactors);
     r1->SetTemplateImage(&m_TemplateImage);
@@ -1087,8 +1139,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     r1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
     r1->SetMaxAreaInPixels(maxArea);
     r1->SetUseContours(true);
-    r1->SetUseInternalResampling(true);
-    r1->SetUseTemplateMatching(true);
+    r1->SetUseInternalResampling(false);
+    r1->SetUseTemplateMatching(false);
     r1->SetCaching(true);
 
     std::unique_ptr<niftk::PointDetector> l2(l1.release());
@@ -1096,11 +1148,11 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
 
     std::unique_ptr<niftk::SideBySideDetector> s1(new niftk::SideBySideDetector(l2, r2));
     s1->SetImage(&copyOfImage1);
-    s1->SetImageScaleFactor(scaleFactors);
+    s1->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
 
     std::unique_ptr<niftk::PointDetector> s2(s1.release());
 
-    niftk::PointSet points = s1->GetPoints();
+    niftk::PointSet points = s2->GetPoints();
 
     if (points.size() == 2 * m_GridSizeX * m_GridSizeY)
     {
@@ -1116,46 +1168,52 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
       std::unique_ptr<niftk::TemplateRingsPointDetector> l3(
         new niftk::TemplateRingsPointDetector(internalCorners,
                                               offsetIfNotIterative,
-                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+                                              cv::CALIB_CB_ASYMMETRIC_GRID
+                                              | cv::CALIB_CB_CLUSTERING
+                                              ));
 
       l3->SetImageScaleFactor(noScaleFactors);
       l3->SetTemplateImage(&m_TemplateImage);
       l3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
       l3->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
       l3->SetMaxAreaInPixels(maxArea);
-      l3->SetUseContours(false);
+      l3->SetUseContours(true);
       l3->SetUseInternalResampling(false);
-      l3->SetUseTemplateMatching(true);
+      l3->SetUseTemplateMatching(false);
       l3->SetCaching(false);
+      l3->SetInitialGuess(points);
 
       std::unique_ptr<niftk::TemplateRingsPointDetector> r3(
         new niftk::TemplateRingsPointDetector(internalCorners,
                                               offsetIfNotIterative,
-                                              cv::CALIB_CB_ASYMMETRIC_GRID));
+                                              cv::CALIB_CB_ASYMMETRIC_GRID
+                                              | cv::CALIB_CB_CLUSTERING
+                                              ));
 
       r3->SetImageScaleFactor(noScaleFactors);
       r3->SetTemplateImage(&m_TemplateImage);
       r3->SetReferenceImage(&m_ReferenceDataForIterativeCalib.first);
       r3->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
       r3->SetMaxAreaInPixels(maxArea);
-      r3->SetUseContours(false);
+      r3->SetUseContours(true);
       r3->SetUseInternalResampling(false);
-      r3->SetUseTemplateMatching(true);
+      r3->SetUseTemplateMatching(false);
       r3->SetCaching(false);
+      r3->SetInitialGuess(points);
 
       std::unique_ptr<niftk::PointDetector> l4(l3.release());
       std::unique_ptr<niftk::PointDetector> r4(r3.release());
 
       std::unique_ptr<niftk::SideBySideDetector> s3(new niftk::SideBySideDetector(l4, r4));
       s3->SetImage(&copyOfImage2);
-      s3->SetImageScaleFactor(scaleFactors);
+      s3->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
 
       std::unique_ptr<niftk::PointDetector> s4(s3.release());
 
       std::shared_ptr<niftk::IPoint2DDetector> warpedDetector(s4.release());
       m_ImagesForWarping[imageIndex].push_back(
         std::pair<std::shared_ptr<niftk::IPoint2DDetector>, cv::Mat>(warpedDetector, copyOfImage2));
-      dynamic_cast<niftk::TemplateRingsPointDetector*>(
+      dynamic_cast<niftk::TemplateCirclesPointDetector*>(
         m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }

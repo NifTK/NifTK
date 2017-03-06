@@ -93,8 +93,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_FeaturesComboBox->addItem("April Tags", QVariant(niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS));
   m_Ui->m_FeaturesComboBox->addItem("Template matching coplanar asymmetric circles", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES));
   m_Ui->m_FeaturesComboBox->addItem("Template matching coplanar asymmetric rings", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS));
-  m_Ui->m_FeaturesComboBox->addItem("Template matching non-coplanar asymmetric circles", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES));
-  m_Ui->m_FeaturesComboBox->addItem("Template matching non-coplanar asymmetric rings", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_RINGS));
+  m_Ui->m_FeaturesComboBox->addItem("Contour matching non-coplanar asymmetric circles", QVariant(niftk::NiftyCalVideoCalibrationManager::CONTOUR_MATCHING_NON_COPLANAR_CIRCLES));
+  m_Ui->m_FeaturesComboBox->addItem("Contour matching non-coplanar asymmetric rings", QVariant(niftk::NiftyCalVideoCalibrationManager::CONTOUR_MATCHING_NON_COPLANAR_RINGS));
   m_Ui->m_TagFamilyComboBox->addItem("16h5");
   m_Ui->m_TagFamilyComboBox->addItem("25h7");
   m_Ui->m_TagFamilyComboBox->addItem("25h9");
@@ -157,8 +157,8 @@ void CameraCalViewPreferencePage::UpdateReferenceImageVisibility()
   if (   m_Ui->m_IterativeCheckBox->isChecked()
       || m_Ui->m_FeaturesComboBox->currentIndex() == niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES
       || m_Ui->m_FeaturesComboBox->currentIndex() == niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS
-      || m_Ui->m_FeaturesComboBox->currentIndex() == niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES
-      || m_Ui->m_FeaturesComboBox->currentIndex() == niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_RINGS
+      || m_Ui->m_FeaturesComboBox->currentIndex() == niftk::NiftyCalVideoCalibrationManager::CONTOUR_MATCHING_NON_COPLANAR_CIRCLES
+      || m_Ui->m_FeaturesComboBox->currentIndex() == niftk::NiftyCalVideoCalibrationManager::CONTOUR_MATCHING_NON_COPLANAR_RINGS
       )
   {
     isVisible = true;
@@ -201,8 +201,8 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
     break;
     case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES:
     case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS:
-    case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES:
-    case niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_RINGS:
+    case niftk::NiftyCalVideoCalibrationManager::CONTOUR_MATCHING_NON_COPLANAR_CIRCLES:
+    case niftk::NiftyCalVideoCalibrationManager::CONTOUR_MATCHING_NON_COPLANAR_RINGS:
       m_Ui->m_GridSizeLabel->setVisible(true);
       m_Ui->m_GridPointsInXSpinBox->setVisible(true);
       m_Ui->m_ByLabel->setVisible(true);
