@@ -1002,8 +1002,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     l1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
     l1->SetMaxAreaInPixels(maxArea);
     l1->SetUseContours(true);
-    l1->SetUseInternalResampling(false);
-    l1->SetUseTemplateMatching(false);
+    l1->SetUseInternalResampling(true);
+    l1->SetUseTemplateMatching(true);
     l1->SetCaching(true);
 
     std::unique_ptr<niftk::TemplateCirclesPointDetector> r1(
@@ -1019,8 +1019,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     r1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
     r1->SetMaxAreaInPixels(maxArea);
     r1->SetUseContours(true);
-    r1->SetUseInternalResampling(false);
-    r1->SetUseTemplateMatching(false);
+    r1->SetUseInternalResampling(true);
+    r1->SetUseTemplateMatching(true);
     r1->SetCaching(true);
 
     std::unique_ptr<niftk::PointDetector> l2(l1.release());
@@ -1128,8 +1128,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     l1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
     l1->SetMaxAreaInPixels(maxArea);
     l1->SetUseContours(true);
-    l1->SetUseInternalResampling(false);
-    l1->SetUseTemplateMatching(false);
+    l1->SetUseInternalResampling(true);
+    l1->SetUseTemplateMatching(true);
     l1->SetCaching(true);
 
     std::unique_ptr<niftk::TemplateRingsPointDetector> r1(
@@ -1145,8 +1145,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     r1->SetReferencePoints(m_ReferenceDataForIterativeCalib.second);
     r1->SetMaxAreaInPixels(maxArea);
     r1->SetUseContours(true);
-    r1->SetUseInternalResampling(false);
-    r1->SetUseTemplateMatching(false);
+    r1->SetUseInternalResampling(true);
+    r1->SetUseTemplateMatching(true);
     r1->SetCaching(true);
 
     std::unique_ptr<niftk::PointDetector> l2(l1.release());

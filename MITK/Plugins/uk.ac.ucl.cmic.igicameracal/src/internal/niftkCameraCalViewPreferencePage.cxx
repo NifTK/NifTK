@@ -93,8 +93,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_FeaturesComboBox->addItem("April Tags (planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS));
   m_Ui->m_FeaturesComboBox->addItem("Template matching asymmetric circles (planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES));
   m_Ui->m_FeaturesComboBox->addItem("Template matching asymmetric rings (planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS));
-  m_Ui->m_FeaturesComboBox->addItem("Contour matching asymmetric circles (non-planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::CONTOUR_MATCHING_NON_COPLANAR_CIRCLES));
-  m_Ui->m_FeaturesComboBox->addItem("Contour matching asymmetric rings (non-planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::CONTOUR_MATCHING_NON_COPLANAR_RINGS));
+  m_Ui->m_FeaturesComboBox->addItem("Symmetric template matching asymmetric circles (non-planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::CONTOUR_MATCHING_NON_COPLANAR_CIRCLES));
+  m_Ui->m_FeaturesComboBox->addItem("Symmetric template matching asymmetric rings (non-planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::CONTOUR_MATCHING_NON_COPLANAR_RINGS));
   m_Ui->m_TagFamilyComboBox->addItem("16h5");
   m_Ui->m_TagFamilyComboBox->addItem("25h7");
   m_Ui->m_TagFamilyComboBox->addItem("25h9");
