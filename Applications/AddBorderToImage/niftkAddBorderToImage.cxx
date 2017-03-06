@@ -98,7 +98,7 @@ int AddBorderToImage( arguments &args )
   inImage = imageReader->GetOutput();
   inImage->DisconnectPipeline();
 
-
+  
   // Allocate the output image
   // ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -124,25 +124,23 @@ int AddBorderToImage( arguments &args )
 
   std::cout << "Setting border region to: " + niftk::ConvertToString( args.intensity ) << std::endl;
 
-  typename ImageType::PointType   outOrigin;
+  typename ImageType::PointType   outOrigin = inOrigin;
   typename ImageType::RegionType  outRegion;
-
   typename ImageType::SizeType    outSize;
-
-  double widthInMillimetres;
+  typename ImageType::DirectionType outDir = inImage->GetDirection();
+  double widthInMillimetres[3];
   double widthInVoxels;
 
   outSize = inSize;
 
   std::cout << "Expanding image by: ";
-  for (i=0; i<Dimension; i++)
+  for (i = 0; i < Dimension; i++)
   {
-    widthInVoxels = itk::Math::Round<double>( args.width[i]/spacing[i] );
-    widthInMillimetres = widthInVoxels*spacing[i];
+    widthInVoxels = itk::Math::Round<double>( args.width[i] / spacing[i] );
+    widthInMillimetres[i] = widthInVoxels * spacing[i];
 
-    outOrigin[i] = inOrigin[i] - widthInMillimetres;
 
-    outSize[i] = inSize[i] + 2*static_cast<itk::SizeValueType>( widthInVoxels );
+    outSize[i] = inSize[i] + 2 * static_cast<itk::SizeValueType>( widthInVoxels );
 
     start[i] = widthInVoxels;
 
@@ -151,21 +149,28 @@ int AddBorderToImage( arguments &args )
   }
   std::cout << std::endl;
 
+  for (unsigned int i = 0; i < Dimension; i++)
+  {
+    for (unsigned int j = 0; j < Dimension; j++)
+    {
+      outOrigin[i] -= widthInMillimetres[j] * outDir[i][j];
+    }
+  }
+
   outRegion.SetSize( outSize );
 
   outImage = ImageType::New();
 
-  outImage->SetSpacing( spacing );
-  outImage->SetRegions( outRegion );
-  outImage->SetOrigin(  outOrigin );
-
+  outImage->SetSpacing(   spacing   );
+  outImage->SetRegions(   outRegion );
+  outImage->SetOrigin(    outOrigin );
+  outImage->SetDirection( outDir    );
   outImage->Allocate();
   outImage->FillBuffer( static_cast<PixelType>( args.intensity ) );
 
 
   // Copy over the input intensities
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
   outRegion.SetSize(  inSize );
   outRegion.SetIndex( start );
 
