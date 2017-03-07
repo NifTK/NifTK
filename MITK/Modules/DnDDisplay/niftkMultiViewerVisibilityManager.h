@@ -138,8 +138,8 @@ protected:
   /// If the global property has changed, renderer is NULL.
   virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
-  /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to initialVisibility.
-  virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node, bool visibility=true);
+  /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to its global visibility.
+  virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node);
 
   /// \brief For a given window (denoted by its windowIndex, or index number in m_Viewers), effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
   virtual void RemoveNodesFromViewer(int windowIndex);

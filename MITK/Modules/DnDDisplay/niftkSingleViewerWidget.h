@@ -195,7 +195,10 @@ public:
   bool ContainsRenderWindow(QmitkRenderWindow *renderWindow) const;
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers.
-  void SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible);
+  void SetVisibility(const std::vector<mitk::DataNode*>& nodes, bool visible);
+
+  /// \brief Applies the global visible flag locally for all the nodes.
+  void ApplyGlobalVisibility(const std::vector<mitk::DataNode*>& nodes);
 
   /// \brief Returns the minimum allowed magnification.
   double GetMinMagnification() const;

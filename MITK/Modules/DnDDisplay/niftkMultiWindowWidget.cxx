@@ -845,13 +845,30 @@ void MultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk::Dat
 
 
 //-----------------------------------------------------------------------------
-void MultiWindowWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visibility)
+void MultiWindowWidget::SetVisibility(const std::vector<mitk::DataNode*>& nodes, bool visibility)
 {
   for (std::size_t i = 0; i < nodes.size(); ++i)
   {
     this->SetVisibility(mitkWidget1, nodes[i], visibility);
     this->SetVisibility(mitkWidget2, nodes[i], visibility);
     this->SetVisibility(mitkWidget3, nodes[i], visibility);
+  }
+  this->UpdatePositionAnnotation(m_SelectedWindowIndex);
+  this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
+  this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
+  this->Update3DWindowVisibility();
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiWindowWidget::ApplyGlobalVisibility(const std::vector<mitk::DataNode*>& nodes)
+{
+  for (auto node: nodes)
+  {
+    bool visibility = node->IsVisible(nullptr);
+    this->SetVisibility(mitkWidget1, node, visibility);
+    this->SetVisibility(mitkWidget2, node, visibility);
+    this->SetVisibility(mitkWidget3, node, visibility);
   }
   this->UpdatePositionAnnotation(m_SelectedWindowIndex);
   this->UpdateIntensityAnnotation(m_SelectedWindowIndex);

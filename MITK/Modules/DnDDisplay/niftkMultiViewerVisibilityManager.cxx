@@ -145,39 +145,33 @@ void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
     }
   }
 
-  mitk::BoolProperty* globalVisibilityProperty = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
-  if (globalVisibilityProperty)
+  // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
+  // viewer as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
+  // registered as a child of a grey scale image. If the parent grey scale image is already
+  // registered as visible in a viewer, then the child image is made visible, which has the effect of
+  // immediately showing the segmented volume.
+  mitk::DataNode::Pointer parent = niftk::FindParentGreyScaleImage(this->GetDataStorage(), node);
+  if (parent.IsNotNull())
   {
-    bool globalVisibility = globalVisibilityProperty->GetValue();
-
-    // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
-    // viewer as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
-    // registered as a child of a grey scale image. If the parent grey scale image is already
-    // registered as visible in a viewer, then the child image is made visible, which has the effect of
-    // immediately showing the segmented volume.
-    mitk::DataNode::Pointer parent = niftk::FindParentGreyScaleImage(this->GetDataStorage(), node);
-    if (parent.IsNotNull())
+    for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
     {
-      for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
+      std::set<mitk::DataNode*>::iterator it = m_DataNodesPerViewer[i].find(parent);
+      if (it != m_DataNodesPerViewer[i].end())
       {
-        std::set<mitk::DataNode*>::iterator it = m_DataNodesPerViewer[i].find(parent);
-        if (it != m_DataNodesPerViewer[i].end())
-        {
-          this->AddNodeToViewer(i, node, globalVisibility);
-        }
+        this->AddNodeToViewer(i, node);
       }
     }
-    else
+  }
+  else
+  {
+    /// TODO This should not be handled here.
+    if (node->GetName() == std::string("One of FeedbackContourTool's feedback nodes"))
     {
-      /// TODO This should not be handled here.
-      if (node->GetName() == std::string("One of FeedbackContourTool's feedback nodes"))
+      for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
       {
-        for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
+        if (m_Viewers[viewerIndex]->IsFocused())
         {
-          if (m_Viewers[viewerIndex]->IsFocused())
-          {
-            this->AddNodeToViewer(viewerIndex, node, globalVisibility);
-          }
+          this->AddNodeToViewer(viewerIndex, node);
         }
       }
     }
@@ -297,7 +291,7 @@ int MultiViewerVisibilityManager::GetNodesInViewer(int viewerIndex)
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNode* node, bool initialVisibility)
+void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNode* node)
 {
   SingleViewerWidget* viewer = m_Viewers[viewerIndex];
   assert(viewer);
@@ -314,7 +308,7 @@ void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNo
     for (std::size_t i = 0; i < possibleChildren->size(); i++)
     {
       mitk::DataNode* possibleNode = (*possibleChildren)[i];
-      if (possibleNode->IsVisible(0))
+//      if (possibleNode->IsVisible(0))
       {
         m_DataNodesPerViewer[viewerIndex].insert(possibleNode);
         possibleNode->Modified();
@@ -324,7 +318,8 @@ void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNo
     }
   }
 
-  viewer->SetVisibility(nodes, initialVisibility);
+  MITK_INFO << "MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNode* node) node: " << node->GetName();
+  viewer->ApplyGlobalVisibility(nodes);
 }
 
 
@@ -582,7 +577,7 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
       std::string name;
       if (nodes[i] != 0 && nodes[i]->GetStringProperty("name", name))
       {
-        MITK_DEBUG << "Dropped " << nodes.size() << " into viewer[" << viewerIndex <<"], name[" << i << "]=" << name << std::endl;
+        MITK_INFO << "Dropped " << nodes.size() << " into viewer[" << viewerIndex <<"], name[" << i << "]=" << name << std::endl;
       }
     }
 
@@ -601,6 +596,7 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
       // Clear all nodes from the single viewer denoted by viewerIndex (the one that was dropped into).
       if (this->GetNodesInViewer(viewerIndex) > 0 && !this->GetAccumulateWhenDropped())
       {
+        MITK_INFO << "remove node: " << viewerIndex;
         this->RemoveNodesFromViewer(viewerIndex);
       }
 
@@ -615,6 +611,7 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
       // Then add all nodes into the same viewer denoted by viewerIndex (the one that was dropped into).
       for (std::size_t i = 0; i < nodes.size(); i++)
       {
+        MITK_INFO << "OnNodesDropped() i: " << i << " node: " << nodes[i]->GetName();
         this->AddNodeToViewer(viewerIndex, nodes[i]);
       }
     }

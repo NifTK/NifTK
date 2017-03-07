@@ -414,9 +414,16 @@ void SingleViewerWidget::FitToDisplay(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
-void SingleViewerWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+void SingleViewerWidget::SetVisibility(const std::vector<mitk::DataNode*>& nodes, bool visible)
 {
   m_MultiWidget->SetVisibility(nodes, visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerWidget::ApplyGlobalVisibility(const std::vector<mitk::DataNode*>& nodes)
+{
+  m_MultiWidget->ApplyGlobalVisibility(nodes);
 }
 
 
