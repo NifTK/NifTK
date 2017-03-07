@@ -343,7 +343,10 @@ public:
   void FitRenderWindow(int windowIndex, double scaleFactor = 0.0);
 
   /// \brief Sets the visible flag for all the nodes, and all the renderers in the QmitkStdMultiWidget base class.
-  void SetVisibility(std::vector<mitk::DataNode*> nodes, bool visibility);
+  void SetVisibility(const std::vector<mitk::DataNode*>& nodes, bool visibility);
+
+  /// \brief Sets the global visible flag locally for all the nodes.
+  void ApplyGlobalVisibility(const std::vector<mitk::DataNode*>& nodes);
 
   /// \brief Only request an update for screens that are visible and enabled.
   void RequestUpdate();
@@ -385,6 +388,9 @@ public:
   bool BlockDisplayEvents(bool blocked);
 
 signals:
+
+  /// \brief Emitted when a window of the widget gets selected.
+  void WindowSelected();
 
   /// \brief Emitted when the window layout has changed.
   void WindowLayoutChanged(WindowLayout windowLayout);

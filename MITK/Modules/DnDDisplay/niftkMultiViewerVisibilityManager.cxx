@@ -14,8 +14,6 @@
 
 #include "niftkMultiViewerVisibilityManager.h"
 #include <mitkVtkResliceInterpolationProperty.h>
-#include <mitkFocusManager.h>
-#include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
 #include <itkConversionUtils.h>
 #include <itkSpatialOrientationAdapter.h>
@@ -29,26 +27,20 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 MultiViewerVisibilityManager::MultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage)
-  : niftk::DataNodePropertyListener(dataStorage, "visible")
-, m_InterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION)
-, m_AutomaticallyAddChildren(true)
-, m_Accumulate(false)
-, m_FocusManagerObserverTag(0)
+  : niftk::DataNodePropertyListener(dataStorage, "visible"),
+    m_SelectedViewer(nullptr),
+    m_DropType(DNDDISPLAY_DROP_SINGLE),
+    m_DefaultWindowLayout(WINDOW_LAYOUT_CORONAL),
+    m_InterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION),
+    m_AutomaticallyAddChildren(true),
+    m_Accumulate(false)
 {
-  // Register focus observer.
-  itk::SimpleMemberCommand<MultiViewerVisibilityManager>::Pointer onFocusChangedCommand = itk::SimpleMemberCommand<MultiViewerVisibilityManager>::New();
-  onFocusChangedCommand->SetCallbackFunction(this, &MultiViewerVisibilityManager::OnFocusChanged);
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
 }
 
 
 //-----------------------------------------------------------------------------
 MultiViewerVisibilityManager::~MultiViewerVisibilityManager()
 {
-  // Deregister focus observer.
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  focusManager->RemoveObserver(m_FocusManagerObserverTag);
 }
 
 
@@ -77,6 +69,7 @@ void MultiViewerVisibilityManager::RegisterViewer(SingleViewerWidget* viewer)
   m_Viewers[viewerIndex]->SetVisibility(nodes, false);
 
   this->connect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
+  this->connect(viewer, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
 }
 
 
@@ -90,6 +83,7 @@ void MultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex, std
   for (std::size_t i = startIndex; i < endIndex; ++i)
   {
     QObject::disconnect(m_Viewers[i], SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
+    QObject::disconnect(m_Viewers[i], SIGNAL(WindowSelected()), this, SLOT(OnWindowSelected()));
     this->RemoveNodesFromViewer(i);
   }
   m_DataNodesPerViewer.erase(m_DataNodesPerViewer.begin() + startIndex, m_DataNodesPerViewer.begin() + endIndex);
@@ -145,39 +139,33 @@ void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
     }
   }
 
-  mitk::BoolProperty* globalVisibilityProperty = dynamic_cast<mitk::BoolProperty*>(node->GetProperty("visible"));
-  if (globalVisibilityProperty)
+  // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
+  // viewer as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
+  // registered as a child of a grey scale image. If the parent grey scale image is already
+  // registered as visible in a viewer, then the child image is made visible, which has the effect of
+  // immediately showing the segmented volume.
+  mitk::DataNode::Pointer parent = niftk::FindParentGreyScaleImage(this->GetDataStorage(), node);
+  if (parent.IsNotNull())
   {
-    bool globalVisibility = globalVisibilityProperty->GetValue();
-
-    // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
-    // viewer as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
-    // registered as a child of a grey scale image. If the parent grey scale image is already
-    // registered as visible in a viewer, then the child image is made visible, which has the effect of
-    // immediately showing the segmented volume.
-    mitk::DataNode::Pointer parent = niftk::FindParentGreyScaleImage(this->GetDataStorage(), node);
-    if (parent.IsNotNull())
+    for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
     {
-      for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
+      std::set<mitk::DataNode*>::iterator it = m_DataNodesPerViewer[i].find(parent);
+      if (it != m_DataNodesPerViewer[i].end())
       {
-        std::set<mitk::DataNode*>::iterator it = m_DataNodesPerViewer[i].find(parent);
-        if (it != m_DataNodesPerViewer[i].end())
-        {
-          this->AddNodeToViewer(i, node, globalVisibility);
-        }
+        this->AddNodeToViewer(i, node);
       }
     }
-    else
+  }
+  else
+  {
+    /// TODO This should not be handled here.
+    if (node->GetName() == std::string("One of FeedbackContourTool's feedback nodes"))
     {
-      /// TODO This should not be handled here.
-      if (node->GetName() == std::string("One of FeedbackContourTool's feedback nodes"))
+      for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
       {
-        for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
+        if (m_Viewers[viewerIndex]->IsFocused())
         {
-          if (m_Viewers[viewerIndex]->IsFocused())
-          {
-            this->AddNodeToViewer(viewerIndex, node, globalVisibility);
-          }
+          this->AddNodeToViewer(viewerIndex, node);
         }
       }
     }
@@ -297,7 +285,7 @@ int MultiViewerVisibilityManager::GetNodesInViewer(int viewerIndex)
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNode* node, bool initialVisibility)
+void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNode* node)
 {
   SingleViewerWidget* viewer = m_Viewers[viewerIndex];
   assert(viewer);
@@ -314,7 +302,7 @@ void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNo
     for (std::size_t i = 0; i < possibleChildren->size(); i++)
     {
       mitk::DataNode* possibleNode = (*possibleChildren)[i];
-      if (possibleNode->IsVisible(0))
+//      if (possibleNode->IsVisible(0))
       {
         m_DataNodesPerViewer[viewerIndex].insert(possibleNode);
         possibleNode->Modified();
@@ -324,7 +312,7 @@ void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNo
     }
   }
 
-  viewer->SetVisibility(nodes, initialVisibility);
+  viewer->ApplyGlobalVisibility(nodes);
 }
 
 
@@ -516,34 +504,17 @@ WindowLayout MultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk::Dat
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerVisibilityManager::OnFocusChanged()
+void MultiViewerVisibilityManager::OnWindowSelected()
 {
-  mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
+  SingleViewerWidget* selectedViewer = qobject_cast<SingleViewerWidget*>(QObject::sender());
 
-  bool found = false;
-  for (int i = 0; i < m_Viewers.size(); ++i)
+//  if (selectedViewer != m_SelectedViewer)
   {
-    SingleViewerWidget* viewer = m_Viewers[i];
-    const std::vector<QmitkRenderWindow*>& renderWindows = viewer->GetRenderWindows();
-    std::vector<QmitkRenderWindow*>::const_iterator it = renderWindows.begin();
-    std::vector<QmitkRenderWindow*>::const_iterator itEnd = renderWindows.end();
-    for ( ; it != itEnd; ++it)
+    m_SelectedViewer = selectedViewer;
+    if (selectedViewer->GetTimeGeometry() != nullptr)
     {
-      if ((*it)->GetRenderer() == focusedRenderer)
-      {
-        found = true;
-        break;
-      }
+      this->UpdateGlobalVisibilities(selectedViewer->GetSelectedRenderWindow()->GetRenderer());
     }
-    if (found)
-    {
-      break;
-    }
-  }
-
-  if (found)
-  {
-    this->UpdateGlobalVisibilities(focusedRenderer);
   }
 }
 

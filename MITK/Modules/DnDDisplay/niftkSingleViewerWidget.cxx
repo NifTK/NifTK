@@ -83,6 +83,7 @@ SingleViewerWidget::SingleViewerWidget(QWidget* parent, mitk::RenderingManager* 
   this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(m_MultiWidget, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
   this->connect(m_MultiWidget, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(TimeStepChanged(int)), SIGNAL(TimeStepChanged(int)));
@@ -125,6 +126,13 @@ void SingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::ve
   Q_UNUSED(renderWindow);
   emit NodesDropped(nodes);
   m_MultiWidget->SetFocused();
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerWidget::OnWindowSelected()
+{
+  emit WindowSelected();
 }
 
 
@@ -414,9 +422,16 @@ void SingleViewerWidget::FitToDisplay(double scaleFactor)
 
 
 //-----------------------------------------------------------------------------
-void SingleViewerWidget::SetVisibility(std::vector<mitk::DataNode*> nodes, bool visible)
+void SingleViewerWidget::SetVisibility(const std::vector<mitk::DataNode*>& nodes, bool visible)
 {
   m_MultiWidget->SetVisibility(nodes, visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void SingleViewerWidget::ApplyGlobalVisibility(const std::vector<mitk::DataNode*>& nodes)
+{
+  m_MultiWidget->ApplyGlobalVisibility(nodes);
 }
 
 
