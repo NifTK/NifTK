@@ -19,6 +19,7 @@
 #include <itkMultiScaleHessianBasedMeasureImageFilter.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkCommandLineHelper.h>
 #include <itkNifTKImageIOFactory.h>
 #include <itkRescaleIntensityImageFilter.h>
 #include <itkImage.h>
@@ -120,6 +121,12 @@ int main( int argc, char *argv[] )
 
   // Read the input image
   // ~~~~~~~~~~~~~~~~~~~~
+  int dims = itk::PeekAtImageDimension(fileInputImage);
+  if (dims != ImageDimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
 
   typedef itk::ImageFileReader< InputImageType > FileReaderType;
 

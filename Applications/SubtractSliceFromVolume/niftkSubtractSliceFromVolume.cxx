@@ -14,6 +14,7 @@
 
 #include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
+#include <itkCommandLineHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -111,6 +112,12 @@ int main(int argc, char** argv)
 
   // Load the input image volume
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  int dims = itk::PeekAtImageDimension(fileInputImage3D);
+  if (dims != 3)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
 
   InputImageReaderType3D::Pointer inputImageReader3D  = InputImageReaderType3D::New();
   
@@ -129,6 +136,12 @@ int main(int argc, char** argv)
 
   // Load the input image slice
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~
+  dims = itk::PeekAtImageDimension(fileInputImage2D);
+  if (dims != 2)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
 
   InputImageReaderType2D::Pointer inputImageReader2D  = InputImageReaderType2D::New();
   

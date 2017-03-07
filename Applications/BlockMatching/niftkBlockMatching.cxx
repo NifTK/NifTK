@@ -894,7 +894,7 @@ int main(int argc, char** argv)
   unsigned int dims = itk::PeekAtImageDimension(args.fixedImage);
   if (dims != 3 && dims != 2)
     {
-      std::cout << "Unsuported image dimension" << std::endl;
+      std::cout << "Unsupported image dimension" << std::endl;
       return EXIT_FAILURE;
     }
   

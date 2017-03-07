@@ -29,7 +29,7 @@ void Usage(char *exec)
   {
     niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs the ITK ShrinkImageFilter." << std::endl;
+    std::cout << "  Runs the ITK ShrinkImageFilter on a 2D or 3D image." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;

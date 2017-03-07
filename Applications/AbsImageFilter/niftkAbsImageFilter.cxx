@@ -39,7 +39,7 @@ void Usage(char *exec)
   {
     niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs the ITK AbsImageFilter on a single image to output the absolute value image, useful for displaying the image properly in MIDAS" << std::endl;
+    std::cout << "  Runs the ITK AbsImageFilter on a single 2D or 3D image to output the absolute value image, useful for displaying the image properly in MIDAS" << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName" << std::endl;
     std::cout << "  " << std::endl;
@@ -119,7 +119,7 @@ int main(int argc, char** argv)
   int dims = itk::PeekAtImageDimension(args.inputImage);
   if (dims != 2 && dims != 3)
     {
-      std::cout << "Unsuported image dimension" << std::endl;
+      std::cout << "Unsupported image dimension" << std::endl;
       return EXIT_FAILURE;
     }
   

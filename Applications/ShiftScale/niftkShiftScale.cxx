@@ -17,6 +17,7 @@
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNifTKImageIOFactory.h>
+#include <itkCommandLineHelper.h>
 #include <itkShiftScaleImageFilter.h>
 
 /*!
@@ -28,7 +29,7 @@ void Usage(char *exec)
   {
     niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs the ITK ShiftScaleImageFilter." << std::endl;
+    std::cout << "  Runs the ITK ShiftScaleImageFilter on a 3D image." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;
@@ -91,6 +92,13 @@ int main(int argc, char** argv)
       Usage(argv[0]);
       return EXIT_FAILURE;
     }
+
+  int dims = itk::PeekAtImageDimension(inputImage);
+  if (dims != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
 
   typedef itk::Image< PixelType, Dimension >     InputImageType;   
   typedef itk::ImageFileReader< InputImageType > InputImageReaderType;

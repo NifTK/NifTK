@@ -14,6 +14,7 @@
 
 #include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
+#include <itkCommandLineHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkNifTKImageIOFactory.h>
@@ -152,6 +153,13 @@ int main(int argc, char** argv)
       std::cerr << argv[0] << ":\tSteps must be >= 1" << std::endl;
       return EXIT_FAILURE;
     }
+
+  if (itk::PeekAtImageDimension(volumeImageName) != Dimension 
+    || itk::PeekAtImageDimension(maskImageName) != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
 
   typedef itk::Image< PixelType, Dimension > InputImageType;  
   typedef InputImageType::SpacingType SpacingType;

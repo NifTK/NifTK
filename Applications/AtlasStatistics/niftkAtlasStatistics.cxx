@@ -55,7 +55,7 @@ void Usage(char *name)
 {
   niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
-  std::cout << "  Takes an atlas, containing a set of image labels, and for each input image, " << std::endl;
+  std::cout << "  Takes an atlas, containing a set of image labels, and for each 2D or 3D input image, " << std::endl;
   std::cout << "  and for each region, computes region based statistics (count, min, max, mean, std dev, median, IQM), resulting in a comma separated output. " << std::endl;
   std::cout << "  " << std::endl;
   std::cout << "  The input images MUST already be in atlas space, no checking is performed." << std::endl;
@@ -536,7 +536,7 @@ int main(int argc, char** argv)
         result = DoMain<3>(args);
       break;
       default:
-        std::cout << "Unsuported image dimension" << std::endl;
+        std::cout << "Unsupported image dimension" << std::endl;
         exit( EXIT_FAILURE );
     }
   return result;

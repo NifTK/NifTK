@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include <niftkConversionUtils.h>
+#include <itkCommandLineHelper.h>
 #include <niftkCommandLineParser.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -82,6 +83,12 @@ int main(int argc, char** argv)
   typedef itk::NeighborhoodConnectedImageFilter<InputImageType,InputImageType> ConnectedFilterType;
   typedef itk::BinaryThresholdImageFilter<InputImageType, InputImageType> BinaryThresholdImageFilterType; 
   
+  if (itk::PeekAtImageDimension(inputFilename) != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   try
   {
     ReaderType::Pointer reader = ReaderType::New();
