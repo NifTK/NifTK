@@ -25,7 +25,7 @@ See LICENSE.txt in the top level directory for details.
 #include <itkBinaryDilateImageFilter.h>
 #include <itkBinaryBallStructuringElement.h>
 #include <itkBinaryErodeImageFilter.h>
-#include <math.h>
+#include <itkMultiplyImageFilter.h>
 
 #include <niftkVesselExtractorCLP.h>
 #include <itkNifTKImageIOFactory.h>
@@ -733,18 +733,15 @@ int main(int argc, char *argv[])
   else if (inMask.IsNotNull())
   {
     progressXML(progresscounter, "Applying mask...");
-    progresscounter+=progress_unit;
-    itk::ImageRegionConstIterator<InternalImageType> maskIterator(inMask, maxImage->GetLargestPossibleRegion());
-    outimageIterator.GoToBegin();
-    while(!outimageIterator.IsAtEnd()) //Apply brain mask
-    {
-      if (maskIterator.Get() == 0)
-      {
-        outimageIterator.Set(0);
-      }
-      ++outimageIterator;
-      ++maskIterator;
-    }
+    progresscounter += progress_unit;
+
+    typedef itk::MultiplyImageFilter<InternalImageType> MultiplyFilterType;
+    MultiplyFilterType::Pointer multiplyFilter = MultiplyFilterType::New();
+    multiplyFilter->SetInput1(maxImage);
+    multiplyFilter->SetInput2(inMask);
+    multiplyFilter->Update();
+
+    maxImage = multiplyFilter->GetOutput();
   } // end of vesselextractor.cpp
 
   //parameters
