@@ -368,6 +368,9 @@ public:
 
 signals:
 
+  /// \brief Emitted when a window of the viewer gets selected.
+  void WindowSelected();
+
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
   void NodesDropped(std::vector<mitk::DataNode*> nodes);
 
@@ -421,6 +424,9 @@ protected:
   virtual void paintEvent(QPaintEvent* event) override;
 
 protected slots:
+
+  /// \brief Called when a window gets selected.
+  virtual void OnWindowSelected();
 
   /// \brief Called when the window layout has changed.
   virtual void OnWindowLayoutChanged(WindowLayout windowLayout);

@@ -14,8 +14,6 @@
 
 #include "niftkMultiViewerVisibilityManager.h"
 #include <mitkVtkResliceInterpolationProperty.h>
-#include <mitkFocusManager.h>
-#include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
 #include <itkConversionUtils.h>
 #include <itkSpatialOrientationAdapter.h>
@@ -29,26 +27,20 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 MultiViewerVisibilityManager::MultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage)
-  : niftk::DataNodePropertyListener(dataStorage, "visible")
-, m_InterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION)
-, m_AutomaticallyAddChildren(true)
-, m_Accumulate(false)
-, m_FocusManagerObserverTag(0)
+  : niftk::DataNodePropertyListener(dataStorage, "visible"),
+    m_SelectedViewer(nullptr),
+    m_DropType(DNDDISPLAY_DROP_SINGLE),
+    m_DefaultWindowLayout(WINDOW_LAYOUT_CORONAL),
+    m_InterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION),
+    m_AutomaticallyAddChildren(true),
+    m_Accumulate(false)
 {
-  // Register focus observer.
-  itk::SimpleMemberCommand<MultiViewerVisibilityManager>::Pointer onFocusChangedCommand = itk::SimpleMemberCommand<MultiViewerVisibilityManager>::New();
-  onFocusChangedCommand->SetCallbackFunction(this, &MultiViewerVisibilityManager::OnFocusChanged);
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
 }
 
 
 //-----------------------------------------------------------------------------
 MultiViewerVisibilityManager::~MultiViewerVisibilityManager()
 {
-  // Deregister focus observer.
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  focusManager->RemoveObserver(m_FocusManagerObserverTag);
 }
 
 
@@ -77,6 +69,7 @@ void MultiViewerVisibilityManager::RegisterViewer(SingleViewerWidget* viewer)
   m_Viewers[viewerIndex]->SetVisibility(nodes, false);
 
   this->connect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
+  this->connect(viewer, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
 }
 
 
@@ -90,6 +83,7 @@ void MultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex, std
   for (std::size_t i = startIndex; i < endIndex; ++i)
   {
     QObject::disconnect(m_Viewers[i], SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
+    QObject::disconnect(m_Viewers[i], SIGNAL(WindowSelected()), this, SLOT(OnWindowSelected()));
     this->RemoveNodesFromViewer(i);
   }
   m_DataNodesPerViewer.erase(m_DataNodesPerViewer.begin() + startIndex, m_DataNodesPerViewer.begin() + endIndex);
@@ -318,7 +312,6 @@ void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNo
     }
   }
 
-  MITK_INFO << "MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNode* node) node: " << node->GetName();
   viewer->ApplyGlobalVisibility(nodes);
 }
 
@@ -511,34 +504,17 @@ WindowLayout MultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk::Dat
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerVisibilityManager::OnFocusChanged()
+void MultiViewerVisibilityManager::OnWindowSelected()
 {
-  mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
+  SingleViewerWidget* selectedViewer = qobject_cast<SingleViewerWidget*>(QObject::sender());
 
-  bool found = false;
-  for (int i = 0; i < m_Viewers.size(); ++i)
+//  if (selectedViewer != m_SelectedViewer)
   {
-    SingleViewerWidget* viewer = m_Viewers[i];
-    const std::vector<QmitkRenderWindow*>& renderWindows = viewer->GetRenderWindows();
-    std::vector<QmitkRenderWindow*>::const_iterator it = renderWindows.begin();
-    std::vector<QmitkRenderWindow*>::const_iterator itEnd = renderWindows.end();
-    for ( ; it != itEnd; ++it)
+    m_SelectedViewer = selectedViewer;
+    if (selectedViewer->GetTimeGeometry() != nullptr)
     {
-      if ((*it)->GetRenderer() == focusedRenderer)
-      {
-        found = true;
-        break;
-      }
+      this->UpdateGlobalVisibilities(selectedViewer->GetSelectedRenderWindow()->GetRenderer());
     }
-    if (found)
-    {
-      break;
-    }
-  }
-
-  if (found)
-  {
-    this->UpdateGlobalVisibilities(focusedRenderer);
   }
 }
 
@@ -577,7 +553,7 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
       std::string name;
       if (nodes[i] != 0 && nodes[i]->GetStringProperty("name", name))
       {
-        MITK_INFO << "Dropped " << nodes.size() << " into viewer[" << viewerIndex <<"], name[" << i << "]=" << name << std::endl;
+        MITK_DEBUG << "Dropped " << nodes.size() << " into viewer[" << viewerIndex <<"], name[" << i << "]=" << name << std::endl;
       }
     }
 
@@ -596,7 +572,6 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
       // Clear all nodes from the single viewer denoted by viewerIndex (the one that was dropped into).
       if (this->GetNodesInViewer(viewerIndex) > 0 && !this->GetAccumulateWhenDropped())
       {
-        MITK_INFO << "remove node: " << viewerIndex;
         this->RemoveNodesFromViewer(viewerIndex);
       }
 
@@ -611,7 +586,6 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
       // Then add all nodes into the same viewer denoted by viewerIndex (the one that was dropped into).
       for (std::size_t i = 0; i < nodes.size(); i++)
       {
-        MITK_INFO << "OnNodesDropped() i: " << i << " node: " << nodes[i]->GetName();
         this->AddNodeToViewer(viewerIndex, nodes[i]);
       }
     }

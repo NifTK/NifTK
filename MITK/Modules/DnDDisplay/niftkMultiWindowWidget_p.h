@@ -389,6 +389,9 @@ public:
 
 signals:
 
+  /// \brief Emitted when a window of the widget gets selected.
+  void WindowSelected();
+
   /// \brief Emitted when the window layout has changed.
   void WindowLayoutChanged(WindowLayout windowLayout);
 
