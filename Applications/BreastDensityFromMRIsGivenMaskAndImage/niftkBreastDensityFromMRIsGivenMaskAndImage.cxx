@@ -642,10 +642,7 @@ bool ResampleImageToIsotropicVoxels( ImageType::Pointer &image, InputParameters 
 
   // Run the sampling filter
 
-  ImageType::PixelType intensity1;
-  ImageType::PixelType intensity2;
-
-  if ( itk::IsImageBinary< ImageType >( image, intensity1, intensity2 ) )
+  if ( itk::IsImageBinary< ImageType >(image) )
   {
     typedef itk::BinaryShapeBasedSuperSamplingFilter< ImageType, ImageType > SampleImageFilterType;
 

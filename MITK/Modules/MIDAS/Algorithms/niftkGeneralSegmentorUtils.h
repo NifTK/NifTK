@@ -44,6 +44,28 @@ void NIFTKMIDAS_EXPORT GenerateOutlineFromBinaryImage(mitk::Image::Pointer image
     );
 
 
+/// \brief Retrieves the background and foreground pixel values from a binary image.
+/// Returns false if the image is not binary, otherwise true.
+template<typename TPixel, unsigned int VImageDimension>
+void NIFTKMIDAS_EXPORT ITKGetBinaryImagePixelValues(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    bool& binary,
+    int& backgroundValue,
+    int& foregroundValue
+    );
+
+
+/// \brief Changes the background and foreground pixel values of a binary image.
+template<typename TPixel, unsigned int VImageDimension>
+void NIFTKMIDAS_EXPORT ITKSetBinaryImagePixelValues(
+    itk::Image<TPixel, VImageDimension>* itkImage,
+    int currentBackgroundValue,
+    int currentForegroundValue,
+    int newBackgroundValue,
+    int newForegroundValue
+    );
+
+
 /// \brief Fills the itkImage region with the fillValue.
 template<typename TPixel, unsigned int VImageDimension>
 void ITKFillRegion(
@@ -146,6 +168,13 @@ bool ITKSliceDoesHaveSeeds(
     const mitk::PointSet* seeds,
     int sliceAxis,
     int sliceIndex
+    );
+
+/// \brief Checks if itkImage is empty and returns true if it is all zero.
+template<typename TPixel, unsigned int VImageDimension>
+bool ITKImageIsEmpty(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    bool& outputImageIsEmpty
     );
 
 /// \brief Creates a region of interest within itkImage corresponding to the

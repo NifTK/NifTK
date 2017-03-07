@@ -25,6 +25,9 @@
 
 #include <QmitkRenderWindow.h>
 
+#include <itkIsImageBinary.h>
+#include <mitkImageAccessByItk.h>
+
 #include <niftkDataStorageUtils.h>
 #include <niftkIBaseView.h>
 #include <niftkGeneralSegmentorUtils.h>
@@ -294,27 +297,6 @@ std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingDataFromSegme
 
 
 //-----------------------------------------------------------------------------
-bool GeneralSegmentorController::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
-{
-  bool canRestart = false;
-
-  if (node.IsNotNull() && niftk::IsNodeABinaryImage(node))
-  {
-    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
-    if (parent.IsNotNull())
-    {
-      if (niftk::IsNodeAGreyScaleImage(parent))
-      {
-        canRestart = true;
-      }
-    }
-  }
-
-  return canRestart;
-}
-
-
-//-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 {
   Q_D(GeneralSegmentorController);
@@ -348,6 +330,65 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
       && !this->IsASegmentationImage(selectedNode)
       )
   {
+    try
+    {
+      bool binary;
+      int backgroundValue, foregroundValue;
+      mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(selectedNode->GetData());
+      const mitk::Image* segmentationImageConst = segmentationImage;
+
+      AccessFixedDimensionByItk_n(segmentationImageConst,
+          ITKGetBinaryImagePixelValues, 3,
+          (binary,
+           backgroundValue,
+           foregroundValue
+          )
+        );
+
+      if (!binary)
+      {
+        QMessageBox::warning(
+              d->m_GUI->GetParent(),
+              tr("Start segmentation"),
+              tr("The selected image is not a binary image. Cannot continue."),
+              QMessageBox::Ok);
+
+        return;
+      }
+      else
+      {
+        if (backgroundValue != 0 || foregroundValue != 1)
+        {
+          QString message =
+              QString("The pixel values of the mask will be changed to 0-s and 1-s, respectively. "
+                      "Current values are %1 and %2.\n"
+                      "The modified image will not be saved to the file system."
+                      ).arg(backgroundValue).arg(foregroundValue);
+
+          QMessageBox::warning(
+                d->m_GUI->GetParent(),
+                tr("Start segmentation"),
+                message,
+                QMessageBox::Ok);
+
+          int newBackgroundValue = 0;
+          int newForegroundValue = 1;
+          AccessFixedDimensionByItk_n(segmentationImage,
+              ITKSetBinaryImagePixelValues, 3,
+              (backgroundValue,
+               foregroundValue,
+               newBackgroundValue,
+               newForegroundValue
+              )
+            );
+        }
+      }
+    }
+    catch (const mitk::AccessByItkException& e)
+    {
+      // mitk::Image is of wrong pixel type or dimension,
+      // insert error handling here
+    }
     newSegmentation =  selectedNode;
     isRestarting = true;
   }
@@ -743,7 +784,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
               && std::abs(d->m_SliceIndex - sliceIndex) == 1
               && d->m_GUI->IsRetainMarksCheckBoxChecked())
           {
-            int answer = QMessageBox::NoButton;
+            QMessageBox::StandardButton answer = QMessageBox::NoButton;
 
             if (!isThresholdingOn)
             {
@@ -1008,6 +1049,17 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
           }
         }
       }
+
+      float lowerThreshold;
+      float upperThreshold;
+      if (segmentationImageNode->GetFloatProperty("general segmentor.lower threshold", lowerThreshold))
+      {
+        d->m_GUI->SetLowerThreshold(lowerThreshold);
+      }
+      if (segmentationImageNode->GetFloatProperty("general segmentor.upper threshold", upperThreshold))
+      {
+        d->m_GUI->SetUpperThreshold(upperThreshold);
+      }
     }
   }
 }
@@ -1248,6 +1300,8 @@ void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnThresholdValueChanged()
 {
+  Q_D(GeneralSegmentorController);
+
   this->UpdateRegionGrowing();
 }
 
@@ -1266,6 +1320,10 @@ void GeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
     double lowerThreshold = d->m_GUI->GetLowerThreshold();
     double upperThreshold = d->m_GUI->GetUpperThreshold();
     bool skipUpdate = !isThresholdingOn;
+
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
+    segmentationNode->SetFloatProperty("general segmentor.lower threshold", lowerThreshold);
+    segmentationNode->SetFloatProperty("general segmentor.upper threshold", upperThreshold);
 
     this->UpdateRegionGrowing(isThresholdingOn, sliceAxis, sliceIndex, lowerThreshold, upperThreshold, skipUpdate);
 
@@ -1720,9 +1778,13 @@ void GeneralSegmentorController::OnResetButtonClicked()
     return;
   }
 
-  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
-                                                            tr("Clear all slices ? \n This is not Undo-able! \n Are you sure?"),
-                                                            QMessageBox::Yes | QMessageBox::No);
+  QMessageBox::StandardButton returnValue =
+      QMessageBox::warning(
+        d->m_GUI->GetParent(),
+        tr("NiftyMIDAS"),
+        tr("Clear all slices ? \n This is not Undo-able! \n Are you sure?"),
+        QMessageBox::Yes | QMessageBox::No);
+
   if (returnValue == QMessageBox::No)
   {
     return;
@@ -1795,9 +1857,12 @@ void GeneralSegmentorController::OnRestartButtonClicked()
     return;
   }
 
-  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
-                                                            tr("Discard all changes?\nThis is not Undo-able!\nAre you sure?"),
-                                                            QMessageBox::Yes | QMessageBox::No);
+  QMessageBox::StandardButton returnValue =
+      QMessageBox::warning(
+        d->m_GUI->GetParent(), tr("NiftyMIDAS"),
+        tr("Discard all changes?\nThis is not Undo-able!\nAre you sure?"),
+        QMessageBox::Yes | QMessageBox::No);
+
   if (returnValue == QMessageBox::No)
   {
     return;
@@ -2105,10 +2170,13 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     message = tr(messageWithOrientation.toStdString().c_str()).arg(orientationText);
   }
 
-  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
-                                                   tr("%1.\n"
-                                                      "Are you sure?").arg(message),
-                                                   QMessageBox::Yes | QMessageBox::No);
+  QMessageBox::StandardButton returnValue =
+      QMessageBox::warning(
+        d->m_GUI->GetParent(), tr("NiftyMIDAS"),
+        tr("%1.\n"
+           "Are you sure?").arg(message),
+        QMessageBox::Yes | QMessageBox::No);
+
   if (returnValue == QMessageBox::No)
   {
     return;
@@ -2267,9 +2335,13 @@ void GeneralSegmentorController::OnWipePlusButtonClicked()
     orientationText = "up from";
   }
 
-  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
-                                                            tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
-                                                            QMessageBox::Yes | QMessageBox::No);
+  QMessageBox::StandardButton returnValue =
+      QMessageBox::warning(
+        d->m_GUI->GetParent(),
+        tr("NiftyMIDAS"),
+        tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
+        QMessageBox::Yes | QMessageBox::No);
+
   if (returnValue == QMessageBox::No)
   {
     return;
@@ -2306,9 +2378,13 @@ void GeneralSegmentorController::OnWipeMinusButtonClicked()
     orientationText = "down from";
   }
 
-  int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
-                                                            tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
-                                                            QMessageBox::Yes | QMessageBox::No);
+  QMessageBox::StandardButton returnValue =
+      QMessageBox::warning(
+        d->m_GUI->GetParent(),
+        tr("NiftyMIDAS"),
+        tr(messageWithOrientation.toStdString().c_str()).arg(orientationText),
+        QMessageBox::Yes | QMessageBox::No);
+
   if (returnValue == QMessageBox::No)
   {
     return;
@@ -2612,10 +2688,14 @@ void GeneralSegmentorController::OnCleanButtonClicked()
     bool hasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(isThresholdingOn, sliceAxis, sliceIndex);
     if (hasUnenclosedSeeds)
     {
-      int returnValue = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
-                                                       tr("There are unenclosed seeds - slice will be wiped\n"
-                                                          "Are you sure?"),
-                                                       QMessageBox::Yes | QMessageBox::No);
+      QMessageBox::StandardButton returnValue =
+          QMessageBox::warning(
+            d->m_GUI->GetParent(),
+            tr("NiftyMIDAS"),
+            tr("There are unenclosed seeds - slice will be wiped\n"
+               "Are you sure?"),
+            QMessageBox::Yes | QMessageBox::No);
+
       if (returnValue == QMessageBox::Yes)
       {
         this->DoWipe(0);

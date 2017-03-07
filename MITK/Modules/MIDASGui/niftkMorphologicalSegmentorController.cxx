@@ -16,6 +16,7 @@
 
 #include <QMessageBox>
 
+#include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
 #include <mitkPlane.h>
 #include <mitkUndoController.h>
@@ -26,6 +27,10 @@
 #include <niftkPaintbrushTool.h>
 
 #include "Internal/niftkMorphologicalSegmentorGUI.h"
+
+/// Two utility functions are used from here to check if an image is empty and to clear it.
+/// They are not specific to the general segmentor.
+#include <niftkGeneralSegmentorUtils.h>
 
 namespace niftk
 {
@@ -119,13 +124,6 @@ mitk::DataNode* MorphologicalSegmentorController::GetSegmentationNodeFromWorking
 
 
 //-----------------------------------------------------------------------------
-bool MorphologicalSegmentorController::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
-{
-  return m_PipelineManager->CanStartSegmentationForBinaryNode(node);
-}
-
-
-//-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
 {
   /// Note:
@@ -162,6 +160,31 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   {
     newSegmentation =  selectedNode;
     isRestarting = true;
+
+    if (!newSegmentation->GetProperty("midas.morph.stage"))
+    {
+      /// The segmentation is started on an already existing binary image, but the pipeline
+      /// has not been performed on this data. The image contents will need to be erased.
+      bool imageIsEmpty;
+      const mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(newSegmentation->GetData());
+      AccessFixedDimensionByItk_1(segmentationImage, ITKImageIsEmpty, 3, imageIsEmpty);
+
+      if (!imageIsEmpty)
+      {
+        QMessageBox::StandardButton answer = QMessageBox::question(this->GetGUI()->GetParent(),
+            "Start morphological segmentation",
+            "You are about to start the morphological segmentation pipeline "
+            "on an existing, non-empty image. The current mask needs to be erased.\n"
+            "\n"
+            "Do you want to start the segmentation and wipe the current image?",
+            QMessageBox::Yes|QMessageBox::No);
+
+        if (answer == QMessageBox::No)
+        {
+          return;
+        }
+      }
+    }
   }
   else
   {
@@ -186,7 +209,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   {
     // Create that orange colour that MIDAS uses to highlight edited regions.
     mitk::ColorProperty::Pointer col = mitk::ColorProperty::New();
-    col->SetColor((float)1.0, (float)(165.0/255.0), (float)0.0);
+    col->SetColor(1.0f, static_cast<float>(165.0 / 255.0), 0.0f);
 
     // Create additions data node, and store reference to image
     float segCol[3];
@@ -249,6 +272,8 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     // Set working data. Compare with MIDASGeneralSegmentorView.
     // Note the order:
     //
+    // 0. The Zeroth image is the segmentation image itself. Although it is not used by the paintbrush tool,
+    //    this is assumed by the image selector widget.
     // 1. The First image is the "Additions" image for erosions, that we can manually add data/voxels to.
     // 2. The Second image is the "Subtractions" image for erosions, that is used for connection breaker.
     // 3. The Third image is the "Additions" image for dilations, that we can manually add data/voxels to.
@@ -264,7 +289,8 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     // MORPH_EDITS_DILATIONS_SUBTRACTIONS
     // MORPH_EDITS_DILATIONS_ADDITIONS
 
-    std::vector<mitk::DataNode*> workingData(4);
+    std::vector<mitk::DataNode*> workingData(5);
+    workingData[PaintbrushTool::SEGMENTATION] = newSegmentation;
     workingData[PaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
     workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
     workingData[PaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
@@ -284,8 +310,23 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     // Set properties, and then the control values to match.
     if (isRestarting)
     {
-      newSegmentation->SetBoolProperty("midas.morph.restarting", true);
-      this->SetControlsFromSegmentationNodeProps();
+      if (newSegmentation->GetProperty("midas.morph.stage"))
+      {
+        /// The morphological segmentor pipeline has already be performed on this data, and the
+        /// pipeline parameters are stored in the data node. We need to relaunch the pipeline
+        /// up to the step where it was finished last time.
+        newSegmentation->SetBoolProperty("midas.morph.restarting", true);
+        this->SetControlsFromSegmentationNodeProps();
+      }
+      else
+      {
+        /// The segmentation is started on an already existing binary image, but the pipeline
+        /// has not been performed on this data. The image contents need to be erased and we
+        /// need to set the initial parameters based on the reference image.
+        mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(newSegmentation->GetData());
+        AccessFixedDimensionByItk(segmentationImage, ITKClearImage, 3);
+        this->SetControlsFromReferenceImage();
+      }
       m_PipelineManager->UpdateSegmentation();
     }
     else
@@ -598,7 +639,7 @@ void MorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataN
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
 
   std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
-  if (segmentationNode.IsNotNull() && node == segmentationNode && workingData.size() == 4)
+  if (segmentationNode.IsNotNull() && node == segmentationNode && workingData.size() == 5)
   {
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
 

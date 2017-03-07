@@ -27,7 +27,7 @@ namespace itk
 
 template < typename TImage >
 bool
-IsImageBinary( typename TImage::Pointer image )
+IsImageBinary( const TImage* image )
 {
   typename TImage::PixelType intensity1;
   typename TImage::PixelType intensity2;
@@ -42,11 +42,11 @@ IsImageBinary( typename TImage::Pointer image )
 
 template < typename TImage >
 bool
-IsImageBinary( typename TImage::Pointer image,
-               typename TImage::PixelType &intensity1, 
-               typename TImage::PixelType &intensity2 )
+IsImageBinary( const TImage* image,
+               typename TImage::PixelType& intensity1,
+               typename TImage::PixelType& intensity2 )
 {
-  itk::ImageRegionIterator< TImage > 
+  itk::ImageRegionConstIterator< TImage >
     itImage( image, image->GetLargestPossibleRegion() );
 
   itImage.GoToBegin();

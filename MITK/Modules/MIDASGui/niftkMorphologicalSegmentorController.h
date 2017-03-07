@@ -69,9 +69,6 @@ protected:
   /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.
   virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) override;
 
-  /// \brief For any binary image, we return true if the property midas.morph.stage is present, and false otherwise.
-  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) override;
-
   /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
   virtual BaseGUI* CreateGUI(QWidget* parent) override;
 

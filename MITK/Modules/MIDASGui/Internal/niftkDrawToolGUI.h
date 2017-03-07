@@ -19,6 +19,7 @@
 #include <QmitkToolGUI.h>
 
 class QFrame;
+class QTimer;
 
 class ctkSliderWidget;
 
@@ -43,8 +44,8 @@ public:
   mitkClassMacro(DrawToolGUI, QmitkToolGUI)
   itkNewMacro(DrawToolGUI)
 
-  /// \brief Method to set or initialise the size of the cursor (radius of influence).
-  void OnCursorSizeChanged(double cursorSize);
+  /// \brief Method to set or initialise the size of the eraser (radius of influence).
+  void OnEraserSizeChangedInTool(double eraserSize);
 
 signals:
 
@@ -56,7 +57,10 @@ protected slots:
   void OnNewToolAssociated(mitk::Tool*);
 
   /// \brief Qt slot called when the user moves the slider.
-  void OnSliderValueChanged(double value);
+  void OnEraserSizeChangedInGui(double value);
+
+  /// \brief Qt slot called after the user stopped dragging the slider.
+  void OnSettingEraserSizeFinished();
 
 protected:
 
@@ -67,6 +71,11 @@ protected:
   QFrame* m_Frame;
 
   DrawTool::Pointer m_DrawTool;
+
+private:
+
+  QTimer* m_ShowEraserTimer;
+
 };
 
 }

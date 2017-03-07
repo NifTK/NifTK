@@ -224,9 +224,23 @@ double GeneralSegmentorGUI::GetLowerThreshold() const
 
 
 //-----------------------------------------------------------------------------
+void GeneralSegmentorGUI::SetLowerThreshold(double lowerThreshold)
+{
+  m_ThresholdsSlider->setMinimumValue(lowerThreshold);
+}
+
+
+//-----------------------------------------------------------------------------
 double GeneralSegmentorGUI::GetUpperThreshold() const
 {
   return m_ThresholdsSlider->maximumValue();
+}
+
+
+//-----------------------------------------------------------------------------
+void GeneralSegmentorGUI::SetUpperThreshold(double upperThreshold)
+{
+  m_ThresholdsSlider->setMaximumValue(upperThreshold);
 }
 
 }

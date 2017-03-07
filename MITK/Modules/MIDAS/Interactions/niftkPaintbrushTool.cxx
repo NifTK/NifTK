@@ -18,6 +18,8 @@
 
 #include <mitkBaseRenderer.h>
 #include <mitkDisplayInteractor.h>
+#include <mitkFocusManager.h>
+#include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkInstantiateAccessFunctions.h>
 #include <mitkITKImageImport.h>
@@ -54,25 +56,62 @@ const std::string PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_DIL
 const std::string PaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
 const mitk::OperationType PaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;
 
+
+//-----------------------------------------------------------------------------
 PaintbrushTool::PaintbrushTool()
-: mitk::SegTool2D("")
-, m_Interface(NULL)
-, m_CursorSize(1)
-, m_WorkingImageGeometry(NULL)
-, m_WorkingImage(NULL)
-, m_ErosionMode(true)
-, m_AddingAdditionInProgress(false)
-, m_AddingSubtractionInProgress(false)
-, m_RemovingSubtractionInProgress(false)
+  : mitk::SegTool2D(""),
+    m_Interface(nullptr),
+    m_EraserSize(1.0),
+    m_EraserVisible(false),
+    m_WorkingImageGeometry(nullptr),
+    m_WorkingImage(nullptr),
+    m_ErosionMode(true),
+    m_AddingAdditionInProgress(false),
+    m_AddingSubtractionInProgress(false),
+    m_RemovingSubtractionInProgress(false)
 {
   m_Interface = PaintbrushToolEventInterface::New();
-  m_Interface->SetPaintbrushTool( this );
+  m_Interface->SetPaintbrushTool(this);
+
+  m_EraserPosition.Fill(0.0);
+
+  m_EraserCursor = mitk::PlanarCross::New();
+  m_EraserCursor->SetSingleLineMode(false);
+  mitk::Point2D position;
+  position[0] = -0.5;
+  position[1] = 0.0;
+  m_EraserCursor->PlaceFigure(position);
+  position[0] = 0.5;
+  m_EraserCursor->SetCurrentControlPoint(position);
+  position[0] = 0.0;
+  position[1] = -0.5;
+  m_EraserCursor->AddControlPoint(position);
+  position[1] = 0.5;
+  m_EraserCursor->AddControlPoint(position);
+  this->SetEraserSize(m_EraserSize);
+
+  m_EraserCursorNode = mitk::DataNode::New();
+  m_EraserCursorNode->SetData(m_EraserCursor);
+  m_EraserCursorNode->SetName("Paintbrush tool eraser");
+  m_EraserCursorNode->SetBoolProperty("helper object", true);
+  m_EraserCursorNode->SetBoolProperty("includeInBoundingBox", false);
+  m_EraserCursorNode->SetBoolProperty("planarfigure.drawcontrolpoints", false);
+  m_EraserCursorNode->SetBoolProperty("planarfigure.drawname", false);
+  m_EraserCursorNode->SetBoolProperty("planarfigure.drawoutline", false);
+  m_EraserCursorNode->SetBoolProperty("planarfigure.drawshadow", false);
+  mitk::Color eraserColor;
+  eraserColor.Set(1.0f, static_cast<float>(165.0 / 255.0), 0.0f); // orange like the segmentation below.
+  m_EraserCursorNode->SetColor(eraserColor);
 }
 
+
+//-----------------------------------------------------------------------------
 PaintbrushTool::~PaintbrushTool()
 {
 }
 
+
+//-----------------------------------------------------------------------------
 void PaintbrushTool::InitializeStateMachine()
 {
   try
@@ -86,6 +125,8 @@ void PaintbrushTool::InitializeStateMachine()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void PaintbrushTool::ConnectActionsAndFunctions()
 {
   CONNECT_FUNCTION("startAddingAddition", StartAddingAddition);
@@ -99,21 +140,27 @@ void PaintbrushTool::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("stopRemovingSubtraction", StopRemovingSubtraction);
 }
 
+
+//-----------------------------------------------------------------------------
 const char* PaintbrushTool::GetName() const
 {
   return "Paintbrush";
 }
 
+
+//-----------------------------------------------------------------------------
 const char** PaintbrushTool::GetXPM() const
 {
   return niftkPaintbrushTool_xpm;
 }
 
+
+//-----------------------------------------------------------------------------
 void PaintbrushTool::Activated()
 {
   Superclass::Activated();
 
-  CursorSizeChanged.Send(m_CursorSize);
+  EraserSizeChanged.Send(m_EraserSize);
 
   // As a legacy solution the display interaction of the new interaction framework is disabled here  to avoid conflicts with tools
   // Note: this only affects InteractionEventObservers (formerly known as Listeners) all DataNode specific interaction will still be enabled
@@ -136,6 +183,8 @@ void PaintbrushTool::Activated()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void PaintbrushTool::Deactivated()
 {
   if (m_AddingAdditionInProgress)
@@ -178,31 +227,90 @@ void PaintbrushTool::Deactivated()
   mitk::Tool::Deactivated();
 }
 
+
+//-----------------------------------------------------------------------------
 bool PaintbrushTool::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   return this->CanHandleEvent(event);
 }
 
-int PaintbrushTool::GetCursorSize() const
+
+//-----------------------------------------------------------------------------
+mitk::Point2D PaintbrushTool::GetEraserPosition() const
 {
-  return m_CursorSize;
+  return m_EraserPosition;
 }
 
-void PaintbrushTool::SetCursorSize(int cursorSize)
+
+//-----------------------------------------------------------------------------
+void PaintbrushTool::SetEraserPosition(const mitk::Point2D& eraserPosition)
 {
-  m_CursorSize = cursorSize;
+  if (eraserPosition != m_EraserPosition)
+  {
+    m_EraserPosition = eraserPosition;
+
+    this->UpdateEraserCursor();
+  }
 }
 
+
+//-----------------------------------------------------------------------------
+double PaintbrushTool::GetEraserSize() const
+{
+  return m_EraserSize;
+}
+
+
+//-----------------------------------------------------------------------------
+void PaintbrushTool::SetEraserSize(double eraserSize)
+{
+  if (eraserSize != m_EraserSize)
+  {
+    m_EraserSize = eraserSize;
+
+    this->UpdateEraserCursor();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void PaintbrushTool::UpdateEraserCursor()
+{
+  mitk::BaseRenderer* renderer = mitk::GlobalInteraction::GetInstance()->GetFocusManager()->GetFocused();
+  mitk::Point2D voxelSize;
+  voxelSize.Fill(1.0);
+  renderer->GetCurrentWorldGeometry2D()->IndexToWorld(voxelSize, voxelSize);
+
+  mitk::Point2D position = m_EraserPosition;
+  double radius = m_EraserSize / 2.0;
+
+  position[0] = m_EraserPosition[0] - radius * voxelSize[0];
+  m_EraserCursor->SetControlPoint(0, position);
+  position[0] = m_EraserPosition[0] + radius * voxelSize[0];
+  m_EraserCursor->SetControlPoint(1, position);
+  position[0] = m_EraserPosition[0];
+  position[1] = m_EraserPosition[1] - radius * voxelSize[1];
+  m_EraserCursor->SetControlPoint(2, position);
+  position[1] = m_EraserPosition[1] + radius * voxelSize[1];
+  m_EraserCursor->SetControlPoint(3, position);
+}
+
+
+//-----------------------------------------------------------------------------
 bool PaintbrushTool::GetErosionMode() const
 {
   return m_ErosionMode;
 }
 
+
+//-----------------------------------------------------------------------------
 void PaintbrushTool::SetErosionMode(bool erosionMode)
 {
   m_ErosionMode = erosionMode;;
 }
 
+
+//-----------------------------------------------------------------------------
 void PaintbrushTool::GetListOfAffectedVoxels(
     const mitk::PlaneGeometry& planeGeometry,
     mitk::Point3D& currentPoint,
@@ -313,7 +421,7 @@ void PaintbrushTool::GetListOfAffectedVoxels(
             processor.AddToList(affectedVoxel);
           }
 
-          int actualCursorSize = m_CursorSize - 1;
+          int actualCursorSize = static_cast<int>(m_EraserSize + 0.5) - 1;
           if (actualCursorSize > 0)
           {
             for (int dimension = 0; dimension < 2; dimension++)
@@ -350,6 +458,8 @@ void PaintbrushTool::GetListOfAffectedVoxels(
   } // end if length > 0
 } // end function
 
+
+//-----------------------------------------------------------------------------
 bool PaintbrushTool::MarkInitialPosition(unsigned int dataIndex, mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(dataIndex);
@@ -375,6 +485,7 @@ bool PaintbrushTool::MarkInitialPosition(unsigned int dataIndex, mitk::StateMach
 }
 
 
+//-----------------------------------------------------------------------------
 bool PaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, mitk::InteractionEvent* event,
     int dataIndex,
     unsigned char valueForRedo,
@@ -436,6 +547,8 @@ bool PaintbrushTool::DoMouseMoved(mitk::StateMachineAction* action, mitk::Intera
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 int PaintbrushTool::GetDataIndex(bool isLeftMouseButton)
 {
   int dataIndex = -1;
@@ -463,29 +576,61 @@ int PaintbrushTool::GetDataIndex(bool isLeftMouseButton)
     }
   }
 
-  assert(dataIndex >= 0 && dataIndex <=3);
+  assert(dataIndex != -1);
   return dataIndex;
 }
 
+
+//-----------------------------------------------------------------------------
 bool PaintbrushTool::StartAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   m_AddingAdditionInProgress = true;
   InteractionEventObserverMutex::GetInstance()->Lock(this);
+
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  assert(positionEvent);
+
+  mitk::BaseRenderer* renderer = positionEvent->GetSender();
+  const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
+  m_EraserCursor->SetPlaneGeometry(const_cast<mitk::PlaneGeometry*>(planeGeometry));
+  mitk::Point2D position;
+  planeGeometry->Map(positionEvent->GetPositionInWorld(), position);
+
+  this->SetEraserPosition(position);
+  this->SetEraserVisible(true, renderer);
+  renderer->RequestUpdate();
 
   int dataIndex = this->GetDataIndex(true);
   bool result = this->MarkInitialPosition(dataIndex, action, event);
   return result;
 }
 
+
+//-----------------------------------------------------------------------------
 bool PaintbrushTool::KeepAddingAddition(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   assert(m_AddingAdditionInProgress);
+
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  assert(positionEvent);
+
+  mitk::BaseRenderer* renderer = positionEvent->GetSender();
+  const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
+  mitk::Point2D position;
+  planeGeometry->Map(positionEvent->GetPositionInWorld(), position);
+
+  this->SetEraserPosition(position);
+  renderer->RequestUpdate();
+
+
   int dataIndex = this->GetDataIndex(true);
   this->DoMouseMoved(action, event, dataIndex, 1, 0);
   return true;
 }
 
-bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*event*/)
+
+//-----------------------------------------------------------------------------
+bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
   assert(m_AddingAdditionInProgress);
   int dataIndex = this->GetDataIndex(true);
@@ -499,35 +644,70 @@ bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* /*action*/, mi
   // the SetInvalidRegion() call above.)
   this->SegmentationEdited.Send(dataIndex);
 
+  this->SetEraserVisible(false, event->GetSender());
+
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
   m_AddingAdditionInProgress = false;
 
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 bool PaintbrushTool::StartAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   m_AddingSubtractionInProgress = true;
   InteractionEventObserverMutex::GetInstance()->Lock(this);
 
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  assert(positionEvent);
+
+  mitk::BaseRenderer* renderer = positionEvent->GetSender();
+  const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
+  m_EraserCursor->SetPlaneGeometry(const_cast<mitk::PlaneGeometry*>(planeGeometry));
+  mitk::Point2D position;
+  planeGeometry->Map(positionEvent->GetPositionInWorld(), position);
+
+  this->SetEraserPosition(position);
+  this->SetEraserVisible(true, renderer);
+  renderer->RequestUpdate();
+
   int dataIndex = this->GetDataIndex(false);
   return this->MarkInitialPosition(dataIndex, action, event);
 }
 
+
+//-----------------------------------------------------------------------------
 bool PaintbrushTool::KeepAddingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   assert(m_AddingSubtractionInProgress);
+
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  assert(positionEvent);
+
+  mitk::BaseRenderer* renderer = positionEvent->GetSender();
+  const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
+  mitk::Point2D position;
+  planeGeometry->Map(positionEvent->GetPositionInWorld(), position);
+
+  this->SetEraserPosition(position);
+  renderer->RequestUpdate();
+
   int dataIndex = this->GetDataIndex(false);
   this->DoMouseMoved(action, event, dataIndex, 1, 0);
   return true;
 }
 
-bool PaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*event*/)
+
+//-----------------------------------------------------------------------------
+bool PaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
   assert(m_AddingSubtractionInProgress);
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
   this->SegmentationEdited.Send(dataIndex);
+
+  this->SetEraserVisible(false, event->GetSender());
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
   m_AddingSubtractionInProgress = false;
@@ -535,29 +715,62 @@ bool PaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* /*action*/,
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 bool PaintbrushTool::StartRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   m_RemovingSubtractionInProgress = true;
   InteractionEventObserverMutex::GetInstance()->Lock(this);
 
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  assert(positionEvent);
+
+  mitk::BaseRenderer* renderer = positionEvent->GetSender();
+  const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
+  m_EraserCursor->SetPlaneGeometry(const_cast<mitk::PlaneGeometry*>(planeGeometry));
+  mitk::Point2D position;
+  planeGeometry->Map(positionEvent->GetPositionInWorld(), position);
+
+  this->SetEraserPosition(position);
+  this->SetEraserVisible(true, renderer);
+  renderer->RequestUpdate();
+
   int dataIndex = this->GetDataIndex(false);
   return this->MarkInitialPosition(dataIndex, action, event);
 }
 
+
+//-----------------------------------------------------------------------------
 bool PaintbrushTool::KeepRemovingSubtraction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   assert(m_RemovingSubtractionInProgress);
+
+  mitk::InteractionPositionEvent* positionEvent = dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  assert(positionEvent);
+
+  mitk::BaseRenderer* renderer = positionEvent->GetSender();
+  const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
+  mitk::Point2D position;
+  planeGeometry->Map(positionEvent->GetPositionInWorld(), position);
+
+  this->SetEraserPosition(position);
+  renderer->RequestUpdate();
+
   int dataIndex = this->GetDataIndex(false);
   this->DoMouseMoved(action, event, dataIndex, 0, 1);
   return true;
 }
 
-bool PaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*event*/)
+
+//-----------------------------------------------------------------------------
+bool PaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
   assert(m_RemovingSubtractionInProgress);
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
   this->SegmentationEdited.Send(dataIndex);
+
+  this->SetEraserVisible(false, event->GetSender());
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
   m_RemovingSubtractionInProgress = false;
@@ -565,6 +778,8 @@ bool PaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* /*action*
   return true;
 }
 
+
+//-----------------------------------------------------------------------------
 void PaintbrushTool::SetRegion(unsigned int dataIndex, bool valid, const std::vector<int>& boundingBox)
 {
   mitk::DataNode* workingNode = m_ToolManager->GetWorkingData(dataIndex);
@@ -587,16 +802,53 @@ void PaintbrushTool::SetRegion(unsigned int dataIndex, bool valid, const std::ve
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void PaintbrushTool::SetInvalidRegion(unsigned int dataIndex)
 {
   this->SetRegion(dataIndex, false);
 }
 
+
+//-----------------------------------------------------------------------------
 void PaintbrushTool::SetValidRegion(unsigned int dataIndex, const std::vector<int>& boundingBox)
 {
   this->SetRegion(dataIndex, true, boundingBox);
 }
 
+
+//-----------------------------------------------------------------------------
+void PaintbrushTool::SetEraserVisible(bool visible, mitk::BaseRenderer* renderer)
+{
+  if (m_EraserVisible == visible)
+  {
+    return;
+  }
+
+  if (mitk::DataStorage* dataStorage = m_ToolManager->GetDataStorage())
+  {
+    if (visible)
+    {
+      dataStorage->Add(m_EraserCursorNode);
+    }
+    else
+    {
+      dataStorage->Remove(m_EraserCursorNode);
+    }
+  }
+
+  if (visible && renderer)
+  {
+    const mitk::PlaneGeometry* planeGeometry = renderer->GetCurrentWorldPlaneGeometry();
+    m_EraserCursor->SetPlaneGeometry(const_cast<mitk::PlaneGeometry*>(planeGeometry));
+  }
+
+  m_EraserCursorNode->SetVisibility(visible, renderer);
+  m_EraserVisible = visible;
+}
+
+
+//-----------------------------------------------------------------------------
 void PaintbrushTool::ExecuteOperation(mitk::Operation* operation)
 {
   if (!operation) return;
@@ -633,6 +885,8 @@ void PaintbrushTool::ExecuteOperation(mitk::Operation* operation)
   }
 }
 
+
+//-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
 void PaintbrushTool::RunITKProcessor(
     itk::Image<TPixel, VImageDimension>* itkImage,

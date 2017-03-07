@@ -14,6 +14,7 @@
 
 #include "niftkGeneralSegmentorCommands.h"
 
+#include <itkIsImageBinary.h>
 #include <itkConnectedComponentImageFilter.h>
 #include <itkOrthogonalContourExtractor2DImageFilter.h>
 
@@ -33,6 +34,58 @@ namespace niftk
  * low level image processing. It knows nothing of node
  * properties, or undo/redo.
  *************************************************************/
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void ITKGetBinaryImagePixelValues(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    bool& binary,
+    int& backgroundValue,
+    int& foregroundValue
+    )
+{
+  TPixel bgValue, fgValue;
+
+  binary = itk::IsImageBinary(itkImage, bgValue, fgValue);
+  backgroundValue = static_cast<int>(bgValue);
+  foregroundValue = static_cast<int>(fgValue);
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+void ITKSetBinaryImagePixelValues(
+    itk::Image<TPixel, VImageDimension>* itkImage,
+    int currentBackgroundValue,
+    int currentForegroundValue,
+    int newBackgroundValue,
+    int newForegroundValue
+    )
+{
+  typedef itk::Image<TPixel, VImageDimension> ImageType;
+  itk::ImageRegionIterator<ImageType> iter(itkImage, itkImage->GetLargestPossibleRegion());
+
+  for (iter.GoToBegin(); !iter.IsAtEnd(); ++iter)
+  {
+    TPixel pixelValue = iter.Get();
+    if (pixelValue == currentBackgroundValue)
+    {
+      iter.Set(newBackgroundValue);
+    }
+    else if (pixelValue == currentForegroundValue)
+    {
+      iter.Set(newForegroundValue);
+    }
+    else
+    {
+      mitkThrow() << "ITKSetBinaryImagePixelValues(): Image is not binary "
+                    "or does not only contains the given foreground and "
+                    "background pixel values";
+    }
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
@@ -354,6 +407,34 @@ bool ITKSliceDoesHaveSeeds(
   }
 
   return hasSeeds;
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
+bool ITKImageIsEmpty(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    bool& outputImageIsEmpty
+    )
+{
+  typedef typename itk::Image<TPixel, VImageDimension> ImageType;
+  typedef typename ImageType::RegionType RegionType;
+
+  RegionType region = itkImage->GetLargestPossibleRegion();
+
+  outputImageIsEmpty = true;
+
+  itk::ImageRegionConstIterator<ImageType> iterator(itkImage, region);
+  for (iterator.GoToBegin(); !iterator.IsAtEnd(); ++iterator)
+  {
+    if (iterator.Get() != 0)
+    {
+      outputImageIsEmpty = false;
+      break;
+    }
+  }
+
+  return outputImageIsEmpty;
 }
 
 

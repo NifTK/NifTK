@@ -19,6 +19,10 @@
 #include <QLabel>
 #include <QLayout>
 #include <QPainter>
+#include <QTimer>
+
+#include <mitkFocusManager.h>
+#include <mitkGlobalInteraction.h>
 
 #include <niftkToolFactoryMacros.h>
 
@@ -29,9 +33,10 @@ NIFTK_TOOL_GUI_MACRO_NO_EXPORT(DrawTool, DrawToolGUI, "Draw Tool GUI")
 
 //-----------------------------------------------------------------------------
 DrawToolGUI::DrawToolGUI()
-:QmitkToolGUI()
-, m_Slider(NULL)
-, m_Frame(NULL)
+  : QmitkToolGUI(),
+    m_Slider(nullptr),
+    m_Frame(nullptr),
+    m_ShowEraserTimer(new QTimer(this))
 {
   // create the visible widgets
   QBoxLayout* layout = new QHBoxLayout(this);
@@ -51,8 +56,13 @@ DrawToolGUI::DrawToolGUI()
   m_Slider->setValue(0.5);
   layout->addWidget(m_Slider);
 
-  this->connect(m_Slider, SIGNAL(valueChanged(double)), SLOT(OnSliderValueChanged(double)));
+  this->connect(m_Slider, SIGNAL(valueChanged(double)), SLOT(OnEraserSizeChangedInGui(double)));
   this->connect(this, SIGNAL(NewToolAssociated(mitk::Tool*)), SLOT(OnNewToolAssociated(mitk::Tool*)));
+
+  m_ShowEraserTimer->setInterval(600);
+  m_ShowEraserTimer->setSingleShot(true);
+
+  this->connect(m_ShowEraserTimer, SIGNAL(timeout()), SLOT(OnSettingEraserSizeFinished()));
 }
 
 
@@ -61,7 +71,7 @@ DrawToolGUI::~DrawToolGUI()
 {
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<DrawToolGUI, double>(this, &DrawToolGUI::OnCursorSizeChanged);
+    m_DrawTool->EraserSizeChanged -= mitk::MessageDelegate1<DrawToolGUI, double>(this, &DrawToolGUI::OnEraserSizeChangedInTool);
   }
 }
 
@@ -71,33 +81,61 @@ void DrawToolGUI::OnNewToolAssociated(mitk::Tool* tool)
 {
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->CursorSizeChanged -= mitk::MessageDelegate1<DrawToolGUI, double>(this, &DrawToolGUI::OnCursorSizeChanged);
+    m_DrawTool->EraserSizeChanged -= mitk::MessageDelegate1<DrawToolGUI, double>(this, &DrawToolGUI::OnEraserSizeChangedInTool);
   }
 
   m_DrawTool = dynamic_cast<DrawTool*>(tool);
 
   if (m_DrawTool.IsNotNull())
   {
-    this->OnCursorSizeChanged(m_DrawTool->GetCursorSize());
-    m_DrawTool->CursorSizeChanged += mitk::MessageDelegate1<DrawToolGUI, double>(this, &DrawToolGUI::OnCursorSizeChanged);
+    this->OnEraserSizeChangedInTool(m_DrawTool->GetEraserSize());
+    m_DrawTool->EraserSizeChanged += mitk::MessageDelegate1<DrawToolGUI, double>(this, &DrawToolGUI::OnEraserSizeChangedInTool);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void DrawToolGUI::OnSliderValueChanged(double value)
+void DrawToolGUI::OnEraserSizeChangedInGui(double value)
 {
   if (m_DrawTool.IsNotNull())
   {
-    m_DrawTool->SetCursorSize(value);
+    m_DrawTool->SetEraserSize(value);
+
+    mitk::BaseRenderer* renderer =
+        mitk::GlobalInteraction::GetInstance()->GetFocusManager()->GetFocused();
+
+    mitk::Point2D centreInPx;
+    centreInPx[0] = renderer->GetSizeX() / 2;
+    centreInPx[1] = renderer->GetSizeY() / 2;
+    mitk::Point2D centreInMm;
+    renderer->GetDisplayGeometry()->DisplayToWorld(centreInPx, centreInMm);
+
+    m_DrawTool->SetEraserPosition(centreInMm);
+
+    m_DrawTool->SetEraserVisible(true, renderer);
+    renderer->RequestUpdate();
+
+    m_ShowEraserTimer->start();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void DrawToolGUI::OnCursorSizeChanged(double cursorSize)
+void DrawToolGUI::OnSettingEraserSizeFinished()
 {
-  m_Slider->setValue(cursorSize);
+  mitk::BaseRenderer* renderer =
+      mitk::GlobalInteraction::GetInstance()->GetFocusManager()->GetFocused();
+
+  m_DrawTool->SetEraserVisible(false, renderer);
+
+  renderer->RequestUpdate();
+}
+
+
+//-----------------------------------------------------------------------------
+void DrawToolGUI::OnEraserSizeChangedInTool(double eraserSize)
+{
+  m_Slider->setValue(eraserSize);
 }
 
 }

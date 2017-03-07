@@ -113,18 +113,7 @@ mitk::Image::Pointer MorphologicalSegmentorPipelineManager::GetWorkingImage(unsi
 //-----------------------------------------------------------------------------
 mitk::DataNode::Pointer MorphologicalSegmentorPipelineManager::GetSegmentationNode() const
 {
-  mitk::DataNode::Pointer result = NULL;
-
-  mitk::DataNode::Pointer workingDataNode = this->GetToolManager()->GetWorkingData(0);
-  if (workingDataNode.IsNotNull())
-  {
-    mitk::DataNode::Pointer segmentationDataNode = niftk::FindFirstParentImage(this->GetDataStorage().GetPointer(), workingDataNode, true);
-    if (segmentationDataNode.IsNotNull())
-    {
-      result = segmentationDataNode;
-    }
-  }
-  return result;
+  return this->GetToolManager()->GetWorkingData(PaintbrushTool::SEGMENTATION);
 }
 
 
@@ -298,49 +287,36 @@ bool MorphologicalSegmentorPipelineManager::IsNodeAWorkingImage(const mitk::Data
 
 
 //-----------------------------------------------------------------------------
-bool MorphologicalSegmentorPipelineManager::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node) const
+std::vector<mitk::DataNode*> MorphologicalSegmentorPipelineManager::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode) const
 {
-  int tmp;
-  if (node->GetIntProperty("midas.morph.stage", tmp))
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
+  assert(segmentationNode.IsNotNull());
 
-
-//-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> MorphologicalSegmentorPipelineManager::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const
-{
-  assert(node);
-
-  std::vector<mitk::DataNode*> workingData(4);
+  std::vector<mitk::DataNode*> workingData(5);
   std::fill(workingData.begin(), workingData.end(), (mitk::DataNode*) 0);
 
-  mitk::DataStorage::SetOfObjects::Pointer children = niftk::FindDerivedImages(this->GetDataStorage(), node, true );
+  workingData[PaintbrushTool::SEGMENTATION] = segmentationNode;
 
-  for (std::size_t i = 0; i < children->size(); i++)
+  mitk::DataStorage::SetOfObjects::Pointer derivedNodes = niftk::FindDerivedImages(this->GetDataStorage(), segmentationNode, true );
+
+  for (std::size_t i = 0; i < derivedNodes->size(); i++)
   {
-    mitk::DataNode::Pointer node = children->at(i);
-    std::string name = node->GetName();
+    mitk::DataNode::Pointer derivedNode = derivedNodes->at(i);
+    std::string name = derivedNode->GetName();
     if (name == PaintbrushTool::EROSIONS_ADDITIONS_NAME)
     {
-      workingData[PaintbrushTool::EROSIONS_ADDITIONS] = node;
+      workingData[PaintbrushTool::EROSIONS_ADDITIONS] = derivedNode;
     }
     else if (name == PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME)
     {
-      workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = node;
+      workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = derivedNode;
     }
     else if (name == PaintbrushTool::DILATIONS_ADDITIONS_NAME)
     {
-      workingData[PaintbrushTool::DILATIONS_ADDITIONS] = node;
+      workingData[PaintbrushTool::DILATIONS_ADDITIONS] = derivedNode;
     }
     else if (name == PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME)
     {
-      workingData[PaintbrushTool::DILATIONS_SUBTRACTIONS] = node;
+      workingData[PaintbrushTool::DILATIONS_SUBTRACTIONS] = derivedNode;
     }
   }
 
@@ -440,7 +416,7 @@ void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
     /// We pass NULLs to the pipeline for the inputs that have not been changed.
     /// This is to avoid unnecessary conversions.
 
-    std::vector<SegmentationImageType::ConstPointer> workingImages(4);
+    std::vector<SegmentationImageType::ConstPointer> workingImages(5);
     std::fill(workingImages.begin(), workingImages.end(), (SegmentationImageType*)0);
 
     if (!m_Pipelines[segmentationImage])
@@ -572,7 +548,7 @@ void MorphologicalSegmentorPipelineManager::FinalizeSegmentation()
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorPipelineManager::ClearWorkingData()
 {
-  for (unsigned int i = 0; i < 4; i++)
+  for (unsigned int i = 1; i < 5; i++)
   {
     mitk::Image::Pointer image = this->GetWorkingImage(i);
     mitk::DataNode::Pointer node = this->GetToolManager()->GetWorkingData(i);
@@ -605,9 +581,9 @@ void MorphologicalSegmentorPipelineManager::RemoveWorkingData()
   std::vector<mitk::DataNode*> emptyWorkingDataArray(0);
   toolManager->SetWorkingData(emptyWorkingDataArray);
 
-  for (auto workingNode: workingData)
+  for (unsigned i = 1; i < workingData.size(); ++i)
   {
-    this->GetDataStorage()->Remove(workingNode);
+    this->GetDataStorage()->Remove(workingData[i]);
   }
 
   toolManager->ActivateTool(-1);
@@ -646,10 +622,10 @@ MorphologicalSegmentorPipelineManager
   typedef itk::Image<TPixel, VImageDimension> GreyScaleImageType;
   typedef itk::Image<unsigned char, VImageDimension> SegmentationImageType;
 
-  const SegmentationImageType* erosionsAdditions = workingImages[0];
-  const SegmentationImageType* erosionsSubtractions = workingImages[1];
-  const SegmentationImageType* dilationsAdditions = workingImages[2];
-  const SegmentationImageType* dilationsSubtractions = workingImages[3];
+  const SegmentationImageType* erosionsAdditions = workingImages[PaintbrushTool::EROSIONS_ADDITIONS];
+  const SegmentationImageType* erosionsSubtractions = workingImages[PaintbrushTool::EROSIONS_SUBTRACTIONS];
+  const SegmentationImageType* dilationsAdditions = workingImages[PaintbrushTool::DILATIONS_ADDITIONS];
+  const SegmentationImageType* dilationsSubtractions = workingImages[PaintbrushTool::DILATIONS_SUBTRACTIONS];
 
   typedef MorphologicalSegmentorPipeline<TPixel, VImageDimension> Pipeline;
   Pipeline* pipeline = dynamic_cast<Pipeline*>(m_Pipelines[segmentation]);

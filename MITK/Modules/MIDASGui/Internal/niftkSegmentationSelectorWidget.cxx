@@ -83,10 +83,12 @@ void SegmentationSelectorWidget::OnReferenceDataChanged()
   {
     QString referenceImageName = QString::fromStdString(m_ToolManager->GetReferenceData(0)->GetName());
     m_ReferenceImageNameLabel->setText(QString("<font color='black'>%1</font>").arg(referenceImageName));
+    m_ReferenceImageNameLabel->setToolTip(referenceImageName);
   }
   else
   {
     m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+    m_ReferenceImageNameLabel->setToolTip("&lt;not selected&gt;");
   }
 
   m_NewSegmentationButton->setEnabled(hasReferenceData && !hasWorkingData);
@@ -103,10 +105,12 @@ void SegmentationSelectorWidget::OnWorkingDataChanged()
   {
     QString segmentationImageName = QString::fromStdString(m_ToolManager->GetWorkingData(0)->GetName());
     m_SegmentationImageNameLabel->setText(QString("<font color='black'>%1</font>").arg(segmentationImageName));
+    m_SegmentationImageNameLabel->setToolTip(QString("<font color='black'>%1</font>").arg(segmentationImageName));
   }
   else
   {
     m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+    m_SegmentationImageNameLabel->setToolTip("&lt;not selected&gt;");
   }
 
   m_NewSegmentationButton->setEnabled(hasReferenceData && !hasWorkingData);
