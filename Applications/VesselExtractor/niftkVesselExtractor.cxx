@@ -16,22 +16,19 @@ See LICENSE.txt in the top level directory for details.
 #include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
-
-
 #include <itkExtractImageFilter.h>
 #include <itkCastImageFilter.h>
-#include <itkImageRegionConstIterator.h>
-#include <itkImageRegionIterator.h>
+
+
 #include <itkImage.h>
 #include <itkRescaleIntensityImageFilter.h>
-#include <itkNifTKImageIOFactory.h>
-#include <itkImageDuplicator.h>
 #include <itkBinaryDilateImageFilter.h>
 #include <itkBinaryBallStructuringElement.h>
 #include <itkBinaryErodeImageFilter.h>
 #include <math.h>
 
 #include <niftkVesselExtractorCLP.h>
+#include <itkNifTKImageIOFactory.h>
 
 #include "niftkConversionUtils.h"
 #include "itkBrainMaskFromCTFilter.h"
@@ -227,16 +224,16 @@ void closeProgress(std::string img, std::string status)
   }
 }
 
-// some typedefs to get things working well
-const unsigned int Dimension = 3;
+// some typedefs used throughout the functions
+const unsigned int InternalDimension = 3;
 typedef float InternalPixelType;
-typedef itk::Image<InternalPixelType, Dimension > InternalImageType;
+typedef itk::Image<InternalPixelType, InternalDimension> InternalImageType;
 
 template<int Dimension, class PixelType>
 InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int sliceToKeep)
 {
-  typedef itk::Image< PixelType, Dimension > InputImageType;   
-  typedef itk::ImageFileReader< InputImageType >  InputImageReaderType;
+  typedef itk::Image<PixelType, Dimension> InputImageType;   
+  typedef itk::ImageFileReader<InputImageType>  InputImageReaderType;
  
   InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
   imageReader->SetFileName(fileInputImage);
@@ -257,7 +254,7 @@ InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int
 
   InputImageType::Pointer inImage = imageReader->GetOutput();
   InputImageType::RegionType inRegion = inImage->GetLargestPossibleRegion();  
-  if (Dimension > 3)
+  if (Dimension > InternalDimension)
   {
     typedef itk::ExtractImageFilter<InputImageType, InternalImageType> ExtractImageFilter;
     ExtractImageFilter::Pointer extractImage = ExtractImageFilter::New();
@@ -267,7 +264,7 @@ InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int
     InputImageType::RegionType::IndexType regionIndex;
     regionIndex.Fill(0);
 
-    for (unsigned int i = 3; i < Dimension; i++)
+    for (unsigned int i = InternalDimension; i < Dimension; i++)
     {
       regionSize[i] = 0;
       regionIndex[i] = sliceToKeep;
@@ -293,6 +290,33 @@ InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int
   return outImage;
 }
 
+template<class PixelType>
+void CastAndSaveOutputImage(std::string fileOutputImage, InternalImageType::Pointer outputImage)
+{
+  typedef itk::Image<PixelType, InternalDimension> OutputImageType;
+  typedef itk::ImageFileWriter<OutputImageType> WriterType; 
+
+  typedef itk::CastImageFilter<InternalImageType, OutputImageType> CastFilterType;
+  CastFilterType::Pointer castFilter = CastFilterType::New();
+  castFilter->SetInput(outputImage);
+  castFilter->Update();
+
+  WriterType::Pointer writer = WriterType::New();
+  writer->SetInput(castFilter->GetOutput());
+  writer->SetFileName(fileOutputImage);
+
+  try
+  {
+    writer->Update();
+    closeProgress(fileOutputImage, "Normal exit");
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "Failed: " << err << std::endl;
+    closeProgress(fileOutputImage, "Failed");
+  }
+}
+
 int main(int argc, char *argv[])
 {
   itk::NifTKImageIOFactory::Initialize();
@@ -300,7 +324,7 @@ int main(int argc, char *argv[])
 
   PARSE_ARGS;
 
-  if (inputImageName.length() == 0 || outputImageName.length() == 0 )
+  if (inputImageName.empty() || outputImageName.empty())
   {
     commandLine.getOutput()->usage(commandLine);
     return EXIT_FAILURE;
@@ -328,28 +352,14 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
   
-  typedef unsigned short OutputPixelType;
-  typedef itk::Image< OutputPixelType, Dimension > OutputImageType;
-  typedef itk::ImageFileWriter< OutputImageType > WriterType; //TODO Change back
-  WriterType::Pointer writer = WriterType::New();
-
-  typedef itk::CastImageFilter< InternalImageType, OutputImageType > CastOutFilterType;
-  typedef itk::MultiScaleVesselnessFilter< InternalImageType, InternalImageType >  VesselnessFilterType;
-  typedef itk::IntensityFilter< InternalImageType, InternalImageType > IntensityFilterType;
-
-  typedef itk::RescaleIntensityImageFilter< InternalImageType > VesselRescalerType;
-  typedef itk::RescaleIntensityImageFilter< InternalImageType, InternalImageType >InputRescalerType;
-  typedef itk::ResampleImage< InternalImageType> InputResampleType;
-  typedef itk::ResampleImage< OutputImageType> OutputResampleType;
-
-
   startProgress();
-  InternalImageType::Pointer inImage = NULL;
 
+  InternalImageType::Pointer inImage = NULL;
   int dims = itk::PeekAtImageDimension(inputImageName);
+
   if (dims != 3 && dims != 4)
   {
-    std::cout << "Unsuported image dimension " << dims << "." << std::endl;
+    progressXML(0, "Unsupported image dimension " + std::to_string(dims) + ".");
     return EXIT_FAILURE;
   }
 
@@ -419,25 +429,20 @@ int main(int argc, char *argv[])
 
   if (inImage.IsNull())
   {
-    progressXML(1, "Unsupported image type. Returning...");
+    progressXML(0, "Unsupported image type. Returning...");
     return EXIT_FAILURE;
   }
 
   InternalImageType::SizeType size_in = inImage->GetLargestPossibleRegion().GetSize();
   InternalImageType::SpacingType spacing = inImage->GetSpacing();
-  InternalImageType::Pointer inMask = NULL;
 
+  InternalImageType::Pointer inMask = NULL;
   if (!brainImageName.empty())
   {
     dims = itk::PeekAtImageDimension(brainImageName);
     if (dims != 3 && dims != 4)
     {
-      std::string badDim;
-      badDim = "Unsupported image dimension ";
-      badDim.append(std::to_string(dims));
-      badDim.append(".");
-
-      progressXML(1, badDim);
+      progressXML(0, "Unsupported image dimension " + std::to_string(dims) + ".");
       return EXIT_FAILURE;
     }
 
@@ -570,23 +575,23 @@ int main(int argc, char *argv[])
     tasks += 2;
   }
 
-  tasks++;
-
   int progress_unit = floor(100.0f / (float)tasks + 0.5);
   int progresscounter = progress_unit;
+
+  typedef itk::ResampleImage<InternalImageType> InternalResampleType;
 
   //anisotropic = false;
   if (anisotropic)
   {
     progressXML(progresscounter, "Making image isotropic...");
-    progresscounter+=progress_unit;
+    progresscounter += progress_unit;
     double outspacing = (double) (spacing[2] / 2);
     unsigned int outsize = size_in[2] * 2;
 
-    InputResampleType::Pointer in_resample = InputResampleType::New();
-    in_resample->SetInput( inImage );
-    in_resample->SetAxialSpacing( outspacing );
-    in_resample->SetAxialSize( outsize );
+    InternalResampleType::Pointer in_resample = InternalResampleType::New();
+    in_resample->SetInput(inImage);
+    in_resample->SetAxialSpacing(outspacing);
+    in_resample->SetAxialSize(outsize);
     in_resample->Update();
     inImage = in_resample->GetOutput();
 
@@ -615,66 +620,95 @@ int main(int argc, char *argv[])
     negImage = (statisticsFilter->GetMinimum() < 0);
   }
 
+  typedef itk::Image<unsigned char, InternalDimension> MaskImageType;
+
   //Create a skull mask from CTA
   if (isCT && inMask.IsNull())
   {
     progressXML(progresscounter, "Creating a skull mask...");
     progresscounter += progress_unit;
 
-    typedef itk::Image<short, Dimension> BrainMaskType;
-    typedef itk::BrainMaskFromCTFilter<InternalImageType, BrainMaskType> MaskFilterType;
+    typedef itk::BrainMaskFromCTFilter<InternalImageType, MaskImageType> MaskFilterType;
     MaskFilterType::Pointer maskfilter = MaskFilterType::New();
     maskfilter->SetInput(inImage);
     maskfilter->CheckHounsFieldUnitsOff();
     maskfilter->SetIsHU(negImage);
     maskfilter->Update();
 
-    typedef itk::CastImageFilter<BrainMaskType, InternalImageType> CastFilterType;
+    typedef itk::CastImageFilter<MaskImageType, InternalImageType> CastFilterType;
     CastFilterType::Pointer castFilter = CastFilterType::New();
 
     castFilter->SetInput(maskfilter->GetOutput());
     castFilter->Update();
     inMask = castFilter->GetOutput();
-  } //end skull mask
+  }
 
-  if (inMask.IsNotNull()) // Erode for CT, dilate for other modalities!
+  // Erode for CT, dilate for other modalities!
+  if (inMask.IsNotNull()) 
   {
-    typedef itk::BinaryBallStructuringElement<InternalImageType::PixelType, Dimension>
-      StructuringElementType;
-    StructuringElementType structuringElement;
+    typedef itk::BinaryBallStructuringElement<
+      InternalImageType::PixelType, 
+      InternalDimension> StructuringElementType;
 
+    StructuringElementType structuringElement;
+    structuringElement.SetRadius(3);
+    structuringElement.CreateStructuringElement();
+
+    typedef itk::BinaryMorphologyImageFilter<
+      InternalImageType, 
+      InternalImageType,
+      StructuringElementType> MorphFilterType;
+
+    MorphFilterType::Pointer morphFilter;
     if (isCT) 
     {
-      structuringElement.SetRadius(3);
-      structuringElement.CreateStructuringElement();
-      typedef itk::BinaryErodeImageFilter<InternalImageType, InternalImageType, StructuringElementType> ErodeFilter;
-      ErodeFilter::Pointer erode = ErodeFilter::New();
-      erode->SetInput(inMask);
-      erode->SetKernel(structuringElement);
-      erode->SetErodeValue(1);
-      erode->SetBackgroundValue(0);
-      erode->Update();
-      inMask = erode->GetOutput();
+      typedef itk::BinaryErodeImageFilter<
+        InternalImageType, 
+        InternalImageType, 
+        StructuringElementType> ErodeFilter;
+      morphFilter = ErodeFilter::New();
     }
+    else
+    {
+      typedef itk::BinaryDilateImageFilter<
+        InternalImageType, 
+        InternalImageType, 
+        StructuringElementType> DilateFilter;
+      morphFilter = DilateFilter::New();
+    }
+
+    morphFilter->SetInput(inMask);
+    morphFilter->SetKernel(structuringElement);
+    morphFilter->SetBackgroundValue(0);
+    morphFilter->SetForegroundValue(1);
+    morphFilter->Update();
+    inMask = morphFilter->GetOutput();
   }
 
   progressXML(progresscounter, "Computing vesselness response...");
   progresscounter += progress_unit;
+
+  typedef itk::MultiScaleVesselnessFilter<
+    InternalImageType, 
+    InternalImageType> VesselnessFilterType;
   VesselnessFilterType::Pointer vesselnessFilter = VesselnessFilterType::New();
-  vesselnessFilter->SetInput( inImage );
-  vesselnessFilter->SetAlphaOne( alphaone );
-  vesselnessFilter->SetAlphaTwo( alphatwo );
-  vesselnessFilter->SetMinScale( min );
-  vesselnessFilter->SetMaxScale( max );
+
+  vesselnessFilter->SetInput(inImage);
+  vesselnessFilter->SetAlphaOne(alphaone);
+  vesselnessFilter->SetAlphaTwo(alphatwo);
+  vesselnessFilter->SetMinScale(min);
+  vesselnessFilter->SetMaxScale(max);
   vesselnessFilter->SetScaleMode(static_cast<VesselnessFilterType::ScaleModeType>(mode));
   vesselnessFilter->Update();
 
   InternalImageType::Pointer maxImage = vesselnessFilter->GetOutput();
   maxImage->DisconnectPipeline();
+
   itk::ImageRegionIterator<InternalImageType> outimageIterator(maxImage, maxImage->GetLargestPossibleRegion());
 
   if (inMask.IsNotNull() && isCT)
   {
+    
     progressXML(progresscounter, "Applying mask...");
     progresscounter+=progress_unit;
     itk::ImageRegionConstIterator<InternalImageType> maskIterator(inMask, maxImage->GetLargestPossibleRegion());
@@ -734,10 +768,12 @@ int main(int argc, char *argv[])
   if (doIntensity)
   {
     progressXML(progresscounter, "Intensity filtering...");
-    progresscounter+=progress_unit;
+    progresscounter += progress_unit;
+
+    typedef itk::IntensityFilter<InternalImageType, InternalImageType> IntensityFilterType;
     IntensityFilterType::Pointer intensityfilter = IntensityFilterType::New();
-    intensityfilter->SetIntensityImage( inImage );
-    intensityfilter->SetVesselnessImage( maxImage );
+    intensityfilter->SetIntensityImage(inImage);
+    intensityfilter->SetVesselnessImage(maxImage);
     intensityfilter->SetFilterMode(static_cast<IntensityFilterType::FilterModeType>(2));
     intensityfilter->Update();
     maxImage->DisconnectPipeline();
@@ -749,63 +785,66 @@ int main(int argc, char *argv[])
     progressXML(progresscounter, "Binarizing image...");
     progresscounter+=progress_unit;
 
-    typedef itk::BinariseVesselResponseFilter<InternalImageType, OutputImageType> BinariseFilter;
+    typedef itk::BinariseVesselResponseFilter<InternalImageType, MaskImageType> BinariseFilter;
     BinariseFilter::Pointer binarise = BinariseFilter::New();
-    binarise->SetInput( maxImage );
-    binarise->SetLowThreshold(4);
-    binarise->Update();
-    OutputImageType::Pointer final_image = binarise->GetOutput();
+    //binarise->SetInput( maxImage );
+    //binarise->SetLowThreshold(4);
+    //binarise->Update();
+    //maxImage = binarise->GetOutput();
 
     if (anisotropic)
     {
       progressXML(progresscounter, "Making image anisotropic again...");
       progresscounter+=progress_unit;
-      OutputResampleType::Pointer out_resample = OutputResampleType::New();
-      out_resample->SetInput( final_image );
-      out_resample->SetAxialSpacing( spacing[2] );
-      out_resample->SetAxialSize( size_in[2] );
+      InternalResampleType::Pointer out_resample = InternalResampleType::New();
+      out_resample->SetInput(maxImage);
+      out_resample->SetAxialSpacing(spacing[2]);
+      out_resample->SetAxialSize(size_in[2]);
 
       out_resample->Update();
-      writer->SetInput( out_resample->GetOutput() );
+      maxImage = out_resample->GetOutput();
     }
-    else
-      writer->SetInput( final_image ) ;
   }
   else
   {
     progressXML(progresscounter, "Preparing probability map...");
     progresscounter+=progress_unit;
-    CastOutFilterType::Pointer caster = CastOutFilterType::New();
-    caster->SetInput( maxImage );
-    caster->Update();
 
     if (anisotropic)
     {
       progressXML(progresscounter, "Making image anisotropic again...");
       progresscounter+=progress_unit;
-      OutputResampleType::Pointer out_resample = OutputResampleType::New();
-      out_resample->SetInput( caster->GetOutput() );
-      out_resample->SetAxialSpacing( spacing[2] );
-      out_resample->SetAxialSize( size_in[2] );
+      InternalResampleType::Pointer out_resample = InternalResampleType::New();
+      out_resample->SetInput(maxImage);
+      out_resample->SetAxialSpacing(spacing[2]);
+      out_resample->SetAxialSize(size_in[2]);
       out_resample->Update();
-      writer->SetInput( out_resample->GetOutput() );
+      maxImage = out_resample->GetOutput();
     }
-    else
-      writer->SetInput( caster->GetOutput() );
   }
 
-  writer->SetFileName( outputImageName );
+  // use the same type as the input image
+  switch (itk::PeekAtComponentType(inputImageName))
+  {
+    case itk::ImageIOBase::CHAR:
+      CastAndSaveOutputImage<char>(outputImageName, maxImage);
+      break;
+    case itk::ImageIOBase::SHORT:
+      CastAndSaveOutputImage<short>(outputImageName, maxImage);
+      break;
+    case itk::ImageIOBase::INT:
+      CastAndSaveOutputImage<int>(outputImageName, maxImage);
+      break;
+    case itk::ImageIOBase::LONG:
+      CastAndSaveOutputImage<long>(outputImageName, maxImage);
+      break;
+    case itk::ImageIOBase::FLOAT:
+      CastAndSaveOutputImage<float>(outputImageName, maxImage);
+      break;
+    case itk::ImageIOBase::DOUBLE:
+      CastAndSaveOutputImage<double>(outputImageName, maxImage);
+      break;
+  }
 
-  try
-  {
-    writer->Update();
-    closeProgress(outputImageName, "Normal exit");
-  }
-  catch( itk::ExceptionObject & err )
-  {
-    std::cerr << "Failed: " << err << std::endl;
-    closeProgress(outputImageName, "Failed");
-    return EXIT_FAILURE;
-  }
   return EXIT_SUCCESS;
 }
