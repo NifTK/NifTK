@@ -862,7 +862,9 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
     niftk::TemplateCirclesPointDetector *circlesTemplateDetector1
-        = new niftk::TemplateCirclesPointDetector(internalCorners, offsetIfNotIterative, cv::CALIB_CB_ASYMMETRIC_GRID | cv::CALIB_CB_CLUSTERING);
+        = new niftk::TemplateCirclesPointDetector(internalCorners, offsetIfNotIterative,
+                                                  cv::CALIB_CB_ASYMMETRIC_GRID
+                                                  | cv::CALIB_CB_CLUSTERING);
     circlesTemplateDetector1->SetImage(&copyOfImage1);
     circlesTemplateDetector1->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
     circlesTemplateDetector1->SetTemplateImage(&m_TemplateImage);
