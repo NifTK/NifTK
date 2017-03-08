@@ -338,8 +338,8 @@ protected slots:
   /// \brief Called when the drop accumulation has been changed through the control panel.
   void OnDropAccumulateControlChanged(bool checked);
 
-  /// \brief Called when one of the viewers receives the focus.
-  void OnFocusChanged();
+  /// \brief Called when a window of one of the viewers receives the focus.
+  void OnWindowSelected();
 
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.

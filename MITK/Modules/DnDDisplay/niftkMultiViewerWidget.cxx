@@ -38,8 +38,6 @@
 #include <QVBoxLayout>
 
 #include <mitkBaseGeometry.h>
-#include <mitkGlobalInteraction.h>
-#include <mitkFocusManager.h>
 #include <QmitkRenderWindow.h>
 
 #include <niftkSingleViewerWidget.h>
@@ -75,7 +73,6 @@ MultiViewerWidget::MultiViewerWidget(
 , m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
 , m_BindingOptions(0)
 , m_ControlPanel(0)
-, m_FocusManagerObserverTag(0)
 {
   assert(visibilityManager);
 
@@ -200,12 +197,6 @@ MultiViewerWidget::MultiViewerWidget(
   this->connect(m_ControlPanel, SIGNAL(DropAccumulateChanged(bool)), SLOT(OnDropAccumulateControlChanged(bool)));
 
   this->connect(m_PopupWidget, SIGNAL(popupOpened(bool)), SLOT(OnPopupOpened(bool)));
-
-  // Register focus observer.
-  itk::SimpleMemberCommand<MultiViewerWidget>::Pointer onFocusChangedCommand = itk::SimpleMemberCommand<MultiViewerWidget>::New();
-  onFocusChangedCommand->SetCallbackFunction(this, &MultiViewerWidget::OnFocusChanged);
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  m_FocusManagerObserverTag = focusManager->AddObserver(mitk::FocusEvent(), onFocusChangedCommand);
 }
 
 
@@ -229,10 +220,6 @@ MultiViewerWidget::~MultiViewerWidget()
   m_VisibilityManager->DeregisterViewers();
 
   this->EnableLinkedNavigation(false);
-
-  // Deregister focus observer.
-  mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  focusManager->RemoveObserver(m_FocusManagerObserverTag);
 }
 
 
@@ -252,6 +239,7 @@ SingleViewerWidget* MultiViewerWidget::CreateViewer(const QString& name)
   viewer->SetDefaultSingleWindowLayout(m_SingleWindowLayout);
   viewer->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
+  this->connect(viewer, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
   this->connect(viewer, SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*)), SLOT(OnTimeGeometryChanged(const mitk::TimeGeometry*)));
   this->connect(viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepChanged(int)));
@@ -1156,58 +1144,48 @@ void MultiViewerWidget::SetFocused()
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerWidget::OnFocusChanged()
+void MultiViewerWidget::OnWindowSelected()
 {
-  mitk::BaseRenderer* focusedRenderer = mitk::GlobalInteraction::GetInstance()->GetFocus();
+  auto it = std::find(m_Viewers.begin(), m_Viewers.end(), QObject::sender());
+  assert(it != m_Viewers.end());
 
-  int selectedViewerIndex = -1;
-  for (int i = 0; i < m_Viewers.size(); ++ i)
+  int selectedViewerIndex = it - m_Viewers.begin();
+
+  m_SelectedViewerIndex = selectedViewerIndex;
+  SingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
+
+  m_ControlPanel->SetWindowLayout(selectedViewer->GetWindowLayout());
+
+  int maxTimeStep = selectedViewer->GetMaxTimeStep();
+  int timeStep = selectedViewer->GetTimeStep();
+  m_ControlPanel->SetMaxTimeStep(maxTimeStep);
+  m_ControlPanel->SetTimeStep(timeStep);
+
+  WindowOrientation orientation = selectedViewer->GetOrientation();
+  if (orientation != WINDOW_ORIENTATION_UNKNOWN)
   {
-    if (m_Viewers[i]->GetSelectedRenderWindow()->GetRenderer() == focusedRenderer)
-    {
-      selectedViewerIndex = i;
-      break;
-    }
+    int maxSlice = selectedViewer->GetMaxSlice(orientation);
+    int selectedSlice = selectedViewer->GetSelectedSlice(orientation);
+    m_ControlPanel->SetMaxSlice(maxSlice);
+    m_ControlPanel->SetSelectedSlice(selectedSlice);
+
+    m_ControlPanel->SetMagnificationControlsEnabled(true);
+    double minMagnification = std::ceil(selectedViewer->GetMinMagnification());
+    double maxMagnification = std::floor(selectedViewer->GetMaxMagnification());
+    double magnification = selectedViewer->GetMagnification(orientation);
+    m_ControlPanel->SetMinMagnification(minMagnification);
+    m_ControlPanel->SetMaxMagnification(maxMagnification);
+    m_ControlPanel->SetMagnification(magnification);
+  }
+  else
+  {
+    m_ControlPanel->SetMagnificationControlsEnabled(false);
   }
 
-  if (0 <= selectedViewerIndex && selectedViewerIndex < m_Viewers.size())
-  {
-    m_SelectedViewerIndex = selectedViewerIndex;
-    SingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
+  m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
+  m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
 
-    m_ControlPanel->SetWindowLayout(selectedViewer->GetWindowLayout());
-
-    int maxTimeStep = selectedViewer->GetMaxTimeStep();
-    int timeStep = selectedViewer->GetTimeStep();
-    m_ControlPanel->SetMaxTimeStep(maxTimeStep);
-    m_ControlPanel->SetTimeStep(timeStep);
-
-    WindowOrientation orientation = selectedViewer->GetOrientation();
-    if (orientation != WINDOW_ORIENTATION_UNKNOWN)
-    {
-      int maxSlice = selectedViewer->GetMaxSlice(orientation);
-      int selectedSlice = selectedViewer->GetSelectedSlice(orientation);
-      m_ControlPanel->SetMaxSlice(maxSlice);
-      m_ControlPanel->SetSelectedSlice(selectedSlice);
-
-      m_ControlPanel->SetMagnificationControlsEnabled(true);
-      double minMagnification = std::ceil(selectedViewer->GetMinMagnification());
-      double maxMagnification = std::floor(selectedViewer->GetMaxMagnification());
-      double magnification = selectedViewer->GetMagnification(orientation);
-      m_ControlPanel->SetMinMagnification(minMagnification);
-      m_ControlPanel->SetMaxMagnification(maxMagnification);
-      m_ControlPanel->SetMagnification(magnification);
-    }
-    else
-    {
-      m_ControlPanel->SetMagnificationControlsEnabled(false);
-    }
-
-    m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
-    m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
-
-    this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
-  }
+  this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
 }
 
 
