@@ -3245,6 +3245,12 @@ bool MultiWindowWidget::BlockUpdate(bool blocked)
 
       if (m_TimeStepHasChanged)
       {
+        if (m_WindowLayout != WINDOW_LAYOUT_3D)
+        {
+          this->UpdatePositionAnnotation(m_SelectedWindowIndex);
+          this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
+        }
+
         m_TimeStepHasChanged = false;
         emit TimeStepChanged(m_TimeStep);
       }
