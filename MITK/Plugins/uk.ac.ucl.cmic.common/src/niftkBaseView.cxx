@@ -340,6 +340,21 @@ void BaseView::RequestRenderWindowUpdate(mitk::RenderingManager::RequestType req
 
 
 //-----------------------------------------------------------------------------
+QHash<QString,QmitkRenderWindow*> BaseView::GetQmitkRenderWindows() const
+{
+  QHash<QString,QmitkRenderWindow*> renderWindows;
+
+  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  if (renderWindowPart)
+  {
+    renderWindows = renderWindowPart->GetQmitkRenderWindows();
+  }
+
+  return renderWindows;
+}
+
+
+//-----------------------------------------------------------------------------
 QmitkRenderWindow* BaseView::GetRenderWindow(QString id)
 {
   QmitkRenderWindow* window = NULL;

@@ -218,8 +218,17 @@ void BaseControllerPrivate::OnFocusChanged()
 
     /// We are only interested in render windows of the active render window part.
     /// Auxiliary renderers in side views are ignored.
-    QmitkRenderWindow* selectedRenderWindow = q->GetView()->GetSelectedRenderWindow();
-    if (selectedRenderWindow && focusedRenderer == selectedRenderWindow->GetRenderer())
+    QHash<QString, QmitkRenderWindow*> viewRenderWindows = q->GetView()->GetQmitkRenderWindows();
+    bool focusedRendererIsInActiveEditor = false;
+    for (auto viewRenderWindow: viewRenderWindows.values())
+    {
+      if (focusedRenderer == viewRenderWindow->GetRenderer())
+      {
+        focusedRendererIsInActiveEditor = true;
+        break;
+      }
+    }
+    if (focusedRendererIsInActiveEditor)
     {
       itk::SimpleMemberCommand<BaseControllerPrivate>::Pointer focusedRendererDeletedCommand = itk::SimpleMemberCommand<BaseControllerPrivate>::New();
       focusedRendererDeletedCommand->SetCallbackFunction(this, &BaseControllerPrivate::OnFocusedRendererDeleted);

@@ -17,6 +17,8 @@
 
 #include "niftkCoreGuiExports.h"
 
+#include <QHash>
+
 #include <mitkDataStorage.h>
 #include <mitkRenderingManager.h>
 
@@ -43,6 +45,9 @@ public:
 
   /// \brief Used to try and get the FocusManager to focus on the current IRenderWindowPart.
   virtual void FocusOnCurrentWindow() const = 0;
+
+  /// \brief Returns every render window of the current IRenderWindowPart.
+  virtual QHash<QString,QmitkRenderWindow*> GetQmitkRenderWindows() const = 0;
 
   /// \brief Retrieves the currently selected RenderWindow from the mitkRenderWindowPart.
   /// \return QmitkRenderWindow* The selected render window or NULL if it no render window is selected.
