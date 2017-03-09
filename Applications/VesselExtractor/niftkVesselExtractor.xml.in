@@ -88,13 +88,6 @@
         <default>false</default>
         </boolean>
         <boolean>
-        <name>isTOF</name>
-        <longflag>tof</longflag>
-        <description>Input image is TOF.</description>
-        <label>TOF input</label>
-        <default>false</default>
-        </boolean>
-        <boolean>
         <name>doIntensity</name>
         <longflag>intfil</longflag>
         <description>Use image intensity to filter</description>

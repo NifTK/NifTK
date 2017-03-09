@@ -133,13 +133,6 @@ See LICENSE.txt in the top level directory for details.
 //    " <default>false</default>\n"
 //    " </boolean>\n"
 //    " <boolean>\n"
-//    " <name>isTOF</name>\n"
-//    " <longflag>tof</longflag>\n"
-//    " <description>Input image is TOF.</description>\n"
-//    " <label>TOF input</label>\n"
-//    " <default>false</default>\n"
-//    " </boolean>\n"
-//    " <boolean>\n"
 //    " <name>doIntensity</name>\n"
 //    " <longflag>intfil</longflag>\n"
 //    " <description>Use image intensity to filter</description>\n"
@@ -840,24 +833,6 @@ int main(int argc, char *argv[])
     maxImage = multiplyFilter->GetOutput();
   } // end of vesselextractor.cpp
 
-  //parameters
-  float min_thresh = 0.003, max_thresh = 1, percentage = 0.04;
-
-  if (isTOF)
-  {
-    min_thresh = 0.003;
-    max_thresh = 1;
-    percentage = 0.02;
-  }
-  else
-  {
-    min_thresh = 0.005;
-    max_thresh = 0.5;
-    max_thresh = 1;
-    min_thresh = 0.03;
-    percentage = 0.02;
-  }
-
   if (doIntensity)
   {
     progressXML(progresscounter, "Intensity filtering...");
@@ -870,6 +845,7 @@ int main(int argc, char *argv[])
     intensityfilter->SetFilterMode(static_cast<IntensityFilterType::FilterModeType>(2));
     intensityfilter->SetOutputMaximum(maximumPixelValue);
     intensityfilter->Update();
+
     maxImage->DisconnectPipeline();
     maxImage = intensityfilter->GetOutput();
   }
