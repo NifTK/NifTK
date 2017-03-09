@@ -105,6 +105,7 @@ public:
   mitk::SliceNavigationController::GeometrySliceEvent GeometryTimeEvent;
   mitk::SliceNavigationController::GeometrySliceEvent GeometrySliceEvent;
 
+  const char* WindowSelected;
   const char* TimeGeometryChanged;
   const char* WindowLayoutChanged;
   const char* SelectedTimeStepChanged;
@@ -146,6 +147,7 @@ SingleViewerWidgetTestClass::SingleViewerWidgetTestClass()
   d->VisibilityManager = 0;
   d->InteractiveMode = false;
 
+  d->WindowSelected = SIGNAL(WindowSelected());
   d->SelectedPositionChanged = SIGNAL(SelectedPositionChanged(const mitk::Point3D&));
   d->SelectedTimeStepChanged = SIGNAL(SelectedTimeStepChanged(int));
   d->CursorPositionChanged = SIGNAL(CursorPositionChanged(WindowOrientation, const mitk::Vector2D&));
@@ -2511,7 +2513,8 @@ void SingleViewerWidgetTestClass::testSetSelectedRenderWindow()
 
   QCOMPARE(d->StateTester->GetItkSignals(d->FocusEvent).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(0));
+  QCOMPARE(d->StateTester->GetQtSignals(d->WindowSelected).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
 }
 
 
@@ -2565,7 +2568,8 @@ void SingleViewerWidgetTestClass::testSetWindowLayout()
   QCOMPARE(d->StateTester->GetQtSignals(d->WindowLayoutChanged).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->ScaleFactorChanged).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->WindowSelected).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(4));
 
   d->StateTester->Clear();
   d->Viewer->SetWindowLayout(WINDOW_LAYOUT_AXIAL);
@@ -2584,7 +2588,8 @@ void SingleViewerWidgetTestClass::testSetWindowLayout()
   QCOMPARE(d->StateTester->GetQtSignals(d->WindowLayoutChanged).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->ScaleFactorChanged).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->WindowSelected).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(4));
 
   ViewerState::Pointer expectedState = ViewerState::New(d->Viewer);
 
@@ -2609,7 +2614,8 @@ void SingleViewerWidgetTestClass::testSetWindowLayout()
   QCOMPARE(d->StateTester->GetQtSignals(d->WindowLayoutChanged).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->CursorPositionChanged).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->ScaleFactorChanged).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(3));
+  QCOMPARE(d->StateTester->GetQtSignals(d->WindowSelected).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(4));
 
   d->StateTester->Clear();
   expectedState->SetWindowLayout(WINDOW_LAYOUT_3D);
@@ -2629,7 +2635,8 @@ void SingleViewerWidgetTestClass::testSetWindowLayout()
   QCOMPARE(d->StateTester->GetItkSignals(focusManager, d->FocusEvent).size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetItkSignals().size(), std::size_t(1));
   QCOMPARE(d->StateTester->GetQtSignals(d->WindowLayoutChanged).size(), std::size_t(1));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals(d->WindowSelected).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), std::size_t(2));
 
   d->StateTester->Clear();
 
@@ -2652,7 +2659,8 @@ void SingleViewerWidgetTestClass::testSetWindowLayout()
   QVERIFY(cursorPositionChanges == std::size_t(3));
   scaleFactorChanges = d->StateTester->GetQtSignals(d->ScaleFactorChanged).size();
   QVERIFY(scaleFactorChanges == std::size_t(3));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), 1 + cursorPositionChanges + scaleFactorChanges);
+  QCOMPARE(d->StateTester->GetQtSignals(d->WindowSelected).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), 2 + cursorPositionChanges + scaleFactorChanges);
 
   d->StateTester->Clear();
 
@@ -2785,7 +2793,8 @@ void SingleViewerWidgetTestClass::testSetWindowLayout()
   QVERIFY(cursorPositionChanges <= std::size_t(2));
   scaleFactorChanges = d->StateTester->GetQtSignals(d->ScaleFactorChanged).size();
   QVERIFY(scaleFactorChanges <= std::size_t(2));
-  QCOMPARE(d->StateTester->GetQtSignals().size(), 1 + cursorPositionChanges + scaleFactorChanges);
+  QCOMPARE(d->StateTester->GetQtSignals(d->WindowSelected).size(), std::size_t(1));
+  QCOMPARE(d->StateTester->GetQtSignals().size(), 2 + cursorPositionChanges + scaleFactorChanges);
 
   d->StateTester->Clear();
 
