@@ -191,17 +191,6 @@ mitk::DataNode* BaseSegmentorController::FindReferenceNodeFromSegmentationNode(c
 
 
 //-----------------------------------------------------------------------------
-void BaseSegmentorController::SetReferenceImageSelected()
-{
-  mitk::DataNode::Pointer referenceImageNode = this->GetReferenceNode();
-  if (referenceImageNode.IsNotNull())
-  {
-    this->GetView()->SetCurrentSelection(referenceImageNode);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 bool BaseSegmentorController::IsAReferenceImage(const mitk::DataNode::Pointer node)
 {
   return niftk::IsNodeAGreyScaleImage(node);

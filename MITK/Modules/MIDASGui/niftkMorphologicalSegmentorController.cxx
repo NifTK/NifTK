@@ -346,8 +346,11 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   this->RequestRenderWindowUpdate();
   this->WaitCursorOff();
 
-  // Finally, select the new segmentation node.
-  this->GetView()->SetCurrentSelection(newSegmentation);
+  if (!isRestarting)
+  {
+    this->GetReferenceNode()->SetSelected(false);
+    newSegmentation->SetSelected(true);
+  } 
 }
 
 

@@ -60,12 +60,6 @@ public:
   /// if there is no selection or if it is empty.
   virtual QList<mitk::DataNode::Pointer> GetDataManagerSelection() const = 0;
 
-  /// \brief Selects the data node in this view and also in the data manager.
-  /// It sets the "selected" property of the node. As a (positive) side effect
-  /// of changing the data manager selection, the "selected" property of the
-  /// previously selected nodes will be cleared.
-  virtual void SetCurrentSelection(mitk::DataNode::Pointer dataNode) = 0;
-
   /// \brief Informs other parts of the workbench that node is selected via the blueberry selection service.
   ///
   /// \note This method should not be used if you have set your own selection provider via

@@ -100,9 +100,6 @@ protected:
   /// segmentation (binary) node, so we simply search for a non binary parent.
   mitk::DataNode* FindReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode);
 
-  /// \brief Makes sure the reference image is the selected one
-  void SetReferenceImageSelected();
-
   /// \brief Returns true if node represent an image that is non binary, and false otherwise.
   virtual bool IsAReferenceImage(const mitk::DataNode::Pointer node);
 

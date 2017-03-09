@@ -340,41 +340,6 @@ void BaseView::RequestRenderWindowUpdate(mitk::RenderingManager::RequestType req
 
 
 //-----------------------------------------------------------------------------
-void BaseView::SetCurrentSelection(mitk::DataNode::Pointer dataNode)
-{
-  if (dataNode.IsNull())
-  {
-    return;
-  }
-
-  // Select the node in the data manager.
-  mitk::DataNodeSelection::ConstPointer dataNodeSelection(new mitk::DataNodeSelection(dataNode));
-  this->SetDataManagerSelection(dataNodeSelection);
-
-  // Note that the data manager clears the "selected" property of the previously
-  // selected nodes but it does not set it for the new selection. So we do it here.
-  dataNode->SetSelected(true);
-
-  // Notify the current view about the selection change.
-  QList<mitk::DataNode::Pointer> dataNodeList;
-  dataNodeList.push_back(dataNode);
-  berry::IWorkbenchPart::Pointer nullPart;
-  this->OnSelectionChanged(nullPart, dataNodeList);
-
-  this->FireNodeSelected(dataNode);
-}
-
-
-//-----------------------------------------------------------------------------
-void BaseView::OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer> &nodes)
-{
-  // Nothing to do. This function must be defined here because it is a private
-  // virtual function in the base class, but it is called by SetCurrentSelection.
-  // Derived classes should override this.
-}
-
-
-//-----------------------------------------------------------------------------
 QmitkRenderWindow* BaseView::GetRenderWindow(QString id)
 {
   QmitkRenderWindow* window = NULL;
