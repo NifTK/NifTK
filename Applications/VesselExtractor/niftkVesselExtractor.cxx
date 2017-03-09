@@ -323,18 +323,19 @@ void CastAndSaveOutputImage(std::string fileOutputImage,
 namespace Functor
 {
 template <class TPixel>
-class ApplySkullMask
+class CreateCTMask
 {
   public:
-    ApplySkullMask(TPixel thresh) { m_Thresh = thresh; }
-    ~ApplySkullMask() {}
+    CreateCTMask(){ m_Thresh = (TPixel) 1; }
+    CreateCTMask(TPixel thresh) { m_Thresh = thresh; }
+    ~CreateCTMask() {}
 
-    bool operator!=(const ApplySkullMask &) const
+    bool operator!=(const CreateCTMask &other) const
     {
-      return false;
+      return m_Thresh != other.m_Thresh;
     }
  
-    bool operator==(const ApplySkullMask & other) const
+    bool operator==(const CreateCTMask & other) const
     {
       return !( *this != other );
     }
@@ -795,34 +796,38 @@ int main(int argc, char *argv[])
   InternalImageType::Pointer maxImage = vesselnessFilter->GetOutput();
   maxImage->DisconnectPipeline();
 
-
-  if (inMask.IsNotNull() && isCT)
+  if (inMask.IsNotNull())
   {
-    progressXML(progresscounter, "Applying mask...");
-    progresscounter += progress_unit;
-    itk::ImageRegionIterator<InternalImageType> outimageIterator(maxImage, maxImage->GetLargestPossibleRegion());
-
-    itk::ImageRegionConstIterator<InternalImageType> maskIterator(inMask, maxImage->GetLargestPossibleRegion());
-    itk::ImageRegionConstIterator<InternalImageType> inimageIterator(inImage, maxImage->GetLargestPossibleRegion());
-    outimageIterator.GoToBegin();
-
-    InternalPixelType thresh = 400;
-    if (!negImage)
+    if (isCT)
     {
-      thresh = 1324;
+      progressXML(progresscounter, "Applying mask...");
+      progresscounter += progress_unit;
+
+      typedef Functor::CreateCTMask<InternalPixelType> CreateCTMaskFunctor;
+      typedef itk::BinaryFunctorImageFilter<
+        InternalImageType, 
+        InternalImageType, 
+        InternalImageType,
+        CreateCTMaskFunctor> CreateMaskFilterType;
+
+      CreateMaskFilterType::Pointer createMaskFilter = CreateMaskFilterType::New();
+
+      InternalPixelType thresh = 400;
+      if (!negImage)
+      {
+        thresh = 1324;
+      }
+      CreateCTMaskFunctor createMask(thresh);
+      createMaskFilter->SetFunctor(createMask);
+
+      createMaskFilter->SetInput1(inMask);
+      createMaskFilter->SetInput2(inImage);
+      createMaskFilter->Update();
+
+      inMask = createMaskFilter->GetOutput();
+      inMask->DisconnectPipeline();
     }
 
-    while(!outimageIterator.IsAtEnd()) //Apply brain mask
-    {
-      if (maskIterator.Get() == 0 || inimageIterator.Get() >= thresh)
-        outimageIterator.Set(0);
-      ++outimageIterator;
-      ++maskIterator;
-      ++inimageIterator;
-    }
-  }
-  else if (inMask.IsNotNull())
-  {
     progressXML(progresscounter, "Applying mask...");
     progresscounter += progress_unit;
 
