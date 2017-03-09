@@ -55,7 +55,7 @@ NIFTKUSRECON_EXPORT void DoUltrasoundCalibration(const int& modelWidth,
 */
 NIFTKUSRECON_EXPORT mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
                                                                     const mitk::Point2D& pixelScaleFactors,
-                                                                    const RotationTranslation& imageToSensorTransform,
+                                                                    RotationTranslation& imageToSensorTransform,
                                                                     const mitk::Vector3D& voxelSpacing
                                                                    );
 } // end namespace

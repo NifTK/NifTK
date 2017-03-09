@@ -15,6 +15,7 @@
 #include <Internal/niftkQuaternion.h>
 #include <mitkExceptionMacro.h>
 #include <mitkIOUtil.h>
+#include <mitkConvert2Dto3DImageFilter.h>
 #include <niftkOpenCVImageConversion.h>
 #include <niftkMITKMathsUtils.h>
 #include <niftkFileHelper.h>
@@ -25,6 +26,15 @@
 #include <mitkImageToItk.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <itkImageRegionConstIteratorWithIndex.h>
+#include <itkImageRegionIterator.h>
+#include <vtkMath.h>
+#include <itkCastImageFilter.h>
+
+#ifndef TOLERANCE
+#define TOLERANCE
+#define TINY_NUMBER 0.000001
+#endif
 
 namespace niftk
 {
@@ -33,9 +43,12 @@ typedef std::pair<niftkQuaternion, niftkQuaternion> TrackingQuaternions;
 
 typedef unsigned char InputPixelType;
 typedef double OutputPixelType;
+
 const unsigned int dim = 3;
+
 typedef itk::Image<InputPixelType, dim> InputImageType;
 typedef itk::Image<OutputPixelType, dim> OutputImageType;
+typedef itk::Image<unsigned char, dim> ResultImageType;
 
 
 //-------------------------------------------------------------------------------------
@@ -241,7 +254,7 @@ cv::Point2d FindCircleInImage(const cv::Mat& image, cv::Mat& model)
 
 //-------------------------------------------------------------------
 // tracking_data is a pair of quaternions representing rotation and translation
-// Caution: the old .para files record translation first and then a unit quaternion for rotation  
+// Caution: the old .pos files record translation first and then a unit quaternion for rotation  
 cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
                               const std::vector<TrackingQuaternions>& tracking_data)
 {
@@ -587,12 +600,35 @@ void DoUltrasoundCalibration(const int& modelWidth,
 
 
 //-----------------------------------------------------------------------------
-void DoUltrasoundReconstructionFor1Slice(InputImageType::ConstPointer itk2D,
+void DoUltrasoundReconstructionFor1Slice(InputImageType::Pointer itk2D,
                                          OutputImageType::Pointer accumulator,
                                          OutputImageType::Pointer itk3D
                                          )
 {
+  typedef itk::ImageRegionConstIteratorWithIndex<InputImageType> ConstIteratorType;
 
+  ConstIteratorType inputIter(itk2D, itk2D->GetRequestedRegion());
+
+  for (inputIter.GoToBegin(); !inputIter.IsAtEnd(); ++inputIter)
+  {
+    InputImageType::IndexType idx2D = inputIter.GetIndex();
+    OutputImageType::IndexType idx3D;
+
+    OutputImageType::PointType pt;
+
+    itk2D->TransformIndexToPhysicalPoint(idx2D, pt);
+    itk3D->TransformPhysicalPointToIndex(pt, idx3D);
+
+
+    InputPixelType pixelValue = inputIter.Get();
+    OutputPixelType voxelValue = itk3D->GetPixel(idx3D);
+
+    OutputPixelType currentWeight = accumulator->GetPixel(idx3D);
+    currentWeight = currentWeight + 1;
+
+    itk3D->SetPixel(idx3D, voxelValue + pixelValue);
+    accumulator->SetPixel(idx3D, currentWeight);
+  }
 
 }
 
@@ -600,7 +636,7 @@ void DoUltrasoundReconstructionFor1Slice(InputImageType::ConstPointer itk2D,
 //-----------------------------------------------------------------------------
 mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
                                                 const mitk::Point2D& pixelScaleFactors,
-                                                const RotationTranslation& imageToSensorTransform,
+                                                RotationTranslation& imageToSensorTransform,
                                                 const mitk::Vector3D& voxelSpacing
                                                 )
 {
@@ -611,10 +647,10 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   {
     mitkThrow() << "No reconstruction data provided.";
   }
-  mitk::PixelType pixelType = data[0].first->GetPixelType();
+
   mitk::PixelType unsignedCharPixelType = mitk::MakeScalarPixelType<unsigned char>();
 
-  if (pixelType != unsignedCharPixelType)
+  if (data[0].first->GetPixelType() != unsignedCharPixelType)
   {
     mitkThrow() << "Ultrasound images should be unsigned char.";
   }
@@ -653,9 +689,9 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   minCornerInMillimetres[2] = std::numeric_limits<double>::max();
 
   mitk::Point3D maxCornerInMillimetres;
-  maxCornerInMillimetres[0] = std::numeric_limits<double>::min();
-  maxCornerInMillimetres[1] = std::numeric_limits<double>::min();
-  maxCornerInMillimetres[2] = std::numeric_limits<double>::min();
+  maxCornerInMillimetres[0] = -1 * std::numeric_limits<double>::max();
+  maxCornerInMillimetres[1] = -1 * std::numeric_limits<double>::max();
+  maxCornerInMillimetres[2] = -1 * std::numeric_limits<double>::max();
 
   mitk::Point3I cornersIndexArray[4];
   mitk::Point3D cornersWorldArray[4];
@@ -716,7 +752,8 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
         {
           minCornerInMillimetres[j] = cornersWorldArray[i][j];
         }
-        else if (cornersWorldArray[i][j] > maxCornerInMillimetres[j])
+        
+        if (cornersWorldArray[i][j] > maxCornerInMillimetres[j])
         {
           maxCornerInMillimetres[j] = cornersWorldArray[i][j];
         }
@@ -730,9 +767,9 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   origin[2] = minCornerInMillimetres[2] - (0.5 * voxelSpacing[2]); // Origin position in millimetres.
 
   unsigned int dims[3];
-  dims[0] = (maxCornerInMillimetres[0] - minCornerInMillimetres[0]) / voxelSpacing[0] + 1; // Number of voxels in x
-  dims[1] = (maxCornerInMillimetres[1] - minCornerInMillimetres[1]) / voxelSpacing[1] + 1; // Number of voxels in y
-  dims[2] = (maxCornerInMillimetres[2] - minCornerInMillimetres[2]) / voxelSpacing[2] + 1; // Number of voxels in z
+  dims[0] = (maxCornerInMillimetres[0] - minCornerInMillimetres[0]) / voxelSpacing[0] + 2; // Number of voxels in x
+  dims[1] = (maxCornerInMillimetres[1] - minCornerInMillimetres[1]) / voxelSpacing[1] + 2; // Number of voxels in y
+  dims[2] = (maxCornerInMillimetres[2] - minCornerInMillimetres[2]) / voxelSpacing[2] + 2; // Number of voxels in z
 
   MITK_INFO << "DoUltrasoundReconstruction creating 2 volumes of ("
             << dims[0] << ", " << dims[1] << ", " << dims[2] << "), "
@@ -740,14 +777,14 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
             << voxelSpacing[0] << "x" << voxelSpacing[1] << "x" << voxelSpacing[2]
             << "mm." << std::endl;
 
-  // This will be the output image.
-  mitk::Image::Pointer image3D = mitk::Image::New();
-  image3D->Initialize(pixelType, 3, dims);
-  image3D->SetSpacing(voxelSpacing);
-  image3D->SetOrigin(origin);
-
   // Working images are double.
   mitk::PixelType doublePixelType = mitk::MakeScalarPixelType<double>();
+
+  // This will be the output image.
+  mitk::Image::Pointer image3D = mitk::Image::New();
+  image3D->Initialize(doublePixelType, 3, dims);
+  image3D->SetSpacing(voxelSpacing);
+  image3D->SetOrigin(origin);
 
   mitk::Image::Pointer accumulatorImage = mitk::Image::New();
   accumulatorImage->Initialize(doublePixelType, 3, dims);
@@ -757,68 +794,151 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   mitk::Vector3D pixelSpacing;
   pixelSpacing[0] = pixelScaleFactors[0]; // Size of 2D pixels in x in millimetres
   pixelSpacing[1] = pixelScaleFactors[1]; // Size of 2D pixels in y in millimetres
-  pixelSpacing[2] = 1.0;                  // Size of 2D pixels in z in millimetres.
+  pixelSpacing[2] = 1.0;                  // Size of 2D pixels in z in millimetres - any value will do as the z coordinate is zero
 
+  auto itk3D = mitk::ImageToItkImage< OutputPixelType, dim >(image3D);
+  auto accumulator = mitk::ImageToItkImage< OutputPixelType, dim >(accumulatorImage);
 
-  // At this point, image2D is definitely unsigned char,
-  // and accumulatorImage and image3D are definitely double.
-  // Also each image should have correct geometry.
+  OutputImageType::DirectionType itk3DImageDirection;
+  itk3DImageDirection.SetIdentity();
 
-  OutputImageType::Pointer itk3D = mitk::ImageToItkImage< OutputPixelType, dim >(image3D);
-  OutputImageType::Pointer accumulator = mitk::ImageToItkImage< OutputPixelType, dim >(accumulatorImage);
+  itk3D->SetDirection(itk3DImageDirection);
+  accumulator->SetDirection(itk3DImageDirection);
+
+  itk3D->FillBuffer(0.0);
+  accumulator->FillBuffer(0.0);
+
+  double quaternion[4];
+
+  quaternion[0] = imageToSensorTransform.first[0];
+  quaternion[1] = imageToSensorTransform.first[1];
+  quaternion[2] = imageToSensorTransform.first[2];
+  quaternion[3] = imageToSensorTransform.first[3];
+
+  double rotationMatrix[3][3];
+  vtkMath::QuaternionToMatrix3x3(quaternion, rotationMatrix);
+  cv::Mat calibratedRotation(3, 3, CV_64F, rotationMatrix);
+
+  cv::Mat calibratedTranslation(3, 1, CV_64F);
+  for (int r = 0; r < 3; r++)
+  {
+    calibratedTranslation.at<double>(r) = imageToSensorTransform.second[r];
+  }
 
   // Now iterate through each image/tracking, and put in volume.
-  for (unsigned int i = 0; i < data.size(); i++)
+  for (int i = 0; i < data.size(); i++)
   {
-    niftk::ConvertRotationAndTranslationToMatrix(data[i].second.first,
-                                                 data[i].second.second,
-                                                 *trackingMatrix);
+    double quaternion[4];
+    quaternion[0] = data[i].second.first[0];
+    quaternion[1] = data[i].second.first[1];
+    quaternion[2] = data[i].second.first[2];
+    quaternion[3] = data[i].second.first[3];
+
+    double rotationMatrix[3][3];
+    vtkMath::QuaternionToMatrix3x3(quaternion, rotationMatrix);
+    cv::Mat trackingRotation(3, 3, CV_64F, rotationMatrix);
+
+    cv::Mat trackingTranslation(3, 1, CV_64F);
+    for (int r = 0; r < 3; r++)
+    {
+      trackingTranslation.at<double>(r) = data[i].second.second[r];
+    }
 
     cv::Mat newOrigin(3, 1, CV_64F);
     cv::Mat newDirection(3, 3, CV_64F);
-    cv::Mat trackingRotation(3, 3, CV_64F);
-    cv::Mat trackingTranslation(3, 1, CV_64F);
-    cv::Mat calibratedRotation(3, 3, CV_64F);
-    cv::Mat calibratedTranslation(3, 1, CV_64F);
 
-    for(int row = 0; row < 3; row++)
-    {
-      for(int col = 0; col < 4; col++)
-      {
-        trackingRotation.at<double>(row, col) = trackingMatrix->Element[row][col];
-        trackingTranslation.at<double>(row) = trackingMatrix->Element[row][3];
-
-        calibratedRotation.at<double>(row, col) = imageToSensorMatrix->Element[row][col];
-        calibratedTranslation.at<double>(row) = imageToSensorMatrix->Element[row][3];
-      }
-    }
-
-    newOrigin = trackingTranslation + trackingRotation * calibratedRotation;
+    newOrigin = trackingTranslation + trackingRotation * calibratedTranslation;
     newDirection = trackingRotation * calibratedRotation;
-
-    InputImageType::DirectionType itk2DImageDirection;
-    itk2DImageDirection.SetIdentity();// !!! Copy from newDirection
 
     mitk::Image::Pointer image2D = data[i].first;
     image2D->SetSpacing(pixelSpacing);
-    image2D->SetOrigin(newOrigin);
 
-    mitk::Image::ConstPointer const2DImage = const_cast<const mitk::Image*>(image2D.GetPointer());
-    
-    InputImageType::ConstPointer itk2D = mitk::ImageToItkImage< InputPixelType, dim >(image2D);
+    mitk::Point3D newOrigin2D;
+    newOrigin2D[0] = newOrigin.at<double>(0);
+    newOrigin2D[1] = newOrigin.at<double>(1);
+    newOrigin2D[2] = newOrigin.at<double>(2);
+
+    image2D->SetOrigin(newOrigin2D);
+
+    InputImageType::Pointer itk2D = mitk::ImageToItkImage< InputPixelType, dim >(image2D);
+
+    InputImageType::DirectionType itk2DImageDirection;
+    itk2DImageDirection = itk2D->GetDirection();
+
+    for (int row = 0; row < 3; row++)
+    {
+      for (int col = 0; col < 3; col++)
+      {
+        itk2DImageDirection[row][col] = newDirection.at<double>(row, col);
+      }
+    }
+
     itk2D->SetDirection(itk2DImageDirection);
 
     DoUltrasoundReconstructionFor1Slice(itk2D,
                                         accumulator,
                                         itk3D);
+
+    cout << "Slice " << i << " reconstructed" << endl;
+
   }// end for i
 
+  //Do averaging
+  typedef itk::ImageRegionIterator<OutputImageType> OutputIteratorType;
 
+  OutputIteratorType itk3DIter(itk3D, itk3D->GetRequestedRegion());
+  OutputIteratorType accumulatorIter(accumulator, itk3D->GetRequestedRegion());
+
+  for (itk3DIter.GoToBegin(), accumulatorIter.GoToBegin(); !itk3DIter.IsAtEnd(); ++itk3DIter, ++accumulatorIter)
+  {
+    OutputPixelType totalValue = itk3DIter.Get();
+    OutputPixelType totalWeight = accumulatorIter.Get();
+
+    if (totalValue > TINY_NUMBER && totalWeight > TINY_NUMBER)
+    {
+      itk3DIter.Set(totalValue / totalWeight);
+    }
+  }
+
+  //Cast voxel type from double to unsigned char
+  typedef itk::CastImageFilter< OutputImageType, ResultImageType > FilterType;
+  FilterType::Pointer filter = FilterType::New();
+  filter->SetInput(itk3D);
+  filter->Update();
+
+  mitk::Image::Pointer resultImage = mitk::Image::New();
+  auto filteredImage = filter->GetOutput();
+  resultImage->InitializeByItk(filteredImage);
+  resultImage->SetVolume(filteredImage->GetBufferPointer());
+  resultImage->SetGeometry(image3D->GetGeometry()); 
 
   // And returns the image.
-  return image3D;
+  return resultImage;
 }
 
+void LoadTrackingMatrix(std::string trackingFileName, vtkMatrix4x4& trackingMatrix)
+{
+  fstream fp(trackingFileName, ios::in);
+
+  if (!fp)
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Can not read " << trackingFileName << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      fp >> trackingMatrix.Element[i][j];
+    }
+  }
+
+  fp.close();
+
+  return;
+}
 
 //-----------------------------------------------------------------------------
 TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imageDir,
@@ -830,9 +950,70 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
   std::vector<std::string> imageFiles = niftk::GetFilesInDirectory(imageDir);
   std::vector<std::string> trackingFiles = niftk::GetFilesInDirectory(trackingDir);
 
-  // Load images using mitk::IOUtil
+  // Load images using mitk::IOUtil, assuming there is enough memory
+  std::vector<mitk::Image::Pointer> images;
+  for (int i = 0; i < imageFiles.size(); i++)
+  {
+    mitk::Image::Pointer tmpImage = mitk::IOUtil::LoadImage(imageFiles[i]);
+    mitk::Convert2Dto3DImageFilter::Pointer filter = mitk::Convert2Dto3DImageFilter::New();
+    filter->SetInput(tmpImage);
+    filter->Update();
+
+    mitk::Image::Pointer convertedImage = filter->GetOutput();
+    images.push_back(convertedImage);
+  }
+
+  if (imageFiles.size() != images.size())
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Retrieved " << imageFiles.size() << " file names for images, but could only load " << images.size() << " images!" << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
 
   // Load transformations and convert to quaternions like in niftkUltrasoundReconstruction.cxx
+  std::vector<vtkSmartPointer<vtkMatrix4x4>> matrices;
+  for (int i = 0; i < trackingFiles.size(); i++)
+  {
+      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+      trackingMatrix->Identity();// Is this necessary???
+      LoadTrackingMatrix(trackingFiles[i], *trackingMatrix);
+      matrices.push_back(trackingMatrix);
+  }
+
+  if (trackingFiles.size() != matrices.size())
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Retrieved " << trackingFiles.size() << " file names for tracking matrices, but could only load " << matrices.size() << " tracking matrices!" << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  if (trackingFiles.size() < imageFiles.size())
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Loaded " << trackingFiles.size() << " matrices, and loaded a difference number of images " << images.size() << ", and number of images must be less than number of matrices." << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+ 
+  // Making image/tracking matrix pairs
+  for (int i = 0; i < imageFiles.size(); i++)
+  {
+    TrackedImage oneTrackedImage;
+    oneTrackedImage.first = images[i];
+
+    //Convert to quaternions???
+    mitk::Point4D rotation;
+    mitk::Vector3D translation;
+
+    niftk::ConvertMatrixToRotationAndTranslation(*(matrices[i]), rotation, translation);
+
+    RotationTranslation oneRotationTranslationPair;
+    oneRotationTranslationPair.first = rotation;
+    oneRotationTranslationPair.second = translation;
+
+    oneTrackedImage.second = oneRotationTranslationPair;
+
+    outputData.push_back(oneTrackedImage);
+  }
 
   // this will incur a copy, but you wont copy images, you will copy smart pointers.
   return outputData;
