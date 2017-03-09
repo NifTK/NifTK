@@ -14,6 +14,7 @@
 
 #include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
+#include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNifTKImageIOFactory.h>
@@ -28,7 +29,7 @@ void Usage(char *exec)
   {
     niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Runs the ITK DiscreteGaussianImageFilter." << std::endl;
+    std::cout << "  Runs the ITK DiscreteGaussianImageFilter on a 3D image." << std::endl;
     std::cout << "  " << std::endl;
     std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
     std::cout << "  " << std::endl;
@@ -93,6 +94,12 @@ int main(int argc, char** argv)
       return EXIT_FAILURE;
     }
   
+  if (itk::PeekAtImageDimension(inputImage) != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   if(variance < 0 ){
     std::cerr << argv[0] << "\tThe variance must be >= 0" << std::endl;
     return -1;

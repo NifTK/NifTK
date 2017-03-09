@@ -21,8 +21,8 @@
 
 namespace itk {
 
-/** \class IntensityCTFilter
- * \brief Uses intensity information from CT to enhance the vesselness filter
+/** \class IntensityFilter
+ * \brief Uses intensity information to enhance the vesselness filter
  * response.
  */
 template < class TIntensityImage, class TVesselImage >

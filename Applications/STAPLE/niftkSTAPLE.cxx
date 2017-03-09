@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include <niftkLogHelper.h>
+#include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNifTKImageIOFactory.h>
@@ -65,10 +66,17 @@ int main(int argc, char** argv)
   char* outputFilename = argv[1]; 
   PixelType foregroundValue = atoi(argv[2]); 
   double confidenceWeight = atof(argv[3]); 
-  std::vector<char*> inputFilenames; 
+  std::vector<std::string> inputFilenames; 
   for (int argIndex = 4; argIndex < argc; argIndex++)
   {
-    inputFilenames.push_back(argv[argIndex]); 
+    std::string inputFile = argv[argIndex];
+    if (itk::PeekAtImageDimensionFromSizeInVoxels(inputFile) != Dimension)
+    {
+      std::cout << inputFile.c_str() << " has an unsupported image dimension. Skippinh" << std::endl;
+      continue;
+    }
+
+    inputFilenames.push_back(inputFile); 
   }
 
   typedef itk::Image< double, Dimension > OutputImageType;

@@ -19,6 +19,7 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
+#include <itkCommandLineHelper.h>
 #include <itkNifTKImageIOFactory.h>
 #include "itkSimpleKMeansClusteringImageFilter.h"
 
@@ -52,6 +53,14 @@ int main( int argc, char * argv [] )
   typedef itk::Image<float, Dimension > FloatImageType;
   typedef itk::ImageFileReader< FloatImageType > ReaderType;
   typedef itk::ImageFileReader< ImageType > MaskReaderType;
+  
+  if (itk::PeekAtImageDimension(inputImageFileName) != Dimension
+    || itk::PeekAtImageDimension(inputMaskFilename) != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName( inputImageFileName );
   reader->Update(); 

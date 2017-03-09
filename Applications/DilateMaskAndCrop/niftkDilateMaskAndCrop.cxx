@@ -14,6 +14,7 @@
 
 #include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
+#include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNifTKImageIOFactory.h>
@@ -135,6 +136,12 @@ int main(int argc, char** argv)
       Usage(argv[0]);
       return EXIT_FAILURE;
     }
+
+  if (itk::PeekAtImageDimension(input) != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
 
   typedef itk::Image< PixelType, Dimension >     InputImageType;   
   typedef itk::ImageFileReader< InputImageType > InputImageReaderType;

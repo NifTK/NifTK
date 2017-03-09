@@ -23,6 +23,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkNifTKImageIOFactory.h>
+#include <itkCommandLineHelper.h>
 #include <itkImageRegionIteratorWithIndex.h>
 #include <itkImageRegionConstIterator.h>
 
@@ -81,6 +82,20 @@ int main( int argc, char *argv[] )
     return EXIT_FAILURE;
   }
 
+  // Check the dimension of the provide file matches
+  int dims = itk::PeekAtImageDimension(fileInputMask);
+  if (dims != ImageDimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  dims = itk::PeekAtImageDimension(fileInputSegmentation);
+  if (dims != ImageDimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
 
   // Read the input images
   // ~~~~~~~~~~~~~~~~~~~~~

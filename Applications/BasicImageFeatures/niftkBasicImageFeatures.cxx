@@ -18,6 +18,7 @@
 
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>
+#include <itkCommandLineHelper.h>
 
 #include <itkImageRegionIterator.h>
 #include <itkImageRegionConstIterator.h>
@@ -348,8 +349,15 @@ int main( int argc, char *argv[] )
   // Read the input image
   // ~~~~~~~~~~~~~~~~~~~~
 
+  int dims = itk::PeekAtImageDimension(fileInputImage);
   // Define the dimension of the images
   const unsigned int ImageDimension = 2;
+
+  if (dims != ImageDimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
 
   typedef float InputPixelType;
   typedef itk::Image<InputPixelType, ImageDimension> InputImageType;

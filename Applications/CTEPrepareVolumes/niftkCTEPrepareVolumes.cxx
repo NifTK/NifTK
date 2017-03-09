@@ -926,7 +926,7 @@ int main(int argc, char** argv)
         result = DoMain<3, short int>(args);
       break;
       default:
-        std::cout << "Unsuported image dimension" << std::endl;
+        std::cout << "Unsupported image dimension" << std::endl;
         exit( EXIT_FAILURE );
     }
   return result;

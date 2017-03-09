@@ -14,6 +14,7 @@
 
 #include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
+#include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNifTKImageIOFactory.h>
@@ -89,8 +90,16 @@ int main(int argc, char** argv)
   typedef itk::Image< PixelType, Dimension >     InputImageType;   
   typedef itk::ImageFileReader< InputImageType > InputImageReaderType;
   typedef itk::ImageFileWriter< InputImageType > OutputImageWriterType;
-  typedef itk::InjectSourceImageGreaterThanZeroIntoTargetImageFilter<InputImageType, InputImageType, InputImageType> InjectSourceImageGreaterThanZeroIntoTargetImageFilterType;
+  typedef itk::InjectSourceImageGreaterThanZeroIntoTargetImageFilter<InputImageType, InputImageType, InputImageType> 
+    InjectSourceImageGreaterThanZeroIntoTargetImageFilterType;
   
+  if (itk::PeekAtImageDimension(inputImage) != Dimension
+    || itk::PeekAtImageDimension(maskImage) != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
   InputImageReaderType::Pointer maskReader = InputImageReaderType::New();
   

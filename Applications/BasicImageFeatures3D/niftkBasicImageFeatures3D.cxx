@@ -18,6 +18,7 @@
 
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>
+#include <itkCommandLineHelper.h>
 
 #include <itkCommand.h>
 #include <itkSimpleFilterWatcher.h>
@@ -392,6 +393,16 @@ int main( int argc, char *argv[] )
 
   // Define the dimension of the images
   const unsigned int ImageDimension = 3;
+  
+  int dims = itk::PeekAtImageDimension(fileInputImage);
+  // Define the dimension of the images
+
+  if (dims != ImageDimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   const unsigned int SliceDimension = 2;
 
   typedef float InputPixelType;

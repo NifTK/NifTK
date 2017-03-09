@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include <niftkLogHelper.h>
+#include <itkCommandLineHelper.h>
 #include <itkImage.h>
 #include <itkImageRegionConstIterator.h>
 #include <itkRescaleIntensityImageFilter.h>
@@ -21,7 +22,8 @@
 
 /* ********************************************************************** */
 
-typedef itk::Image<float,2> ImageType;
+const int Dimension = 2;
+typedef itk::Image<float, Dimension> ImageType;
 typedef itk::ImageFileReader<ImageType> ImageReaderType;
 typedef itk::ImageRegionConstIterator<ImageType> IteratorType;
 typedef itk::RescaleIntensityImageFilter<ImageType,ImageType> RescaleFilter;
@@ -29,13 +31,13 @@ typedef itk::RescaleIntensityImageFilter<ImageType,ImageType> RescaleFilter;
 /*!
  * \file niftkGetMetricValue.cxx
  * \page niftkGetMetricValue
- * \section niftkGetMetricValueSummary This program returns a metric value (NMI, MI, JE, SSD) between two input files
+ * \section niftkGetMetricValueSummary This program returns a metric value (NMI, MI, JE, SSD) between two 2D input images
  */
 void Usage(char *exec)
 {
   niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout<<std::endl;
-	std::cout<<"This program returns a metric value between two input files"<<std::endl;
+	std::cout<<"This program returns a metric value between two 2D input images."<<std::endl;
 	std::cout<< "Usage:\t"<< exec << " <inputFileName> <inputFileName> [metric] [bin number]"<<std::endl;
 	std::cout<< "Metric:\t"<<"0:NMI | 1:MI | 2:JE | 3:SSD"<<std::endl;
 	return;
@@ -57,7 +59,17 @@ int main(int argc, char **argv)
 	
 	// Read first image
 	ImageReaderType::Pointer firstReader = ImageReaderType::New();
-	firstReader->SetFileName(argv[1]);
+  std::string fileName1 = argv[1];
+  std::string fileName2 = argv[2];
+  
+  if (itk::PeekAtImageDimension(fileName1) != Dimension
+    || itk::PeekAtImageDimension(fileName2) != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
+	firstReader->SetFileName(fileName1);
 	try{
 		firstReader->Update();
 	}
@@ -68,7 +80,7 @@ int main(int argc, char **argv)
 	}
 	// Read second image
 	ImageReaderType::Pointer secondReader = ImageReaderType::New();
-	secondReader->SetFileName(argv[2]);
+	secondReader->SetFileName(fileName2);
 	try{
 		secondReader->Update();
 	}

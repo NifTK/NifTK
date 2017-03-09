@@ -14,6 +14,7 @@
 
 #include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
+#include <itkCommandLineHelper.h>
 #include <vtkType.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
@@ -34,7 +35,7 @@ void Usage(char *exec)
   {
     niftk::LogHelper::PrintCommandLineHeader(std::cout);
     std::cout << "  " << std::endl;
-    std::cout << "  Takes an image and a VTK PolyData, and for each vertex, interpolates the image, and stores the scalar value with the vertex." << std::endl;
+    std::cout << "  Takes a 3D image and a VTK PolyData, and for each vertex, interpolates the image, and stores the scalar value with the vertex." << std::endl;
     std::cout << "  In actuality, if you set radius to zero, we just interpolate volume." << std::endl;
     std::cout << "  If you set a radius and a number of steps, we search for the closest value" << std::endl;
     std::cout << "  " << std::endl;
@@ -119,10 +120,18 @@ int main(int argc, char** argv)
     }
  
   // Load image
-  typedef itk::Image< float, 3 >                 InputImageType;   
+  const unsigned int Dimension = 3;
+  typedef itk::Image< float, Dimension >         InputImageType;   
   typedef itk::ImageFileReader< InputImageType > InputImageReaderType;
   typedef itk::NearestNeighborInterpolateImageFunction<InputImageType, double> InterpolatorType;
- 
+     
+  int dims = itk::PeekAtImageDimension(args.inputImage);
+  if (dims != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   InputImageReaderType::Pointer imageReader = InputImageReaderType::New();
   imageReader->SetFileName(args.inputImage);
   try
