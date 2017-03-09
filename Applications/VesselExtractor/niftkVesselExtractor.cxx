@@ -229,6 +229,7 @@ const unsigned int InternalDimension = 3;
 typedef float InternalPixelType;
 typedef itk::Image<InternalPixelType, InternalDimension> InternalImageType;
 
+// function to cast and crop the input image to the internal type
 template<int Dimension, class PixelType>
 InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int sliceToKeep)
 {
@@ -285,6 +286,71 @@ InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int
     castFilter->Update();
     outImage = castFilter->GetOutput();
   }
+
+  outImage->DisconnectPipeline();
+  return outImage;
+}
+
+template<class InputPixelType, class OutputPixelType>
+void CastAndSaveOutputImage(std::string fileOutputImage,  
+  typename itk::Image<InputPixelType, InternalDimension>::Pointer outputImage)
+{
+  typedef itk::Image<OutputPixelType, InternalDimension> OutputImageType;
+  typedef itk::ImageFileWriter<OutputImageType>          WriterType; 
+  typedef itk::Image<InputPixelType, InternalDimension>  InputImageType;
+
+  typedef itk::CastImageFilter<InputImageType, OutputImageType> CastFilterType;
+  typename CastFilterType::Pointer castFilter = CastFilterType::New();
+  castFilter->SetInput(outputImage);
+  castFilter->Update();
+
+  typename WriterType::Pointer writer = WriterType::New();
+  writer->SetInput(castFilter->GetOutput());
+  writer->SetFileName(fileOutputImage);
+
+  try
+  {
+    writer->Update();
+    closeProgress(fileOutputImage, "Normal exit");
+  }
+  catch( itk::ExceptionObject & err )
+  {
+    std::cerr << "Failed: " << err << std::endl;
+    closeProgress(fileOutputImage, "Failed");
+  }
+}
+
+namespace Functor
+{
+template <class TPixel>
+class ApplySkullMask
+{
+  public:
+    ApplySkullMask(TPixel thresh) { m_Thresh = thresh; }
+    ~ApplySkullMask() {}
+
+    bool operator!=(const ApplySkullMask &) const
+    {
+      return false;
+    }
+ 
+    bool operator==(const ApplySkullMask & other) const
+    {
+      return !( *this != other );
+    }
+ 
+    inline TPixel operator()(const TPixel & A,
+                             const TPixel & B) const
+    {
+      if (A == 0 || B >= m_Thresh)
+        return (TPixel)0;
+      else
+        return (TPixel)1;
+    }
+
+  TPixel m_Thresh;
+};
+}
 
   outImage->DisconnectPipeline();
   return outImage;
@@ -439,6 +505,19 @@ int main(int argc, char *argv[])
     progressXML(0, "Unsupported image type. Returning...");
     return EXIT_FAILURE;
   }
+
+  InternalImageType::SizeType size_in = inImage->GetLargestPossibleRegion().GetSize();
+  InternalImageType::SpacingType spacing = inImage->GetSpacing();
+
+  InternalImageType::Pointer inMask = NULL;
+  if (!brainImageName.empty())
+  {
+    dims = itk::PeekAtImageDimension(brainImageName);
+    if (dims != 3 && dims != 4)
+    {
+      progressXML(0, "Unsupported image dimension " + std::to_string(dims) + ".");
+      return EXIT_FAILURE;
+    }
 
   InternalImageType::SizeType size_in = inImage->GetLargestPossibleRegion().GetSize();
   InternalImageType::SpacingType spacing = inImage->GetSpacing();
@@ -716,12 +795,13 @@ int main(int argc, char *argv[])
   InternalImageType::Pointer maxImage = vesselnessFilter->GetOutput();
   maxImage->DisconnectPipeline();
 
-  itk::ImageRegionIterator<InternalImageType> outimageIterator(maxImage, maxImage->GetLargestPossibleRegion());
 
   if (inMask.IsNotNull() && isCT)
   {
     progressXML(progresscounter, "Applying mask...");
     progresscounter += progress_unit;
+    itk::ImageRegionIterator<InternalImageType> outimageIterator(maxImage, maxImage->GetLargestPossibleRegion());
+
     itk::ImageRegionConstIterator<InternalImageType> maskIterator(inMask, maxImage->GetLargestPossibleRegion());
     itk::ImageRegionConstIterator<InternalImageType> inimageIterator(inImage, maxImage->GetLargestPossibleRegion());
     outimageIterator.GoToBegin();
@@ -783,6 +863,7 @@ int main(int argc, char *argv[])
     intensityfilter->SetIntensityImage(inImage);
     intensityfilter->SetVesselnessImage(maxImage);
     intensityfilter->SetFilterMode(static_cast<IntensityFilterType::FilterModeType>(2));
+    intensityfilter->SetOutputMaximum(maximumPixelValue);
     intensityfilter->Update();
     maxImage->DisconnectPipeline();
     maxImage = intensityfilter->GetOutput();

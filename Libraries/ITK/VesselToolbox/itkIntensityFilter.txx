@@ -20,6 +20,7 @@ IntensityFilter<TIntensityImage, TVesselImage>::IntensityFilter()
   this->m_Degree = 0.5;
   this->m_FilterMode = MULTIPLY;
   this->m_Threshold = 5.0;
+  this->m_OutputMaximum = static_cast<InternalPixelType>(std::numeric_limits<OutputPixelType>::max());
 }
 
 template< class TIntensityImage, class TVesselImage >
@@ -170,7 +171,7 @@ void IntensityFilter<TIntensityImage, TVesselImage>::GenerateData()
 
   typename InternalRescalerType::Pointer outrescaler = InternalRescalerType::New();
   outrescaler->SetInput( tmp_image );
-  outrescaler->SetOutputMaximum(static_cast<float>(std::numeric_limits<OutputPixelType>::max()));
+  outrescaler->SetOutputMaximum(m_OutputMaximum);
   outrescaler->SetOutputMinimum(0);
   outrescaler->Update();
 
