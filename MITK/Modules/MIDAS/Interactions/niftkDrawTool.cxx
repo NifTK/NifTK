@@ -47,6 +47,16 @@ namespace niftk
 const mitk::OperationType DrawTool::MIDAS_DRAW_TOOL_OP_ERASE_CONTOUR = 320422;
 const mitk::OperationType DrawTool::MIDAS_DRAW_TOOL_OP_CLEAN_CONTOUR = 320423;
 
+mitk::Color DrawTool::CONTOUR_COLOR;
+
+struct StaticInit
+{
+  StaticInit()
+  {
+    DrawTool::CONTOUR_COLOR.Set(102.0/255.0, 0.0, 153.0/255.0);
+  }
+} staticInit;
+
 //-----------------------------------------------------------------------------
 DrawTool::DrawTool()
   : ContourTool(),
@@ -163,8 +173,9 @@ bool DrawTool::StartDrawing(mitk::StateMachineAction* action, mitk::InteractionE
   this->ClearData();
 
   // Turn the feedback contours on, background contours off and default the colours.
-  FeedbackContourTool::SetFeedbackContourVisible(true);
-  FeedbackContourTool::SetFeedbackContourColorDefault();
+  this->SetFeedbackContourVisible(true);
+  this->SetFeedbackContourColor(CONTOUR_COLOR.GetRed(), CONTOUR_COLOR.GetGreen(), CONTOUR_COLOR.GetBlue());
+
   ContourTool::SetBackgroundContourVisible(false);
   ContourTool::SetBackgroundContourColorDefault();
 

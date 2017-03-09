@@ -442,9 +442,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   mitk::Color currentContoursColour;
   currentContoursColour.Set(0.0f, 1.0f, 0.0f);
   mitk::DataNode::Pointer currentContours = this->CreateContourSet(currentContoursColour, Tool::CONTOURS_NAME, true, 97);
-  mitk::Color drawContoursColour;
-  drawContoursColour.Set(102.0/255.0, 0.0, 153.0/255.0);
-  mitk::DataNode::Pointer drawContours = this->CreateContourSet(drawContoursColour, Tool::DRAW_CONTOURS_NAME, true, 98);
+  mitk::DataNode::Pointer drawContours = this->CreateContourSet(DrawTool::CONTOUR_COLOR, Tool::DRAW_CONTOURS_NAME, true, 98);
   mitk::Color nextContoursColour;
   nextContoursColour.Set(0.0f, 1.0f, 1.0f);
   mitk::DataNode::Pointer nextContoursNode = this->CreateContourSet(nextContoursColour, Tool::NEXT_CONTOURS_NAME, false, 95);
