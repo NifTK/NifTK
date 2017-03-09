@@ -557,8 +557,11 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 
   d->m_WasRestarted = isRestarting;
 
-  // Finally, select the new segmentation node.
-  this->GetView()->SetCurrentSelection(newSegmentation);
+  if (!isRestarting)
+  {
+    this->GetReferenceNode()->SetSelected(false);
+    newSegmentation->SetSelected(true);
+  } 
 }
 
 
@@ -1748,9 +1751,9 @@ void GeneralSegmentorController::OnOKButtonClicked()
   }
 
   // Set the colour to that which the user selected in the first place.
-  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(Tool::SEGMENTATION);
-  workingData->SetProperty("color", workingData->GetProperty("midas.tmp.selectedcolor"));
-  workingData->SetProperty("binaryimage.selectedcolor", workingData->GetProperty("midas.tmp.selectedcolor"));
+  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(Tool::SEGMENTATION);
+  segmentationNode->SetProperty("color", segmentationNode->GetProperty("midas.tmp.selectedcolor"));
+  segmentationNode->SetProperty("binaryimage.selectedcolor", segmentationNode->GetProperty("midas.tmp.selectedcolor"));
 
   /// Apply the thresholds if we are thresholding, and chunk out the contour segments that
   /// do not close any region with seed.
@@ -1759,7 +1762,6 @@ void GeneralSegmentorController::OnOKButtonClicked()
   this->DestroyPipeline();
   this->RemoveWorkingData();
   d->m_GUI->EnableSegmentationWidgets(false);
-  this->GetView()->SetCurrentSelection(workingData);
 
   this->RequestRenderWindowUpdate();
   mitk::UndoController::GetCurrentUndoModel()->Clear();
@@ -1839,7 +1841,7 @@ void GeneralSegmentorController::DiscardSegmentation()
     this->GetDataStorage()->Remove(segmentationNode);
   }
   d->m_GUI->EnableSegmentationWidgets(false);
-  this->SetReferenceImageSelected();
+  this->GetReferenceNode()->SetSelected(true);
   this->RequestRenderWindowUpdate();
   mitk::UndoController::GetCurrentUndoModel()->Clear();
 }

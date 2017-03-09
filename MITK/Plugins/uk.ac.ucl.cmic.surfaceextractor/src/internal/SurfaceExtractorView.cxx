@@ -602,8 +602,6 @@ void SurfaceExtractorView::CreateSurfaceNode()
 
   d->m_ReferenceNode->SetSelected(false);
   d->m_SurfaceNode->SetSelected(true);
-
-  this->SetCurrentSelection(d->m_SurfaceNode);
 }
 
 void SurfaceExtractorView::UpdateSurfaceNode()
