@@ -113,8 +113,8 @@ private:
   BrainMaskFromCTFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  static const InputPixelType  lowThresh_HU    = 600;
-  static const InputPixelType  lowThresh_noHU  = 1624;
+  const InputPixelType  lowThresh_HU    = 600;
+  const InputPixelType  lowThresh_noHU  = 1624;
 
   /** Scans an image to determine if it comes in Hounsfield units or nor **/
   void checkHounsfieldImage();

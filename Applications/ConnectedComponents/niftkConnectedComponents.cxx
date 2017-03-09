@@ -24,6 +24,7 @@
 #include <itkConnectedComponentImageFilter.h>
 #include <itkImageRegionIterator.h>
 #include <itkImageRegionConstIterator.h>
+#include <itkCommandLineHelper.h>
 
 /*!
  * \file niftkConnectedComponents.cxx
@@ -133,6 +134,13 @@ int main(int argc, char** argv)
   typedef itk::ImageFileWriter<InputImageType> ImageFileWriterType;
   typedef itk::ConnectedComponentImageFilter<InputImageType, OutputImageType> ConnectedComponentImageFilterType;
   
+  int dims = itk::PeekAtImageDimension(inputImageName);
+  if (dims != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   try
   {
     ImageFileReaderType::Pointer reader = ImageFileReaderType::New(); 

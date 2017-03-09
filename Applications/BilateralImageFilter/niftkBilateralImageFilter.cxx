@@ -23,11 +23,12 @@
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNifTKImageIOFactory.h>
+#include <itkCommandLineHelper.h>
 
 /*!
  * \file niftkBilateralImageFilter.cxx
  * \page niftkBilateralImageFilter
- * \section niftkBilateralImageFilterSummary Runs ITK BilateralImageFilter to do bilteral filter.
+ * \section niftkBilateralImageFilterSummary Runs ITK BilateralImageFilter on a 3D image to do bilteral filter.
  *
  * Runs ITK BilateralImageFilter to do bilteral filter. 
  * \li Dimensions: 3
@@ -100,6 +101,15 @@ int main(int argc, char* argv[])
   }
   
   const unsigned int Dimension = 3;
+  int dims = itk::PeekAtImageDimension(inputImageName);
+  // Define the dimension of the images
+
+  if (dims != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   typedef short PixelType;
   typedef itk::Image< PixelType, Dimension > ImageType;
   typedef itk::ImageFileReader< ImageType > ImageReaderType;

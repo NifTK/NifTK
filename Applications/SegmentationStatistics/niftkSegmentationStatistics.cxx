@@ -16,6 +16,7 @@
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
+#include <itkCommandLineHelper.h>
 #include <itkNifTKImageIOFactory.h>
 #include <itkBinaryThresholdImageFilter.h>
 #include <itkImageRegionConstIterator.h>
@@ -30,7 +31,7 @@ void Usage(char *name)
 {
   niftk::LogHelper::PrintCommandLineHeader(std::cout);
   std::cout << "  " << std::endl;
-  std::cout << "  Computes segmentation statistics between different segmentations. Initially based on Shattuck et. al. NeuroImage 45(2009) 431-439." << std::endl;
+  std::cout << "  Computes segmentation statistics between different 3D segmentations. Initially based on Shattuck et. al. NeuroImage 45(2009) 431-439." << std::endl;
   std::cout << "  " << std::endl;
   std::cout << "  " << name << " -si groundTruthSegmentedImage [options] segmentedExample1 segmentedExample2 ... segmentedExampleN" << std::endl;
   std::cout << "  " << std::endl;  
@@ -148,6 +149,11 @@ int main(int argc, char** argv)
       std::cerr << argv[0] << ":\tYou didn't specify an image to test" << std::endl;
       return EXIT_FAILURE;
     }
+
+  if (itk::PeekAtImageDimension(groundTruthSegmentedImageFileName) != Dimension
+    || itk::PeekAtImageDimension(exampleSegmentedImageFileName) != Dimension)
+  {
+  }
 
   typedef itk::Image< PixelType, Dimension > InputImageType;
   typedef itk::ImageFileReader< InputImageType >  ImageReaderType;

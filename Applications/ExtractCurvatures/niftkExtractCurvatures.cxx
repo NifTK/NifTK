@@ -188,7 +188,7 @@ int main(int argc, char** argv)
 
   if (dims != 2 && dims != 3)
     {
-      std::cout << "Unsuported image dimension" << std::endl;
+      std::cout << "Unsupported image dimension" << std::endl;
       return EXIT_FAILURE;
     }
 

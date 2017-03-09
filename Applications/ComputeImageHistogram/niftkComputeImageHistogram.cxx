@@ -18,6 +18,7 @@
 
 #include <niftkConversionUtils.h>
 #include <niftkCommandLineParser.h>
+#include <itkCommandLineHelper.h>
 
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -67,7 +68,8 @@ int main( int argc, char *argv[] )
 
 
   typedef float InputPixelType;
-  typedef itk::Image<InputPixelType, 3> InputImageType;
+  const unsigned int ImageDimension = 3;
+  typedef itk::Image<InputPixelType, ImageDimension> InputImageType;
 
   typedef itk::ImageFileReader< InputImageType > FileReaderType;
 
@@ -97,6 +99,12 @@ int main( int argc, char *argv[] )
 
   // Read the input image
   // ~~~~~~~~~~~~~~~~~~~~
+  int dims = itk::PeekAtImageDimension(fileInputImage);
+  if (dims != ImageDimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
 
   imageReader->SetFileName( fileInputImage.c_str() );
 

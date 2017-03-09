@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include <niftkLogHelper.h>
+#include <itkCommandLineHelper.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNifTKImageIOFactory.h>
@@ -74,7 +75,15 @@ int main(int argc, char* argv[])
   FixedImageReaderType::Pointer imageReader = FixedImageReaderType::New();
   FixedImageWriterType::Pointer writer = FixedImageWriterType::New(); 
 
-  imageReader->SetFileName(argv[1]); 
+  std::string inputFile = argv[1];
+  int dims = itk::PeekAtImageDimension(inputFile);
+  if (dims != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  imageReader->SetFileName(inputFile); 
   imageReader->Update(); 
   float confidence = atof(argv[2]); 
   float newConfidence = atof(argv[3]); 

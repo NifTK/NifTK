@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include <niftkConversionUtils.h>
+#include <itkCommandLineHelper.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -81,7 +82,7 @@ int main(int argc, char** argv)
       Usage(argv[0]);
       return EXIT_FAILURE;
     }
-  
+ 
   typedef itk::Image< PixelType, Dimension > InputImageType; 
   typedef itk::ImageRegistrationFactory<InputImageType, Dimension, ScalarType> FactoryType;
   typedef itk::DeformableTransform< InputImageType, double, 3, double > DoubleDeformableTransformType; 
@@ -90,6 +91,13 @@ int main(int argc, char** argv)
   
   FluidFloatDeformableTransformType::Pointer fluidDeformableTransform = FluidFloatDeformableTransformType::New(); 
   
+  int dims = itk::PeekAtImageDimension(imageName);
+  if (dims != Dimension)
+  {
+    std::cerr << "Unsupported image dimension." << std::endl;
+    return EXIT_FAILURE;
+  }
+
   try
   {
     std::cout << "Trying to load it as a deformation field." << std::endl;
