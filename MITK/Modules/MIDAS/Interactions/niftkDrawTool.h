@@ -49,6 +49,8 @@ public:
   mitkClassMacro(DrawTool, ContourTool)
   itkNewMacro(DrawTool)
 
+  static mitk::Color CONTOUR_COLOR;
+
   virtual void InitializeStateMachine() override;
 
   /// \brief Method to enable this class to interact with the Undo/Redo framework.

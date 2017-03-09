@@ -3170,11 +3170,11 @@ bool MultiWindowWidget::BlockUpdate(bool blocked)
         m_FocusHasChanged = false;
         if (m_IsFocused && m_ReferenceGeometry)
         {
+          emit WindowSelected();
           m_BlockFocusEvents = true;
           m_RenderWindows[m_SelectedWindowIndex]->setFocus();
           mitk::GlobalInteraction::GetInstance()->SetFocus(m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
           m_BlockFocusEvents = false;
-          emit WindowSelected();
         }
       }
 
