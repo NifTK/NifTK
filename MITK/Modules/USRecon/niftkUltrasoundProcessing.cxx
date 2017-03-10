@@ -31,10 +31,6 @@
 #include <vtkMath.h>
 #include <itkCastImageFilter.h>
 
-#ifndef TOLERANCE
-#define TOLERANCE
-#define TINY_NUMBER 0.000001
-#endif
 
 namespace niftk
 {
@@ -611,6 +607,12 @@ void DoUltrasoundReconstructionFor1Slice(InputImageType::Pointer itk2D,
 
   for (inputIter.GoToBegin(); !inputIter.IsAtEnd(); ++inputIter)
   {
+    InputPixelType pixelValue = inputIter.Get();
+    if (pixelValue == 0)
+    {
+      continue; // Ignore black areas
+    }
+
     InputImageType::IndexType idx2D = inputIter.GetIndex();
     OutputImageType::IndexType idx3D;
 
@@ -619,8 +621,6 @@ void DoUltrasoundReconstructionFor1Slice(InputImageType::Pointer itk2D,
     itk2D->TransformIndexToPhysicalPoint(idx2D, pt);
     itk3D->TransformPhysicalPointToIndex(pt, idx3D);
 
-
-    InputPixelType pixelValue = inputIter.Get();
     OutputPixelType voxelValue = itk3D->GetPixel(idx3D);
 
     OutputPixelType currentWeight = accumulator->GetPixel(idx3D);
@@ -916,34 +916,11 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   return resultImage;
 }
 
-void LoadTrackingMatrix(std::string trackingFileName, vtkMatrix4x4& trackingMatrix)
-{
-  fstream fp(trackingFileName, ios::in);
-
-  if (!fp)
-  {
-    std::ostringstream errorMessage;
-    errorMessage << "Can not read " << trackingFileName << std::endl;
-    mitkThrow() << errorMessage.str();
-  }
-
-  for (int i = 0; i < 4; i++)
-  {
-    for (int j = 0; j < 4; j++)
-    {
-      fp >> trackingMatrix.Element[i][j];
-    }
-  }
-
-  fp.close();
-
-  return;
-}
 
 //-----------------------------------------------------------------------------
 TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imageDir,
                                                          const std::string& trackingDir
-                                                        )
+                                                         )
 {
   TrackedImageData outputData;
 
@@ -970,47 +947,54 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
     mitkThrow() << errorMessage.str();
   }
 
-  // Load transformations and convert to quaternions like in niftkUltrasoundReconstruction.cxx
-  std::vector<vtkSmartPointer<vtkMatrix4x4>> matrices;
+  // Load tracking data and if of matrix type, convert to quaternions
+  
+  std::vector<RotationTranslation> trackingQuaternions;
+
   for (int i = 0; i < trackingFiles.size(); i++)
   {
-      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-      trackingMatrix->Identity();// Is this necessary???
-      LoadTrackingMatrix(trackingFiles[i], *trackingMatrix);
-      matrices.push_back(trackingMatrix);
-  }
-
-  if (trackingFiles.size() != matrices.size())
-  {
-    std::ostringstream errorMessage;
-    errorMessage << "Retrieved " << trackingFiles.size() << " file names for tracking matrices, but could only load " << matrices.size() << " tracking matrices!" << std::endl;
-    mitkThrow() << errorMessage.str();
-  }
-
-  if (trackingFiles.size() < imageFiles.size())
-  {
-    std::ostringstream errorMessage;
-    errorMessage << "Loaded " << trackingFiles.size() << " matrices, and loaded a difference number of images " << images.size() << ", and number of images must be less than number of matrices." << std::endl;
-    mitkThrow() << errorMessage.str();
-  }
- 
-  // Making image/tracking matrix pairs
-  for (int i = 0; i < imageFiles.size(); i++)
-  {
-    TrackedImage oneTrackedImage;
-    oneTrackedImage.first = images[i];
-
-    //Convert to quaternions???
+    RotationTranslation oneRotationTranslationPair;
     mitk::Point4D rotation;
     mitk::Vector3D translation;
 
-    niftk::ConvertMatrixToRotationAndTranslation(*(matrices[i]), rotation, translation);
+    std::size_t found = trackingFiles[i].find_last_of(".");
+    std::string ext = trackingFiles[i].substr(found+1);
 
-    RotationTranslation oneRotationTranslationPair;
+    if (( ext == "txt") || ( ext == "4x4"))
+    {
+      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(trackingFiles[i]);
+
+      //Convert to quaternions
+      niftk::ConvertMatrixToRotationAndTranslation(*trackingMatrix, rotation, translation);
+    }
+
     oneRotationTranslationPair.first = rotation;
     oneRotationTranslationPair.second = translation;
 
-    oneTrackedImage.second = oneRotationTranslationPair;
+    trackingQuaternions.push_back(oneRotationTranslationPair);
+  }
+
+  if (trackingFiles.size() != trackingQuaternions.size())
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Retrieved " << trackingFiles.size() << " file names for tracking data, but could only load " << trackingQuaternions.size() << " tracking data!" << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  if (trackingQuaternions.size() < images.size())
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Loaded " << trackingQuaternions.size() << " tracking data, and loaded a difference number of images " << images.size() << ", and number of images must be less than number of tracking data." << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+ 
+  // Making image/tracking quaternion pairs
+  for (int i = 0; i < images.size(); i++)
+  {
+    TrackedImage oneTrackedImage;
+
+    oneTrackedImage.first = images[i];
+    oneTrackedImage.second = trackingQuaternions[i];
 
     outputData.push_back(oneTrackedImage);
   }

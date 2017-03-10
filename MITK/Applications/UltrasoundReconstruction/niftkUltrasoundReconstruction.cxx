@@ -12,6 +12,8 @@
 
 =============================================================================*/
 
+#include <niftkUltrasoundReconstructionCLP.h>
+#include <niftkUltrasoundProcessing.h>
 #include <mitkVector.h>
 #include <mitkExceptionMacro.h>
 #include <mitkIOUtil.h>
@@ -19,8 +21,6 @@
 #include <vtkMatrix4x4.h>
 #include <niftkMITKMathsUtils.h>
 #include <niftkFileIOUtils.h>
-#include <niftkUltrasoundProcessing.h>
-#include <niftkUltrasoundReconstructionCLP.h>
 
 int main(int argc, char** argv)
 {

@@ -20,6 +20,17 @@
 #include <mitkVector.h>
 #include <mitkPoint.h>
 
+#ifndef TRACKING_DATA_TYPE
+#define TRACKING_DATA_TYPE
+#define MATRICES 0
+#define QUATERNIONS 1
+#endif
+
+#ifndef TOLERANCE
+#define TOLERANCE
+#define TINY_NUMBER 0.000001
+#endif
+
 namespace niftk
 {
 

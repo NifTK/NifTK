@@ -11,6 +11,8 @@
   See LICENSE.txt in the top level directory for details.
 
 =============================================================================*/
+#include <niftkUltrasoundBallCalibrationCLP.h>
+#include <niftkUltrasoundProcessing.h>
 #include <mitkPoint.h>
 #include <mitkVector.h>
 #include <mitkExceptionMacro.h>
@@ -18,8 +20,6 @@
 #include <niftkFileIOUtils.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
-#include <niftkUltrasoundProcessing.h>
-#include <niftkUltrasoundBallCalibrationCLP.h>
 
 int main(int argc, char** argv)
 {
