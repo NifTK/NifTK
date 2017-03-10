@@ -978,7 +978,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
-  else if (m_CalibrationPattern == CONTOUR_MATCHING_NON_COPLANAR_CIRCLES)
+  else if (m_CalibrationPattern == TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
     cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 10.0, m_TemplateImage.rows / 10.0);
@@ -1103,7 +1103,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         m_ImagesForWarping[imageIndex].back().first.get())->SetImage(&(m_ImagesForWarping[imageIndex].back().second));
     }
   }
-  else if (m_CalibrationPattern == CONTOUR_MATCHING_NON_COPLANAR_RINGS)
+  else if (m_CalibrationPattern == TEMPLATE_MATCHING_NON_COPLANAR_RINGS)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
     cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 10.0, m_TemplateImage.rows / 10.0);
@@ -1617,10 +1617,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     {
       m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, false);
     }
-    else
-    {
-      m_HandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, false);
-    }
+    m_HandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, false);
     m_HandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0, false);
     if (m_ImageNode[1].IsNull())
     {
@@ -1635,10 +1632,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
       {
         m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);
       }
-      else
-      {
-        m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, false);
-      }
+      m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, false);
       m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, false);
       DoFullExtrinsicHandEyeInStereo(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
                                      m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC],
@@ -1655,10 +1649,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
       {
         m_ReferenceHandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, true);
       }
-      else
-      {
-        m_ReferenceHandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, true);
-      }
+      m_ReferenceHandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, true);
       m_ReferenceHandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0, true);
       if (m_ImageNode[1].IsNull())
       {
@@ -1673,10 +1664,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
         {
           m_ReferenceHandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, true);
         }
-        else
-        {
-          m_ReferenceHandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, true);
-        }
+        m_ReferenceHandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, true);
         m_ReferenceHandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, true);
 
         DoFullExtrinsicHandEyeInStereo(m_ReferenceHandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
