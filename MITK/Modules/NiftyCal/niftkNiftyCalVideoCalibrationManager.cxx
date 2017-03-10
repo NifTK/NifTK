@@ -722,22 +722,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   scaleFactors.x = m_ScaleFactorX;
   scaleFactors.y = m_ScaleFactorY;
 
-  // If we scale up using scaleFactors, (e.g. with 1920x540, we
-  // scale up to 1920x1080 using scaleFactors.x=1, scaleFactors.2)
-  // then once points are extracted, we normally scale
-  // the points down by the same amount. This is so that the calibration
-  // works with the original image. Also, this in effect means
-  // that the video images we are using have pixel dimensions (1,2)
-  // (for an example see the NVidiaSDI data source).
-  // However, Tsai's method must be done at isotropic resolution,
-  // due to the radial alignment constraint, so pixels must be
-  // isotropic in the x and y direction.
-
   bool doRescaleAfterPointExtraction = true;
-  if (m_NumberOfSnapshotsForCalibrating == 1) // i.e. must be doing Tsai.
-  {
-    doRescaleAfterPointExtraction = false;
-  }
 
   cv::Mat copyOfImage1 = image.clone(); // Remember OpenCV reference counting.
   cv::Mat copyOfImage2 = image.clone(); // Remember OpenCV reference counting.
