@@ -54,6 +54,9 @@ public:
   /// \brief Enable the checkbox that controls all the thresholding widgets.
   void SetThresholdingCheckBoxEnabled(bool enabled);
 
+  /// \brief Sets a tooltip for the checkbox that controls all the thresholding widgets.
+  void SetThresholdingCheckBoxToolTip(const QString& toolTip);
+
   /// \brief Turns thresholding widgets on/off
   void SetThresholdingWidgetsEnabled(bool enabled);
 

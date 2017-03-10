@@ -43,7 +43,7 @@ namespace niftk
 
 class GeneralSegmentorControllerPrivate
 {
-  Q_DECLARE_PUBLIC(GeneralSegmentorController);
+  Q_DECLARE_PUBLIC(GeneralSegmentorController)
 
   GeneralSegmentorController* const q_ptr;
 
@@ -537,10 +537,21 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 
   this->StoreInitialSegmentation();
 
+  int referenceImagePixelComponents = referenceImage->GetPixelType().GetNumberOfComponents();
+
   // Setup GUI.
   d->m_GUI->SetAllWidgetsEnabled(true);
   d->m_GUI->SetThresholdingWidgetsEnabled(false);
-  d->m_GUI->SetThresholdingCheckBoxEnabled(true);
+  if (referenceImagePixelComponents == 1)
+  {
+    d->m_GUI->SetThresholdingCheckBoxEnabled(true);
+    d->m_GUI->SetThresholdingCheckBoxToolTip("Tick this in if you want to apply thresholding within the current regions.");
+  }
+  else
+  {
+    d->m_GUI->SetThresholdingCheckBoxEnabled(false);
+    d->m_GUI->SetThresholdingCheckBoxToolTip("Thresholding is not supported for RGB images.");
+  }
   d->m_GUI->SetThresholdingCheckBoxChecked(false);
 
   this->GetView()->FocusOnCurrentWindow();

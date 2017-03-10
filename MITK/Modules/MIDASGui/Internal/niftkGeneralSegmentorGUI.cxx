@@ -91,6 +91,13 @@ void GeneralSegmentorGUI::SetThresholdingCheckBoxEnabled(bool enabled)
 
 
 //-----------------------------------------------------------------------------
+void GeneralSegmentorGUI::SetThresholdingCheckBoxToolTip(const QString& toolTip)
+{
+  m_ThresholdingCheckBox->setToolTip(toolTip);
+}
+
+
+//-----------------------------------------------------------------------------
 void GeneralSegmentorGUI::SetThresholdingWidgetsEnabled(bool enabled)
 {
   m_ThresholdingGroupBox->setEnabled(enabled);
