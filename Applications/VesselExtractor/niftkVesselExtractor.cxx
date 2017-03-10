@@ -425,6 +425,7 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
+
   switch (itk::PeekAtComponentType(inputImageName))
   {
     case itk::ImageIOBase::CHAR:
@@ -691,13 +692,14 @@ int main(int argc, char *argv[])
     }
   }
 
+  typedef itk::StatisticsImageFilter<InternalImageType> ImageStatisticsFilter;
+
   bool negImage = false;
   if (isCT)
   {
     progressXML(progresscounter, "Indentifying if the image is in Hounsfield Units...");
     progresscounter += progress_unit;
 
-    typedef itk::StatisticsImageFilter<InternalImageType> ImageStatisticsFilter;
     ImageStatisticsFilter::Pointer statisticsFilter = ImageStatisticsFilter::New();
     statisticsFilter->SetInput(inImage);
     statisticsFilter->Update();
@@ -835,6 +837,10 @@ int main(int argc, char *argv[])
 
   if (doIntensity)
   {
+    ImageStatisticsFilter::Pointer statisticsFilter = ImageStatisticsFilter::New();
+    statisticsFilter->SetInput(maxImage);
+    statisticsFilter->Update();
+
     progressXML(progresscounter, "Intensity filtering...");
     progresscounter += progress_unit;
 
@@ -843,7 +849,7 @@ int main(int argc, char *argv[])
     intensityfilter->SetIntensityImage(inImage);
     intensityfilter->SetVesselnessImage(maxImage);
     intensityfilter->SetFilterMode(static_cast<IntensityFilterType::FilterModeType>(2));
-    intensityfilter->SetOutputMaximum(maximumPixelValue);
+    intensityfilter->SetOutputMaximum(statisticsFilter->GetMaximum());
     intensityfilter->Update();
 
     maxImage->DisconnectPipeline();
