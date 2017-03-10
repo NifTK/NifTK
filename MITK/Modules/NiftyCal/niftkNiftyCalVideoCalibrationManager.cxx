@@ -1676,28 +1676,29 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     } // end if we have a reference matrix.
 
     // Compute a model to world for visualisation purposes.
-    std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
-    if (!cameraMatrices.empty())
+    m_ModelToWorld = m_ModelToTracker; // To do. Fix naming.
+    if (m_TrackingMatrices.size() > 1)
     {
-      std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
-
-      int handEyeMethod = m_HandeyeMethod;
-      if (m_TrackingMatrices.size() == 1 && m_HandeyeMethod == TSAI_1989)
+      std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
+      if (!cameraMatrices.empty())
       {
-        handEyeMethod = SHAHIDI_2002;
-      }
+        std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
+        m_ModelToWorld = niftk::CalculateAverageModelToWorld(
+              m_HandEyeMatrices[0][m_HandeyeMethod],
+              trackingMatrices,
+              cameraMatrices
+              );
 
-      m_ModelToWorld = niftk::CalculateAverageModelToWorld(
-            m_HandEyeMatrices[0][m_HandeyeMethod],
-            trackingMatrices,
-            cameraMatrices
-            );
+      }
     }
 
   } // end if we have tracking data.
 
   // Sets properties on images, and updates visualised points.
   this->UpdateDisplayNodes();
+
+  // Call this at least once, it will also be called by IGIUPDATE.
+  this->UpdateCameraToWorldPosition();
 
   MITK_INFO << "Calibrating - DONE.";
   return rms;
