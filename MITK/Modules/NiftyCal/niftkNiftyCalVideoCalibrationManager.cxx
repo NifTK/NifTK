@@ -517,9 +517,6 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex, bool 
       residual
       );
 
-  std::cout << "Tsai 1989, linear hand-eye: rot=" << residual(0, 0)
-            << ", trans=" << residual(1, 0) << std::endl;
-
   return handEye;
 }
 
@@ -609,8 +606,8 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool
   cv::Mat intrinsic = m_Intrinsic[imageIndex].clone();
   cv::Mat distortion = m_Distortion[imageIndex].clone();
 
-  cv::Matx44d handEye = this->GetInitialModelToWorld();
-  cv::Matx44d modelToWorld = this->GetInitialHandEye(imageIndex, useReference);
+  cv::Matx44d handEye = this->GetInitialHandEye(imageIndex, useReference);
+  cv::Matx44d modelToWorld = this->GetInitialModelToWorld();
 
   niftk::CalculateHandEyeUsingMaltisMethod(m_ModelPoints,
                                            m_Points[imageIndex],
@@ -621,11 +618,6 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool
                                            modelToWorld,
                                            reprojectionRMS
                                           );
-
-  // Store optimised result
-  m_HandEyeMatrices[imageIndex][MALTI_2013] = handEye;
-
-  std::cout << "Malti 2013, non-linear hand-eye: rms=" << reprojectionRMS << std::endl;
 
   return handEye;
 }
@@ -638,8 +630,8 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageInd
 
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
-  cv::Matx44d handEye = this->GetInitialModelToWorld();
-  cv::Matx44d modelToWorld = this->GetInitialHandEye(imageIndex, useReference);
+  cv::Matx44d handEye = this->GetInitialHandEye(imageIndex, useReference);
+  cv::Matx44d modelToWorld = this->GetInitialModelToWorld();
 
   niftk::CalculateHandEyeByOptimisingAllExtrinsic(m_ModelPoints,
                                                   m_Points[imageIndex],
@@ -650,9 +642,6 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageInd
                                                   modelToWorld,
                                                   reprojectionRMS
                                                  );
-
-  std::cout << "Malti 2013, non-linear hand-eye, but with full extrinsic: "
-            << "rms=" << reprojectionRMS << std::endl;
 
   return handEye;
 }
@@ -671,8 +660,8 @@ void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d
   cv::Matx44d stereoExtrinsics = niftk::RotationAndTranslationToMatrix(
         m_LeftToRightRotationMatrix, m_LeftToRightTranslationVector);
 
-  cv::Matx44d handEye = this->GetInitialModelToWorld();
-  cv::Matx44d modelToWorld = this->GetInitialHandEye(0, useReference);
+  cv::Matx44d handEye = this->GetInitialHandEye(0, useReference);
+  cv::Matx44d modelToWorld = this->GetInitialModelToWorld();
 
   niftk::CalculateHandEyeInStereoByOptimisingAllExtrinsic(m_ModelPoints,
                                                           m_Points[0],
