@@ -1562,7 +1562,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
         m_Tvecs[1].clear();
 
         m_Rvecs[1].push_back(rvecRight);
-        m_Tvecs[2].push_back(tvecRight);
+        m_Tvecs[1].push_back(tvecRight);
       }
       else
       {
@@ -1631,10 +1631,15 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     {
       // Don't change the order of these.
       // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
-      m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);
-      m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, false);
+      if (m_TrackingMatrices.size() > 1)
+      {
+        m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);
+      }
+      else
+      {
+        m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, false);
+      }
       m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, false);
-
       DoFullExtrinsicHandEyeInStereo(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
                                      m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC],
                                      false
