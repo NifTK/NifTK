@@ -36,8 +36,6 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_OutputImage = NULL;
   m_ExtractGreyRegionOfInterestFilter = ExtractGreySliceFromGreyImageFilterType::New();
   m_ExtractBinaryRegionOfInterestFilter = ExtractBinarySliceFromBinaryImageFilterType::New();
-  m_CastToSegmentationContourFilter = CastGreySliceToSegmentationSliceFilterType::New();
-  m_CastToManualContourFilter = CastGreySliceToSegmentationSliceFilterType::New();
   m_RegionGrowingFilter = MIDASRegionGrowingFilterType::New();
   m_RegionGrowingFilter->SetBackgroundValue(0);
   m_RegionGrowingFilter->SetForegroundValue(1);
@@ -107,18 +105,25 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     // 4. Update the pipeline so far to get output slice that we can draw onto.
     m_ExtractGreyRegionOfInterestFilter->SetExtractionRegion(region3D);
     m_ExtractGreyRegionOfInterestFilter->UpdateLargestPossibleRegion();
+    typename GreyScaleImageType::Pointer greyScaleImageSlice = m_ExtractGreyRegionOfInterestFilter->GetOutput();
 
     m_ExtractBinaryRegionOfInterestFilter->SetExtractionRegion(region3D);
     m_ExtractBinaryRegionOfInterestFilter->UpdateLargestPossibleRegion();   
     typename SegmentationImageType::Pointer segmentationImage = m_ExtractBinaryRegionOfInterestFilter->GetOutput();
 
-    m_CastToSegmentationContourFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
-    m_CastToSegmentationContourFilter->UpdateLargestPossibleRegion();
-    typename SegmentationImageType::Pointer segmentationContourImage = m_CastToSegmentationContourFilter->GetOutput();
+    typename SegmentationImageType::Pointer segmentationContourImage = SegmentationImageType::New();
+    segmentationContourImage->SetRegions(greyScaleImageSlice->GetLargestPossibleRegion());
+    segmentationContourImage->SetOrigin(greyScaleImageSlice->GetOrigin());
+    segmentationContourImage->SetSpacing(greyScaleImageSlice->GetSpacing());
+    segmentationContourImage->SetDirection(greyScaleImageSlice->GetDirection());
+    segmentationContourImage->Allocate();
 
-    m_CastToManualContourFilter->SetInput(m_ExtractGreyRegionOfInterestFilter->GetOutput());
-    m_CastToManualContourFilter->UpdateLargestPossibleRegion();
-    typename SegmentationImageType::Pointer manualContourImage = m_CastToManualContourFilter->GetOutput();
+    typename SegmentationImageType::Pointer manualContourImage = SegmentationImageType::New();
+    manualContourImage->SetRegions(greyScaleImageSlice->GetLargestPossibleRegion());
+    manualContourImage->SetOrigin(greyScaleImageSlice->GetOrigin());
+    manualContourImage->SetSpacing(greyScaleImageSlice->GetSpacing());
+    manualContourImage->SetDirection(greyScaleImageSlice->GetDirection());
+    manualContourImage->Allocate();
 
     // 5. Declare some variables.
     RegionType paintingRegion;
@@ -500,8 +505,6 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
   m_ExtractGreyRegionOfInterestFilter->SetInput(NULL);
   m_ExtractBinaryRegionOfInterestFilter->SetInput(NULL);
 
-  m_CastToSegmentationContourFilter->SetInput(NULL);
-  m_CastToManualContourFilter->SetInput(NULL);
   m_RegionGrowingFilter->SetInput(NULL);
   m_RegionGrowingFilter->SetSegmentationContourImage(NULL);
   m_RegionGrowingFilter->SetManualContourImage(NULL);

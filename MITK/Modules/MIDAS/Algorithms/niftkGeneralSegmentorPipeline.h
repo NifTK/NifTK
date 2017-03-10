@@ -17,7 +17,6 @@
 
 #include "niftkMIDASExports.h"
 
-#include <itkCastImageFilter.h>
 #include <itkContinuousIndex.h>
 #include <itkExtractImageFilter.h>
 #include <itkImage.h>
@@ -252,8 +251,6 @@ public:
                                   SegmentationImageType>                   ExtractBinarySliceFromBinaryImageFilterType;
   typedef typename ExtractBinarySliceFromBinaryImageFilterType::Pointer    ExtractBinarySliceFromBinaryImageFilterPointer;
 
-  typedef itk::CastImageFilter<GreyScaleImageType, SegmentationImageType>  CastGreySliceToSegmentationSliceFilterType;
-  typedef typename CastGreySliceToSegmentationSliceFilterType::Pointer     CastGreySliceToSegmentationSliceFilterPointer;
   typedef itk::MIDASRegionGrowingImageFilter<GreyScaleImageType,
                                              SegmentationImageType,
                                              itk::PointSet<float, 3> >     MIDASRegionGrowingFilterType;
@@ -303,8 +300,6 @@ public:
   // The main filters.
   ExtractGreySliceFromGreyImageFilterPointer     m_ExtractGreyRegionOfInterestFilter;
   ExtractBinarySliceFromBinaryImageFilterPointer m_ExtractBinaryRegionOfInterestFilter;
-  CastGreySliceToSegmentationSliceFilterPointer  m_CastToSegmentationContourFilter;
-  CastGreySliceToSegmentationSliceFilterPointer  m_CastToManualContourFilter;
   MIDASRegionGrowingFilterPointer                m_RegionGrowingFilter;
   SegmentationImageType*                         m_OutputImage;
 };
