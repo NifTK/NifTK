@@ -152,23 +152,30 @@ int GetThroughPlaneAxis(const mitk::Image* image, ImageOrientation orientation)
   int result = -1;
 
   itk::Orientation itkOrientation = GetItkOrientation(orientation);
-  if (image != NULL && itkOrientation != itk::ORIENTATION_UNKNOWN)
+  if (image && itkOrientation != itk::ORIENTATION_UNKNOWN)
   {
-    try
+    int dimensions = image->GetDimension();
+    if (dimensions == 3)
     {
-      int dimensions = image->GetDimension();
-      switch(dimensions)
+      try
       {
-      case 3:
-        AccessFixedDimensionByItk_n(image, itk::GetAxisFromITKImage, 3, (itkOrientation, result));
-        break;
-      default:
-        MITK_ERROR << "During GetThroughPlaneAxis, unsupported number of dimensions:" << dimensions << std::endl;
+        // We need to support RGB images as well, not just scalar types.
+        AccessFixedTypeByItk_n(
+              image,
+              itk::GetAxisFromITKImage,
+              MITK_ACCESSBYITK_PIXEL_TYPES_SEQ MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+              (3),
+              (itkOrientation, result)
+        );
+      }
+      catch (const mitk::AccessByItkException &e)
+      {
+        MITK_ERROR << "GetThroughPlaneAxis: AccessFixedDimensionByItk_n failed to calculate up direction due to " << e.what() << std::endl;
       }
     }
-    catch (const mitk::AccessByItkException &e)
+    else
     {
-      MITK_ERROR << "GetThroughPlaneAxis: AccessFixedDimensionByItk_n failed to calculate up direction due to." << e.what() << std::endl;
+      MITK_ERROR << "During GetThroughPlaneAxis, unsupported number of dimensions: " << dimensions << std::endl;
     }
   }
   return result;
