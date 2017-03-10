@@ -1549,21 +1549,43 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
   {
     try
     {
-      AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-        ITKSliceDoesHaveUnenclosedSeeds, 3,
-          (seeds,
-           segmentationContours,
-           polyToolContours,
-           drawToolContours,
-           segmentationImage,
-           lowerThreshold,
-           upperThreshold,
-           thresholdOn,
-           sliceAxis,
-           sliceIndex,
-           sliceDoesHaveUnenclosedSeeds
-          )
-      );
+      if (referenceImage->GetPixelType().GetNumberOfComponents() == 1)
+      {
+        // The reference image is the grey scale (read only).
+        AccessFixedDimensionByItk_n(referenceImage,
+          ITKSliceDoesHaveUnenclosedSeeds, 3,
+            (seeds,
+             segmentationContours,
+             polyToolContours,
+             drawToolContours,
+             segmentationImage,
+             lowerThreshold,
+             upperThreshold,
+             thresholdOn,
+             sliceAxis,
+             sliceIndex,
+             sliceDoesHaveUnenclosedSeeds
+            )
+        );
+      }
+      else
+      {
+        // The reference image is RGB (read only).
+        AccessFixedTypeByItk_n(
+              referenceImage,
+              ITKSliceDoesHaveUnenclosedSeedsNoThresholds,
+              MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+              (3),
+              (seeds,
+               segmentationContours,
+               polyToolContours,
+               drawToolContours,
+               segmentationImage,
+               sliceAxis,
+               sliceIndex,
+               sliceDoesHaveUnenclosedSeeds)
+              );
+      }
     }
     catch(const mitk::AccessByItkException& e)
     {

@@ -1400,6 +1400,63 @@ void ITKSliceDoesHaveUnenclosedSeeds(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+void ITKSliceDoesHaveUnenclosedSeedsNoThresholds(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* polyToolContours,
+    mitk::ContourModelSet* drawToolContours,
+    const mitk::Image* workingImage,
+    int sliceAxis,
+    int sliceIndex,
+    bool& sliceDoesHaveUnenclosedSeeds
+    )
+{
+  sliceDoesHaveUnenclosedSeeds = false;
+
+  // Note input image should be 3D grey scale.
+  typedef itk::Image<TPixel, VImageDimension> GreyScaleImageType;
+  typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, VImageDimension> BinaryImageType;
+  typedef mitk::ImageToItk< BinaryImageType > ImageToItkType;
+
+  typename ImageToItkType::Pointer workingImageToItk = ImageToItkType::New();
+  workingImageToItk->SetInput(workingImage);
+  workingImageToItk->Update();
+
+  // Filter seeds to only use ones on current slice.
+  mitk::PointSet::Pointer seedsForThisSlice = mitk::PointSet::New();
+  ITKFilterSeedsToCurrentSlice(itkImage, seeds, sliceAxis, sliceIndex, seedsForThisSlice);
+
+  GeneralSegmentorPipelineParams params;
+  params.m_SliceIndex = sliceIndex;
+  params.m_SliceAxis = sliceAxis;
+  params.m_Seeds = seedsForThisSlice;
+  params.m_SegmentationContours = segmentationContours;
+  params.m_PolyContours = polyToolContours;
+  params.m_DrawContours = drawToolContours;
+  params.m_EraseFullSlice = false;
+
+  params.m_LowerThreshold = 0;
+  params.m_UpperThreshold = 0;
+
+  GeneralSegmentorPipeline<TPixel, VImageDimension> pipeline;
+  pipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
+  pipeline.SetParam(itkImage, workingImageToItk->GetOutput(), params);
+  pipeline.Update(params);
+
+  // To make sure we release all smart pointers.
+  pipeline.DisconnectPipeline();
+  workingImageToItk = NULL;
+
+  // Check the output, to see if we have seeds inside non-enclosing green contours.
+  sliceDoesHaveUnenclosedSeeds = ITKImageHasNonZeroEdgePixels<
+      mitk::Tool::DefaultSegmentationDataType, VImageDimension>
+      (pipeline.m_RegionGrowingFilter->GetOutput());
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void ITKFilterContours(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::Image* workingImage,

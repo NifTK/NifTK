@@ -371,6 +371,28 @@ void ITKSliceDoesHaveUnenclosedSeeds(
     bool& sliceDoesHaveUnenclosedSeeds
     );
 
+/// \brief Will return true if slice has unenclosed seeds, and false otherwise.
+///
+/// This works by region growing. We create a local GeneralSegmentorPipeline
+/// and perform region growing, and then check if the region has his the edge
+/// of the image. If the region growing hits the edge of the image, then the seeds
+/// must have been un-enclosed, and true is returned, and false otherwise.
+///
+/// Similar to the overloaded version but it does not apply thresholding so that
+/// it can be applied for RGB images as well.
+template<typename TPixel, unsigned int VImageDimension>
+void ITKSliceDoesHaveUnenclosedSeedsNoThresholds(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* polyToolContours,
+    mitk::ContourModelSet* drawToolContours,
+    const mitk::Image* workingImage,
+    int sliceAxis,
+    int sliceIndex,
+    bool& sliceDoesHaveUnenclosedSeeds
+    );
+
 /// \brief Extracts a new contour set, for doing "Clean" operation.
 ///
 /// This method creates a local GeneralSegmentorPipeline pipeline for region
