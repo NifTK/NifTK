@@ -1681,6 +1681,12 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     {
       std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
 
+      int handEyeMethod = m_HandeyeMethod;
+      if (m_TrackingMatrices.size() == 1 && m_HandeyeMethod == TSAI_1989)
+      {
+        handEyeMethod = SHAHIDI_2002;
+      }
+
       m_ModelToWorld = niftk::CalculateAverageModelToWorld(
             m_HandEyeMatrices[0][m_HandeyeMethod],
             trackingMatrices,
