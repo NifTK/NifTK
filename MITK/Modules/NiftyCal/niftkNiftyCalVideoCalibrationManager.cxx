@@ -1660,22 +1660,32 @@ double NiftyCalVideoCalibrationManager::Calibrate()
       } // end if we are in stereo
     } // end if we have a reference matrix.
 
-    // Compute a model to world for visualisation purposes.
     m_ModelToWorld = m_ModelToTracker; // To do. Fix naming.
-    if (m_TrackingMatrices.size() > 1)
+
+    // Compute a model to world for visualisation purposes.
+    std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
+    if (!cameraMatrices.empty())
     {
-      std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
-      if (!cameraMatrices.empty())
+      std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
+
+      if (m_TrackingMatrices.size() > 1)
       {
-        std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
         m_ModelToWorld = niftk::CalculateAverageModelToWorld(
               m_HandEyeMatrices[0][m_HandeyeMethod],
               trackingMatrices,
               cameraMatrices
               );
-
+      }
+      else
+      {
+        m_ModelToWorld = niftk::CalculateAverageModelToWorld(
+              m_HandEyeMatrices[0][SHAHIDI_2002],
+              trackingMatrices,
+              cameraMatrices
+              );
       }
     }
+
 
   } // end if we have tracking data.
 
