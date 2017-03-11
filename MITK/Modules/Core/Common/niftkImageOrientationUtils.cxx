@@ -131,7 +131,13 @@ int GetUpDirection(const mitk::Image* image, ImageOrientation orientation)
       switch(dimensions)
       {
       case 3:
-        AccessFixedDimensionByItk_n(image, itk::GetUpDirectionFromITKImage, 3, (itkOrientation, result));
+        AccessFixedTypeByItk_n(
+              image,
+              itk::GetUpDirectionFromITKImage,
+              MITK_ACCESSBYITK_PIXEL_TYPES_SEQ MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+              (3),
+              (itkOrientation, result)
+        );
         break;
       default:
         MITK_ERROR << "During GetUpDirection, unsupported number of dimensions:" << dimensions << std::endl;
