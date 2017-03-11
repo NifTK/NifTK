@@ -102,7 +102,7 @@ private:
 
   bool RunGrab();
   void Calibrate();
-  double RunCalibration();
+  std::string RunCalibration();
 
   void SetButtonsEnabled(bool isEnabled);
 
@@ -120,8 +120,8 @@ private:
   niftk::NiftyCalVideoCalibrationManager::Pointer  m_Manager;
   QFuture<bool>                                    m_BackgroundGrabProcess;
   QFutureWatcher<bool>                             m_BackgroundGrabProcessWatcher;
-  QFuture<double>                                  m_BackgroundCalibrateProcess;
-  QFutureWatcher<double>                           m_BackgroundCalibrateProcessWatcher;
+  QFuture<std::string>                             m_BackgroundCalibrateProcess;
+  QFutureWatcher<std::string>                      m_BackgroundCalibrateProcessWatcher;
 };
 
 } // end namespace

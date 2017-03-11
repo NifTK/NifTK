@@ -175,9 +175,9 @@ public:
    * This can be mono, stereo, iterative and include hand-eye,
    * depending on the configuration parameters stored in this class.
    *
-   * \return rms re-projection error (pixels)
+   * \return calibration message with all results in.
    */
-  double Calibrate();
+  std::string Calibrate();
 
   /**
    * \brief Saves a bunch of standard (from a NifTK perspective)
@@ -379,6 +379,7 @@ private:
   std::vector<cv::Matx44d>                       m_HandEyeMatrices[2];
   std::vector<cv::Matx44d>                       m_ReferenceHandEyeMatrices[2];
   cv::Matx44d                                    m_ModelToWorld;
+  std::string                                    m_CalibrationResult;
 
 }; // end class
 

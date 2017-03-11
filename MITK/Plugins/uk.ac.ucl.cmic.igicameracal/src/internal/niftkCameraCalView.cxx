@@ -524,9 +524,9 @@ void CameraCalView::Calibrate()
 
 
 //-----------------------------------------------------------------------------
-double CameraCalView::RunCalibration()
+std::string CameraCalView::RunCalibration()
 {
-  double rms = 0;
+  std::string outputMessage = "";
   std::string errorMessage = "";
 
   // This happens in a separate thread, so try to catch everything.
@@ -536,7 +536,7 @@ double CameraCalView::RunCalibration()
 
   try
   {
-    rms = m_Manager->Calibrate();
+    outputMessage = m_Manager->Calibrate();
   }
   catch (niftk::NiftyCalException& e)
   {
@@ -557,7 +557,7 @@ double CameraCalView::RunCalibration()
     throw e;
   }
 
-  return rms;
+  return outputMessage;
 }
 
 
@@ -580,25 +580,8 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
   }
   else
   {
-    double rms = m_BackgroundCalibrateProcessWatcher.result();
-    QString units = "pixels";
-    if (m_Manager->isStereo())
-    {
-      units = "mm";
-    }
-    QString message("%1 %2 (%3 image");
-    if (m_Manager->GetNumberOfSnapshots() == 1)
-    {
-      message.append(")"); // singular
-    }
-    else
-    {
-      message.append("s)"); // plural
-    }
-    m_Controls->m_ProjectionErrorValue->setText(tr(message.toStdString().c_str())
-                                                .arg(rms)
-                                                .arg(units)
-                                                .arg(m_Manager->GetNumberOfSnapshots()));
+    std::string calibrationMessage = m_BackgroundCalibrateProcessWatcher.result();
+    m_Controls->m_ProjectionErrorValue->setText(QString::fromStdString(calibrationMessage));
 
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);

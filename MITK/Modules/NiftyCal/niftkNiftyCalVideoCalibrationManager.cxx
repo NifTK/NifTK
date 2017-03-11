@@ -619,6 +619,10 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool
                                            reprojectionRMS
                                           );
 
+  std::ostringstream message;
+  message << "Malti mono " << imageIndex << ": " << reprojectionRMS << " pixels" << std::endl;
+  m_CalibrationResult += message.str();
+
   return handEye;
 }
 
@@ -642,6 +646,10 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageInd
                                                   modelToWorld,
                                                   reprojectionRMS
                                                  );
+
+  std::ostringstream message;
+  message << "Full extrinsic mono " << imageIndex << ": " << reprojectionRMS << " pixels" << std::endl;
+  m_CalibrationResult += message.str();
 
   return handEye;
 }
@@ -679,6 +687,10 @@ void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d
                                                          );
   leftHandEye = handEye;
   rightHandEye = (stereoExtrinsics.inv()) * handEye;
+
+  std::ostringstream message;
+  message << "Full extrinsic stereo: " << reprojectionRMS << " pixels" << std::endl;
+  m_CalibrationResult += message.str();
 }
 
 
@@ -1404,10 +1416,8 @@ bool NiftyCalVideoCalibrationManager::isStereo() const
 
 
 //-----------------------------------------------------------------------------
-double NiftyCalVideoCalibrationManager::Calibrate()
+std::string NiftyCalVideoCalibrationManager::Calibrate()
 {
-  MITK_INFO << "Calibrating.";
-
   double rms = 0;
 
   cv::Matx21d tmpRMS;
@@ -1435,6 +1445,12 @@ double NiftyCalVideoCalibrationManager::Calibrate()
     imageSize.height = m_ImageSize.height * m_ScaleFactorY;
   }
 
+  std::ostringstream message1;
+  message1 << "Calibrating with " <<  m_NumberOfSnapshotsForCalibrating
+           << " sample" << (m_NumberOfSnapshotsForCalibrating > 1 ? "s" : "")
+           << std::endl;
+  m_CalibrationResult = message1.str();
+
   if (m_DoIterative)
   {
     if (m_ImageNode[1].IsNull())
@@ -1450,6 +1466,10 @@ double NiftyCalVideoCalibrationManager::Calibrate()
         m_Rvecs[0],
         m_Tvecs[0]
        );
+
+      std::ostringstream message2;
+      message2 << "Iterative mono: " << rms << " pixels" << std::endl;
+      m_CalibrationResult += message2.str();
     }
     else
     {
@@ -1476,12 +1496,12 @@ double NiftyCalVideoCalibrationManager::Calibrate()
         0,
         m_Do3DOptimisation
         );
-      rms = tmpRMS(1, 0);
 
-      MITK_INFO << "Iterative Stereo: projection error=" << tmpRMS(0,0)
-                << ", reconstruction error=" << tmpRMS(1, 0)
-                << ", did 3D optimisation=" << m_Do3DOptimisation
-                << std::endl;
+      std::ostringstream message3;
+      message3 << "Iterative Stereo: " << tmpRMS(0,0) << " pixels" << std::endl;
+      message3 << "Iterative Stereo: " << tmpRMS(1, 0) << " mm" << std::endl;
+      m_CalibrationResult += message3.str();
+
     }
   }
   else
@@ -1501,6 +1521,10 @@ double NiftyCalVideoCalibrationManager::Calibrate()
                                              tvecLeft
                                             );
 
+      std::ostringstream message4;
+      message4 << "Tsai mono left: " << rms << " pixels" << std::endl;
+      m_CalibrationResult += message4.str();
+
       m_Rvecs[0].clear();
       m_Tvecs[0].clear();
 
@@ -1518,6 +1542,10 @@ double NiftyCalVideoCalibrationManager::Calibrate()
         m_Rvecs[0],
         m_Tvecs[0]
         );
+
+      std::ostringstream message5;
+      message5 << "Zhang mono left: " << rms << " pixels" << std::endl;
+      m_CalibrationResult += message5.str();
     }
 
     if (m_ImageNode[1].IsNotNull())
@@ -1537,6 +1565,10 @@ double NiftyCalVideoCalibrationManager::Calibrate()
                                                tvecRight
                                               );
 
+        std::ostringstream message6;
+        message6 << "Tsai mono right: " << rms << " pixels" << std::endl;
+        m_CalibrationResult += message6.str();
+
         m_Rvecs[1].clear();
         m_Tvecs[1].clear();
 
@@ -1554,6 +1586,10 @@ double NiftyCalVideoCalibrationManager::Calibrate()
           m_Rvecs[1],
           m_Tvecs[1]
           );
+
+        std::ostringstream message7;
+        message7 << "Zhang mono right: " << rms << " pixels" << std::endl;
+        m_CalibrationResult += message7.str();
       }
 
       tmpRMS = niftk::StereoCameraCalibration(
@@ -1578,11 +1614,10 @@ double NiftyCalVideoCalibrationManager::Calibrate()
         );
       rms = tmpRMS(1, 0);
 
-      MITK_INFO << "Non-Iterative Stereo: projection error=" << tmpRMS(0,0)
-                << ", reconstruction error=" << tmpRMS(1, 0)
-                << ", did 3D optimisation=" << m_Do3DOptimisation
-                << std::endl;
-
+      std::ostringstream message8;
+      message8 << "Stereo: " << tmpRMS(0,0) << " pixels" << std::endl;
+      message8 << "Stereo: " << tmpRMS(1,0) << " mm" << std::endl;
+      m_CalibrationResult += message8.str();
     }
   }
 
@@ -1688,8 +1723,8 @@ double NiftyCalVideoCalibrationManager::Calibrate()
   // Call this at least once, it will also be called by IGIUPDATE.
   this->UpdateCameraToWorldPosition();
 
-  MITK_INFO << "Calibrating - DONE.";
-  return rms;
+  MITK_INFO << m_CalibrationResult;
+  return m_CalibrationResult;
 }
 
 
@@ -1925,7 +1960,7 @@ void NiftyCalVideoCalibrationManager::Save()
     niftk::Save4x4Matrix(m_HandEyeMatrices[0][3].inv(), m_OutputDirName
         + "calib.left.handeye.allextrinsic.txt");
     niftk::Save4x4Matrix(m_HandEyeMatrices[0][m_HandeyeMethod].inv(), m_OutputDirName
-        + "calib.left.handeye.txt");
+        + "calib.left.handeye.current.txt");
 
     niftk::SaveRigidParams(m_HandEyeMatrices[0][0].inv(), m_OutputDirName
         + "calib.left.handeye.tsai.params.txt");
@@ -1936,7 +1971,7 @@ void NiftyCalVideoCalibrationManager::Save()
     niftk::SaveRigidParams(m_HandEyeMatrices[0][3].inv(), m_OutputDirName
         + "calib.left.handeye.allextrinsic.params.txt");
     niftk::SaveRigidParams(m_HandEyeMatrices[0][m_HandeyeMethod].inv(), m_OutputDirName
-        + "calib.left.handeye.params.txt");
+        + "calib.left.handeye.current.params.txt");
 
     if (m_ImageNode[1].IsNotNull())
     {
@@ -1950,7 +1985,7 @@ void NiftyCalVideoCalibrationManager::Save()
       niftk::Save4x4Matrix(m_HandEyeMatrices[1][3].inv(), m_OutputDirName
           + "calib.right.handeye.allextrinsic.txt");
       niftk::Save4x4Matrix(m_HandEyeMatrices[1][m_HandeyeMethod].inv(), m_OutputDirName
-          + "calib.right.handeye.txt");
+          + "calib.right.handeye.current.txt");
 
       niftk::SaveRigidParams(m_HandEyeMatrices[1][0].inv(), m_OutputDirName
           + "calib.right.handeye.tsai.params.txt");
@@ -1961,7 +1996,7 @@ void NiftyCalVideoCalibrationManager::Save()
       niftk::SaveRigidParams(m_HandEyeMatrices[1][3].inv(), m_OutputDirName
           + "calib.right.handeye.allextrinsic.params.txt");
       niftk::SaveRigidParams(m_HandEyeMatrices[1][m_HandeyeMethod].inv(), m_OutputDirName
-          + "calib.right.handeye.params.txt");
+          + "calib.right.handeye.current.params.txt");
     }
 
     if (m_ReferenceTrackingTransformNode.IsNotNull())
@@ -2031,6 +2066,17 @@ void NiftyCalVideoCalibrationManager::Save()
     niftk::Save4x4Matrix(m_ModelToWorld, m_OutputDirName + "calib.model2world.txt");
 
   } // end if we have tracking info
+
+  // Write main results to file.
+  std::string outputMessageFileName = m_OutputDirName + "calib.result.log";
+  std::ofstream outputMessageFile;
+  outputMessageFile.open (outputMessageFileName, std::ofstream::out);
+  if (!outputMessageFile.is_open())
+  {
+    mitkThrow() << "Failed to open file:" << outputMessageFileName << " for writing.";
+  }
+  outputMessageFile << m_CalibrationResult << std::endl;
+  outputMessageFile.close();
 
   MITK_INFO << "Saving calibration to:" << m_OutputDirName << ": - DONE.";
 }
