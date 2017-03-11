@@ -22,7 +22,6 @@
 
 #include <niftkContourTool.h>
 #include <niftkPointUtils.h>
-#include "niftkGeneralSegmentorPipeline.h"
 #include "niftkGeneralSegmentorPipelineCache.h"
 
 namespace niftk
@@ -664,8 +663,8 @@ void ITKPropagateUpOrDown(
   region.SetIndex(regionIndex);
 
   // Perform 3D region growing.
-  typename GeneralSegmentorPipeline<TPixel, VImageDimension>::MIDASRegionGrowingFilterType::Pointer regionGrowingFilter =
-      GeneralSegmentorPipeline<TPixel, VImageDimension>::MIDASRegionGrowingFilterType::New();
+  typename GeneralSegmentorPipeline<TPixel, VImageDimension>::RegionGrowingFilterType::Pointer regionGrowingFilter =
+      GeneralSegmentorPipeline<TPixel, VImageDimension>::RegionGrowingFilterType::New();
   regionGrowingFilter->SetInput(itkImage);
   regionGrowingFilter->SetRegionOfInterest(region);
   regionGrowingFilter->SetUseRegionOfInterest(true);
@@ -1450,16 +1449,15 @@ void ITKFilterContours(
   params.m_PolyContours = polyToolContours;
   params.m_EraseFullSlice = true;
 
-  if (isThresholding)
-  {
-    params.m_LowerThreshold = lowerThreshold;
-    params.m_UpperThreshold = upperThreshold;
-  }
-  else
-  {
-    params.m_LowerThreshold = std::numeric_limits<TPixel>::min();
-    params.m_UpperThreshold = std::numeric_limits<TPixel>::max();
-  }
+  // The pipeline *always* uses the thresholding version of the region growing filter for
+  // scalar pixel types. If the 'isThresholding' variable is 'true', the minimum and the
+  // maximum values of the pixel type have to be used as thresholds.
+  //
+  // If the pixel type is composite (e.g. RGB), the pipeline uses the non-thresholding
+  // version of the region growing filter. Although these types have minimum and maximum
+  // values as well, assigning them to the double members of 'params' would give compilation
+  // error.
+  SetThresholdsIfThresholding<TPixel>(params, isThresholding, lowerThreshold, upperThreshold);
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> localPipeline;
   localPipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.

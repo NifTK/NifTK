@@ -17,6 +17,8 @@
 
 #include "niftkMIDASExports.h"
 
+#include <type_traits>
+
 #include <itkImage.h>
 #include <itkPolyLineParametricPath.h>
 
@@ -25,13 +27,13 @@
 #include <mitkImage.h>
 #include <mitkPointSet.h>
 
+#include <niftkGeneralSegmentorPipeline.h>
 
 namespace niftk
 {
 
 class OpPropagate;
 class OpWipe;
-
 
 /// \brief Used to generate a contour outline round a binary segmentation image, and refreshes the outputSurface.
 ///
@@ -396,6 +398,42 @@ void ITKFilterContours(
     mitk::ContourModelSet* outputCopyOfInputContours,
     mitk::ContourModelSet* outputContours
 );
+
+/// Sets the given thresholds as parameters, or the minimum and maximum values of the
+/// given pixel type, if 'isThresholding' is false.
+/// This is an overloaded function. This instance is only for arithmetic pixel types.
+template <typename TPixel>
+void SetThresholdsIfThresholding(
+  GeneralSegmentorPipelineParams& params,
+  bool isThresholding,
+  double lowerThreshold,
+  double upperThreshold,
+  typename std::enable_if<std::is_arithmetic<TPixel>::value, TPixel>::type* = nullptr)
+{
+  if (isThresholding)
+  {
+    params.m_LowerThreshold = lowerThreshold;
+    params.m_UpperThreshold = upperThreshold;
+  }
+  else
+  {
+    params.m_LowerThreshold = std::numeric_limits<TPixel>::min();
+    params.m_UpperThreshold = std::numeric_limits<TPixel>::max();
+  }
+}
+
+/// Same as the overloaded version above but for composite pixel types.
+/// It does not do anything, as thresholding is not defined for composite
+/// pixel types.
+template <typename TPixel>
+void SetThresholdsIfThresholding(
+  GeneralSegmentorPipelineParams& params,
+  bool isThresholding,
+  double lowerThreshold,
+  double upperThreshold,
+  typename std::enable_if<!std::is_arithmetic<TPixel>::value, TPixel>::type* = nullptr)
+{
+}
 
 /// \brief Given an image, and a set of seeds, will append new seeds in the new slice if necessary.
 ///

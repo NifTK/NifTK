@@ -28,15 +28,13 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 {
   m_SliceIndex = -1;
   m_SliceAxis = -1;
-  m_LowerThreshold = 0;
-  m_UpperThreshold = 0;
   m_AllSeeds = itk::PointSet<float, 3>::New();
   m_UseOutput = true;
   m_EraseFullSlice = false;
   m_OutputImage = NULL;
-  m_ExtractGreyRegionOfInterestFilter = ExtractGreySliceFromGreyImageFilterType::New();
-  m_ExtractBinaryRegionOfInterestFilter = ExtractBinarySliceFromBinaryImageFilterType::New();
-  m_RegionGrowingFilter = MIDASRegionGrowingFilterType::New();
+  m_ExtractGreyRegionOfInterestFilter = ExtractGreySliceFilterType::New();
+  m_ExtractBinaryRegionOfInterestFilter = ExtractBinarySliceFilterType::New();
+  m_RegionGrowingFilter = RegionGrowingFilterType::New();
   m_RegionGrowingFilter->SetBackgroundValue(0);
   m_RegionGrowingFilter->SetForegroundValue(1);
 }
@@ -63,8 +61,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 
   m_SliceIndex = p.m_SliceIndex;
   m_SliceAxis = p.m_SliceAxis;
-  m_LowerThreshold = static_cast<TPixel>(p.m_LowerThreshold);
-  m_UpperThreshold = static_cast<TPixel>(p.m_UpperThreshold);
+  this->SetThresholdsIfThresholding<TPixel>(p);
   m_EraseFullSlice = p.m_EraseFullSlice;
 }
 
@@ -420,8 +417,8 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
 //    fileWriter->Update();
 
     // 6. Update Region growing.
-    m_RegionGrowingFilter->SetLowerThreshold(m_LowerThreshold);
-    m_RegionGrowingFilter->SetUpperThreshold(m_UpperThreshold);
+
+    this->SetThresholdsIfThresholding(m_RegionGrowingFilter.GetPointer());
     m_RegionGrowingFilter->SetEraseFullSlice(m_EraseFullSlice);         
     m_RegionGrowingFilter->SetRegionOfInterest(region3D);
     m_RegionGrowingFilter->SetUseRegionOfInterest(true);
@@ -462,6 +459,7 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     MITK_ERROR << "GeneralSegmentorPipeline::Update Failed: " << err << std::endl;
   }
 }
+
 
 template<typename TPixel, unsigned int VImageDimension>
 void
