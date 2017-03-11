@@ -530,18 +530,18 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex, bo
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
-  cv::Matx44d modelToTracker = m_ModelToTracker;
+  cv::Matx44d modelToWorld = this->GetInitialModelToWorld();
   if(useReference)
   {
     cv::Matx44d averageReferenceToTracker =
         niftk::AverageMatricesUsingEigenValues(m_ReferenceTrackingMatrices);
 
-    modelToTracker = averageReferenceToTracker.inv() * m_ModelToTracker;
+    modelToWorld = averageReferenceToTracker.inv() * modelToWorld;
   }
 
   cv::Matx44d handEye =
     niftk::CalculateHandEyeByDirectMatrixMultiplication(
-      modelToTracker,
+      modelToWorld,
       trackingMatrices,
       cameraMatrices
       );
@@ -1411,7 +1411,7 @@ bool NiftyCalVideoCalibrationManager::isStereo() const
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::GetModelToWorld(const cv::Matx44d& handEye)
 {
-  cv::Matx44d modelToWorld = m_ModelToTracker; // To do. Fix naming.
+  cv::Matx44d modelToWorld = this->GetInitialModelToWorld();
 
   // Compute a model to world for visualisation purposes.
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
