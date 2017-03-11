@@ -109,6 +109,8 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ReferenceTrackerMatrixComboBox->SetPredicate(isMatrix);
     m_Controls->m_ReferenceTrackerMatrixComboBox->SetDataStorage(dataStorage);
     m_Controls->m_ReferenceTrackerMatrixComboBox->setCurrentIndex(0);
+    m_Controls->m_ReferenceTrackerMatrixComboBox->setVisible(false);
+    m_Controls->m_ReferenceTrackerMatrixLabel->setVisible(false);
 
     connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
     connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUnGrabButtonPressed()));
