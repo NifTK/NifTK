@@ -581,7 +581,12 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
   else
   {
     double rms = m_BackgroundCalibrateProcessWatcher.result();
-    QString message("%1 pixels (%2 image");
+    QString units = "pixels";
+    if (m_Manager->isStereo())
+    {
+      units = "mm";
+    }
+    QString message("%1 %2 (%3 image");
     if (m_Manager->GetNumberOfSnapshots() == 1)
     {
       message.append(")"); // singular
@@ -590,7 +595,10 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
     {
       message.append("s)"); // plural
     }
-    m_Controls->m_ProjectionErrorValue->setText(tr(message.toStdString().c_str()).arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
+    m_Controls->m_ProjectionErrorValue->setText(tr(message.toStdString().c_str())
+                                                .arg(rms)
+                                                .arg(units)
+                                                .arg(m_Manager->GetNumberOfSnapshots()));
 
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);

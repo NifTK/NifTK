@@ -148,6 +148,8 @@ public:
   void SetModelToTrackerFileName(const std::string& fileName);
   itkGetMacro(ModelToTrackerFileName, std::string);
 
+  bool isStereo() const;
+
   unsigned int GetNumberOfSnapshots() const;
 
   /**

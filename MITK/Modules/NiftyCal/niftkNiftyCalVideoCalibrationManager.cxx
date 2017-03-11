@@ -1392,6 +1392,18 @@ void NiftyCalVideoCalibrationManager::UnGrab()
 
 
 //-----------------------------------------------------------------------------
+bool NiftyCalVideoCalibrationManager::isStereo() const
+{
+  bool result = false;
+  if (m_ImageNode[0].IsNotNull() && m_ImageNode[1].IsNotNull())
+  {
+    result = true;
+  }
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
 double NiftyCalVideoCalibrationManager::Calibrate()
 {
   MITK_INFO << "Calibrating.";
@@ -1464,14 +1476,7 @@ double NiftyCalVideoCalibrationManager::Calibrate()
         0,
         m_Do3DOptimisation
         );
-      if (m_Do3DOptimisation)
-      {
-        rms = tmpRMS(1, 0);
-      }
-      else
-      {
-        rms = tmpRMS(0, 0);
-      }
+      rms = tmpRMS(1, 0);
 
       MITK_INFO << "Iterative Stereo: projection error=" << tmpRMS(0,0)
                 << ", reconstruction error=" << tmpRMS(1, 0)
@@ -1571,14 +1576,13 @@ double NiftyCalVideoCalibrationManager::Calibrate()
         CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_FIX_INTRINSIC,
         m_Do3DOptimisation
         );
-      if (m_Do3DOptimisation)
-      {
-        rms = tmpRMS(1, 0);
-      }
-      else
-      {
-        rms = tmpRMS(0, 0);
-      }
+      rms = tmpRMS(1, 0);
+
+      MITK_INFO << "Non-Iterative Stereo: projection error=" << tmpRMS(0,0)
+                << ", reconstruction error=" << tmpRMS(1, 0)
+                << ", did 3D optimisation=" << m_Do3DOptimisation
+                << std::endl;
+
     }
   }
 
