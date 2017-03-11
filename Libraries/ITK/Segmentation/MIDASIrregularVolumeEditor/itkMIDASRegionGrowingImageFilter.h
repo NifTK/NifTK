@@ -66,18 +66,6 @@ public:
   typedef typename ParametricPathType::VertexType       ParametricPathVertexType;
 
   /**
-   * \brief Values lower than the LowerThreshold are not grown into.
-   */
-  itkSetMacro(LowerThreshold, InputPixelType)
-  itkGetConstMacro(LowerThreshold, InputPixelType)
-
-  /**
-   * \brief Values higher than the UpperThreshold are not grown into.
-   */
-  itkSetMacro(UpperThreshold, InputPixelType)
-  itkGetConstMacro(UpperThreshold, InputPixelType)
-
-  /**
    * \brief The output "foreground" value, normally 1 or 255.
    */
   itkSetMacro(ForegroundValue, OutputPixelType)
@@ -210,18 +198,13 @@ protected:
   MIDASRegionGrowingImageFilter(); // purposely hidden
   virtual ~MIDASRegionGrowingImageFilter() {} // purposely hidden
 
-  virtual void GenerateData();
+  virtual void GenerateData() override;
 
-  virtual void ThreadedGenerateData(const typename OutputImageType::RegionType &outputRegionForThread, ThreadIdType threadId)
+  virtual void ThreadedGenerateData(const typename OutputImageType::RegionType &outputRegionForThread, ThreadIdType threadId) override
   {
     std::cerr << "Not supported.\n";
     abort();
   }
-
-private:
-
-  MIDASRegionGrowingImageFilter(const Self&); // purposely not implemented
-  void operator=(const Self&); // purposely not implemented
 
   /**
    * \brief The main region growing logic is here, where we decide whether to add the nextImgIdx to a stack.
@@ -230,11 +213,16 @@ private:
    * \param[In] nextImgIdx the next pixel
    * \param[Out] true if the pixel should be added and false otherwise
    */
-  void ConditionalAddPixel(
+  virtual void ConditionalAddPixel(
                   std::stack<typename OutputImageType::IndexType> &r_stack,
                   const typename OutputImageType::IndexType &currentImgIdx,
                   const typename OutputImageType::IndexType &nextImgIdx,
                   const bool &isFullyConnected);
+
+private:
+
+  MIDASRegionGrowingImageFilter(const Self&); // purposely not implemented
+  void operator=(const Self&); // purposely not implemented
 
   /**
    * \brief Will return true if index1 and index2 are joined along an edge rather than a diagonal, and false otherwise.
@@ -258,8 +246,6 @@ private:
                   const typename OutputImageType::IndexType &index2
                   );
 
-  InputPixelType                         m_LowerThreshold;
-  InputPixelType                         m_UpperThreshold;
   OutputPixelType                        m_ForegroundValue;
   OutputPixelType                        m_BackgroundValue;
   typename PointSetType::ConstPointer    mspc_SeedPoints;
