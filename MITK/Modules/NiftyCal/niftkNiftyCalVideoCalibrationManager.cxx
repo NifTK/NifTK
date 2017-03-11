@@ -583,15 +583,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialHandEye(int imageIndex, b
 //-----------------------------------------------------------------------------
 cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialModelToWorld()
 {
-  cv::Matx44d modelToWorld;
-  if (m_TrackingMatrices.size() > 1)
-  {
-    modelToWorld = m_ModelToWorld; // one calculated after averaging
-  }
-  else
-  {
-    modelToWorld = m_ModelToTracker; // one loaded from file in preferences.
-  }
+  cv::Matx44d modelToWorld = m_ModelToTracker; // one loaded from file in preferences.
   return modelToWorld;
 }
 
