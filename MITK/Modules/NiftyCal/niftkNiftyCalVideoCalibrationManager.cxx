@@ -41,6 +41,7 @@
 #include <niftkTemplateCirclesPointDetector.h>
 #include <niftkTemplateRingsPointDetector.h>
 #include <niftkIOUtilities.h>
+#include <niftkPointUtilities.h>
 #include <niftkZhangCameraCalibration.h>
 #include <niftkTsaiCameraCalibration.h>
 #include <niftkStereoCameraCalibration.h>
@@ -1416,6 +1417,52 @@ bool NiftyCalVideoCalibrationManager::isStereo() const
 
 
 //-----------------------------------------------------------------------------
+cv::Matx44d NiftyCalVideoCalibrationManager::GetModelToWorld(const cv::Matx44d& handEye)
+{
+  cv::Matx44d modelToWorld = m_ModelToTracker; // To do. Fix naming.
+
+  // Compute a model to world for visualisation purposes.
+  std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
+  if (!cameraMatrices.empty())
+  {
+    std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
+
+    modelToWorld = niftk::CalculateAverageModelToWorld(
+          handEye,
+          trackingMatrices,
+          cameraMatrices
+          );
+  }
+
+  return modelToWorld;
+}
+
+
+//-----------------------------------------------------------------------------
+double NiftyCalVideoCalibrationManager::GetRMSReconstructionError(const cv::Matx44d& handEye)
+{
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
+
+  double recon = niftk::ComputeRMSReconstructionError(m_ModelPoints,
+                                                      m_Points[0],
+                                                      m_Points[1],
+                                                      m_Intrinsic[0],
+                                                      m_Distortion[0],
+                                                      m_Rvecs[0],
+                                                      m_Tvecs[0],
+                                                      m_Intrinsic[1],
+                                                      m_Distortion[1],
+                                                      m_LeftToRightRotationMatrix,
+                                                      m_LeftToRightTranslationVector,
+                                                      trackingMatrices,
+                                                      handEye,
+                                                      m_ModelToTracker
+                                                     );
+  return recon;
+}
+
+
+//-----------------------------------------------------------------------------
 std::string NiftyCalVideoCalibrationManager::Calibrate()
 {
   double rms = 0;
@@ -1643,7 +1690,12 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
       if (m_TrackingMatrices.size() > 1)
       {
-        m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);
+        m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);        
+
+        rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
+        std::ostringstream message9;
+        message9 << "Tsai RMS Recon Error: " << rms << " mm" << std::endl;
+        m_CalibrationResult += message9.str();
       }
       m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, false);
       m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, false);
@@ -1651,6 +1703,21 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
                                      m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC],
                                      false
                                     );
+
+      rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
+      std::ostringstream message10;
+      message10 << "Hand-eye: Shahidi RMS: " << rms << " mm" << std::endl;
+      m_CalibrationResult += message10.str();
+
+      rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
+      std::ostringstream message11;
+      message11 << "Hand-eye: Malti RMS: " << rms << " mm" << std::endl;
+      m_CalibrationResult += message11.str();
+
+      rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
+      std::ostringstream message12;
+      message12 << "Hand-eye: Non-Linear Extrinsic: " << rms << " mm" << std::endl;
+      m_CalibrationResult += message12.str();
 
     } // end if we are in stereo.
 
@@ -1676,6 +1743,11 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
         if (m_ReferenceTrackingMatrices.size() > 1)
         {
           m_ReferenceHandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, true);
+
+          rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
+          std::ostringstream message13;
+          message13 << "Tsai RMS Recon Error: " << rms << " mm" << std::endl;
+          m_CalibrationResult += message13.str();
         }
         m_ReferenceHandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, true);
         m_ReferenceHandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, true);
@@ -1685,35 +1757,25 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
                                        true
                                       );
 
+        rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
+        std::ostringstream message14;
+        message14 << "Hand-eye: Shahidi RMS: " << rms << " mm" << std::endl;
+        m_CalibrationResult += message14.str();
+
+        rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
+        std::ostringstream message15;
+        message15 << "Hand-eye: Malti RMS: " << rms << " mm" << std::endl;
+        m_CalibrationResult += message15.str();
+
+        rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
+        std::ostringstream message16;
+        message16 << "Hand-eye: Non-Linear Extrinsic: " << rms << " mm" << std::endl;
+        m_CalibrationResult += message16.str();
+
       } // end if we are in stereo
     } // end if we have a reference matrix.
 
-    m_ModelToWorld = m_ModelToTracker; // To do. Fix naming.
-
-    // Compute a model to world for visualisation purposes.
-    std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(0);
-    if (!cameraMatrices.empty())
-    {
-      std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
-
-      if (m_TrackingMatrices.size() > 1)
-      {
-        m_ModelToWorld = niftk::CalculateAverageModelToWorld(
-              m_HandEyeMatrices[0][m_HandeyeMethod],
-              trackingMatrices,
-              cameraMatrices
-              );
-      }
-      else
-      {
-        m_ModelToWorld = niftk::CalculateAverageModelToWorld(
-              m_HandEyeMatrices[0][SHAHIDI_2002],
-              trackingMatrices,
-              cameraMatrices
-              );
-      }
-    }
-
+    m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][m_HandeyeMethod]);
 
   } // end if we have tracking data.
 

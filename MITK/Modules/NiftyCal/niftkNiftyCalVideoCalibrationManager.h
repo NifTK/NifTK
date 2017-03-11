@@ -310,6 +310,8 @@ private:
 
   cv::Matx44d GetInitialHandEye(int imageIndex, bool useReference);
   cv::Matx44d GetInitialModelToWorld();
+  double      GetRMSReconstructionError(const cv::Matx44d& handEye);
+  cv::Matx44d GetModelToWorld(const cv::Matx44d& handEye);
 
   typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> > MatrixProperty;
 
