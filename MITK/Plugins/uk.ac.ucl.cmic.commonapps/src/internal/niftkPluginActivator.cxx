@@ -155,7 +155,18 @@ void PluginActivator::RegisterDataStorageListeners()
   m_DataStorageServiceTracker = new ctkServiceTracker<mitk::IDataStorageService*>(this->GetContext());
   m_DataStorageServiceTracker->open();
 
-  m_DataNodePropertyRegisterer = DataStorageListener::New(this->GetDataStorage());
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+  /// The data storage may already contain data nodes, for instance if an image file
+  /// name has been specified on the command line, without the '-o' option. Those
+  /// arguments are processed by an MITK plugin that is loaded earlier than this one.
+  mitk::DataStorage::SetOfObjects::ConstPointer dataNodes = dataStorage->GetAll();
+  for (auto it = dataNodes->Begin(); it != dataNodes->End(); ++it)
+  {
+    this->RegisterProperties(it.Value());
+  }
+
+  m_DataNodePropertyRegisterer = DataStorageListener::New(dataStorage);
   m_DataNodePropertyRegisterer->NodeAdded
       += mitk::MessageDelegate1<PluginActivator, mitk::DataNode*>(this, &PluginActivator::RegisterProperties);
 
