@@ -1682,7 +1682,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
       if (m_TrackingMatrices.size() > 1)
       {
-        m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);        
+        m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);
 
         rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
         std::ostringstream message9;
