@@ -102,6 +102,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
   }
 
   m_ModelToWorld = cv::Matx44d::eye();
+  m_ModelToTracker = cv::Matx44d::eye();
 
   m_ModelPointsToVisualise = mitk::PointSet::New();
   m_ModelPointsToVisualiseDataNode = mitk::DataNode::New();
