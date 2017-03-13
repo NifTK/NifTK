@@ -192,6 +192,11 @@ public:
   void UpdateCameraToWorldPosition();
 
   /**
+   * \brief Transforms m_ModelPoints into m_ModelPointsToVisualise;
+   */
+  void UpdateVisualisedPoints();
+
+  /**
    * \brief Loads our NifTK standard named calibration files from disk,
    * overwriting all the existing, intrinsic, distortion, hand-eye etc.
    */

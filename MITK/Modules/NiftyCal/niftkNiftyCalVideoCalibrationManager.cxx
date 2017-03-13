@@ -203,6 +203,13 @@ void NiftyCalVideoCalibrationManager::SetTrackingTransformNode(mitk::DataNode::P
 
 
 //-----------------------------------------------------------------------------
+void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints()
+{
+  this->UpdateVisualisedPoints(m_ModelToWorld);
+}
+
+
+//-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints(cv::Matx44d& transform)
 {
   if (m_DataStorage.IsNotNull())
@@ -1771,11 +1778,8 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
 
   } // end if we have tracking data.
 
-  // Sets properties on images, and updates visualised points.
+  // Sets properties on images.
   this->UpdateDisplayNodes();
-
-  // Call this at least once, it will also be called by IGIUPDATE.
-  this->UpdateCameraToWorldPosition();
 
   MITK_INFO << m_CalibrationResult;
   return m_CalibrationResult;
@@ -1808,12 +1812,6 @@ void NiftyCalVideoCalibrationManager::UpdateDisplayNodes()
                                        m_ImageNode[1]
                                       );
     } // end if right hand image
-
-    if (m_TrackingTransformNode.IsNotNull())
-    {
-      this->UpdateVisualisedPoints(m_ModelToWorld);
-    }
-
   } // end if updating nodes
 }
 
