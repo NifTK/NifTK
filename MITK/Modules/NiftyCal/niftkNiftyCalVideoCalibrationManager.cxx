@@ -2050,6 +2050,38 @@ void NiftyCalVideoCalibrationManager::Save()
     this->SavePoints("calib.right.points.", m_Points[1]);
   }
 
+  if (m_ImageNode[0].IsNotNull())
+  {
+    int counter = 0;
+    std::list<cv::Matx44d> leftCams = this->ExtractCameraMatrices(0);
+    std::list<cv::Matx44d >::const_iterator iter;
+    for (iter = leftCams.begin();
+         iter != leftCams.end();
+         ++iter
+         )
+    {
+      std::ostringstream fileName;
+      fileName << m_OutputDirName << "calib.left.camera." << counter++ << ".4x4";
+      niftk::Save4x4Matrix(*iter, fileName.str());
+    }
+  }
+
+  if (m_ImageNode[1].IsNotNull())
+  {
+    int counter = 0;
+    std::list<cv::Matx44d> rightCams = this->ExtractCameraMatrices(1);
+    std::list<cv::Matx44d >::const_iterator iter;
+    for (iter = rightCams.begin();
+         iter != rightCams.end();
+         ++iter
+         )
+    {
+      std::ostringstream fileName;
+      fileName << m_OutputDirName << "calib.right.camera." << counter++ << ".4x4";
+      niftk::Save4x4Matrix(*iter, fileName.str());
+    }
+  }
+
   if (m_TrackingTransformNode.IsNotNull())
   {
     int counter = 0;
