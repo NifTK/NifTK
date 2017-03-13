@@ -537,7 +537,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex, bo
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
 
-  cv::Matx44d modelToWorld = this->GetInitialModelToWorld();
+  cv::Matx44d modelToWorld = m_ModelToTracker; // Shahidi always works by using the loaded transform.
   if(useReference)
   {
     cv::Matx44d averageReferenceToTracker =
@@ -591,6 +591,10 @@ cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialHandEye(int imageIndex, b
 cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialModelToWorld()
 {
   cv::Matx44d modelToWorld = m_ModelToTracker; // one loaded from file in preferences.
+  if (m_TrackingMatrices.size() > 1)
+  {
+    modelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][TSAI_1989]);
+  }
   return modelToWorld;
 }
 
@@ -1455,7 +1459,7 @@ double NiftyCalVideoCalibrationManager::GetRMSReconstructionError(const cv::Matx
                                                       m_LeftToRightTranslationVector,
                                                       trackingMatrices,
                                                       handEye,
-                                                      m_ModelToTracker
+                                                      m_ModelToWorld
                                                      );
   return recon;
 }
@@ -1690,30 +1694,32 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       if (m_TrackingMatrices.size() > 1)
       {
         m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);
-
+        m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][TSAI_1989]);
         rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
         std::ostringstream message9;
         message9 << "Tsai RMS Recon Error: " << rms << " mm" << std::endl;
         m_CalibrationResult += message9.str();
       }
       m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, false);
-      m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, false);
-      DoFullExtrinsicHandEyeInStereo(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
-                                     m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC],
-                                     false
-                                    );
-
+      m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][SHAHIDI_2002]);
       rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
       std::ostringstream message10;
       message10 << "Hand-eye: Shahidi RMS: " << rms << " mm" << std::endl;
       m_CalibrationResult += message10.str();
 
+      m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, false);
+      m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][MALTI_2013]);
       rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
       std::ostringstream message11;
       message11 << "Hand-eye: Malti RMS: " << rms << " mm" << std::endl;
       m_CalibrationResult += message11.str();
 
+      DoFullExtrinsicHandEyeInStereo(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
+                                     m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC],
+                                     false
+                                    );
       rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
+      m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
       std::ostringstream message12;
       message12 << "Hand-eye: Non-Linear Extrinsic: " << rms << " mm" << std::endl;
       m_CalibrationResult += message12.str();
@@ -1723,7 +1729,6 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
     if (m_ReferenceTrackingTransformNode.IsNotNull())
     {
       // Don't change the order of these.
-      // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
       if (m_ReferenceTrackingMatrices.size() > 1)
       {
         m_ReferenceHandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, true);
@@ -1738,35 +1743,36 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       if (m_ImageNode[1].IsNotNull())
       {
         // Don't change the order of these.
-        // Malti requires an initial hand-eye, so we use Tsai/Shahidi.
         if (m_ReferenceTrackingMatrices.size() > 1)
         {
           m_ReferenceHandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, true);
-
+          m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][TSAI_1989]);
           rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
           std::ostringstream message13;
           message13 << "Tsai RMS Recon Error: " << rms << " mm" << std::endl;
           m_CalibrationResult += message13.str();
         }
         m_ReferenceHandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, true);
+        m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][SHAHIDI_2002]);
+        rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
+        std::ostringstream message14;
+        message14 << "Hand-eye: Shahidi RMS: " << rms << " mm" << std::endl;
+        m_CalibrationResult += message14.str();
+
         m_ReferenceHandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, true);
+        m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][MALTI_2013]);
+        rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
+        std::ostringstream message15;
+        message15 << "Hand-eye: Malti RMS: " << rms << " mm" << std::endl;
+        m_CalibrationResult += message15.str();
 
         DoFullExtrinsicHandEyeInStereo(m_ReferenceHandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
                                        m_ReferenceHandEyeMatrices[1][NON_LINEAR_EXTRINSIC],
                                        true
                                       );
 
-        rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
-        std::ostringstream message14;
-        message14 << "Hand-eye: Shahidi RMS: " << rms << " mm" << std::endl;
-        m_CalibrationResult += message14.str();
-
-        rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
-        std::ostringstream message15;
-        message15 << "Hand-eye: Malti RMS: " << rms << " mm" << std::endl;
-        m_CalibrationResult += message15.str();
-
         rms = this->GetRMSReconstructionError(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
+        m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][MALTI_2013]);
         std::ostringstream message16;
         message16 << "Hand-eye: Non-Linear Extrinsic: " << rms << " mm" << std::endl;
         m_CalibrationResult += message16.str();
