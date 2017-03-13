@@ -584,6 +584,7 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
   {
     std::string calibrationMessage = m_BackgroundCalibrateProcessWatcher.result();
     m_Controls->m_ProjectionErrorValue->setText(QString::fromStdString(calibrationMessage));
+    m_Manager->UpdateCameraToWorldPosition();
     m_Manager->UpdateVisualisedPoints();
 
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
