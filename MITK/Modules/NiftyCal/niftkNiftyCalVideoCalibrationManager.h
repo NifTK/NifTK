@@ -148,6 +148,8 @@ public:
   void SetModelToTrackerFileName(const std::string& fileName);
   itkGetMacro(ModelToTrackerFileName, std::string);
 
+  bool isStereo() const;
+
   unsigned int GetNumberOfSnapshots() const;
 
   /**
@@ -173,9 +175,9 @@ public:
    * This can be mono, stereo, iterative and include hand-eye,
    * depending on the configuration parameters stored in this class.
    *
-   * \return rms re-projection error (pixels)
+   * \return calibration message with all results in.
    */
-  double Calibrate();
+  std::string Calibrate();
 
   /**
    * \brief Saves a bunch of standard (from a NifTK perspective)
@@ -188,6 +190,11 @@ public:
    * we can watch the current calibration live in real-time.
    */
   void UpdateCameraToWorldPosition();
+
+  /**
+   * \brief Transforms m_ModelPoints into m_ModelPointsToVisualise;
+   */
+  void UpdateVisualisedPoints();
 
   /**
    * \brief Loads our NifTK standard named calibration files from disk,
@@ -308,6 +315,9 @@ private:
 
   cv::Matx44d GetInitialHandEye(int imageIndex, bool useReference);
   cv::Matx44d GetInitialModelToWorld();
+  double      GetStereoRMSReconstructionError(const cv::Matx44d& handEye);
+  double      GetMonoRMSReconstructionError(const cv::Matx44d& handEye);
+  cv::Matx44d GetModelToWorld(const cv::Matx44d& handEye);
 
   typedef mitk::GenericProperty<itk::Matrix<float, 4, 4> > MatrixProperty;
 
@@ -377,6 +387,7 @@ private:
   std::vector<cv::Matx44d>                       m_HandEyeMatrices[2];
   std::vector<cv::Matx44d>                       m_ReferenceHandEyeMatrices[2];
   cv::Matx44d                                    m_ModelToWorld;
+  std::string                                    m_CalibrationResult;
 
 }; // end class
 

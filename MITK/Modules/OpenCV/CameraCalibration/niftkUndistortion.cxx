@@ -395,7 +395,7 @@ void Undistortion::ValidateInput()
 
   // mitk does not behave well if the image is not properly initialised.
   // we simply use a size check for that.
-  if ((m_Image->GetDimension()  != 3) ||
+  if ((m_Image->GetDimension()  != 3 && m_Image->GetDimension()  != 2) ||
       (m_Image->GetDimension(0) == 0) ||
       (m_Image->GetDimension(1) == 0) ||
       (m_Image->GetDimension(2) == 0)

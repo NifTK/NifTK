@@ -109,6 +109,8 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_ReferenceTrackerMatrixComboBox->SetPredicate(isMatrix);
     m_Controls->m_ReferenceTrackerMatrixComboBox->SetDataStorage(dataStorage);
     m_Controls->m_ReferenceTrackerMatrixComboBox->setCurrentIndex(0);
+    m_Controls->m_ReferenceTrackerMatrixComboBox->setVisible(false);
+    m_Controls->m_ReferenceTrackerMatrixLabel->setVisible(false);
 
     connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
     connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUnGrabButtonPressed()));
@@ -524,9 +526,9 @@ void CameraCalView::Calibrate()
 
 
 //-----------------------------------------------------------------------------
-double CameraCalView::RunCalibration()
+std::string CameraCalView::RunCalibration()
 {
-  double rms = 0;
+  std::string outputMessage = "";
   std::string errorMessage = "";
 
   // This happens in a separate thread, so try to catch everything.
@@ -536,7 +538,7 @@ double CameraCalView::RunCalibration()
 
   try
   {
-    rms = m_Manager->Calibrate();
+    outputMessage = m_Manager->Calibrate();
   }
   catch (niftk::NiftyCalException& e)
   {
@@ -557,7 +559,7 @@ double CameraCalView::RunCalibration()
     throw e;
   }
 
-  return rms;
+  return outputMessage;
 }
 
 
@@ -580,17 +582,10 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
   }
   else
   {
-    double rms = m_BackgroundCalibrateProcessWatcher.result();
-    QString message("%1 pixels (%2 image");
-    if (m_Manager->GetNumberOfSnapshots() == 1)
-    {
-      message.append(")"); // singular
-    }
-    else
-    {
-      message.append("s)"); // plural
-    }
-    m_Controls->m_ProjectionErrorValue->setText(tr(message.toStdString().c_str()).arg(rms).arg(m_Manager->GetNumberOfSnapshots()));
+    std::string calibrationMessage = m_BackgroundCalibrateProcessWatcher.result();
+    m_Controls->m_ProjectionErrorValue->setText(QString::fromStdString(calibrationMessage));
+    m_Manager->UpdateCameraToWorldPosition();
+    m_Manager->UpdateVisualisedPoints();
 
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);

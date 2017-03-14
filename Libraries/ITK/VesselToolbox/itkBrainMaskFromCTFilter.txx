@@ -13,6 +13,8 @@ namespace itk
 
 template<class TInputImage, class TOutputImage>
 BrainMaskFromCTFilter<TInputImage, TOutputImage>::BrainMaskFromCTFilter()
+: m_HUThresh(600)
+, m_NoHUThresh(1624) 
 {
   m_CheckHounsFieldUnits = false;
   m_IsHU = false;
@@ -33,10 +35,13 @@ void BrainMaskFromCTFilter<TInputImage, TOutputImage>::GenerateData()
   threshfilter->SetOutsideValue( 0 );
   threshfilter->SetInsideValue( 1 );
 
-  InputPixelType bone = lowThresh_noHU;
+  InputPixelType bone = m_NoHUThresh;
   if (m_IsHU)
-    bone = lowThresh_HU;
-  threshfilter->SetLowerThreshold(lowThresh_HU);
+  {
+    bone = m_HUThresh;
+  }
+
+  threshfilter->SetLowerThreshold(bone);
 
 
   //1b- Separate foreground and background
@@ -45,7 +50,6 @@ void BrainMaskFromCTFilter<TInputImage, TOutputImage>::GenerateData()
   otsu->SetInsideValue(0);
   otsu->SetOutsideValue(1);
   otsu->Update();
- // threshfilter->Update();
 
   //2- Largest connected component
   typename ConnectFilterType::Pointer connectfilter = ConnectFilterType::New();
