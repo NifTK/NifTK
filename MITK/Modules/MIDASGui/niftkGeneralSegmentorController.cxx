@@ -1171,6 +1171,13 @@ void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
   Q_D(GeneralSegmentorController);
 
   mitk::Image* referenceImage = this->GetReferenceImage();
+
+  if (referenceImage->GetPixelType().GetNumberOfComponents() != 1)
+  {
+    d->m_GUI->SetSeedMinAndMaxValues(0, 0);
+    return;
+  }
+
   mitk::PointSet* seeds = this->GetSeeds();
 
   if (referenceImage && seeds)
