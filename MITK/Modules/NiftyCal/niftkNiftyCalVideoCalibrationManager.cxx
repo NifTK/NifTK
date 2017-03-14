@@ -758,6 +758,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   scaleFactors.y = m_ScaleFactorY;
 
   bool doRescaleAfterPointExtraction = true;
+  int offsetForTemplateMatching = 10;
 
   cv::Mat copyOfImage1 = image.clone(); // Remember OpenCV reference counting.
   cv::Mat copyOfImage2 = image.clone(); // Remember OpenCV reference counting.
@@ -878,7 +879,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   else if (m_CalibrationPattern == TEMPLATE_MATCHING_CIRCLES)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
-    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 10.0, m_TemplateImage.rows / 10.0);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / offsetForTemplateMatching,
+                                    m_TemplateImage.rows / offsetForTemplateMatching);
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
     niftk::TemplateCirclesPointDetector *circlesTemplateDetector1
@@ -938,7 +940,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   else if (m_CalibrationPattern == TEMPLATE_MATCHING_RINGS)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
-    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 10.0, m_TemplateImage.rows / 10.0);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / offsetForTemplateMatching,
+                                    m_TemplateImage.rows / offsetForTemplateMatching);
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
     niftk::TemplateRingsPointDetector *ringsTemplateDetector1
@@ -1001,7 +1004,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   else if (m_CalibrationPattern == TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
-    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 10.0, m_TemplateImage.rows / 10.0);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / offsetForTemplateMatching,
+                                    m_TemplateImage.rows / offsetForTemplateMatching);
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
     // We set no scaleFactors, as this method uses a two phase
@@ -1126,7 +1130,8 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   else if (m_CalibrationPattern == TEMPLATE_MATCHING_NON_COPLANAR_RINGS)
   {
     cv::Size2i internalCorners(m_GridSizeX, m_GridSizeY);
-    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / 10.0, m_TemplateImage.rows / 10.0);
+    cv::Size2i offsetIfNotIterative(m_TemplateImage.cols / offsetForTemplateMatching,
+                                    m_TemplateImage.rows / offsetForTemplateMatching);
     unsigned long int maxArea = m_TemplateImage.cols * m_TemplateImage.rows;
 
     // We set no scaleFactors, as this method uses a two phase
