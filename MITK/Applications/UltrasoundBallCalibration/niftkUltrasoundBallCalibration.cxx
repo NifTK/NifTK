@@ -20,6 +20,8 @@
 #include <niftkFileIOUtils.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
+#include <niftkQuaternion.h>
+#include <cv.h>
 
 int main(int argc, char** argv)
 {
@@ -41,15 +43,29 @@ int main(int argc, char** argv)
     mitk::Point2D scaleFactors;
     niftk::RotationTranslation imageToSensor;
 
+/*****************************************Point Calibration*******************************************************/
     // Loads all data - must throw exceptions on failure.
-    niftk::TrackedImageData data = niftk::LoadImageAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
+    niftk::TrackedPointData trackedPoints = niftk::MatchPointAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
 
     // Runs calibration - must throw exceptions on failure.
-    niftk::DoUltrasoundCalibration(ballSize,      // command line arg
-                                   data,          // input data
+    niftk::DoUltrasoundPointCalibration(trackedPoints,  // input data
+                                        scaleFactors,  // output scale factors
+                                        imageToSensor  // output trasnformation
+                                        );
+/*****************************************************************************************************************/
+
+
+/*****************************************Ball Calibration********************************************************
+    // Loads all data - must throw exceptions on failure.
+    niftk::TrackedImageData trackedImages = niftk::LoadImageAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
+
+    // Runs calibration - must throw exceptions on failure.
+    niftk::DoUltrasoundBallCalibration(ballSize,      // command line arg
+                                   trackedImages,          // input data
                                    scaleFactors,  // output scale factors
                                    imageToSensor  // output trasnformation
                                   );
+*****************************************************************************************************************/
 
     // Convert outputs to matrices (only for consistency - I certainly dont mind if this changes).
     vtkSmartPointer<vtkMatrix4x4> outputMatrix = vtkSmartPointer<vtkMatrix4x4>::New();

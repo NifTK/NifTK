@@ -165,7 +165,7 @@ cv::Mat CreateRingModel(const int model_width)
 
 
 //-----------------------------------------------------------------------------
-cv::Point2d FindCircleInImage(const cv::Mat& image, cv::Mat& model)
+mitk::Point2D FindCircleInImage(const cv::Mat& image, const cv::Mat& model)
 {
   int image_width = image.cols;
   int image_height = image.rows;
@@ -240,21 +240,22 @@ cv::Point2d FindCircleInImage(const cv::Mat& image, cv::Mat& model)
 
   RawHough(image, max_x, max_y, max_radius, medianR);
 
-  cv::Point2d result;
-  result.x = max_x;
-  result.y = max_y;
+  mitk::Point2D result;
+  result[0] = max_x;
+  result[1] = max_y;
 
   return result;
 }
 
-
-//-------------------------------------------------------------------
 // tracking_data is a pair of quaternions representing rotation and translation
-// Caution: the old .pos files record translation first and then a unit quaternion for rotation  
+/*
 cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
-                              const std::vector<TrackingQuaternions>& tracking_data)
+                              const std::vector<TrackingQuaternions>& trackingData
+                              )
+*/
+cv::Mat UltrasoundCalibration(const TrackedPointData& trackedPoints)
 {
-  int number_of_scans = (int)points.size();
+  int number_of_scans = (int)trackedPoints.size();
 
   cv::Mat F(3 * number_of_scans, 1, CV_64F);
   cv::Mat Ftmp(3 * number_of_scans, 1, CV_64F);
@@ -292,10 +293,22 @@ cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
   vector<niftkQuaternion> Q2;
   vector<niftkQuaternion> T2;
   
-  for(auto iter = tracking_data.begin(); iter != tracking_data.end(); iter++)
+  for(auto iter = trackedPoints.begin(); iter != trackedPoints.end(); iter++)
   {
-    Q2.push_back(iter->first);
-    T2.push_back(iter->second);
+    niftkQuaternion r;
+    r[0] = iter->second.first[0];
+    r[1] = iter->second.first[1];
+    r[2] = iter->second.first[2];
+    r[3] = iter->second.first[3];
+
+    niftkQuaternion t;
+    t[0] = 0;
+    t[1] = iter->second.second[0];
+    t[2] = iter->second.second[1];
+    t[3] = iter->second.second[2];
+
+    Q2.push_back(r);
+    T2.push_back(t);
   }
 
   double p22;
@@ -342,8 +355,8 @@ cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
     for (int i = 0; i < number_of_scans; i++)
     {
       qx[0] = 0;
-      qx[1] = sx * points[i].x;
-      qx[2] = sy * points[i].y;
+      qx[1] = sx * trackedPoints[i].first[0];
+      qx[2] = sy * trackedPoints[i].first[1];
       qx[3] = 0;
 
       p22 = Q2[i][0] * Q2[i][0]
@@ -379,50 +392,50 @@ cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
       - Q2[i][1] * Q2[i][1]
       - Q2[i][2] * Q2[i][2];
 
-      dqxq_ds_21 = q1[1] * q1[1] * points[i].x
-        + q1[0] * q1[0] * points[i].x
-        - q1[2] * q1[2] * points[i].x
-        - q1[3] * q1[3] * points[i].x;
+      dqxq_ds_21 = q1[1] * q1[1] * trackedPoints[i].first[0]
+        + q1[0] * q1[0] * trackedPoints[i].first[0]
+        - q1[2] * q1[2] * trackedPoints[i].first[0]
+        - q1[3] * q1[3] * trackedPoints[i].first[0];
 
-      dqxq_ds_22 = 2 * q1[1] * q1[2] * points[i].y
-        - 2 * q1[0] * q1[3] * points[i].y;
+      dqxq_ds_22 = 2 * q1[1] * q1[2] * trackedPoints[i].first[1]
+        - 2 * q1[0] * q1[3] * trackedPoints[i].first[1];
 
-      dqxq_ds_31 = 2 * q1[1] * q1[2] * points[i].x
-        + 2 * q1[0] * q1[3] * points[i].x;
+      dqxq_ds_31 = 2 * q1[1] * q1[2] * trackedPoints[i].first[0]
+        + 2 * q1[0] * q1[3] * trackedPoints[i].first[0];
 
-      dqxq_ds_32 = q1[2] * q1[2] * points[i].y
-        + q1[0] * q1[0] * points[i].y
-        - q1[1] * q1[1] * points[i].y
-        - q1[3] * q1[3] * points[i].y;
+      dqxq_ds_32 = q1[2] * q1[2] * trackedPoints[i].first[1]
+        + q1[0] * q1[0] * trackedPoints[i].first[1]
+        - q1[1] * q1[1] * trackedPoints[i].first[1]
+        - q1[3] * q1[3] * trackedPoints[i].first[1];
 
-      dqxq_ds_41 = 2 * q1[1] * q1[3] * points[i].x
-        - 2 * q1[0] * q1[2] * points[i].x;
+      dqxq_ds_41 = 2 * q1[1] * q1[3] * trackedPoints[i].first[0]
+        - 2 * q1[0] * q1[2] * trackedPoints[i].first[0];
 
-      dqxq_ds_42 = 2 * q1[2] * q1[3] * points[i].y
-        + 2 * q1[0] * q1[1] * points[i].y;
+      dqxq_ds_42 = 2 * q1[2] * q1[3] * trackedPoints[i].first[1]
+        + 2 * q1[0] * q1[1] * trackedPoints[i].first[1];
 
-      dqxq_dq_21 = 2 * q1[0] * sx*points[i].x - 2 * q1[3] * sy*points[i].y;
-      dqxq_dq_22 = 2 * q1[1] * sx*points[i].x + 2 * q1[2] * sy*points[i].y;
-      dqxq_dq_23 = -2 * q1[2] * sx*points[i].x + 2 * q1[1] * sy*points[i].y;
-      dqxq_dq_24 = -2 * q1[3] * sx*points[i].x - 2 * q1[0] * sy*points[i].y;
+      dqxq_dq_21 = 2 * q1[0] * sx * trackedPoints[i].first[0] - 2 * q1[3] * sy * trackedPoints[i].first[1];
+      dqxq_dq_22 = 2 * q1[1] * sx * trackedPoints[i].first[0] + 2 * q1[2] * sy * trackedPoints[i].first[1];
+      dqxq_dq_23 = -2 * q1[2] * sx * trackedPoints[i].first[0] + 2 * q1[1] * sy * trackedPoints[i].first[1];
+      dqxq_dq_24 = -2 * q1[3] * sx * trackedPoints[i].first[0] - 2 * q1[0] * sy * trackedPoints[i].first[1];
 
-      dqxq_dq_31 = 2 * q1[3] * sx*points[i].x + 2 * q1[0] * sy*points[i].y;
-      dqxq_dq_32 = 2 * q1[2] * sx*points[i].x - 2 * q1[1] * sy*points[i].y;
-      dqxq_dq_33 = 2 * q1[1] * sx*points[i].x + 2 * q1[2] * sy*points[i].y;
-      dqxq_dq_34 = 2 * q1[0] * sx*points[i].x - 2 * q1[3] * sy*points[i].y;
+      dqxq_dq_31 = 2 * q1[3] * sx * trackedPoints[i].first[0] + 2 * q1[0] * sy * trackedPoints[i].first[1];
+      dqxq_dq_32 = 2 * q1[2] * sx * trackedPoints[i].first[0] - 2 * q1[1] * sy * trackedPoints[i].first[1];
+      dqxq_dq_33 = 2 * q1[1] * sx * trackedPoints[i].first[0] + 2 * q1[2] * sy * trackedPoints[i].first[1];
+      dqxq_dq_34 = 2 * q1[0] * sx * trackedPoints[i].first[0] - 2 * q1[3] * sy * trackedPoints[i].first[1];
 
-      dqxq_dq_41 = -2 * q1[2] * sx*points[i].x + 2 * q1[1] * sy*points[i].y;
-      dqxq_dq_42 = 2 * q1[3] * sx*points[i].x + 2 * q1[0] * sy*points[i].y;
-      dqxq_dq_43 = -2 * q1[0] * sx*points[i].x + 2 * q1[3] * sy*points[i].y;
-      dqxq_dq_44 = 2 * q1[1] * sx*points[i].x + 2 * q1[2] * sy*points[i].y;
+      dqxq_dq_41 = -2 * q1[2] * sx * trackedPoints[i].first[0] + 2 * q1[1] * sy * trackedPoints[i].first[1];
+      dqxq_dq_42 = 2 * q1[3] * sx * trackedPoints[i].first[0] + 2 * q1[0] * sy * trackedPoints[i].first[1];
+      dqxq_dq_43 = -2 * q1[0] * sx * trackedPoints[i].first[0] + 2 * q1[3] * sy * trackedPoints[i].first[1];
+      dqxq_dq_44 = 2 * q1[1] * sx * trackedPoints[i].first[0] + 2 * q1[2] * sy * trackedPoints[i].first[1];
 
-      J.at<double>(3 * i, 0) = p22*dqxq_ds_21 + p23*dqxq_ds_31 + p24*dqxq_ds_41;
-      J.at<double>(3 * i, 1) = p22*dqxq_ds_22 + p23*dqxq_ds_32 + p24*dqxq_ds_42;
+      J.at<double>(3 * i, 0) = p22 * dqxq_ds_21 + p23 * dqxq_ds_31 + p24 * dqxq_ds_41;
+      J.at<double>(3 * i, 1) = p22 * dqxq_ds_22 + p23 * dqxq_ds_32 + p24 * dqxq_ds_42;
 
-      J.at<double>(3 * i, 2) = p22*dqxq_dq_21 + p23*dqxq_dq_31 + p24*dqxq_dq_41;
-      J.at<double>(3 * i, 3) = p22*dqxq_dq_22 + p23*dqxq_dq_32 + p24*dqxq_dq_42;
-      J.at<double>(3 * i, 4) = p22*dqxq_dq_23 + p23*dqxq_dq_33 + p24*dqxq_dq_43;
-      J.at<double>(3 * i, 5) = p22*dqxq_dq_24 + p23*dqxq_dq_34 + p24*dqxq_dq_44;
+      J.at<double>(3 * i, 2) = p22 * dqxq_dq_21 + p23 * dqxq_dq_31 + p24 * dqxq_dq_41;
+      J.at<double>(3 * i, 3) = p22 * dqxq_dq_22 + p23 * dqxq_dq_32 + p24 * dqxq_dq_42;
+      J.at<double>(3 * i, 4) = p22 * dqxq_dq_23 + p23 * dqxq_dq_33 + p24 * dqxq_dq_43;
+      J.at<double>(3 * i, 5) = p22 * dqxq_dq_24 + p23 * dqxq_dq_34 + p24 * dqxq_dq_44;
 
       J.at<double>(3 * i, 6) = p22;
       J.at<double>(3 * i, 7) = p23;
@@ -432,13 +445,13 @@ cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
       J.at<double>(3 * i, 10) = 0;
       J.at<double>(3 * i, 11) = 0;
 
-      J.at<double>(3 * i + 1, 0) = p32*dqxq_ds_21 + p33*dqxq_ds_31 + p34*dqxq_ds_41;
-      J.at<double>(3 * i + 1, 1) = p32*dqxq_ds_22 + p33*dqxq_ds_32 + p34*dqxq_ds_42;
+      J.at<double>(3 * i + 1, 0) = p32 * dqxq_ds_21 + p33 * dqxq_ds_31 + p34 * dqxq_ds_41;
+      J.at<double>(3 * i + 1, 1) = p32 * dqxq_ds_22 + p33 * dqxq_ds_32 + p34 * dqxq_ds_42;
 
-      J.at<double>(3 * i + 1, 2) = p32*dqxq_dq_21 + p33*dqxq_dq_31 + p34*dqxq_dq_41;
-      J.at<double>(3 * i + 1, 3) = p32*dqxq_dq_22 + p33*dqxq_dq_32 + p34*dqxq_dq_42;
-      J.at<double>(3 * i + 1, 4) = p32*dqxq_dq_23 + p33*dqxq_dq_33 + p34*dqxq_dq_43;
-      J.at<double>(3 * i + 1, 5) = p32*dqxq_dq_24 + p33*dqxq_dq_34 + p34*dqxq_dq_44;
+      J.at<double>(3 * i + 1, 2) = p32 * dqxq_dq_21 + p33 * dqxq_dq_31 + p34 * dqxq_dq_41;
+      J.at<double>(3 * i + 1, 3) = p32 * dqxq_dq_22 + p33 * dqxq_dq_32 + p34 * dqxq_dq_42;
+      J.at<double>(3 * i + 1, 4) = p32 * dqxq_dq_23 + p33 * dqxq_dq_33 + p34 * dqxq_dq_43;
+      J.at<double>(3 * i + 1, 5) = p32 * dqxq_dq_24 + p33 * dqxq_dq_34 + p34 * dqxq_dq_44;
 
       J.at<double>(3 * i + 1, 6) = p32;
       J.at<double>(3 * i + 1, 7) = p33;
@@ -448,13 +461,13 @@ cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
       J.at<double>(3 * i + 1, 10) = 1;
       J.at<double>(3 * i + 1, 11) = 0;
 
-      J.at<double>(3 * i + 2, 0) = p42*dqxq_ds_21 + p43*dqxq_ds_31 + p44*dqxq_ds_41;
-      J.at<double>(3 * i + 2, 1) = p42*dqxq_ds_22 + p43*dqxq_ds_32 + p44*dqxq_ds_42;
+      J.at<double>(3 * i + 2, 0) = p42 * dqxq_ds_21 + p43 * dqxq_ds_31 + p44 * dqxq_ds_41;
+      J.at<double>(3 * i + 2, 1) = p42 * dqxq_ds_22 + p43 * dqxq_ds_32 + p44 * dqxq_ds_42;
 
-      J.at<double>(3 * i + 2, 2) = p42*dqxq_dq_21 + p43*dqxq_dq_31 + p44*dqxq_dq_41;
-      J.at<double>(3 * i + 2, 3) = p42*dqxq_dq_22 + p43*dqxq_dq_32 + p44*dqxq_dq_42;
-      J.at<double>(3 * i + 2, 4) = p42*dqxq_dq_23 + p43*dqxq_dq_33 + p44*dqxq_dq_43;
-      J.at<double>(3 * i + 2, 5) = p42*dqxq_dq_24 + p43*dqxq_dq_34 + p44*dqxq_dq_44;
+      J.at<double>(3 * i + 2, 2) = p42 * dqxq_dq_21 + p43 * dqxq_dq_31 + p44 * dqxq_dq_41;
+      J.at<double>(3 * i + 2, 3) = p42 * dqxq_dq_22 + p43 * dqxq_dq_32 + p44 * dqxq_dq_42;
+      J.at<double>(3 * i + 2, 4) = p42 * dqxq_dq_23 + p43 * dqxq_dq_33 + p44 * dqxq_dq_43;
+      J.at<double>(3 * i + 2, 5) = p42 * dqxq_dq_24 + p43 * dqxq_dq_34 + p44 * dqxq_dq_44;
 
       J.at<double>(3 * i + 2, 6) = p42;
       J.at<double>(3 * i + 2, 7) = p43;
@@ -464,7 +477,7 @@ cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
       J.at<double>(3 * i + 2, 10) = 0;
       J.at<double>(3 * i + 2, 11) = 1;
 
-      fi = Q2[i] * (q1*qx*q1.Conjugate() + t1)*Q2[i].Conjugate() + T2[i] + t3;
+      fi = Q2[i] * (q1 * qx * q1.Conjugate() + t1) * Q2[i].Conjugate() + T2[i] + t3;
 
       F.at<double>(i * 3) = fi[1];
       F.at<double>(i * 3 + 1) = fi[2];
@@ -537,48 +550,40 @@ cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
 }
 
 
-//-------------------------------------------------------------------
-void DoUltrasoundCalibration(const int& modelWidth,
-                             const TrackedImageData& data,
+/*
+The diameter of the circle in the images should be measured with an interactive tool
+ring model width = diameter + 15
+*/
+void DoUltrasoundBallCalibration(const int& ballSize,
+                             const TrackedImageData& trackedImages,
                              mitk::Point2D& pixelScaleFactors,
                              RotationTranslation& imageToSensorTransform
                             )
 {
 
-  MITK_INFO << "DoUltrasoundCalibration: Doing Ultrasound Calibration with "
-            << data.size() << " samples.";
+  MITK_INFO << "DoUltrasoundBallCalibration: Doing Ultrasound Ball Calibration with "
+            << trackedImages.size() << " samples.";
 
-  std::vector<cv::Point2d> points;
-  std::vector<TrackingQuaternions> trackingData;
+  TrackedPointData trackedPoints;
 
-  cv::Mat model = CreateRingModel(modelWidth);
+  cv::Mat model = CreateRingModel(ballSize + 15);
 
   // Extract all 2D centres of circles
-  for (int i = 0; i < data.size(); i++)
+  for (int i = 0; i < trackedImages.size(); i++)
   {
-    cv::Mat tmpImage = niftk::MitkImageToOpenCVMat(data[i].first);
-    cv::Point2d pixelLocation = niftk::FindCircleInImage(tmpImage, model);
+    cv::Mat tmpImage = niftk::MitkImageToOpenCVMat(trackedImages[i].first);
+    mitk::Point2D pixelLocation = niftk::FindCircleInImage(tmpImage, model);
 
-    niftkQuaternion r;
-    r[0] = data[i].second.first[0];
-    r[1] = data[i].second.first[1];
-    r[2] = data[i].second.first[2];
-    r[3] = data[i].second.first[3];
+    TrackedPoint aTrackedPoint;
 
-    niftkQuaternion t;
-    t[0] = 0;
-    t[1] = data[i].second.second[0];
-    t[2] = data[i].second.second[1];
-    t[3] = data[i].second.second[2];
+    aTrackedPoint.first = pixelLocation;
+    aTrackedPoint.second = trackedImages[i].second;
 
-    TrackingQuaternions tq(r, t);
-
-    points.push_back(pixelLocation);
-    trackingData.push_back(tq);
+    trackedPoints.push_back(aTrackedPoint);
   }
 
   // Now do calibration.
-  cv::Mat parameters = UltrasoundCalibration(points, trackingData);
+  cv::Mat parameters = UltrasoundCalibration(trackedPoints);
 
   // Now copy into output
   pixelScaleFactors[0] = parameters.at<double>(0);
@@ -594,8 +599,32 @@ void DoUltrasoundCalibration(const int& modelWidth,
   imageToSensorTransform.second[2] = parameters.at<double>(8);
 }
 
+//-------------------------------------------------------------------------------------------------------
+void DoUltrasoundPointCalibration(const TrackedPointData& trackedPoints,
+                                  mitk::Point2D& pixelScaleFactors,
+                                  RotationTranslation& imageToSensorTransform
+                                  )
+{
+  MITK_INFO << "DoUltrasoundPointCalibration: Doing Ultrasound Point Calibration with "
+            << trackedPoints.size() << " samples.";
 
-//-----------------------------------------------------------------------------
+  cv::Mat parameters = UltrasoundCalibration(trackedPoints);
+
+  // Now copy into output
+  pixelScaleFactors[0] = parameters.at<double>(0);
+  pixelScaleFactors[1] = parameters.at<double>(1);
+
+  imageToSensorTransform.first[0] = parameters.at<double>(2);
+  imageToSensorTransform.first[1] = parameters.at<double>(3);
+  imageToSensorTransform.first[2] = parameters.at<double>(4);
+  imageToSensorTransform.first[3] = parameters.at<double>(5);
+
+  imageToSensorTransform.second[0] = parameters.at<double>(6);
+  imageToSensorTransform.second[1] = parameters.at<double>(7);
+  imageToSensorTransform.second[2] = parameters.at<double>(8);
+}
+
+/******************************Reconstruction***********************************/
 void DoUltrasoundReconstructionFor1Slice(InputImageType::Pointer itk2D,
                                          OutputImageType::Pointer accumulator,
                                          OutputImageType::Pointer itk3D
@@ -631,7 +660,6 @@ void DoUltrasoundReconstructionFor1Slice(InputImageType::Pointer itk2D,
   }
 
 }
-
 
 //-----------------------------------------------------------------------------
 mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
@@ -825,7 +853,7 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
     calibratedTranslation.at<double>(r) = imageToSensorTransform.second[r];
   }
 
-  // Now iterate through each image/tracking, and put in volume.
+  // Now iterate through each image/tracking data pair, and put in volume.
   for (int i = 0; i < data.size(); i++)
   {
     double quaternion[4];
@@ -916,19 +944,161 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   return resultImage;
 }
 
+void LoadOxfordQuaternionTrackingFile(std::string filename,
+                                      mitk::Point4D& rotation,
+                                      mitk::Vector3D& translation
+                                      )
+{
+  fstream fp(filename, ios::in);
+  
+  if (!fp)
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Can't open quaternion tracking data file " << filename << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  char line[130];
+  fp.getline(line, 130, '\n');
+  fp.getline(line, 130, '\n');
+  fp.getline(line, 130, '\n');
+
+  fp >> translation[0] >> translation[1] >> translation[2] >> rotation[0] >> rotation[1] >> rotation[2] >> rotation[3];
+
+  fp.close();
+
+  return;
+}
+
+//-----------------------------------------------------------------------------
+TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& pointDir,
+                                                          const std::string& trackingDir  
+                                                          )
+{
+  std::vector<std::string> pointFiles = niftk::GetFilesInDirectory(pointDir);
+  std::vector<std::string> trackingFiles = niftk::GetFilesInDirectory(trackingDir);
+
+  if (pointFiles.size() >= trackingFiles.size())
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "The number of point files is less than the number of tracking files." << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  TrackedPointData outputData;
+
+  int matchNumber = 0;
+
+  for (int i = 0; i < pointFiles.size(); i++)
+  {
+    std::size_t found1 = pointFiles[i].find_last_of("/\\");
+    std::size_t found2 = pointFiles[i].find_last_of(".");
+    std::string pointFileTimeStamp = pointFiles[i].substr(found1 + 10, found2 - found1 - 10 - 1);
+
+    int minTimeDifference = std::numeric_limits<int>::max();
+    int pointFileTime = std::stoi(pointFileTimeStamp);
+
+    for (int j = matchNumber + 1; j < trackingFiles.size(); j++)
+    {
+      found1 = trackingFiles[i].find_last_of("/\\");
+      found2 = trackingFiles[i].find_last_of(".");
+      std::string trackingFileTimeStamp = trackingFiles[i].substr(found1 + 10, found2 - found1 - 10 - 1);
+
+      int trackingFileTime = std::stoi(trackingFileTimeStamp);
+      int timeDifference = abs(trackingFileTime - pointFileTime);
+
+      if (timeDifference == 0) // Time matched exactly!
+      {
+        matchNumber = j;
+        break;
+      }
+
+      if (timeDifference < minTimeDifference)
+      {
+        minTimeDifference = timeDifference;
+        continue;
+      }
+      else
+      {
+        matchNumber = j - 1;
+        break;
+      }
+
+    } // end for j
+
+    // Read the point file
+    mitk::Point3D aPoint3D;
+    if(!Load3DPointFromFile(pointFiles[i], aPoint3D))
+    {
+      std::ostringstream errorMessage;
+      errorMessage << "Can not read point file " << pointFiles[i] << std::endl;
+      mitkThrow() << errorMessage.str();
+    }
+
+    mitk::Point2D aPoint2D;
+    aPoint2D[0] = aPoint3D[0];
+    aPoint2D[1] = aPoint3D[1];
+
+    // Read the tracking data
+    mitk::Point4D rotation;
+    mitk::Vector3D translation;
+
+    std::size_t found = trackingFiles[matchNumber].find_last_of(".");
+    std::string ext = trackingFiles[matchNumber].substr(found + 1);
+
+    if (( ext == "txt") || ( ext == "4x4"))
+    {
+      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(trackingFiles[i]);
+
+      //Convert to quaternions
+      niftk::ConvertMatrixToRotationAndTranslation(*trackingMatrix, rotation, translation);
+    }
+    else
+      if ( ext == "pos") // For Oxford data
+      {
+        LoadOxfordQuaternionTrackingFile(trackingFiles[i], rotation, translation);
+      }
+      else
+      {
+        std::ostringstream errorMessage;
+        errorMessage << "Unknown tracking data type in " << trackingFiles[matchNumber] << std::endl;
+        mitkThrow() << errorMessage.str();
+      }
+
+    RotationTranslation aRotationTranslationPair;
+    aRotationTranslationPair.first = rotation;
+    aRotationTranslationPair.second = translation;
+
+    TrackedPoint aTrackedPoint;
+    aTrackedPoint.first = aPoint2D;
+    aTrackedPoint.second = aRotationTranslationPair;
+
+    outputData.push_back(aTrackedPoint);
+  } // end for i
+
+  return outputData;
+}
 
 //-----------------------------------------------------------------------------
 TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imageDir,
                                                          const std::string& trackingDir
                                                          )
 {
-  TrackedImageData outputData;
-
   std::vector<std::string> imageFiles = niftk::GetFilesInDirectory(imageDir);
   std::vector<std::string> trackingFiles = niftk::GetFilesInDirectory(trackingDir);
 
+  if (imageFiles.size() > trackingFiles.size())
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "The number of images should not be more than number of tracking data." << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  TrackedImageData outputData;
+
   // Load images using mitk::IOUtil, assuming there is enough memory
   std::vector<mitk::Image::Pointer> images;
+
   for (int i = 0; i < imageFiles.size(); i++)
   {
     mitk::Image::Pointer tmpImage = mitk::IOUtil::LoadImage(imageFiles[i]);
@@ -947,18 +1117,16 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
     mitkThrow() << errorMessage.str();
   }
 
-  // Load tracking data and if of matrix type, convert to quaternions
-  
+  // Load tracking data and if of matrix type, and convert to quaternions
   std::vector<RotationTranslation> trackingQuaternions;
 
   for (int i = 0; i < trackingFiles.size(); i++)
   {
-    RotationTranslation oneRotationTranslationPair;
     mitk::Point4D rotation;
     mitk::Vector3D translation;
 
     std::size_t found = trackingFiles[i].find_last_of(".");
-    std::string ext = trackingFiles[i].substr(found+1);
+    std::string ext = trackingFiles[i].substr(found + 1);
 
     if (( ext == "txt") || ( ext == "4x4"))
     {
@@ -967,12 +1135,24 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
       //Convert to quaternions
       niftk::ConvertMatrixToRotationAndTranslation(*trackingMatrix, rotation, translation);
     }
+    else
+      if ( ext == "pos") // For Oxford data
+      {
+        LoadOxfordQuaternionTrackingFile(trackingFiles[i], rotation, translation);
+      }
+      else
+      {
+        std::ostringstream errorMessage;
+        errorMessage << "Unknown tracking data type in " << trackingFiles[i] << std::endl;
+        mitkThrow() << errorMessage.str();
+      }
 
-    oneRotationTranslationPair.first = rotation;
-    oneRotationTranslationPair.second = translation;
+    RotationTranslation aRotationTranslationPair;
+    aRotationTranslationPair.first = rotation;
+    aRotationTranslationPair.second = translation;
 
-    trackingQuaternions.push_back(oneRotationTranslationPair);
-  }
+    trackingQuaternions.push_back(aRotationTranslationPair);
+  } // end i
 
   if (trackingFiles.size() != trackingQuaternions.size())
   {
@@ -991,12 +1171,12 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
   // Making image/tracking quaternion pairs
   for (int i = 0; i < images.size(); i++)
   {
-    TrackedImage oneTrackedImage;
+    TrackedImage aTrackedImage;
 
-    oneTrackedImage.first = images[i];
-    oneTrackedImage.second = trackingQuaternions[i];
+    aTrackedImage.first = images[i];
+    aTrackedImage.second = trackingQuaternions[i];
 
-    outputData.push_back(oneTrackedImage);
+    outputData.push_back(aTrackedImage);
   }
 
   // this will incur a copy, but you wont copy images, you will copy smart pointers.

@@ -44,6 +44,13 @@ typedef std::pair<mitk::Image::Pointer,
 
 typedef std::vector<TrackedImage> TrackedImageData;
 
+typedef std::pair<mitk::Point2D,
+                  RotationTranslation>
+                  TrackedPoint;
+
+typedef std::vector<TrackedPoint> TrackedPointData;
+
+
 /**
 * \brief Loads data from 2 directories.
 */
@@ -51,14 +58,25 @@ NIFTKUSRECON_EXPORT TrackedImageData LoadImageAndTrackingDataFromDirectories(con
                                                                              const std::string& trackingDir
                                                                             );
 
+NIFTKUSRECON_EXPORT TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& pointDir,
+                                                                              const std::string& trackingDir  
+                                                                             );
+
+
 /**
 * \brief Entry point for Guofang's Ultrasound Calibration.
 */
-NIFTKUSRECON_EXPORT void DoUltrasoundCalibration(const int& modelWidth,
-                                                 const TrackedImageData& data,
-                                                 mitk::Point2D& pixelScaleFactors,
-                                                 RotationTranslation& imageToSensorTransform
-                                                );
+NIFTKUSRECON_EXPORT void DoUltrasoundBallCalibration(const int& ballSize,
+                                                     const TrackedImageData& data,
+                                                     mitk::Point2D& pixelScaleFactors,
+                                                     RotationTranslation& imageToSensorTransform
+                                                     );
+
+
+NIFTKUSRECON_EXPORT void DoUltrasoundPointCalibration(const TrackedPointData& data,
+                                                      mitk::Point2D& pixelScaleFactors,
+                                                      RotationTranslation& imageToSensorTransform
+                                                     );
 
 
 /**
