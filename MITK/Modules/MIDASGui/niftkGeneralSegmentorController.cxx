@@ -2886,21 +2886,43 @@ void GeneralSegmentorController::OnCleanButtonClicked()
             // If the seeds were not all enclosed, the user received warning earlier,
             // and either abandoned this method, or accepted the warning and wiped the slice.
 
-            AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+            if (referenceImage->GetPixelType().GetNumberOfComponents() == 1)
+            {
+              AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
                 ITKUpdateRegionGrowing, 3,
                 (false,
-                 segmentationImage,
-                 seeds,
-                 segmentationContours,
-                 drawToolContours,
-                 polyToolContours,
-                 sliceAxis,
-                 sliceIndex,
-                 referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
-                 referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
-                 regionGrowingImage  // This is the image we are writing to.
+                segmentationImage,
+                seeds,
+                segmentationContours,
+                drawToolContours,
+                polyToolContours,
+                sliceAxis,
+                sliceIndex,
+                referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
+                referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
+                regionGrowingImage  // This is the image we are writing to.
                 )
-            );
+              );
+            }
+            else
+            {
+              // The reference image is the RGB image (read only).
+              AccessFixedTypeByItk_n(referenceImage,
+                ITKUpdateRegionGrowing,
+                MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+                (3),
+                (false,
+                segmentationImage,
+                seeds,
+                segmentationContours,
+                drawToolContours,
+                polyToolContours,
+                sliceAxis,
+                sliceIndex,
+                regionGrowingImage  // This is the image we are writing to.
+                )
+              );
+            }
 
           }
 

@@ -541,6 +541,73 @@ void ITKUpdateRegionGrowing(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+void ITKUpdateRegionGrowing(
+  const itk::Image<TPixel, VImageDimension>* itkImage,  // Grey scale image (read only).
+  bool skipUpdate,
+  const mitk::Image* workingImage,
+  const mitk::PointSet* seeds,
+  mitk::ContourModelSet* segmentationContours,
+  mitk::ContourModelSet* drawContours,
+  mitk::ContourModelSet* polyContours,
+  int sliceAxis,
+  int sliceIndex,
+  mitk::Image* outputRegionGrowingImage
+  )
+{
+  typedef itk::Image<unsigned char, VImageDimension> ImageType;
+  typedef mitk::ImageToItk< ImageType > ImageToItkType;
+
+  typename ImageToItkType::Pointer regionGrowingToItk = ImageToItkType::New();
+  regionGrowingToItk->SetInput(outputRegionGrowingImage);
+  regionGrowingToItk->Update();
+
+  typename ImageToItkType::Pointer workingImageToItk = ImageToItkType::New();
+  workingImageToItk->SetInput(workingImage);
+  workingImageToItk->Update();
+
+  GeneralSegmentorPipelineCache* pipelineCache = GeneralSegmentorPipelineCache::Instance();
+  GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline =
+    pipelineCache->GetPipeline<TPixel, VImageDimension>();
+
+  GeneralSegmentorPipelineParams params;
+  params.m_SliceIndex = sliceIndex;
+  params.m_SliceAxis = sliceAxis;
+  params.m_Seeds = seeds;
+  params.m_SegmentationContours = segmentationContours;
+  params.m_DrawContours = drawContours;
+  params.m_PolyContours = polyContours;
+  params.m_EraseFullSlice = true;
+
+  // Update pipeline.
+  if (!skipUpdate)
+  {
+    // First wipe whole 3D volume
+    regionGrowingToItk->GetOutput()->FillBuffer(0);
+
+    // Configure pipeline.
+    pipeline->SetParam(itkImage, workingImageToItk->GetOutput(), params);
+
+    // Setting the pointer to the output image, then calling update on the pipeline
+    // will mean that the pipeline will copy its data to the output image.
+    pipeline->m_OutputImage = regionGrowingToItk->GetOutput();
+    pipeline->Update(params);
+
+    //mitk::Image::Pointer segmentationContourImage = mitk::ImportItkImage(pipeline->m_SegmentationContourImage);
+    //mitk::Image::Pointer manualContourImage = mitk::ImportItkImage(pipeline->m_ManualContourImage);
+
+    //mitk::DataNode::Pointer segmentationContourImageNode = this->CreateNewSegmentation(m_DefaultSegmentationColor);
+    //segmentationContourImageNode->SetData(segmentationContourImage);
+    //mitk::DataNode::Pointer manualContourImageNode = this->CreateNewSegmentation(m_DefaultSegmentationColor);
+    //manualContourImageNode->SetData(manualContourImage);
+
+    // To make sure we release all smart pointers.
+    pipeline->DisconnectPipeline();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void ITKPropagateToRegionGrowingImage
  (const itk::Image<TPixel, VImageDimension>* itkImage,
   const mitk::PointSet* inputSeeds,

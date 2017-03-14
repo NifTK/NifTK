@@ -210,6 +210,26 @@ void ITKUpdateRegionGrowing(
     mitk::Image* outputRegionGrowingImage
     );
 
+/// \brief Called from UpdateRegionGrowing(), updates the interactive ITK
+/// single 2D slice region growing pipeline.
+/// Note: segmentationContours, drawContours and polyContours could be
+/// const pointers, but some const functions are missing from mitk::ContourModelSet.
+/// They are not modified from within this function (including transitive calls).
+/// Same as the overloaded version above but without thresholding.
+template<typename TPixel, unsigned int VImageDimension>
+void ITKUpdateRegionGrowing(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    bool skipUpdate,
+    const mitk::Image* workingImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* drawContours,
+    mitk::ContourModelSet* polyContours,
+    int sliceAxis,
+    int sliceIndex,
+    mitk::Image* outputRegionGrowingImage
+    );
+
 /// \brief Method takes all the input, and calculates the 3D propagated
 /// region (up or down or 3D), and stores it in the region growing node.
 template<typename TPixel, unsigned int VImageDimension>
