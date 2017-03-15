@@ -10,7 +10,7 @@ template<class TInputImage, class TOutputImage>
 BinariseVesselResponseFilter<TInputImage, TOutputImage>::BinariseVesselResponseFilter()
 {
   m_LowThreshold = 5;
-  m_UpThreshold = static_cast<InternalPixelType>(std::numeric_limits<InputPixelType>::max());
+  m_UpThreshold = std::numeric_limits<InternalPixelType>::max();
   m_Percentage = 0.001;
 }
 
@@ -45,11 +45,12 @@ void BinariseVesselResponseFilter<TInputImage, TOutputImage>::GenerateData()
   relabelfilter->Update();
 
   //Unify output
-  unsigned int elems = relabelfilter->GetNumberOfObjects() ;
+  unsigned int elems = relabelfilter->GetNumberOfObjects();
   if (elems > 1)
   {
-    typename BinaryLabelThresholdImageFilterType::Pointer thresholdfilter =
-                              BinaryLabelThresholdImageFilterType::New();
+    typedef itk::BinaryThresholdImageFilter<OutputImageType, OutputImageType> OutputThresholdFilterType;
+    typename OutputThresholdFilterType::Pointer thresholdfilter =
+                              OutputThresholdFilterType::New();
     thresholdfilter->SetInput( relabelfilter->GetOutput() );
     thresholdfilter->SetLowerThreshold( 1 );
     thresholdfilter->SetUpperThreshold( elems );

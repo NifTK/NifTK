@@ -37,7 +37,8 @@ public:
   typedef SmartPointer<const Self>                           ConstPointer;
   typedef TIntensityImage                                    IntensityImageType;
   typedef TVesselImage                                       VesselImageType;
-  typedef typename IntensityImageType::PixelType              OutputPixelType;
+  typedef typename IntensityImageType::PixelType             OutputPixelType;
+  typedef OutputPixelType                                    InternalPixelType;
 
   typedef enum
   {
@@ -57,27 +58,27 @@ public:
   void SetIntensityImage(const TIntensityImage* image);
   void SetVesselnessImage(const TVesselImage* image);
 
-  itkGetConstMacro(FilterMode, FilterModeType);
-  itkGetConstMacro(Degree, double);
-  itkGetConstMacro(Threshold, double);
-  itkSetMacro(FilterMode, FilterModeType);
-  itkSetMacro(Degree, double);
-  itkSetMacro(Threshold, float);
+  itkGetConstMacro(FilterMode,    FilterModeType);
+  itkGetConstMacro(Degree,        InternalPixelType);
+  itkGetConstMacro(Threshold,     InternalPixelType);
+  itkGetConstMacro(OutputMaximum, InternalPixelType);
+
+  itkSetMacro(FilterMode,     FilterModeType);
+  itkSetMacro(Degree,         InternalPixelType);
+  itkSetMacro(Threshold,      InternalPixelType);
+  itkSetMacro(OutputMaximum,  InternalPixelType);
 
 protected:
   IntensityFilter();
   ~IntensityFilter(){}
 
-  typedef double                                             InternalPixelType;
-  typedef Image<InternalPixelType,ImageDimension>            InternalImageType;
+  typedef Image<InternalPixelType, ImageDimension>           InternalImageType;
   typedef itk::RescaleIntensityImageFilter< VesselImageType,
                                         InternalImageType > VesselRescalerType;
   typedef itk::RescaleIntensityImageFilter< IntensityImageType,
                                           InternalImageType >InputRescalerType;
   typedef itk::RescaleIntensityImageFilter< InternalImageType,
                                           InternalImageType >InternalRescalerType;
-//  typedef itk::NormalizeImageFilter< InternalImageType,
-//                                          InternalImageType >NormalizerType;
   typedef itk::CastImageFilter< InternalImageType, VesselImageType >
                                                           CastOutFilterType;
   typedef itk::NormalizeImageFilter< IntensityImageType,
@@ -97,9 +98,10 @@ private:
   void operator=(const Self &);  //purposely not implemented
   void PrintSelf(std::ostream&os, Indent indent) const;
 
-  FilterModeType m_FilterMode;
-  double          m_Degree;
-  double          m_Threshold;
+  FilterModeType    m_FilterMode;
+  InternalPixelType m_Degree;
+  InternalPixelType m_Threshold;
+  InternalPixelType m_OutputMaximum;
 };
 } // namespace itk
 

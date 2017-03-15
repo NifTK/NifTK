@@ -133,13 +133,6 @@ See LICENSE.txt in the top level directory for details.
 //    " <default>false</default>\n"
 //    " </boolean>\n"
 //    " <boolean>\n"
-//    " <name>isTOF</name>\n"
-//    " <longflag>tof</longflag>\n"
-//    " <description>Input image is TOF.</description>\n"
-//    " <label>TOF input</label>\n"
-//    " <default>false</default>\n"
-//    " </boolean>\n"
-//    " <boolean>\n"
 //    " <name>doIntensity</name>\n"
 //    " <longflag>intfil</longflag>\n"
 //    " <description>Use image intensity to filter</description>\n"
@@ -176,7 +169,6 @@ void Usage(char *exec)
   std::cout << " --atwo <float> [2.0] Alpha two parameter" << std::endl;
   std::cout << " --bin Binarise output" << std::endl;
   std::cout << " --ct Input image is CTA" << std::endl;
-  std::cout << " --tof Input image is MR TOF" << std::endl;
   std::cout << " --intfil Extra layer of filtering using image intensities" << std::endl;
 }
 
@@ -194,7 +186,6 @@ void startProgress()
     std::cout << "<filter-name>niftkVesselExtractor</filter-name>\n";
     std::cout << "<filter-comment>niftkVesselExtractor</filter-comment>\n";
     std::cout << "</filter-start>\n";
-    std::cout << std::flush;
   }
 }
 
@@ -205,7 +196,6 @@ void progressXML(int p, std::string text)
   {
     float k = static_cast<float>((float) p / 100);
     std::cout << "<filter-progress>" << k <<"</filter-progress>\n";
-    std::cout << std::flush;
   }
 }
 
@@ -220,7 +210,6 @@ void closeProgress(std::string img, std::string status)
     std::cout << "<filter-end>\n";
     std::cout << "<filter-name>niftkVesselExtractor</filter-name>\n";
     std::cout << "<filter-comment>Finished</filter-comment></filter-end>\n";
-    std::cout << std::flush;
   }
 }
 
@@ -229,6 +218,7 @@ const unsigned int InternalDimension = 3;
 typedef float InternalPixelType;
 typedef itk::Image<InternalPixelType, InternalDimension> InternalImageType;
 
+// function to cast and crop the input image to the internal type
 template<int Dimension, class PixelType>
 InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int sliceToKeep)
 {
@@ -240,13 +230,12 @@ InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int
 
   try
   {
-    std::cout << "Reading input image: " << fileInputImage << std::endl; 
+    progressXML(0, "Reading input image: " + fileInputImage + ".") ;
     imageReader->Update(); 
   }
   catch( itk::ExceptionObject & err ) 
   { 
-    std::cerr << std::endl << "ERROR: Failed to read the input image: " << err
-	      << std::endl << std::endl; 
+    closeProgress("FAILED", "Failed to read the input image: " + fileInputImage + ".");
     return NULL;
   }      
 
@@ -314,10 +303,43 @@ void CastAndSaveOutputImage(std::string fileOutputImage,
   }
   catch( itk::ExceptionObject & err )
   {
-    std::cerr << "Failed: " << err << std::endl;
     closeProgress(fileOutputImage, "Failed");
   }
 }
+
+namespace Functor
+{
+template <class TPixel>
+class CreateCTMask
+{
+  public:
+    CreateCTMask(){ m_Thresh = (TPixel) 1; }
+    CreateCTMask(TPixel thresh) { m_Thresh = thresh; }
+    ~CreateCTMask() {}
+
+    bool operator!=(const CreateCTMask &other) const
+    {
+      return m_Thresh != other.m_Thresh;
+    }
+ 
+    bool operator==(const CreateCTMask & other) const
+    {
+      return !( *this != other );
+    }
+ 
+    inline TPixel operator()(const TPixel & A,
+                             const TPixel & B) const
+    {
+      if (A == 0 || B >= m_Thresh)
+        return (TPixel)0;
+      else
+        return (TPixel)1;
+    }
+
+  TPixel m_Thresh;
+};
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -325,6 +347,7 @@ int main(int argc, char *argv[])
   int extractedSlice = 0;
 
   PARSE_ARGS;
+  startProgress();
 
   if (inputImageName.empty() || outputImageName.empty())
   {
@@ -342,28 +365,27 @@ int main(int argc, char *argv[])
 
   if (mode != 0 && mode != 1)
   {
-    std::cerr << "Unknown scale mode. Must be 0 (linear) or 1 (exponential)" << std::endl;
+    closeProgress("FAILED", "Unknown scale mode. Must be 0 (linear) or 1 (exponential)");
     Usage(argv[0]);
     return EXIT_FAILURE;
   }
 
   if (max < 0 || min < 0)
   {
-    std::cerr << "Maximum/minimum vessel size must be a positive number" << std::endl;
+    closeProgress("FAILED", "Maximum/minimum vessel size must be a positive number");
     Usage(argv[0]);
     return EXIT_FAILURE;
   }
-  
-  startProgress();
 
   InternalImageType::Pointer inImage = NULL;
   int dims = itk::PeekAtImageDimension(inputImageName);
 
   if (dims != 3 && dims != 4)
   {
-    progressXML(0, "Unsupported image dimension " + std::to_string(dims) + ".");
+    closeProgress("FAILED", "Unsupported image dimension " + std::to_string(dims) + ".");
     return EXIT_FAILURE;
   }
+
 
   switch (itk::PeekAtComponentType(inputImageName))
   {
@@ -429,14 +451,14 @@ int main(int argc, char *argv[])
       break;
     default:
     {
-      std::cerr << "non standard pixel format" << std::endl;
+      closeProgress("FAILED", "Unsupported pixel format");
       return EXIT_FAILURE;
     }
   }
 
   if (inImage.IsNull())
   {
-    progressXML(0, "Unsupported image type. Returning...");
+    closeProgress("FAILED", "Unsupported image type.");
     return EXIT_FAILURE;
   }
 
@@ -527,14 +549,13 @@ int main(int argc, char *argv[])
         break;
       default:
       {
-        std::cerr << "non standard pixel format" << std::endl;
-        return EXIT_FAILURE;
+        progressXML(0, "Unsupported pixel format. Ignoring mask...");
       }
     }
 
     if (inMask.IsNull())
     {
-      progressXML(0, "Warning: Unsupported mask image type. Ignoring mask...");
+      progressXML(0, "Unsupported mask type. Ignoring mask...");
     }
 
     InternalImageType::SizeType size_mask = inMask->GetLargestPossibleRegion().GetSize();
@@ -618,13 +639,14 @@ int main(int argc, char *argv[])
     }
   }
 
+  typedef itk::StatisticsImageFilter<InternalImageType> ImageStatisticsFilter;
+
   bool negImage = false;
   if (isCT)
   {
     progressXML(progresscounter, "Indentifying if the image is in Hounsfield Units...");
     progresscounter += progress_unit;
 
-    typedef itk::StatisticsImageFilter<InternalImageType> ImageStatisticsFilter;
     ImageStatisticsFilter::Pointer statisticsFilter = ImageStatisticsFilter::New();
     statisticsFilter->SetInput(inImage);
     statisticsFilter->Update();
@@ -716,33 +738,38 @@ int main(int argc, char *argv[])
   InternalImageType::Pointer maxImage = vesselnessFilter->GetOutput();
   maxImage->DisconnectPipeline();
 
-  itk::ImageRegionIterator<InternalImageType> outimageIterator(maxImage, maxImage->GetLargestPossibleRegion());
-
-  if (inMask.IsNotNull() && isCT)
+  if (inMask.IsNotNull())
   {
-    progressXML(progresscounter, "Applying mask...");
-    progresscounter += progress_unit;
-    itk::ImageRegionConstIterator<InternalImageType> maskIterator(inMask, maxImage->GetLargestPossibleRegion());
-    itk::ImageRegionConstIterator<InternalImageType> inimageIterator(inImage, maxImage->GetLargestPossibleRegion());
-    outimageIterator.GoToBegin();
-
-    InternalPixelType thresh = 400;
-    if (!negImage)
+    if (isCT)
     {
-      thresh = 1324;
+      progressXML(progresscounter, "Applying mask...");
+      progresscounter += progress_unit;
+
+      typedef Functor::CreateCTMask<InternalPixelType> CreateCTMaskFunctor;
+      typedef itk::BinaryFunctorImageFilter<
+        InternalImageType, 
+        InternalImageType, 
+        InternalImageType,
+        CreateCTMaskFunctor> CreateMaskFilterType;
+
+      CreateMaskFilterType::Pointer createMaskFilter = CreateMaskFilterType::New();
+
+      InternalPixelType thresh = 400;
+      if (!negImage)
+      {
+        thresh = 1324;
+      }
+      CreateCTMaskFunctor createMask(thresh);
+      createMaskFilter->SetFunctor(createMask);
+
+      createMaskFilter->SetInput1(inMask);
+      createMaskFilter->SetInput2(inImage);
+      createMaskFilter->Update();
+
+      inMask = createMaskFilter->GetOutput();
+      inMask->DisconnectPipeline();
     }
 
-    while(!outimageIterator.IsAtEnd()) //Apply brain mask
-    {
-      if (maskIterator.Get() == 0 || inimageIterator.Get() >= thresh)
-        outimageIterator.Set(0);
-      ++outimageIterator;
-      ++maskIterator;
-      ++inimageIterator;
-    }
-  }
-  else if (inMask.IsNotNull())
-  {
     progressXML(progresscounter, "Applying mask...");
     progresscounter += progress_unit;
 
@@ -755,26 +782,12 @@ int main(int argc, char *argv[])
     maxImage = multiplyFilter->GetOutput();
   } // end of vesselextractor.cpp
 
-  //parameters
-  float min_thresh = 0.003, max_thresh = 1, percentage = 0.04;
-
-  if (isTOF)
-  {
-    min_thresh = 0.003;
-    max_thresh = 1;
-    percentage = 0.02;
-  }
-  else
-  {
-    min_thresh = 0.005;
-    max_thresh = 0.5;
-    max_thresh = 1;
-    min_thresh = 0.03;
-    percentage = 0.02;
-  }
-
   if (doIntensity)
   {
+    ImageStatisticsFilter::Pointer statisticsFilter = ImageStatisticsFilter::New();
+    statisticsFilter->SetInput(maxImage);
+    statisticsFilter->Update();
+
     progressXML(progresscounter, "Intensity filtering...");
     progresscounter += progress_unit;
 
@@ -783,7 +796,9 @@ int main(int argc, char *argv[])
     intensityfilter->SetIntensityImage(inImage);
     intensityfilter->SetVesselnessImage(maxImage);
     intensityfilter->SetFilterMode(static_cast<IntensityFilterType::FilterModeType>(2));
+    intensityfilter->SetOutputMaximum(statisticsFilter->GetMaximum());
     intensityfilter->Update();
+
     maxImage->DisconnectPipeline();
     maxImage = intensityfilter->GetOutput();
   }
@@ -804,7 +819,7 @@ int main(int argc, char *argv[])
     if (anisotropic)
     {
       progressXML(progresscounter, "Making image anisotropic again...");
-      progresscounter+=progress_unit;
+      progresscounter += progress_unit;
       
       typedef itk::ResampleImage<MaskImageType> MaskResampleType;
       MaskResampleType::Pointer out_resample = MaskResampleType::New();

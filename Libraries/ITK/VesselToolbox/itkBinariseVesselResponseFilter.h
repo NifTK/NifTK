@@ -33,9 +33,11 @@ class ITK_EXPORT BinariseVesselResponseFilter :
 public:
   /** Standard class typedefs. */
   typedef BinariseVesselResponseFilter                  Self;
-  typedef ImageToImageFilter<TInputImage,TOutputImage>  Superclass;
+  typedef ImageToImageFilter<TInputImage, TOutputImage> Superclass;
   typedef SmartPointer<Self>                            Pointer;
   typedef SmartPointer<const Self>                      ConstPointer;
+
+  typedef short                                         InternalPixelType;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -54,11 +56,11 @@ public:
   typedef typename InputImageType::PixelType          InputPixelType;
   typedef typename OutputImageType::PixelType         OutputPixelType;
 
-  itkGetConstMacro(LowThreshold, InputPixelType);
-  itkGetConstMacro(UpThreshold, InputPixelType);
+  itkGetConstMacro(LowThreshold, InternalPixelType);
+  itkGetConstMacro(UpThreshold, InternalPixelType);
   itkGetConstMacro(Percentage, float);
-  itkSetMacro(LowThreshold, InputPixelType);
-  itkSetMacro(UpThreshold, InputPixelType);
+  itkSetMacro(LowThreshold, InternalPixelType);
+  itkSetMacro(UpThreshold, InternalPixelType);
   itkSetMacro(Percentage, float);
 
 protected:
@@ -69,24 +71,21 @@ protected:
   /** Generate the output data. */
   virtual void GenerateData();
 
-  typedef double                                             InternalPixelType;
-  typedef Image<InternalPixelType,ImageDimension>            InternalImageType;
-  typedef itk::NormalizeImageFilter< InputImageType,
-                                          InternalImageType >NormalizerType;
-  typedef itk::BinaryThresholdImageFilter< InternalImageType, OutputImageType > ThresholdFilter;
-  typedef itk::BinaryThresholdImageFilter <OutputImageType,
-                                        OutputImageType>  BinaryLabelThresholdImageFilterType;
-  typedef itk::ConnectedComponentImageFilter <OutputImageType, OutputImageType >
+  typedef Image<InternalPixelType, ImageDimension>                              InternalImageType;
+  typedef itk::NormalizeImageFilter<InputImageType,
+                                     InternalImageType>                         NormalizerType;
+  typedef itk::BinaryThresholdImageFilter<InternalImageType, InternalImageType> ThresholdFilter;
+  typedef itk::ConnectedComponentImageFilter <InternalImageType, InternalImageType>
                                                             ConnectedComponentImageFilterType;
-  typedef itk::RelabelComponentImageFilter<OutputImageType, OutputImageType >  RelabelFilterType;
+  typedef itk::RelabelComponentImageFilter<InternalImageType, OutputImageType>  RelabelFilterType;
 
 private:
   BinariseVesselResponseFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  InputPixelType  m_LowThreshold;
-  InputPixelType  m_UpThreshold;
-  float           m_Percentage;
+  InternalPixelType  m_LowThreshold;
+  InternalPixelType  m_UpThreshold;
+  float              m_Percentage;
 };
 
 } //end namespace
