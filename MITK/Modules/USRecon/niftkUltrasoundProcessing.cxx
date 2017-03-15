@@ -544,8 +544,9 @@ cv::Mat UltrasoundCalibration(const TrackedPointData& trackedPoints)
     t3[3] = a.at<double>(11);
   }//end for times
 
-  double LSE =  norm(F) / sqrt(3 * number_of_scans);
+  double MSE =  norm(F) / sqrt(3 * number_of_scans);
 
+  cout << "Mean Square Eoor: " << MSE << std::endl;
   return a;
 }
 
@@ -573,6 +574,8 @@ void DoUltrasoundBallCalibration(const int& ballSize,
   {
     cv::Mat tmpImage = niftk::MitkImageToOpenCVMat(trackedImages[i].first);
     mitk::Point2D pixelLocation = niftk::FindCircleInImage(tmpImage, model);
+
+    cout << "Circle " << i << " found" << std::endl;
 
     TrackedPoint aTrackedPoint;
 
@@ -607,6 +610,13 @@ void DoUltrasoundPointCalibration(const TrackedPointData& trackedPoints,
 {
   MITK_INFO << "DoUltrasoundPointCalibration: Doing Ultrasound Point Calibration with "
             << trackedPoints.size() << " samples.";
+
+  for ( auto iter = trackedPoints.begin(); iter != trackedPoints.end(); ++iter) // Debug
+  {
+    cout << iter->first << std::endl;
+    cout << iter->second.first << std::endl;
+    cout << iter->second.second << std::endl;
+  }
 
   cv::Mat parameters = UltrasoundCalibration(trackedPoints);
 
@@ -907,7 +917,7 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
                                         accumulator,
                                         itk3D);
 
-    cout << "Slice " << i << " reconstructed" << endl;
+    cout << "Slice " << i << " reconstructed" << std::endl;
 
   }// end for i
 
@@ -993,23 +1003,34 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
   {
     std::size_t found1 = pointFiles[i].find_last_of("/\\");
     std::size_t found2 = pointFiles[i].find_last_of(".");
-    std::string pointFileTimeStamp = pointFiles[i].substr(found1 + 10, found2 - found1 - 10 - 1);
+    std::string pointFileTimeStamp = pointFiles[i].substr(found1 + 8, found2 - found1 - 8 - 2);
 
-    int minTimeDifference = std::numeric_limits<int>::max();
-    int pointFileTime = std::stoi(pointFileTimeStamp);
+    long long int minTimeDifference = std::numeric_limits<long long int>::max();
+    long long int pointFileTime = std::stoll(pointFileTimeStamp);
 
-    for (int j = matchNumber + 1; j < trackingFiles.size(); j++)
+    std::string matchTime; // Debug
+
+    if ( i == 10) // Debug
     {
-      found1 = trackingFiles[i].find_last_of("/\\");
-      found2 = trackingFiles[i].find_last_of(".");
-      std::string trackingFileTimeStamp = trackingFiles[i].substr(found1 + 10, found2 - found1 - 10 - 1);
+      cout << "Here!" << std::endl;
+    }
 
-      int trackingFileTime = std::stoi(trackingFileTimeStamp);
-      int timeDifference = abs(trackingFileTime - pointFileTime);
+    long long int closestTime = 0;
+
+    for (int j = matchNumber; j < trackingFiles.size(); j++)
+    {
+      found1 = trackingFiles[j].find_last_of("/\\");
+      found2 = trackingFiles[j].find_last_of(".");
+      std::string trackingFileTimeStamp = trackingFiles[j].substr(found1 + 8, found2 - found1 - 8 - 2);
+
+      long long int trackingFileTime = std::stoll(trackingFileTimeStamp);
+      long long int timeDifference = abs(trackingFileTime - pointFileTime);
 
       if (timeDifference == 0) // Time matched exactly!
       {
         matchNumber = j;
+        matchTime = trackingFiles[matchNumber].substr(found1 + 8, found2 - found1 - 8 - 2); // Debug
+        closestTime  = minTimeDifference;
         break;
       }
 
@@ -1021,10 +1042,21 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
       else
       {
         matchNumber = j - 1;
+        matchTime = trackingFiles[matchNumber].substr(found1 + 8, found2 - found1 - 8 - 2); // Debug
+        closestTime  = minTimeDifference;
         break;
       }
-
     } // end for j
+
+    if (closestTime > 1000000)
+    {
+      continue;
+    }
+
+    cout << "Point file " << i << "\t" << pointFileTime << std::endl;
+    cout << "Match file " << matchNumber << "\t" << matchTime << std::endl;
+    cout << "Closest time " << closestTime << std::endl;
+
 
     // Read the point file
     mitk::Point3D aPoint3D;
@@ -1039,7 +1071,9 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
     aPoint2D[0] = aPoint3D[0];
     aPoint2D[1] = aPoint3D[1];
 
-    // Read the tracking data
+    cout << aPoint2D[0] << "\t" << aPoint2D[1] << endl; // Debug
+
+    // Read the matched tracking data
     mitk::Point4D rotation;
     mitk::Vector3D translation;
 
@@ -1048,7 +1082,9 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
 
     if (( ext == "txt") || ( ext == "4x4"))
     {
-      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(trackingFiles[i]);
+      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(trackingFiles[matchNumber]);
+
+      cout << *trackingMatrix << endl;
 
       //Convert to quaternions
       niftk::ConvertMatrixToRotationAndTranslation(*trackingMatrix, rotation, translation);
@@ -1056,7 +1092,7 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
     else
       if ( ext == "pos") // For Oxford data
       {
-        LoadOxfordQuaternionTrackingFile(trackingFiles[i], rotation, translation);
+        LoadOxfordQuaternionTrackingFile(trackingFiles[matchNumber], rotation, translation);
       }
       else
       {

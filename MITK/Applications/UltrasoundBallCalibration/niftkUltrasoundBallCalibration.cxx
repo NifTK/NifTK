@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     mitk::Point2D scaleFactors;
     niftk::RotationTranslation imageToSensor;
 
-/*****************************************Point Calibration*******************************************************/
+/*****************************************Point Calibration*******************************************************
     // Loads all data - must throw exceptions on failure.
     niftk::TrackedPointData trackedPoints = niftk::MatchPointAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
 
@@ -52,10 +52,10 @@ int main(int argc, char** argv)
                                         scaleFactors,  // output scale factors
                                         imageToSensor  // output trasnformation
                                         );
-/*****************************************************************************************************************/
+*****************************************************************************************************************/
 
 
-/*****************************************Ball Calibration********************************************************
+/*****************************************Ball Calibration********************************************************/
     // Loads all data - must throw exceptions on failure.
     niftk::TrackedImageData trackedImages = niftk::LoadImageAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
                                    scaleFactors,  // output scale factors
                                    imageToSensor  // output trasnformation
                                   );
-*****************************************************************************************************************/
+/*****************************************************************************************************************/
 
     // Convert outputs to matrices (only for consistency - I certainly dont mind if this changes).
     vtkSmartPointer<vtkMatrix4x4> outputMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
