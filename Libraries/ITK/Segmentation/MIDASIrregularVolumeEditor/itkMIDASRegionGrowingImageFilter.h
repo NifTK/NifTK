@@ -23,104 +23,94 @@
 #include <itkPolyLineParametricPath.h>
 #include <itkContinuousIndex.h>
 
-namespace itk {
+namespace itk
+{
 
 /**
  * \class MIDASRegionGrowingImageFilter
  * \brief Implements region growing limited by contours.
  */
 template <class TInputImage, class TOutputImage, class TPointSet>
-class ITK_EXPORT MIDASRegionGrowingImageFilter : public ImageToImageFilter<TInputImage, TOutputImage> {
+class ITK_EXPORT MIDASRegionGrowingImageFilter : public ImageToImageFilter<TInputImage, TOutputImage>
+{
 
 public:
-	typedef MIDASRegionGrowingImageFilter                 Self;
-	typedef SmartPointer<const Self>                      ConstPointer;
-	typedef SmartPointer<Self>                            Pointer;
-	typedef ImageToImageFilter<TInputImage, TOutputImage> Superclass;
+  typedef MIDASRegionGrowingImageFilter                 Self;
+  typedef SmartPointer<const Self>                      ConstPointer;
+  typedef SmartPointer<Self>                            Pointer;
+  typedef ImageToImageFilter<TInputImage, TOutputImage> Superclass;
 
   /** Method for creation through the object factory. */
-  itkNewMacro(Self);
+  itkNewMacro(Self)
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(MIDASRegionGrowingImageFilter, ImageToImageFilter );
+  itkTypeMacro(MIDASRegionGrowingImageFilter, ImageToImageFilter)
 
-	typedef TInputImage                                   InputImageType;
-	typedef typename InputImageType::PixelType            InputPixelType;
-	typedef TOutputImage                                  OutputImageType;
-	typedef typename OutputImageType::RegionType          OutputImageRegionType;
-	typedef typename OutputImageType::SizeType            OutputImageSizeType;
-	typedef typename OutputImageType::IndexType           OutputImageIndexType;
-	typedef typename OutputImageType::Pointer             OutputImagePointerType;
-	typedef typename OutputImageType::ConstPointer        OutputImageConstPointerType;
-	typedef typename OutputImageType::PixelType           OutputPixelType;
-	typedef TPointSet                                     PointSetType;
+  typedef TInputImage                                   InputImageType;
+  typedef typename InputImageType::PixelType            InputPixelType;
+  typedef TOutputImage                                  OutputImageType;
+  typedef typename OutputImageType::RegionType          OutputImageRegionType;
+  typedef typename OutputImageType::SizeType            OutputImageSizeType;
+  typedef typename OutputImageType::IndexType           OutputImageIndexType;
+  typedef typename OutputImageType::Pointer             OutputImagePointerType;
+  typedef typename OutputImageType::ConstPointer        OutputImageConstPointerType;
+  typedef typename OutputImageType::PixelType           OutputPixelType;
+  typedef TPointSet                                     PointSetType;
 
-	typedef itk::ContinuousIndex<double,TInputImage::ImageDimension> ContinuousIndexType;
-	typedef itk::PolyLineParametricPath<TInputImage::ImageDimension> ParametricPathType;
+  typedef itk::ContinuousIndex<double,TInputImage::ImageDimension> ContinuousIndexType;
+  typedef itk::PolyLineParametricPath<TInputImage::ImageDimension> ParametricPathType;
 
-	typedef typename ParametricPathType::Pointer          ParametricPathPointer;
-	typedef std::vector<ParametricPathPointer>            ParametricPathVectorType;
-	typedef typename ParametricPathType::VertexListType   ParametricPathVertexListType;
-	typedef typename ParametricPathType::VertexType       ParametricPathVertexType;
+  typedef typename ParametricPathType::Pointer          ParametricPathPointer;
+  typedef std::vector<ParametricPathPointer>            ParametricPathVectorType;
+  typedef typename ParametricPathType::VertexListType   ParametricPathVertexListType;
+  typedef typename ParametricPathType::VertexType       ParametricPathVertexType;
 
-	/**
-	 * \brief Values lower than the LowerThreshold are not grown into.
-	 */
-	itkSetMacro(LowerThreshold, InputPixelType);
-	itkGetConstMacro(LowerThreshold, InputPixelType);
+  /**
+   * \brief The output "foreground" value, normally 1 or 255.
+   */
+  itkSetMacro(ForegroundValue, OutputPixelType)
+  itkGetConstMacro(ForegroundValue, OutputPixelType)
 
-	/**
-	 * \brief Values higher than the UpperThreshold are not grown into.
-	 */
-	itkSetMacro(UpperThreshold, InputPixelType);
-	itkGetConstMacro(UpperThreshold, InputPixelType);
+  /**
+   * \brief The output "background" value, normally 0.
+   */
+  itkSetMacro(BackgroundValue, OutputPixelType)
+  itkGetConstMacro(BackgroundValue, OutputPixelType)
 
-	/**
-	 * \brief The output "foreground" value, normally 1 or 255.
-	 */
-	itkSetMacro(ForegroundValue, OutputPixelType);
-	itkGetConstMacro(ForegroundValue, OutputPixelType);
+  /**
+   * \brief Set a region of interest, and only operate within that.
+   */
+  itkSetMacro(RegionOfInterest, OutputImageRegionType)
+  itkGetConstMacro(RegionOfInterest, OutputImageRegionType)
 
-	/**
-	 * \brief The output "background" value, normally 0.
-	 */
-	itkSetMacro(BackgroundValue, OutputPixelType);
-	itkGetConstMacro(BackgroundValue, OutputPixelType);
-
-	/**
-	 * \brief Set a region of interest, and only operate within that.
-	 */
-	itkSetMacro(RegionOfInterest, OutputImageRegionType);
-	itkGetConstMacro(RegionOfInterest, OutputImageRegionType);
-
-	/**
-	 * \brief If true, the filter will use RegionOfInterest and otherwise won't.
-	 */
-	itkSetMacro(UseRegionOfInterest, bool);
-	itkGetConstMacro(UseRegionOfInterest, bool);
+  /**
+   * \brief If true, the filter will use RegionOfInterest and otherwise won't.
+   */
+  itkSetMacro(UseRegionOfInterest, bool)
+  itkGetConstMacro(UseRegionOfInterest, bool)
 
   /**
    * \brief It may be the case that you need to project seeds into a region.
    * Say you have seeds on one slice that you want to use as seeds for region growing
    * upwards, then you need to shift them along the upwards axis.
    */
-  itkSetMacro(ProjectSeedsIntoRegion, bool);
-  itkGetConstMacro(ProjectSeedsIntoRegion, bool);
+  itkSetMacro(ProjectSeedsIntoRegion, bool)
+  itkGetConstMacro(ProjectSeedsIntoRegion, bool)
 
-  itkSetMacro(MaximumSeedProjectionDistanceInVoxels, unsigned int);
-  itkGetMacro(MaximumSeedProjectionDistanceInVoxels, unsigned int);
+  itkSetMacro(MaximumSeedProjectionDistanceInVoxels, unsigned int)
+  itkGetMacro(MaximumSeedProjectionDistanceInVoxels, unsigned int)
 
-  itkSetMacro(SegmentationContourImageInsideValue, OutputPixelType);
-  itkGetConstMacro(SegmentationContourImageInsideValue, OutputPixelType);
+  itkSetMacro(SegmentationContourImageInsideValue, OutputPixelType)
+  itkGetConstMacro(SegmentationContourImageInsideValue, OutputPixelType)
 
-  itkSetMacro(SegmentationContourImageBorderValue, OutputPixelType);
-  itkGetConstMacro(SegmentationContourImageBorderValue, OutputPixelType);
+  itkSetMacro(SegmentationContourImageBorderValue, OutputPixelType)
+  itkGetConstMacro(SegmentationContourImageBorderValue, OutputPixelType)
 
-  itkSetMacro(SegmentationContourImageOutsideValue, OutputPixelType);
-  itkGetConstMacro(SegmentationContourImageOutsideValue, OutputPixelType);
+  itkSetMacro(SegmentationContourImageOutsideValue, OutputPixelType)
+  itkGetConstMacro(SegmentationContourImageOutsideValue, OutputPixelType)
 
-  itkSetMacro(ManualContourImageBorderValue, OutputPixelType);
-  itkGetConstMacro(ManualContourImageBorderValue, OutputPixelType);
+  itkSetMacro(ManualContourImageBorderValue, OutputPixelType)
+  itkGetConstMacro(ManualContourImageBorderValue, OutputPixelType)
 
   /**
    * \brief Within MIDAS, if region growing covers the whole slice, the output
@@ -132,59 +122,59 @@ public:
    * However, for testing whether seeds are enclosed or not, we need to region grow
    * to the edge, and check if we hit it, so we dont want to erase the whole slice.
    */
-  itkSetMacro(EraseFullSlice, bool);
-  itkGetConstMacro(EraseFullSlice, bool);
+  itkSetMacro(EraseFullSlice, bool)
+  itkGetConstMacro(EraseFullSlice, bool)
 
-  itkSetMacro(PropMask, OutputImageIndexType);
-  itkGetConstMacro(PropMask, OutputImageIndexType);
+  itkSetMacro(PropMask, OutputImageIndexType)
+  itkGetConstMacro(PropMask, OutputImageIndexType)
 
-  itkSetMacro(UsePropMaskMode, bool);
-  itkGetConstMacro(UsePropMaskMode, bool);
+  itkSetMacro(UsePropMaskMode, bool)
+  itkGetConstMacro(UsePropMaskMode, bool)
 
   /**
    * \brief Setting the "manual" contours means those that come from DrawTool or PolyTool.
    */
   void SetManualContours(ParametricPathVectorType* contours);
 
-	/**
-	 * \brief Retrieve the seeds.
-	 */
-	const PointSetType& GetSeedPoints(void) const
-	{
-		return *mspc_SeedPoints;
-	}
+  /**
+   * \brief Retrieve the seeds.
+   */
+  const PointSetType& GetSeedPoints() const
+  {
+    return *mspc_SeedPoints;
+  }
 
-	/**
-	 * \brief Set the seeds, as region growing starts from each seed point.
-	 */
-	void SetSeedPoints(const PointSetType &seeds)
-	{
-		mspc_SeedPoints = &seeds;
-		this->Modified();
-	}
+  /**
+   * \brief Set the seeds, as region growing starts from each seed point.
+   */
+  void SetSeedPoints(const PointSetType &seeds)
+  {
+    mspc_SeedPoints = &seeds;
+    this->Modified();
+  }
 
-	/**
-	 * \brief Retrieve the contour image.
-	 */
-	const OutputImageType* GetSegmentationContourImage(void) const
-	{
-		return m_SegmentationContourImage;
-	}
+  /**
+   * \brief Retrieve the contour image.
+   */
+  const OutputImageType* GetSegmentationContourImage() const
+  {
+    return m_SegmentationContourImage;
+  }
 
-	/**
-	 * \brief Set the contour image.
-	 *
-	 * The "contour image" is the image generated by working out the edge of the current segmentation,
-	 * and rendering an image of all the borders between foreground and background. The contour image
-	 * contains a value for "inside" the contour (i.e. background), the contour itself, and "outside"
-	 * which is background that it known to be outside the segmented object.
-	 */
-	itkSetObjectMacro(SegmentationContourImage, OutputImageType);
+  /**
+   * \brief Set the contour image.
+   *
+   * The "contour image" is the image generated by working out the edge of the current segmentation,
+   * and rendering an image of all the borders between foreground and background. The contour image
+   * contains a value for "inside" the contour (i.e. background), the contour itself, and "outside"
+   * which is background that it known to be outside the segmented object.
+   */
+  itkSetObjectMacro(SegmentationContourImage, OutputImageType)
 
   /**
    * \brief Retrieve the "manual" contour image.
    */
-  const OutputImageType* GetManualContourImage(void) const
+  const OutputImageType* GetManualContourImage() const
   {
     return m_ManualContourImage;
   }
@@ -201,81 +191,79 @@ public:
    * The lines are represented by a two voxel wide stripe of "border" values, one
    * voxel on both sides of the lines all along them.
    */
-  itkSetObjectMacro(ManualContourImage, OutputImageType);
+  itkSetObjectMacro(ManualContourImage, OutputImageType)
 
 protected:
 
-	MIDASRegionGrowingImageFilter(); // purposely hidden
-	virtual ~MIDASRegionGrowingImageFilter(void) {} // purposely hidden
+  MIDASRegionGrowingImageFilter(); // purposely hidden
+  virtual ~MIDASRegionGrowingImageFilter() {} // purposely hidden
 
-	virtual void GenerateData(void);
+  virtual void GenerateData() override;
 
-	virtual void ThreadedGenerateData(const typename OutputImageType::RegionType &outputRegionForThread, ThreadIdType threadId) {
-		std::cerr << "Not supported.\n";
-		abort();
-	}
+  virtual void ThreadedGenerateData(const typename OutputImageType::RegionType &outputRegionForThread, ThreadIdType threadId) override
+  {
+    std::cerr << "Not supported.\n";
+    abort();
+  }
+
+  /**
+   * \brief The main region growing logic is here, where we decide whether to add the nextImgIdx to a stack.
+   * \param[In] r_stack current stack of pixels under consideration, initialised by the available seeds.
+   * \param[In] currentImgIdx the current location being considered
+   * \param[In] nextImgIdx the next pixel
+   * \param[Out] true if the pixel should be added and false otherwise
+   */
+  virtual void ConditionalAddPixel(
+                  std::stack<typename OutputImageType::IndexType> &r_stack,
+                  const typename OutputImageType::IndexType &currentImgIdx,
+                  const typename OutputImageType::IndexType &nextImgIdx,
+                  const bool &isFullyConnected);
 
 private:
 
   MIDASRegionGrowingImageFilter(const Self&); // purposely not implemented
   void operator=(const Self&); // purposely not implemented
 
-	/**
-	 * \brief The main region growing logic is here, where we decide whether to add the nextImgIdx to a stack.
-	 * \param[In] r_stack current stack of pixels under consideration, initialised by the available seeds.
-	 * \param[In] currentImgIdx the current location being considered
-	 * \param[In] nextImgIdx the next pixel
-	 * \param[Out] true if the pixel should be added and false otherwise
-	 */
-	void ConditionalAddPixel(
-			std::stack<typename OutputImageType::IndexType> &r_stack,
-			const typename OutputImageType::IndexType &currentImgIdx,
-			const typename OutputImageType::IndexType &nextImgIdx,
-			const bool &isFullyConnected
-			);
+  /**
+   * \brief Will return true if index1 and index2 are joined along an edge rather than a diagonal, and false otherwise.
+   * (Assuming the pixels are next to each other, and not miles apart).
+   */
+  bool IsFullyConnected(
+                  const typename OutputImageType::IndexType &index1,
+                  const typename OutputImageType::IndexType &index2
+                  );
 
-	/**
-	 * \brief Will return true if index1 and index2 are joined along an edge rather than a diagonal, and false otherwise.
-	 * (Assuming the pixels are next to each other, and not miles apart).
-	 */
-	bool IsFullyConnected(
-			const typename OutputImageType::IndexType &index1,
-			const typename OutputImageType::IndexType &index2
-			);
+  /**
+   * \brief Will return true if index1 and index2 cross a contour line contained within contours.
+   * \param contours a vector of contour lines specified as points
+   * \param index1 an image index (location in voxels)
+   * \param index2 an image index (location in voxels), assumed to be next to index1
+   * \return true if index1 and index2 would appear to cross a contour line.
+   */
+  bool IsCrossingLine(
+                  const ParametricPathVectorType* contours,
+                  const typename OutputImageType::IndexType &index1,
+                  const typename OutputImageType::IndexType &index2
+                  );
 
-	/**
-	 * \brief Will return true if index1 and index2 cross a contour line contained within contours.
-	 * \param contours a vector of contour lines specified as points
-	 * \param index1 an image index (location in voxels)
-	 * \param index2 an image index (location in voxels), assumed to be next to index1
-	 * \return true if index1 and index2 would appear to cross a contour line.
-	 */
-	bool IsCrossingLine(
-			const ParametricPathVectorType* contours,
-			const typename OutputImageType::IndexType &index1,
-			const typename OutputImageType::IndexType &index2
-			);
-
-	InputPixelType                         m_LowerThreshold;
-	InputPixelType                         m_UpperThreshold;
-	OutputPixelType                        m_ForegroundValue;
-	OutputPixelType                        m_BackgroundValue;
-	typename PointSetType::ConstPointer    mspc_SeedPoints;
+  OutputPixelType                        m_ForegroundValue;
+  OutputPixelType                        m_BackgroundValue;
+  typename PointSetType::ConstPointer    mspc_SeedPoints;
   OutputImageRegionType                  m_RegionOfInterest;
   bool                                   m_UseRegionOfInterest;
   bool                                   m_ProjectSeedsIntoRegion;
   unsigned int                           m_MaximumSeedProjectionDistanceInVoxels;
-	typename OutputImageType::ConstPointer m_SegmentationContourImage;
-	OutputPixelType                        m_SegmentationContourImageInsideValue;
-	OutputPixelType                        m_SegmentationContourImageBorderValue;
-	OutputPixelType                        m_SegmentationContourImageOutsideValue;
-	typename OutputImageType::ConstPointer m_ManualContourImage;
-	OutputPixelType                        m_ManualContourImageBorderValue;
-	OutputPixelType                        m_ManualContourImageNonBorderValue;
-	ParametricPathVectorType*              m_ManualContours;
-	bool                                   m_EraseFullSlice;
-	OutputImageIndexType                   m_PropMask;
-	bool                                   m_UsePropMaskMode;
+  typename OutputImageType::ConstPointer m_SegmentationContourImage;
+  OutputPixelType                        m_SegmentationContourImageInsideValue;
+  OutputPixelType                        m_SegmentationContourImageBorderValue;
+  OutputPixelType                        m_SegmentationContourImageOutsideValue;
+  typename OutputImageType::ConstPointer m_ManualContourImage;
+  OutputPixelType                        m_ManualContourImageBorderValue;
+  OutputPixelType                        m_ManualContourImageNonBorderValue;
+  ParametricPathVectorType*              m_ManualContours;
+  bool                                   m_EraseFullSlice;
+  OutputImageIndexType                   m_PropMask;
+  bool                                   m_UsePropMaskMode;
 };
 
 #ifndef ITK_MANUAL_INSTANTIATION

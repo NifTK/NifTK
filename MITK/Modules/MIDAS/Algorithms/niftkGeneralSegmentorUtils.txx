@@ -22,7 +22,6 @@
 
 #include <niftkContourTool.h>
 #include <niftkPointUtils.h>
-#include "niftkGeneralSegmentorPipeline.h"
 #include "niftkGeneralSegmentorPipelineCache.h"
 
 namespace niftk
@@ -542,6 +541,73 @@ void ITKUpdateRegionGrowing(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+void ITKUpdateRegionGrowing(
+  const itk::Image<TPixel, VImageDimension>* itkImage,  // Grey scale image (read only).
+  bool skipUpdate,
+  const mitk::Image* workingImage,
+  const mitk::PointSet* seeds,
+  mitk::ContourModelSet* segmentationContours,
+  mitk::ContourModelSet* drawContours,
+  mitk::ContourModelSet* polyContours,
+  int sliceAxis,
+  int sliceIndex,
+  mitk::Image* outputRegionGrowingImage
+  )
+{
+  typedef itk::Image<unsigned char, VImageDimension> ImageType;
+  typedef mitk::ImageToItk< ImageType > ImageToItkType;
+
+  typename ImageToItkType::Pointer regionGrowingToItk = ImageToItkType::New();
+  regionGrowingToItk->SetInput(outputRegionGrowingImage);
+  regionGrowingToItk->Update();
+
+  typename ImageToItkType::Pointer workingImageToItk = ImageToItkType::New();
+  workingImageToItk->SetInput(workingImage);
+  workingImageToItk->Update();
+
+  GeneralSegmentorPipelineCache* pipelineCache = GeneralSegmentorPipelineCache::Instance();
+  GeneralSegmentorPipeline<TPixel, VImageDimension>* pipeline =
+    pipelineCache->GetPipeline<TPixel, VImageDimension>();
+
+  GeneralSegmentorPipelineParams params;
+  params.m_SliceIndex = sliceIndex;
+  params.m_SliceAxis = sliceAxis;
+  params.m_Seeds = seeds;
+  params.m_SegmentationContours = segmentationContours;
+  params.m_DrawContours = drawContours;
+  params.m_PolyContours = polyContours;
+  params.m_EraseFullSlice = true;
+
+  // Update pipeline.
+  if (!skipUpdate)
+  {
+    // First wipe whole 3D volume
+    regionGrowingToItk->GetOutput()->FillBuffer(0);
+
+    // Configure pipeline.
+    pipeline->SetParam(itkImage, workingImageToItk->GetOutput(), params);
+
+    // Setting the pointer to the output image, then calling update on the pipeline
+    // will mean that the pipeline will copy its data to the output image.
+    pipeline->m_OutputImage = regionGrowingToItk->GetOutput();
+    pipeline->Update(params);
+
+    //mitk::Image::Pointer segmentationContourImage = mitk::ImportItkImage(pipeline->m_SegmentationContourImage);
+    //mitk::Image::Pointer manualContourImage = mitk::ImportItkImage(pipeline->m_ManualContourImage);
+
+    //mitk::DataNode::Pointer segmentationContourImageNode = this->CreateNewSegmentation(m_DefaultSegmentationColor);
+    //segmentationContourImageNode->SetData(segmentationContourImage);
+    //mitk::DataNode::Pointer manualContourImageNode = this->CreateNewSegmentation(m_DefaultSegmentationColor);
+    //manualContourImageNode->SetData(manualContourImage);
+
+    // To make sure we release all smart pointers.
+    pipeline->DisconnectPipeline();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void ITKPropagateToRegionGrowingImage
  (const itk::Image<TPixel, VImageDimension>* itkImage,
   const mitk::PointSet* inputSeeds,
@@ -664,8 +730,8 @@ void ITKPropagateUpOrDown(
   region.SetIndex(regionIndex);
 
   // Perform 3D region growing.
-  typename GeneralSegmentorPipeline<TPixel, VImageDimension>::MIDASRegionGrowingFilterType::Pointer regionGrowingFilter =
-      GeneralSegmentorPipeline<TPixel, VImageDimension>::MIDASRegionGrowingFilterType::New();
+  typename GeneralSegmentorPipeline<TPixel, VImageDimension>::RegionGrowingFilterType::Pointer regionGrowingFilter =
+      GeneralSegmentorPipeline<TPixel, VImageDimension>::RegionGrowingFilterType::New();
   regionGrowingFilter->SetInput(itkImage);
   regionGrowingFilter->SetRegionOfInterest(region);
   regionGrowingFilter->SetUseRegionOfInterest(true);
@@ -1401,6 +1467,63 @@ void ITKSliceDoesHaveUnenclosedSeeds(
 
 //-----------------------------------------------------------------------------
 template<typename TPixel, unsigned int VImageDimension>
+void ITKSliceDoesHaveUnenclosedSeedsNoThresholds(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* polyToolContours,
+    mitk::ContourModelSet* drawToolContours,
+    const mitk::Image* workingImage,
+    int sliceAxis,
+    int sliceIndex,
+    bool& sliceDoesHaveUnenclosedSeeds
+    )
+{
+  sliceDoesHaveUnenclosedSeeds = false;
+
+  // Note input image should be 3D grey scale.
+  typedef itk::Image<TPixel, VImageDimension> GreyScaleImageType;
+  typedef itk::Image<mitk::Tool::DefaultSegmentationDataType, VImageDimension> BinaryImageType;
+  typedef mitk::ImageToItk< BinaryImageType > ImageToItkType;
+
+  typename ImageToItkType::Pointer workingImageToItk = ImageToItkType::New();
+  workingImageToItk->SetInput(workingImage);
+  workingImageToItk->Update();
+
+  // Filter seeds to only use ones on current slice.
+  mitk::PointSet::Pointer seedsForThisSlice = mitk::PointSet::New();
+  ITKFilterSeedsToCurrentSlice(itkImage, seeds, sliceAxis, sliceIndex, seedsForThisSlice);
+
+  GeneralSegmentorPipelineParams params;
+  params.m_SliceIndex = sliceIndex;
+  params.m_SliceAxis = sliceAxis;
+  params.m_Seeds = seedsForThisSlice;
+  params.m_SegmentationContours = segmentationContours;
+  params.m_PolyContours = polyToolContours;
+  params.m_DrawContours = drawToolContours;
+  params.m_EraseFullSlice = false;
+
+  params.m_LowerThreshold = 0;
+  params.m_UpperThreshold = 0;
+
+  GeneralSegmentorPipeline<TPixel, VImageDimension> pipeline;
+  pipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.
+  pipeline.SetParam(itkImage, workingImageToItk->GetOutput(), params);
+  pipeline.Update(params);
+
+  // To make sure we release all smart pointers.
+  pipeline.DisconnectPipeline();
+  workingImageToItk = NULL;
+
+  // Check the output, to see if we have seeds inside non-enclosing green contours.
+  sliceDoesHaveUnenclosedSeeds = ITKImageHasNonZeroEdgePixels<
+      mitk::Tool::DefaultSegmentationDataType, VImageDimension>
+      (pipeline.m_RegionGrowingFilter->GetOutput());
+}
+
+
+//-----------------------------------------------------------------------------
+template<typename TPixel, unsigned int VImageDimension>
 void ITKFilterContours(
     const itk::Image<TPixel, VImageDimension>* itkImage,
     const mitk::Image* workingImage,
@@ -1450,16 +1573,15 @@ void ITKFilterContours(
   params.m_PolyContours = polyToolContours;
   params.m_EraseFullSlice = true;
 
-  if (isThresholding)
-  {
-    params.m_LowerThreshold = lowerThreshold;
-    params.m_UpperThreshold = upperThreshold;
-  }
-  else
-  {
-    params.m_LowerThreshold = std::numeric_limits<TPixel>::min();
-    params.m_UpperThreshold = std::numeric_limits<TPixel>::max();
-  }
+  // The pipeline *always* uses the thresholding version of the region growing filter for
+  // scalar pixel types. If the 'isThresholding' variable is 'true', the minimum and the
+  // maximum values of the pixel type have to be used as thresholds.
+  //
+  // If the pixel type is composite (e.g. RGB), the pipeline uses the non-thresholding
+  // version of the region growing filter. Although these types have minimum and maximum
+  // values as well, assigning them to the double members of 'params' would give compilation
+  // error.
+  SetThresholdsIfThresholding<TPixel>(params, isThresholding, lowerThreshold, upperThreshold);
 
   GeneralSegmentorPipeline<TPixel, VImageDimension> localPipeline;
   localPipeline.m_UseOutput = false;  // don't export the output of this pipeline to an output image, as we are not providing one.

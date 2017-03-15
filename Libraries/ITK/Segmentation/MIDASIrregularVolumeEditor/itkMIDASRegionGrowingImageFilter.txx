@@ -14,21 +14,18 @@
 
 //-----------------------------------------------------------------------------
 template<class TInputImage, class TOutputImage, class TPointSet>
-MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
-::MIDASRegionGrowingImageFilter()
-: m_LowerThreshold(0)
-, m_UpperThreshold(0)
-, m_ForegroundValue(1)
-, m_BackgroundValue(0)
-, m_UseRegionOfInterest(false)
-, m_ProjectSeedsIntoRegion(false)
-, m_MaximumSeedProjectionDistanceInVoxels(1)
-, m_SegmentationContourImageInsideValue(0)
-, m_SegmentationContourImageBorderValue(1)
-, m_SegmentationContourImageOutsideValue(2)
-, m_ManualContourImageBorderValue(1)
-, m_EraseFullSlice(false)
-, m_UsePropMaskMode(false)
+MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::MIDASRegionGrowingImageFilter()
+  : m_ForegroundValue(1),
+    m_BackgroundValue(0),
+    m_UseRegionOfInterest(false),
+    m_ProjectSeedsIntoRegion(false),
+    m_MaximumSeedProjectionDistanceInVoxels(1),
+    m_SegmentationContourImageInsideValue(0),
+    m_SegmentationContourImageBorderValue(1),
+    m_SegmentationContourImageOutsideValue(2),
+    m_ManualContourImageBorderValue(1),
+    m_EraseFullSlice(false),
+    m_UsePropMaskMode(false)
 {
   m_PropMask.Fill(0);
 }
@@ -124,13 +121,6 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
 {
   /// I.e. not already set.
   if (this->GetOutput()->GetPixel(nextImgIdx) != m_BackgroundValue)
-  {
-    return;
-  }
-
-  /// I.e. out of thresholds.
-  InputPixelType inputImageNextPixel = this->GetInput()->GetPixel(nextImgIdx);
-  if (inputImageNextPixel < m_LowerThreshold || inputImageNextPixel > m_UpperThreshold)
   {
     return;
   }

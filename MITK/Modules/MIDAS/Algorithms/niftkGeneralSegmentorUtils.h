@@ -17,6 +17,8 @@
 
 #include "niftkMIDASExports.h"
 
+#include <type_traits>
+
 #include <itkImage.h>
 #include <itkPolyLineParametricPath.h>
 
@@ -25,13 +27,13 @@
 #include <mitkImage.h>
 #include <mitkPointSet.h>
 
+#include <niftkGeneralSegmentorPipeline.h>
 
 namespace niftk
 {
 
 class OpPropagate;
 class OpWipe;
-
 
 /// \brief Used to generate a contour outline round a binary segmentation image, and refreshes the outputSurface.
 ///
@@ -208,6 +210,26 @@ void ITKUpdateRegionGrowing(
     mitk::Image* outputRegionGrowingImage
     );
 
+/// \brief Called from UpdateRegionGrowing(), updates the interactive ITK
+/// single 2D slice region growing pipeline.
+/// Note: segmentationContours, drawContours and polyContours could be
+/// const pointers, but some const functions are missing from mitk::ContourModelSet.
+/// They are not modified from within this function (including transitive calls).
+/// Same as the overloaded version above but without thresholding.
+template<typename TPixel, unsigned int VImageDimension>
+void ITKUpdateRegionGrowing(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    bool skipUpdate,
+    const mitk::Image* workingImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* drawContours,
+    mitk::ContourModelSet* polyContours,
+    int sliceAxis,
+    int sliceIndex,
+    mitk::Image* outputRegionGrowingImage
+    );
+
 /// \brief Method takes all the input, and calculates the 3D propagated
 /// region (up or down or 3D), and stores it in the region growing node.
 template<typename TPixel, unsigned int VImageDimension>
@@ -369,6 +391,28 @@ void ITKSliceDoesHaveUnenclosedSeeds(
     bool& sliceDoesHaveUnenclosedSeeds
     );
 
+/// \brief Will return true if slice has unenclosed seeds, and false otherwise.
+///
+/// This works by region growing. We create a local GeneralSegmentorPipeline
+/// and perform region growing, and then check if the region has his the edge
+/// of the image. If the region growing hits the edge of the image, then the seeds
+/// must have been un-enclosed, and true is returned, and false otherwise.
+///
+/// Similar to the overloaded version but it does not apply thresholding so that
+/// it can be applied for RGB images as well.
+template<typename TPixel, unsigned int VImageDimension>
+void ITKSliceDoesHaveUnenclosedSeedsNoThresholds(
+    const itk::Image<TPixel, VImageDimension>* itkImage,
+    const mitk::PointSet* seeds,
+    mitk::ContourModelSet* segmentationContours,
+    mitk::ContourModelSet* polyToolContours,
+    mitk::ContourModelSet* drawToolContours,
+    const mitk::Image* workingImage,
+    int sliceAxis,
+    int sliceIndex,
+    bool& sliceDoesHaveUnenclosedSeeds
+    );
+
 /// \brief Extracts a new contour set, for doing "Clean" operation.
 ///
 /// This method creates a local GeneralSegmentorPipeline pipeline for region
@@ -396,6 +440,42 @@ void ITKFilterContours(
     mitk::ContourModelSet* outputCopyOfInputContours,
     mitk::ContourModelSet* outputContours
 );
+
+/// Sets the given thresholds as parameters, or the minimum and maximum values of the
+/// given pixel type, if 'isThresholding' is false.
+/// This is an overloaded function. This instance is only for arithmetic pixel types.
+template <typename TPixel>
+void SetThresholdsIfThresholding(
+  GeneralSegmentorPipelineParams& params,
+  bool isThresholding,
+  double lowerThreshold,
+  double upperThreshold,
+  typename std::enable_if<std::is_arithmetic<TPixel>::value, TPixel>::type* = nullptr)
+{
+  if (isThresholding)
+  {
+    params.m_LowerThreshold = lowerThreshold;
+    params.m_UpperThreshold = upperThreshold;
+  }
+  else
+  {
+    params.m_LowerThreshold = std::numeric_limits<TPixel>::min();
+    params.m_UpperThreshold = std::numeric_limits<TPixel>::max();
+  }
+}
+
+/// Same as the overloaded version above but for composite pixel types.
+/// It does not do anything, as thresholding is not defined for composite
+/// pixel types.
+template <typename TPixel>
+void SetThresholdsIfThresholding(
+  GeneralSegmentorPipelineParams& params,
+  bool isThresholding,
+  double lowerThreshold,
+  double upperThreshold,
+  typename std::enable_if<!std::is_arithmetic<TPixel>::value, TPixel>::type* = nullptr)
+{
+}
 
 /// \brief Given an image, and a set of seeds, will append new seeds in the new slice if necessary.
 ///

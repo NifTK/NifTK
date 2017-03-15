@@ -43,7 +43,7 @@ namespace niftk
 
 class GeneralSegmentorControllerPrivate
 {
-  Q_DECLARE_PUBLIC(GeneralSegmentorController);
+  Q_DECLARE_PUBLIC(GeneralSegmentorController)
 
   GeneralSegmentorController* const q_ptr;
 
@@ -537,10 +537,21 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 
   this->StoreInitialSegmentation();
 
+  int referenceImagePixelComponents = referenceImage->GetPixelType().GetNumberOfComponents();
+
   // Setup GUI.
   d->m_GUI->SetAllWidgetsEnabled(true);
   d->m_GUI->SetThresholdingWidgetsEnabled(false);
-  d->m_GUI->SetThresholdingCheckBoxEnabled(true);
+  if (referenceImagePixelComponents == 1)
+  {
+    d->m_GUI->SetThresholdingCheckBoxEnabled(true);
+    d->m_GUI->SetThresholdingCheckBoxToolTip("Tick this in if you want to apply thresholding within the current regions.");
+  }
+  else
+  {
+    d->m_GUI->SetThresholdingCheckBoxEnabled(false);
+    d->m_GUI->SetThresholdingCheckBoxToolTip("Thresholding is not supported for RGB images.");
+  }
   d->m_GUI->SetThresholdingCheckBoxChecked(false);
 
   this->GetView()->FocusOnCurrentWindow();
@@ -1160,6 +1171,13 @@ void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
   Q_D(GeneralSegmentorController);
 
   mitk::Image* referenceImage = this->GetReferenceImage();
+
+  if (referenceImage->GetPixelType().GetNumberOfComponents() != 1)
+  {
+    d->m_GUI->SetSeedMinAndMaxValues(0, 0);
+    return;
+  }
+
   mitk::PointSet* seeds = this->GetSeeds();
 
   if (referenceImage && seeds)
@@ -1398,21 +1416,42 @@ void GeneralSegmentorController::UpdateRegionGrowing(
       {
         try
         {
-          AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-              ITKUpdateRegionGrowing, 3,
-              (skipUpdate,
-               segmentationImage,
-               seeds,
-               segmentationContours,
-               drawToolContours,
-               polyToolContours,
-               sliceAxis,
-               sliceIndex,
-               lowerThreshold,
-               upperThreshold,
-               regionGrowingImage  // This is the image we are writing to.
-              )
+          if (referenceImage->GetPixelType().GetNumberOfComponents() == 1)
+          {
+            AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+                ITKUpdateRegionGrowing, 3,
+                (skipUpdate,
+                 segmentationImage,
+                 seeds,
+                 segmentationContours,
+                 drawToolContours,
+                 polyToolContours,
+                 sliceAxis,
+                 sliceIndex,
+                 lowerThreshold,
+                 upperThreshold,
+                 regionGrowingImage  // This is the image we are writing to.
+                )
             );
+          }
+          else
+          {
+            AccessFixedTypeByItk_n(referenceImage, // The reference image is the RGB image (read only).
+                ITKUpdateRegionGrowing,
+                MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+                (3),
+                (skipUpdate,
+                 segmentationImage,
+                 seeds,
+                 segmentationContours,
+                 drawToolContours,
+                 polyToolContours,
+                 sliceAxis,
+                 sliceIndex,
+                 regionGrowingImage  // This is the image we are writing to.
+                )
+            );
+          }
 
           regionGrowingImage->Modified();
           regionGrowingNode->Modified();
@@ -1531,21 +1570,43 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
   {
     try
     {
-      AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-        ITKSliceDoesHaveUnenclosedSeeds, 3,
-          (seeds,
-           segmentationContours,
-           polyToolContours,
-           drawToolContours,
-           segmentationImage,
-           lowerThreshold,
-           upperThreshold,
-           thresholdOn,
-           sliceAxis,
-           sliceIndex,
-           sliceDoesHaveUnenclosedSeeds
-          )
-      );
+      if (referenceImage->GetPixelType().GetNumberOfComponents() == 1)
+      {
+        // The reference image is the grey scale (read only).
+        AccessFixedDimensionByItk_n(referenceImage,
+          ITKSliceDoesHaveUnenclosedSeeds, 3,
+            (seeds,
+             segmentationContours,
+             polyToolContours,
+             drawToolContours,
+             segmentationImage,
+             lowerThreshold,
+             upperThreshold,
+             thresholdOn,
+             sliceAxis,
+             sliceIndex,
+             sliceDoesHaveUnenclosedSeeds
+            )
+        );
+      }
+      else
+      {
+        // The reference image is RGB (read only).
+        AccessFixedTypeByItk_n(
+              referenceImage,
+              ITKSliceDoesHaveUnenclosedSeedsNoThresholds,
+              MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+              (3),
+              (seeds,
+               segmentationContours,
+               polyToolContours,
+               drawToolContours,
+               segmentationImage,
+               sliceAxis,
+               sliceIndex,
+               sliceDoesHaveUnenclosedSeeds)
+              );
+      }
     }
     catch(const mitk::AccessByItkException& e)
     {
@@ -1654,7 +1715,12 @@ void GeneralSegmentorController::DestroyPipeline()
     d->m_IsDeleting = true;
     try
     {
-      AccessFixedDimensionByItk(referenceImage, ITKDestroyPipeline, 3);
+      AccessFixedTypeByItk(
+          referenceImage,
+          ITKDestroyPipeline,
+          MITK_ACCESSBYITK_PIXEL_TYPES_SEQ MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+          (3)
+      );
     }
     catch(const mitk::AccessByItkException& e)
     {
@@ -2587,20 +2653,22 @@ bool GeneralSegmentorController::DoThresholdApply(
 
         try
         {
-          AccessFixedDimensionByItk_n(regionGrowingImage,
-              ITKPreprocessingOfSeedsForChangingSlice, 3,
+          AccessFixedTypeByItk_n(regionGrowingImage,
+              ITKPreprocessingOfSeedsForChangingSlice,
+              MITK_ACCESSBYITK_PIXEL_TYPES_SEQ MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+              (3),
               (seeds,
-               sliceAxis,
-               sliceIndex,
-               sliceAxis,
-               sliceIndex,
-               optimiseSeeds,
-               newSliceEmpty,
-               copyOfInputSeeds,
-               outputSeeds,
-               outputRegion
+              sliceAxis,
+              sliceIndex,
+              sliceAxis,
+              sliceIndex,
+              optimiseSeeds,
+              newSliceEmpty,
+              copyOfInputSeeds,
+              outputSeeds,
+              outputRegion
               )
-            );
+          );
 
           bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
 
@@ -2846,21 +2914,43 @@ void GeneralSegmentorController::OnCleanButtonClicked()
             // If the seeds were not all enclosed, the user received warning earlier,
             // and either abandoned this method, or accepted the warning and wiped the slice.
 
-            AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+            if (referenceImage->GetPixelType().GetNumberOfComponents() == 1)
+            {
+              AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
                 ITKUpdateRegionGrowing, 3,
                 (false,
-                 segmentationImage,
-                 seeds,
-                 segmentationContours,
-                 drawToolContours,
-                 polyToolContours,
-                 sliceAxis,
-                 sliceIndex,
-                 referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
-                 referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
-                 regionGrowingImage  // This is the image we are writing to.
+                segmentationImage,
+                seeds,
+                segmentationContours,
+                drawToolContours,
+                polyToolContours,
+                sliceAxis,
+                sliceIndex,
+                referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
+                referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
+                regionGrowingImage  // This is the image we are writing to.
                 )
-            );
+              );
+            }
+            else
+            {
+              // The reference image is the RGB image (read only).
+              AccessFixedTypeByItk_n(referenceImage,
+                ITKUpdateRegionGrowing,
+                MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+                (3),
+                (false,
+                segmentationImage,
+                seeds,
+                segmentationContours,
+                drawToolContours,
+                polyToolContours,
+                sliceAxis,
+                sliceIndex,
+                regionGrowingImage  // This is the image we are writing to.
+                )
+              );
+            }
 
           }
 
@@ -2869,22 +2959,24 @@ void GeneralSegmentorController::OnCleanButtonClicked()
           // which if we have just used enclosed seeds above, will not include regions defined
           // by a seed and a threshold, but that have not been "applied" yet.
 
-          AccessFixedDimensionByItk_n(referenceImage, // The reference image is the grey scale image (read only).
-              ITKFilterContours, 3,
+          AccessFixedTypeByItk_n(referenceImage, // The reference image is the grey scale image (read only).
+              ITKFilterContours,
+              MITK_ACCESSBYITK_PIXEL_TYPES_SEQ MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+              (3),
               (segmentationImage,
-               seeds,
-               segmentationContours,
-               drawToolContours,
-               polyToolContours,
-               sliceAxis,
-               sliceIndex,
-               lowerThreshold,
-               upperThreshold,
-               isThresholdingOn,
-               copyOfInputContourSet,
-               outputContourSet
+                seeds,
+                segmentationContours,
+                drawToolContours,
+                polyToolContours,
+                sliceAxis,
+                sliceIndex,
+                lowerThreshold,
+                upperThreshold,
+                isThresholdingOn,
+                copyOfInputContourSet,
+                outputContourSet
               )
-            );
+          );
 
           mitk::UndoStackItem::IncCurrObjectEventId();
           mitk::UndoStackItem::IncCurrGroupEventId();
@@ -3103,11 +3195,15 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
 
       try
       {
-        AccessFixedDimensionByItk_n(referenceImage, ITKPropagateToSegmentationImage, 3,
-              (segmentationImage,
-               regionGrowingImage,
-               op
-              )
+        AccessFixedTypeByItk_n(
+            referenceImage,
+            ITKPropagateToSegmentationImage,
+            MITK_ACCESSBYITK_PIXEL_TYPES_SEQ MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+            (3),
+            (segmentationImage,
+             regionGrowingImage,
+             op
+            )
             );
 
         d->m_GUI->SetThresholdingCheckBoxChecked(op->GetThresholdFlag());

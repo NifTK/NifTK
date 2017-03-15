@@ -17,7 +17,8 @@
 
 #include "niftkMIDASExports.h"
 
-#include <itkCastImageFilter.h>
+#include <type_traits>
+
 #include <itkContinuousIndex.h>
 #include <itkExtractImageFilter.h>
 #include <itkImage.h>
@@ -29,6 +30,7 @@
 #include <mitkTool.h>
 
 #include <itkMIDASRegionGrowingImageFilter.h>
+#include <itkMIDASThresholdingRegionGrowingImageFilter.h>
 
 namespace niftk
 {
@@ -246,18 +248,26 @@ public:
   typedef typename GreyScaleImageType::RegionType                          RegionType;
   typedef typename GreyScaleImageType::SizeType                            SizeType;
   typedef typename GreyScaleImageType::PointType                           PointType;
-  typedef itk::ExtractImageFilter<GreyScaleImageType, GreyScaleImageType>  ExtractGreySliceFromGreyImageFilterType;
-  typedef typename ExtractGreySliceFromGreyImageFilterType::Pointer        ExtractGreySliceFromGreyImageFilterPointer;
+  typedef itk::ExtractImageFilter<GreyScaleImageType, GreyScaleImageType>  ExtractGreySliceFilterType;
   typedef itk::ExtractImageFilter<SegmentationImageType,
-                                  SegmentationImageType>                   ExtractBinarySliceFromBinaryImageFilterType;
-  typedef typename ExtractBinarySliceFromBinaryImageFilterType::Pointer    ExtractBinarySliceFromBinaryImageFilterPointer;
+                                  SegmentationImageType>                   ExtractBinarySliceFilterType;
 
-  typedef itk::CastImageFilter<GreyScaleImageType, SegmentationImageType>  CastGreySliceToSegmentationSliceFilterType;
-  typedef typename CastGreySliceToSegmentationSliceFilterType::Pointer     CastGreySliceToSegmentationSliceFilterPointer;
+
   typedef itk::MIDASRegionGrowingImageFilter<GreyScaleImageType,
                                              SegmentationImageType,
-                                             itk::PointSet<float, 3> >     MIDASRegionGrowingFilterType;
-  typedef typename MIDASRegionGrowingFilterType::Pointer                   MIDASRegionGrowingFilterPointer;
+                                             itk::PointSet<float, 3> >     NonThresholdingRegionGrowingFilterType;
+
+  typedef itk::MIDASThresholdingRegionGrowingImageFilter<GreyScaleImageType,
+                                             SegmentationImageType,
+                                             itk::PointSet<float, 3> >     ThresholdingRegionGrowingFilterType;
+
+  // Choose between the thresholding and non-thresholding version of region growing filter.
+  // If the pixel types is scalar, the thresholding filter is used. If not, e.g. for RGB
+  // images, the non-thresholding version is used.
+  typedef typename std::conditional<
+      std::is_arithmetic<TPixel>::value,
+      ThresholdingRegionGrowingFilterType,
+      NonThresholdingRegionGrowingFilterType>::type RegionGrowingFilterType;
 
   GeneralSegmentorPipeline();
 
@@ -271,6 +281,36 @@ public:
   void DisconnectPipeline();
 
 private:
+
+  // The following functions are overloaded so that the compiler can pick the thresholding or
+  // non-thresholding version depending on which version of the region growing filter is used.
+  // It is important that this is decided at compile time, otherwise we could get compile error.
+
+  template <typename PixelType>
+  void SetThresholdsIfThresholding(
+    GeneralSegmentorPipelineParams& p,
+    typename std::enable_if<std::is_arithmetic<PixelType>::value, PixelType>::type* = nullptr)
+  {
+    m_LowerThreshold = static_cast<TPixel>(p.m_LowerThreshold);
+    m_UpperThreshold = static_cast<TPixel>(p.m_UpperThreshold);
+  }
+
+  template <typename PixelType>
+  void SetThresholdsIfThresholding(
+    GeneralSegmentorPipelineParams& p,
+    typename std::enable_if<!std::is_arithmetic<PixelType>::value, PixelType>::type* = nullptr)
+  {
+  }
+
+  void SetThresholdsIfThresholding(ThresholdingRegionGrowingFilterType* regionGrowingFilter)
+  {
+    regionGrowingFilter->SetLowerThreshold(m_LowerThreshold);
+    regionGrowingFilter->SetUpperThreshold(m_UpperThreshold);
+  }
+
+  void SetThresholdsIfThresholding(NonThresholdingRegionGrowingFilterType* regionGrowingFilter)
+  {
+  }
 
   /// \brief Creates a 2 or 4 voxel sized region around contour points.
   ///
@@ -301,11 +341,9 @@ public:
   bool m_EraseFullSlice;
 
   // The main filters.
-  ExtractGreySliceFromGreyImageFilterPointer     m_ExtractGreyRegionOfInterestFilter;
-  ExtractBinarySliceFromBinaryImageFilterPointer m_ExtractBinaryRegionOfInterestFilter;
-  CastGreySliceToSegmentationSliceFilterPointer  m_CastToSegmentationContourFilter;
-  CastGreySliceToSegmentationSliceFilterPointer  m_CastToManualContourFilter;
-  MIDASRegionGrowingFilterPointer                m_RegionGrowingFilter;
+  typename ExtractGreySliceFilterType::Pointer   m_ExtractGreyRegionOfInterestFilter;
+  typename ExtractBinarySliceFilterType::Pointer m_ExtractBinaryRegionOfInterestFilter;
+  typename RegionGrowingFilterType::Pointer      m_RegionGrowingFilter;
   SegmentationImageType*                         m_OutputImage;
 };
 

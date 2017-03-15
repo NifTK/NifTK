@@ -22,7 +22,7 @@
 #include <itkImageFileWriter.h>
 #include <itkPoint.h>
 #include <itkPointSet.h>
-#include <itkMIDASRegionGrowingImageFilter.h>
+#include <itkMIDASThresholdingRegionGrowingImageFilter.h>
 #include "../itkMIDASSegmentationTestUtils.h"
 
 /**
@@ -40,7 +40,7 @@ int itkMIDASRegionGrowingImageFilterTest2(int argc, char * argv[])
   typedef SegmentationImageType::PointType  PointType;
   typedef SegmentationImageType::SizeType   SizeType;
   typedef GreyScaleImageType::PixelType     GreyPixelType;
-  typedef itk::MIDASRegionGrowingImageFilter<GreyScaleImageType, SegmentationImageType, PointSetType> FilterType;
+  typedef itk::MIDASThresholdingRegionGrowingImageFilter<GreyScaleImageType, SegmentationImageType, PointSetType> FilterType;
 
   PointType seedPoint;
 
