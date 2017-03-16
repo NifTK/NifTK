@@ -108,7 +108,7 @@ endif()
 
 # Horrible work-around to force NiftyIGI to preload niftknvapi.
 # Can be removed when we finally upgrade to CUDA 7.5 throughout.
-if(WIN32 AND NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA)
+if(WIN32 AND NVAPI_FOUND AND CUDA_FOUND AND NIFTK_USE_CUDA AND CUDA_VERSION_MAJOR LESS 7)
   add_definitions(-DNIFTYIGI_USE_NVAPI)
 endif()
 
