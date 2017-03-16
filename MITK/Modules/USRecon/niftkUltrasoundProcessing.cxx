@@ -549,7 +549,7 @@ cv::Mat UltrasoundCalibration(const TrackedPointData& trackedPoints)
 
 /*
 The diameter of the circle in the images should be measured with an interactive tool
-ring model width = diameter + 15
+Ring model width = diameter + 15
 */
 void DoUltrasoundBallCalibration(const int& ballSize,
                              const TrackedImageData& trackedImages,
