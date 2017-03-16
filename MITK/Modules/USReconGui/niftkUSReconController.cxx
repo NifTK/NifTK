@@ -320,7 +320,7 @@ void USReconController::OnCalibratePressed()
   mitk::Point2D scaleFactors;
   niftk::RotationTranslation imageToSensorTransform;
 
-  niftk::DoUltrasoundCalibration(300, // should come from preference page.
+  niftk::DoUltrasoundBallCalibration(315, // should come from preference page.
                                  d->m_TrackedImages,
                                  scaleFactors,
                                  imageToSensorTransform

@@ -247,12 +247,8 @@ mitk::Point2D FindCircleInImage(const cv::Mat& image, const cv::Mat& model)
   return result;
 }
 
-// tracking_data is a pair of quaternions representing rotation and translation
-/*
-cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
-                              const std::vector<TrackingQuaternions>& trackingData
-                              )
-*/
+
+//---------------------------------------------------------------------------
 cv::Mat UltrasoundCalibration(const TrackedPointData& trackedPoints)
 {
   int number_of_scans = (int)trackedPoints.size();
@@ -602,6 +598,7 @@ void DoUltrasoundBallCalibration(const int& ballSize,
   imageToSensorTransform.second[2] = parameters.at<double>(8);
 }
 
+
 //-------------------------------------------------------------------------------------------------------
 void DoUltrasoundPointCalibration(const TrackedPointData& trackedPoints,
                                   mitk::Point2D& pixelScaleFactors,
@@ -610,13 +607,6 @@ void DoUltrasoundPointCalibration(const TrackedPointData& trackedPoints,
 {
   MITK_INFO << "DoUltrasoundPointCalibration: Doing Ultrasound Point Calibration with "
             << trackedPoints.size() << " samples.";
-
-  for ( auto iter = trackedPoints.begin(); iter != trackedPoints.end(); ++iter) // Debug
-  {
-    cout << iter->first << std::endl;
-    cout << iter->second.first << std::endl;
-    cout << iter->second.second << std::endl;
-  }
 
   cv::Mat parameters = UltrasoundCalibration(trackedPoints);
 
@@ -633,6 +623,7 @@ void DoUltrasoundPointCalibration(const TrackedPointData& trackedPoints,
   imageToSensorTransform.second[1] = parameters.at<double>(7);
   imageToSensorTransform.second[2] = parameters.at<double>(8);
 }
+
 
 /******************************Reconstruction***********************************/
 void DoUltrasoundReconstructionFor1Slice(InputImageType::Pointer itk2D,
@@ -670,6 +661,7 @@ void DoUltrasoundReconstructionFor1Slice(InputImageType::Pointer itk2D,
   }
 
 }
+
 
 //-----------------------------------------------------------------------------
 mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
@@ -954,6 +946,8 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   return resultImage;
 }
 
+
+//-----------------------------------------------------------------------------------------------
 void LoadOxfordQuaternionTrackingFile(std::string filename,
                                       mitk::Point4D& rotation,
                                       mitk::Vector3D& translation
@@ -979,6 +973,7 @@ void LoadOxfordQuaternionTrackingFile(std::string filename,
 
   return;
 }
+
 
 //-----------------------------------------------------------------------------
 TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& pointDir,
@@ -1009,11 +1004,6 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
     long long int pointFileTime = std::stoll(pointFileTimeStamp);
 
     std::string matchTime; // Debug
-
-    if ( i == 10) // Debug
-    {
-      cout << "Here!" << std::endl;
-    }
 
     long long int closestTime = 0;
 
@@ -1048,7 +1038,7 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
       }
     } // end for j
 
-    if (closestTime > 1000000)
+    if (closestTime > 1000000) // Point file has no closely matched tracking file, discarded
     {
       continue;
     }
@@ -1057,10 +1047,9 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
     cout << "Match file " << matchNumber << "\t" << matchTime << std::endl;
     cout << "Closest time " << closestTime << std::endl;
 
-
-    // Read the point file
+    // Read the point file -- Need to be changed to be able to read 2D points as well
     mitk::Point3D aPoint3D;
-    if(!Load3DPointFromFile(pointFiles[i], aPoint3D))
+    if(!niftk::Load3DPointFromFile(pointFiles[i], aPoint3D))
     {
       std::ostringstream errorMessage;
       errorMessage << "Can not read point file " << pointFiles[i] << std::endl;
@@ -1070,8 +1059,6 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
     mitk::Point2D aPoint2D;
     aPoint2D[0] = aPoint3D[0];
     aPoint2D[1] = aPoint3D[1];
-
-    cout << aPoint2D[0] << "\t" << aPoint2D[1] << endl; // Debug
 
     // Read the matched tracking data
     mitk::Point4D rotation;
@@ -1083,8 +1070,6 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
     if (( ext == "txt") || ( ext == "4x4"))
     {
       vtkSmartPointer<vtkMatrix4x4> trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(trackingFiles[matchNumber]);
-
-      cout << *trackingMatrix << endl;
 
       //Convert to quaternions
       niftk::ConvertMatrixToRotationAndTranslation(*trackingMatrix, rotation, translation);
@@ -1114,6 +1099,7 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
 
   return outputData;
 }
+
 
 //-----------------------------------------------------------------------------
 TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imageDir,
