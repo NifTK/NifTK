@@ -1,0 +1,11 @@
+diff --git a/CMake/RunInstalledApp.sh b/CMake/RunInstalledApp.sh
+index 4f98f9f..0739558 100644
+--- a/CMake/RunInstalledApp.sh
++++ b/CMake/RunInstalledApp.sh
+@@ -1,5 +1,6 @@
+ #!/bin/sh
+ binpath=$(dirname "$(readlink -f "$0")")
+ appname=$(basename "$0" .sh)
++unset QT_PLUGIN_PATH
+ export LD_LIBRARY_PATH="$binpath/bin":"$binpath/bin/plugins":$LD_LIBRARY_PATH
+ "$binpath/bin/$appname" "$@"
