@@ -39,13 +39,9 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
   }
   QString host = (properties.value("host")).toString();
 
-  if(!properties.contains("port"))
-  {
-    mitkThrow() << "Port number not specified!";
-  }
-  int portNumber = properties.value("port").toInt();
-
   this->SetStatus("Initialising");
+
+  int portNumber = 7915;
 
   m_Worker = new BKMedicalDataSourceWorker();
   m_Worker->ConnectToHost(host, portNumber); // must throw if failed.
