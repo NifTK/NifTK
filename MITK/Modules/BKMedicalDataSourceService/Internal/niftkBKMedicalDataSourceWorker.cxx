@@ -30,6 +30,19 @@ BKMedicalDataSourceWorker::BKMedicalDataSourceWorker()
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceWorker::~BKMedicalDataSourceWorker()
 {
+  std::string message = "QUERY:GRAB_FRAME \"OFF\",30;";
+  bool sentOK = this->SendCommandMessage(message);
+  if (!sentOK)
+  {
+    MITK_ERROR << "Failed to send:" << message
+               << ", but we are in destructor anyway.";
+  }
+  std::string response = this->ReceiveResponseMessage(4); // Should be ACK;
+  if (response.empty())
+  {
+    MITK_ERROR << "Failed to parse response for:" << message
+               << ", but we are in destructor anyway.";
+  }
 }
 
 
@@ -59,7 +72,7 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
   if (!sentOK)
   {
     mitkThrow() << "Failed to send message '" << message
-                << "'', to extract image size and socket error=" << m_Socket.errorString().toStdString();
+                << "'', to extract image size and socket status=" << m_Socket.errorString().toStdString();
   }
 
   std::string response = this->ReceiveResponseMessage(25);
@@ -74,6 +87,16 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
   {
     mitkThrow() << "Invalid BK Medical image size.";
   }
+
+  message = "QUERY:GRAB_FRAME \"ON\",30;";
+  sentOK = this->SendCommandMessage(message);
+  if (!sentOK)
+  {
+    mitkThrow() << "Failed to send message '" << message
+                << "', to start streaming, socket status=" << m_Socket.errorString().toStdString();
+  }
+
+  // I believe we don't need to parse an ACK as things that stream data, respond immediately with data.
 }
 
 
@@ -110,6 +133,7 @@ bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
     isOK = false;
   }
 
+  MITK_INFO << "BKMedicalDataSourceWorker:sent:" << message << ", status:" << isOK;
   return isOK;
 }
 
@@ -161,13 +185,23 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
     MITK_ERROR << "Failed to read message of size:" << expectedSize;
   }
 
+  MITK_INFO << "BKMedicalDataSourceWorker:received:" << result ;
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
+{
+
 }
 
 
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ReceiveImages()
 {
+
+
 }
 
 } // end namespace

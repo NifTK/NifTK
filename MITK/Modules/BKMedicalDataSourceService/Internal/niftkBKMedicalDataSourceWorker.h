@@ -51,6 +51,7 @@ private:
   size_t GenerateCommandMessage(const std::string& message);
   bool SendCommandMessage(const std::string& message);
   std::string ReceiveResponseMessage(const size_t& expectedSize);
+  void ReceiveImage(QImage& image);
 
   int        m_Timeout;
   QTcpSocket m_Socket;
