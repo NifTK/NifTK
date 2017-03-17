@@ -32,6 +32,7 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
                           properties,
                           dataStorage
                          )
+, m_Lock(QMutex::Recursive)
 {
   if(!properties.contains("host"))
   {
@@ -87,7 +88,6 @@ std::unique_ptr<niftk::IGIDataType> BKMedicalDataSourceService::GrabImage()
 void BKMedicalDataSourceService::OnFrameAvailable(const QImage& image)
 {
   // Note: We can't take ownership of input image.
-
   m_TemporaryWrapper = new QImage(image); // should just wrap without deep copy.
   this->GrabData();
   delete m_TemporaryWrapper;              // then we delete this temporary wrapper.
