@@ -24,6 +24,10 @@ namespace niftk
 BKMedicalDataSourceWorker::BKMedicalDataSourceWorker()
 : m_Timeout(1000)
 {
+  for (int i = 0; i < 256; i++)
+  {
+    m_DefaultLUT.push_back(qRgb(i, i, i));
+  }
 }
 
 
@@ -88,15 +92,19 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
     mitkThrow() << "Invalid BK Medical image size.";
   }
 
-  message = "QUERY:GRAB_FRAME \"ON\",30;";
+  message = "QUERY:GRAB_FRAME \"ON\",2;";
   sentOK = this->SendCommandMessage(message);
   if (!sentOK)
   {
     mitkThrow() << "Failed to send message '" << message
                 << "', to start streaming, socket status=" << m_Socket.errorString().toStdString();
   }
-
-  // I believe we don't need to parse an ACK as things that stream data, respond immediately with data.
+  response = this->ReceiveResponseMessage(4); // Should be ACK;
+  if (response.empty())
+  {
+    MITK_ERROR << "Failed to parse response for:" << message
+               << ", but we are in destructor anyway.";
+  }
 }
 
 
@@ -153,7 +161,7 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
       QByteArray tmpData = m_Socket.readAll();
       if (tmpData.size() != bytesAvailable)
       {
-        MITK_ERROR << "Failed to read " << bytesAvailable << " from socket.";
+        MITK_ERROR << "Failed to read " << bytesAvailable << " message bytes from socket.";
       }
       m_IntermediateBuffer.append(tmpData);
       if (m_IntermediateBuffer.size() >= actualSize)
@@ -193,15 +201,120 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
 {
+  unsigned int minimumSize = m_ImageSize[0] * m_ImageSize[1] + 20;
+  int preceedingChar = 0;
+  int startingChar = 0;
+  int startImageChar = 0;
+  int endImageChar = 0;
+  int terminatingChar = 0;
+  int imageSize = 0;
+  int dataSize = 0;
 
+  bool imageAvailable = false;
+  while(!imageAvailable)
+  {
+    qint64 bytesAvailable = m_Socket.bytesAvailable();
+    if (bytesAvailable < minimumSize)
+    {
+      if (!m_Socket.waitForReadyRead(-1))
+      {
+        MITK_ERROR << "Failed while waiting on socket, due to:" << m_Socket.errorString().toStdString();
+      }
+    }
+    else
+    {
+      QByteArray tmpData;
+      tmpData.resize(bytesAvailable);
+
+      qint64 bytesRead = m_Socket.read(tmpData.data(), bytesAvailable);
+
+      if (bytesRead == bytesAvailable)
+      {
+        m_IntermediateBuffer.append(tmpData);
+
+        preceedingChar = m_IntermediateBuffer.indexOf(0x01);
+        startingChar = m_IntermediateBuffer.indexOf('#');
+        startImageChar = startingChar + 4;
+        terminatingChar = m_IntermediateBuffer.indexOf(0x04);
+        endImageChar = terminatingChar - 2;
+        dataSize =  terminatingChar - preceedingChar + 1;
+        imageSize = endImageChar - startImageChar + 1;
+
+        if (   preceedingChar >= 0
+            && startingChar >= 0
+            && startImageChar >= 0
+            && endImageChar >= 0
+            && terminatingChar >= 0
+            && startingChar > preceedingChar
+            && startImageChar > startingChar
+            && endImageChar > startImageChar
+            && terminatingChar > endImageChar
+           )
+        {
+          if (   image.width() != m_ImageSize[0]
+              || image.height() != m_ImageSize[1]
+             )
+          {
+            // Image should either be grey scale or RGBA/ARGB ??? spec isnt so clear.
+            if (imageSize < (m_ImageSize[0] * m_ImageSize[1] * 4))
+            {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
+              QImage tmpImage(m_ImageSize[0], m_ImageSize[1], QImage::Format_Grayscale8);
+#else
+              QImage tmpImage(m_ImageSize[0], m_ImageSize[1], QImage::Format_Indexed8);
+              tmpImage.setColorTable(m_DefaultLUT);
+#endif
+              image = tmpImage;
+            }
+            else
+            {
+              QImage tmpImage(m_ImageSize[0], m_ImageSize[1], QImage::Format_ARGB32);
+              image = tmpImage;
+            }
+          }
+
+          // Filling QImage with data from socket.
+          // Assumes data is tightly packed.
+          char *startImageData = &(m_IntermediateBuffer.data()[startImageChar]);
+          char *endImageData = &(m_IntermediateBuffer.data()[endImageChar + 1]);
+          char *rp = startImageData;
+          char *wp = reinterpret_cast<char*>(image.bits());
+          while (rp != endImageData)
+          {
+            if (*rp == 0x27)
+            {
+              rp++;            // skip escape char
+              *wp = 255-(*rp); // invert it
+            }
+            else
+            {
+              *wp = *rp; // just copy
+            }
+            rp++;
+            wp++;
+          }
+
+          m_IntermediateBuffer.remove(preceedingChar, dataSize);
+          return;
+        } // end extracting image
+      }
+    }
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ReceiveImages()
 {
-
-
+  QImage image;
+  while(true)
+  {
+    this->ReceiveImage(image);
+    if (image.width() > 0 && image.height() > 0)
+    {
+      emit ImageReceived(image);
+    }
+  }
 }
 
 } // end namespace
