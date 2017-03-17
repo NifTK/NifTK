@@ -17,6 +17,7 @@
 #include <QObject>
 #include <QImage>
 #include <QTcpSocket>
+#include <QByteArray>
 
 namespace niftk
 {
@@ -53,8 +54,10 @@ private:
 
   int        m_Timeout;
   QTcpSocket m_Socket;
+  QByteArray m_IntermediateBuffer;
   char       m_OutgoingMessageBuffer[256];
-  char       m_IncomingMessageBuffer[1024*1024*4];
+  char       m_ImageBuffer[1024*1024*4];
+  int        m_ImageSize[2];
 };
 
 } // end namespace

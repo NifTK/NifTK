@@ -53,6 +53,27 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
   {
     mitkThrow() << "Socket is not readable.";
   }
+
+  std::string message = "QUERY:US_WIN_SIZE;";
+  bool sentOK = this->SendCommandMessage(message);
+  if (!sentOK)
+  {
+    mitkThrow() << "Failed to send message '" << message
+                << "'', to extract image size and socket error=" << m_Socket.errorString().toStdString();
+  }
+
+  std::string response = this->ReceiveResponseMessage(25);
+  if (response.empty())
+  {
+    mitkThrow() << "Failed to parse response message.";
+  }
+  sscanf(response.c_str(), "DATA:US_WIN_SIZE %d,%d;", &m_ImageSize[0], &m_ImageSize[1]);
+  MITK_INFO << "BK Medical image size:" << m_ImageSize[0] << ", " << m_ImageSize[1];
+
+  if (m_ImageSize[0] < 1 || m_ImageSize[1] < 1)
+  {
+    mitkThrow() << "Invalid BK Medical image size.";
+  }
 }
 
 
@@ -65,7 +86,7 @@ size_t BKMedicalDataSourceWorker::GenerateCommandMessage(const std::string& mess
   {
     m_OutgoingMessageBuffer[counter++] = message[i];
   }
-  m_OutgoingMessageBuffer[counter++]=0x04;
+  m_OutgoingMessageBuffer[counter++] = 0x04;
   return counter;
 }
 
@@ -74,7 +95,7 @@ size_t BKMedicalDataSourceWorker::GenerateCommandMessage(const std::string& mess
 bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
 {
   size_t messageSize = this->GenerateCommandMessage(message);
-  size_t sentSize = m_Socket.write(m_CommandMessageBuffer, messageSize);
+  size_t sentSize = m_Socket.write(m_OutgoingMessageBuffer, messageSize);
   bool wasWritten = m_Socket.waitForBytesWritten(m_Timeout);
 
   bool isOK = true;
@@ -97,6 +118,47 @@ bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
 std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expectedSize)
 {
   std::string result;
+  unsigned int counter = 0;
+  size_t actualSize = expectedSize + 2;
+
+  while(counter < actualSize)
+  {
+    qint64 bytesAvailable = m_Socket.bytesAvailable();
+    if (bytesAvailable > 0)
+    {
+      QByteArray tmpData = m_Socket.readAll();
+      if (tmpData.size() != bytesAvailable)
+      {
+        MITK_ERROR << "Failed to read " << bytesAvailable << " from socket.";
+      }
+      m_IntermediateBuffer.append(tmpData);
+      if (m_IntermediateBuffer.size() >= actualSize)
+      {
+        const char* data = m_IntermediateBuffer.constData();
+
+        while (counter < actualSize)
+        {
+          if (data[counter] != 0x01 && data[counter] != 0x04)
+          {
+            result += data[counter];
+          }
+          counter++;
+        }
+        m_IntermediateBuffer.remove(0, actualSize);
+      }
+    }
+    else
+    {
+      if (!m_Socket.waitForReadyRead(-1))
+      {
+        MITK_ERROR << "Failed while waiting for socket, due to:" << m_Socket.errorString().toStdString();
+      }
+    }
+  }
+  if (result.size() != expectedSize)
+  {
+    MITK_ERROR << "Failed to read message of size:" << expectedSize;
+  }
   return result;
 }
 
@@ -104,9 +166,6 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ReceiveImages()
 {
-  std::string message = "QUERY:US_WIN_SIZE;";
-  bool sentOK = this->SendCommandMessage(message);
-  MITK_INFO << "Sent:" << message << ", result=" << sentOK;
 }
 
 } // end namespace
