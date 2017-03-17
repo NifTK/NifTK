@@ -74,6 +74,8 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
   {
     mitkThrow() << "Invalid BK Medical image size.";
   }
+
+
 }
 
 
