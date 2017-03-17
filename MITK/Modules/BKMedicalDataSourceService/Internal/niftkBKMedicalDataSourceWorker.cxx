@@ -92,7 +92,7 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
     mitkThrow() << "Invalid BK Medical image size.";
   }
 
-  message = "QUERY:GRAB_FRAME \"ON\",2;";
+  message = "QUERY:GRAB_FRAME \"ON\",20;";
   sentOK = this->SendCommandMessage(message);
   if (!sentOK)
   {
