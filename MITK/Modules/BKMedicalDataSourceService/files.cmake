@@ -21,4 +21,5 @@ set(CPP_FILES
 
 set(MOC_H_FILES
   Internal/niftkBKMedicalDataSourceWorker.h
+  Internal/niftkBKMedicalDataSourceService.h
 )

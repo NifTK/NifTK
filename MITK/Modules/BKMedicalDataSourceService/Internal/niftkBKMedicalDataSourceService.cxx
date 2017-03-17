@@ -88,7 +88,7 @@ std::unique_ptr<niftk::IGIDataType> BKMedicalDataSourceService::GrabImage()
 
 
 //-----------------------------------------------------------------------------
-void BKMedicalDataSourceService::OnFrameAvailable(const QImage &image)
+void BKMedicalDataSourceService::OnFrameAvailable(const QImage& image)
 {
   // Note: We can't take ownership of input image.
 

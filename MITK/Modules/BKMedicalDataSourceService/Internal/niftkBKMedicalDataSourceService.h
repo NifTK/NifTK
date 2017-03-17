@@ -31,6 +31,8 @@ namespace niftk
 class BKMedicalDataSourceService : public QImageDataSourceService
 {
 
+  Q_OBJECT
+
 public:
 
   mitkClassMacroItkParent(BKMedicalDataSourceService,
@@ -57,7 +59,7 @@ protected:
 
 private slots:
 
-  void OnFrameAvailable(const QImage &image);
+  void OnFrameAvailable(const QImage&);
 
 private:
 
