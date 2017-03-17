@@ -265,6 +265,10 @@ if(NOT DEFINED MITK_DIR)
       set(_mitk_use_qt 1)
     endif()
 
+    if(UNIX AND NOT APPLE)
+      set(_patch_command COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_LIST_DIR}/MITK.patch)
+    endif()
+
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
@@ -274,7 +278,7 @@ if(NOT DEFINED MITK_DIR)
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND  ${GIT_EXECUTABLE} checkout ${proj_VERSION}
-        COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_LIST_DIR}/MITK.patch
+        ${_patch_command}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
