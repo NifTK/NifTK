@@ -74,8 +74,6 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
   {
     mitkThrow() << "Invalid BK Medical image size.";
   }
-
-
 }
 
 
@@ -121,7 +119,7 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
 {
   std::string result;
   unsigned int counter = 0;
-  size_t actualSize = expectedSize + 2;
+  size_t actualSize = expectedSize + 2; // due to start and end terminator.
 
   while(counter < actualSize)
   {
@@ -157,10 +155,12 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
       }
     }
   }
+
   if (result.size() != expectedSize)
   {
     MITK_ERROR << "Failed to read message of size:" << expectedSize;
   }
+
   return result;
 }
 
