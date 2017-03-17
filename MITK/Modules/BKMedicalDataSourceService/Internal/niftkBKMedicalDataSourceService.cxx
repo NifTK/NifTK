@@ -32,7 +32,6 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
                           properties,
                           dataStorage
                          )
-, m_Lock(QMutex::Recursive)
 {
   if(!properties.contains("host"))
   {
