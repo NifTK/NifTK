@@ -62,7 +62,6 @@ NIFTKUSRECON_EXPORT TrackedPointData MatchPointAndTrackingDataFromDirectories(co
                                                                               const std::string& trackingDir  
                                                                              );
 
-
 /**
 * \brief Entry point for Guofang's Ultrasound Calibration.
 */
@@ -87,6 +86,7 @@ NIFTKUSRECON_EXPORT mitk::Image::Pointer DoUltrasoundReconstruction(const Tracke
                                                                     RotationTranslation& imageToSensorTransform,
                                                                     const mitk::Vector3D& voxelSpacing
                                                                    );
+
 } // end namespace
 
 #endif
