@@ -281,10 +281,11 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
           char *wp = reinterpret_cast<char*>(image.bits());
           while (rp != endImageData)
           {
-            if (*rp == 0x27)
+            // See page 9 of 142 in BK doc PS12640-44
+            if (*rp == 0x1 || *rp == 0x4 || *rp == 0x27)
             {
-              rp++;            // skip escape char
-              *wp = 255-(*rp); // invert it
+              rp++;         // skip escape char
+              *wp = ~(*rp); // invert it
             }
             else
             {
