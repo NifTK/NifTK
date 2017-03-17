@@ -23,10 +23,7 @@ namespace niftk
 
 /**
 * \class BKMedicalDataSourceWorker
-* \brief Main Worker object for BKMedicalDataSourceService that runs in
-* a separate QThread.
-*
-* Note: All errors should thrown as mitk::Exception or sub-classes thereof.
+* \brief Main Worker object for BKMedicalDataSourceService that runs in a separate QThread.
 */
 class BKMedicalDataSourceWorker : public QObject
 {
@@ -46,11 +43,18 @@ public slots:
 signals:
 
   void ImageReceived(QImage);
+  void ErrorGenerated(QString);
 
 private:
 
-  QTcpSocket m_Socket;
+  size_t GenerateCommandMessage(const std::string& message);
+  bool SendCommandMessage(const std::string& message);
+  std::string ReceiveResponseMessage(const size_t& expectedSize);
 
+  int        m_Timeout;
+  QTcpSocket m_Socket;
+  char       m_OutgoingMessageBuffer[256];
+  char       m_IncomingMessageBuffer[1024*1024*4];
 };
 
 } // end namespace
