@@ -39,21 +39,23 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
   }
   QString host = (properties.value("host")).toString();
 
-  if(!properties.contains("extension"))
-  {
-    mitkThrow() << "File extension not specified!";
-  }
-  QString extension = (properties.value("extension")).toString();
-
   if(!properties.contains("port"))
   {
     mitkThrow() << "Port number not specified!";
   }
   int portNumber = properties.value("port").toInt();
 
-  mitkThrow() << "Not implemented yet. Volunteers .... please step forward!";
-
   this->SetStatus("Initialising");
+
+  m_Worker = new BKMedicalDataSourceWorker();
+  m_Worker->ConnectToHost(host, portNumber); // must throw if failed.
+  m_Worker->moveToThread(&m_WorkerThread);
+
+  connect(m_Worker, SIGNAL(ImageReceived(QImage)), this, SLOT(OnFrameAvailable(QImage)));
+  connect(&m_WorkerThread, SIGNAL(finished()), m_Worker, SLOT(deleteLater()));
+  connect(&m_WorkerThread, SIGNAL(started()), m_Worker, SLOT(ReceiveImages()));
+
+  m_WorkerThread.start();
 
   this->SetStatus("Initialised");
   this->Modified();
@@ -63,19 +65,36 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceService::~BKMedicalDataSourceService()
 {
+  if (m_WorkerThread.isRunning())
+  {
+    m_WorkerThread.quit();
+    m_WorkerThread.wait();
+  }
 }
 
 
 //-----------------------------------------------------------------------------
 std::unique_ptr<niftk::IGIDataType> BKMedicalDataSourceService::GrabImage()
 {
-  QImage localImage;
+  // So this method has to create a clone, to pass as a return
+  // value, like a factory method would do.
 
   niftk::QImageDataType* wrapper = new niftk::QImageDataType();
-  wrapper->SetImage(&localImage); // clones it.
+  wrapper->SetImage(m_TemporaryWrapper); // clones it.
 
   std::unique_ptr<niftk::IGIDataType> result(wrapper);
   return result;
+}
+
+
+//-----------------------------------------------------------------------------
+void BKMedicalDataSourceService::OnFrameAvailable(const QImage &image)
+{
+  // Note: We can't take ownership of input image.
+
+  m_TemporaryWrapper = new QImage(image); // should just wrap without deep copy.
+  this->GrabData();
+  delete m_TemporaryWrapper;              // then we delete this temporary wrapper.
 }
 
 } // end namespace

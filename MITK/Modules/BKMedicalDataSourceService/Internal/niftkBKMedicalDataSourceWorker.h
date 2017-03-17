@@ -15,6 +15,8 @@
 #define niftkBKMedicalDataSourceWorker_h
 
 #include <QObject>
+#include <QImage>
+#include <QTcpSocket>
 
 namespace niftk
 {
@@ -34,6 +36,20 @@ class BKMedicalDataSourceWorker : public QObject
 public:
   BKMedicalDataSourceWorker();
   ~BKMedicalDataSourceWorker();
+
+  void ConnectToHost(QString address, int port);
+
+public slots:
+
+  void ReceiveImages();
+
+signals:
+
+  void ImageReceived(QImage);
+
+private:
+
+  QTcpSocket m_Socket;
 
 };
 

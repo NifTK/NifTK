@@ -16,8 +16,8 @@
 
 #include <niftkQImageDataSourceService.h>
 #include "niftkBKMedicalDataSourceWorker.h"
-#include <QTcpSocket>
 #include <QThread>
+#include <QImage>
 
 namespace niftk
 {
@@ -55,13 +55,18 @@ protected:
    */
   virtual std::unique_ptr<niftk::IGIDataType> GrabImage() override;
 
+private slots:
+
+  void OnFrameAvailable(const QImage &image);
+
 private:
 
   BKMedicalDataSourceService(const BKMedicalDataSourceService&); // deliberately not implemented
   BKMedicalDataSourceService& operator=(const BKMedicalDataSourceService&); // deliberately not implemented
 
-  QThread*                   m_WorkerThread;
+  QThread                    m_WorkerThread;
   BKMedicalDataSourceWorker* m_Worker;
+  mutable QImage*            m_TemporaryWrapper;
 
 }; // end class
 

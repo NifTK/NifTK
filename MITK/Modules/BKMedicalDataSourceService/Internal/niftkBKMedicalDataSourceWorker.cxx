@@ -29,4 +29,17 @@ BKMedicalDataSourceWorker::~BKMedicalDataSourceWorker()
 }
 
 
+//-----------------------------------------------------------------------------
+void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
+{
+
+}
+
+
+//-----------------------------------------------------------------------------
+void BKMedicalDataSourceWorker::ReceiveImages()
+{
+
+}
+
 } // end namespace
