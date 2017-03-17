@@ -15,6 +15,9 @@
 #define niftkBKMedicalDataSourceService_h
 
 #include <niftkQImageDataSourceService.h>
+#include "niftkBKMedicalDataSourceWorker.h"
+#include <QTcpSocket>
+#include <QThread>
 
 namespace niftk
 {
@@ -56,6 +59,9 @@ private:
 
   BKMedicalDataSourceService(const BKMedicalDataSourceService&); // deliberately not implemented
   BKMedicalDataSourceService& operator=(const BKMedicalDataSourceService&); // deliberately not implemented
+
+  QThread*                   m_WorkerThread;
+  BKMedicalDataSourceWorker* m_Worker;
 
 }; // end class
 
