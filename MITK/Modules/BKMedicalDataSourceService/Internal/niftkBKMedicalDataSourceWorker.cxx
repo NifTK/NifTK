@@ -102,9 +102,47 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
   response = this->ReceiveResponseMessage(4); // Should be ACK;
   if (response.empty())
   {
-    MITK_ERROR << "Failed to parse response for:" << message
-               << ", but we are in destructor anyway.";
+    mitkThrow() << "Failed to parse acknowledgement to turn streaming on.";
   }
+}
+
+
+//-----------------------------------------------------------------------------
+int BKMedicalDataSourceWorker::FindFirstANotPreceededByB(const QByteArray& buf,
+                                                         const char& a,
+                                                         const char& b)
+{
+  int indexOf = 0;
+  int startingPosition = 0;
+
+  while (indexOf != -1)
+  {
+    indexOf = buf.indexOf(a, startingPosition);
+    if (indexOf != -1)
+    {
+      // first character, can't be preceeded by 'b', so is valid.
+      if (indexOf == 0)
+      {
+        return indexOf;
+      }
+      // If last character is preceeded by 'b', no point continuing.
+      else if (indexOf == buf.size() - 1 && buf.at(indexOf-1) == b)
+      {
+        return -1;
+      }
+      // This is the valid case: 'a' not preceeded by 'b'.
+      else if (indexOf != 0 && buf.at(indexOf-1) != b)
+      {
+        return indexOf;
+      }
+      else
+      {
+        // Keep searching from the next position.
+        startingPosition = indexOf + 1;
+      }
+    }
+  }
+  return indexOf;
 }
 
 
@@ -203,7 +241,6 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
 {
   unsigned int minimumSize = m_ImageSize[0] * m_ImageSize[1] + 20;
   int preceedingChar = 0;
-  int startingChar = 0;
   int startImageChar = 0;
   int endImageChar = 0;
   int terminatingChar = 0;
@@ -232,23 +269,25 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
       {
         m_IntermediateBuffer.append(tmpData);
 
-        preceedingChar = m_IntermediateBuffer.indexOf(0x01);
-        startingChar = m_IntermediateBuffer.indexOf('#');
-        startImageChar = startingChar + 4;
-        terminatingChar = m_IntermediateBuffer.indexOf(0x04);
+        preceedingChar = this->FindFirstANotPreceededByB(m_IntermediateBuffer,
+                                                         0x01,
+                                                         0x27);
+        startImageChar = preceedingChar + 5;
+        terminatingChar = this->FindFirstANotPreceededByB(m_IntermediateBuffer,
+                                                          0x04,
+                                                          0x27);
         endImageChar = terminatingChar - 2;
         dataSize =  terminatingChar - preceedingChar + 1;
         imageSize = endImageChar - startImageChar + 1;
 
         if (   preceedingChar >= 0
-            && startingChar >= 0
             && startImageChar >= 0
             && endImageChar >= 0
             && terminatingChar >= 0
-            && startingChar > preceedingChar
-            && startImageChar > startingChar
+            && dataSize > 0
+            && imageSize > 0
             && endImageChar > startImageChar
-            && terminatingChar > endImageChar
+            && terminatingChar > preceedingChar
            )
         {
           if (   image.width() != m_ImageSize[0]
@@ -282,10 +321,13 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
           while (rp != endImageData)
           {
             // See page 9 of 142 in BK doc PS12640-44
-            if (*rp == 0x1 || *rp == 0x4 || *rp == 0x27)
+            if (   (*rp == 0x27 && *(rp+1) == ~(0x1))
+                || (*rp == 0x27 && *(rp+1) == ~(0x4))
+                || (*rp == 0x27 && *(rp+1) == ~(0x27))
+               )
             {
               rp++;         // skip escape char
-              *wp = ~(*rp); // invert it
+              *wp = ~(*rp); // invert data
             }
             else
             {

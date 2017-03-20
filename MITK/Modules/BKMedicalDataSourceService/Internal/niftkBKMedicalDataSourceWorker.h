@@ -52,6 +52,9 @@ private:
   bool SendCommandMessage(const std::string& message);
   std::string ReceiveResponseMessage(const size_t& expectedSize);
   void ReceiveImage(QImage& image);
+  int FindFirstANotPreceededByB(const QByteArray& buf,
+                                const char& a,
+                                const char& b);
 
   int           m_Timeout;
   QTcpSocket    m_Socket;
