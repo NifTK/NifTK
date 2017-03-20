@@ -1138,6 +1138,16 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
   std::vector<std::string> imageFiles = niftk::GetFilesInDirectory(imageDir);
   std::vector<std::string> trackingFiles = niftk::GetFilesInDirectory(trackingDir);
 
+  std::size_t found = trackingFiles[0].find_last_of(".");
+  std::string  ext = trackingFiles[0].substr(found + 1);
+
+  if (( ext != "txt") && ( ext != "4x4") && ( ext != "pos"))
+  {
+    std::ostringstream errorMessage;
+    errorMessage << trackingFiles[0] << " is not a tracking file. Wrong directory?" << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
   if (imageFiles.size() > trackingFiles.size())
   {
     std::ostringstream errorMessage;
@@ -1176,8 +1186,8 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
     mitk::Point4D rotation;
     mitk::Vector3D translation;
 
-    std::size_t found = trackingFiles[i].find_last_of(".");
-    std::string ext = trackingFiles[i].substr(found + 1);
+    found = trackingFiles[i].find_last_of(".");
+    ext = trackingFiles[i].substr(found + 1);
 
     if (( ext == "txt") || ( ext == "4x4"))
     {
