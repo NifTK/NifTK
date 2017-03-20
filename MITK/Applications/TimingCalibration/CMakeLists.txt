@@ -12,8 +12,12 @@
 #
 #============================================================================*/
 
-set(CPP_FILES
-  niftkNiftyCalVideoCalibrationManager.cxx
-  niftkTimingCalibrationInterface.cxx
+NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+  NAME niftkTimingCalibration
+  BUILD_SLICER
+  INSTALL_SCRIPT
+  TARGET_LIBRARIES
+    ${Boost_LIBRARIES}
+    niftkOpenCVUtils
+    niftkNiftyCal
 )
-

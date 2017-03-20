@@ -361,6 +361,15 @@ cv::VideoWriter* CreateVideoWriter ( std::string filename , double framesPerSeco
   return writer;
 }
 
+
+//---------------------------------------------------------------------------
+std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedTranslations(const std::string& directory)
+{
+  std::vector< std::pair<unsigned long long, cv::Point3d> > timeStampedTranslations;
+  return timeStampedTranslations;
+}
+
+
 //---------------------------------------------------------------------------
 std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(const std::string& directory)
 {

@@ -101,6 +101,11 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT cv::VideoWriter* CreateVideoWriter(std::str
 extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(const std::string& directory);
 
 /**
+ * \brief Loads points from a directory, where each point is in a separate file, and the filename is a timestamp.
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedTranslations(const std::string& directory);
+
+/**
  * \brief Loads points from a flat text file with each line having the timestamp, the triangulated point, then the left and right screen points
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadTimeStampedPoints(std::vector< std::pair<unsigned long long, cv::Point3d> >& points,
