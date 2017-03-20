@@ -982,14 +982,34 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
 {
   std::vector<std::string> pointFiles = niftk::GetFilesInDirectory(pointDir);
   std::vector<std::string> trackingFiles = niftk::GetFilesInDirectory(trackingDir);
+  
+  std::size_t found = pointFiles[0].find_last_of(".");
+  std::string ext = pointFiles[0].substr(found + 1);
 
-  if (pointFiles.size() >= trackingFiles.size())
+  if (( ext != "txt") && ( ext != "4x4") && ( ext != "pos"))
   {
     std::ostringstream errorMessage;
-    errorMessage << "The number of point files is less than the number of tracking files." << std::endl;
+    errorMessage << pointFiles[0] << " is not a point file. Wrong directory?" << std::endl;
     mitkThrow() << errorMessage.str();
   }
 
+  found = trackingFiles[0].find_last_of(".");
+  ext = trackingFiles[0].substr(found + 1);
+
+  if (( ext != "txt") && ( ext != "4x4") && ( ext != "pos"))
+  {
+    std::ostringstream errorMessage;
+    errorMessage << trackingFiles[0] << " is not a tracking file. Wrong directory?" << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  if (pointFiles.size() > trackingFiles.size())
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "The number of point files should not be more than the number of tracking files." << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+  
   TrackedPointData outputData;
 
   int matchNumber = 0;
@@ -998,6 +1018,7 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
   {
     std::size_t found1 = pointFiles[i].find_last_of("/\\");
     std::size_t found2 = pointFiles[i].find_last_of(".");
+
     std::string pointFileTimeStamp = pointFiles[i].substr(found1 + 8, found2 - found1 - 8 - 2);
 
     long long int minTimeDifference = std::numeric_limits<long long int>::max();
@@ -1011,6 +1032,7 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
     {
       found1 = trackingFiles[j].find_last_of("/\\");
       found2 = trackingFiles[j].find_last_of(".");
+
       std::string trackingFileTimeStamp = trackingFiles[j].substr(found1 + 8, found2 - found1 - 8 - 2);
 
       long long int trackingFileTime = std::stoll(trackingFileTimeStamp);
@@ -1064,8 +1086,8 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
     mitk::Point4D rotation;
     mitk::Vector3D translation;
 
-    std::size_t found = trackingFiles[matchNumber].find_last_of(".");
-    std::string ext = trackingFiles[matchNumber].substr(found + 1);
+    found = trackingFiles[matchNumber].find_last_of(".");
+    ext = trackingFiles[matchNumber].substr(found + 1);
 
     if (( ext == "txt") || ( ext == "4x4"))
     {
@@ -1096,6 +1118,13 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
 
     outputData.push_back(aTrackedPoint);
   } // end for i
+
+  if (outputData.size() < 30)
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Not enough matched points and tracking data." << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
 
   return outputData;
 }
