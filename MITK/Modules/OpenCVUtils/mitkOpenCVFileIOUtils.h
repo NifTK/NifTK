@@ -96,6 +96,11 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT cv::VideoWriter* CreateVideoWriter(std::str
     bool isColour = true);
 
 /**
+ * \brief Extracts time stamp from string, or throws.
+ */
+extern "C++" NIFTKOPENCVUTILS_EXPORT unsigned long long ExtractTimeStampOrThrow(const std::string& name);
+
+/**
  * \brief Loads points from a directory, where each point is in a separate file, and the filename is a timestamp.
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(const std::string& directory);

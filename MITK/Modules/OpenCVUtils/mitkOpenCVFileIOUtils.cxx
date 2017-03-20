@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkOpenCVFileIOUtils.h"
+#include <niftkVTKFunctions.h>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
@@ -363,9 +364,63 @@ cv::VideoWriter* CreateVideoWriter ( std::string filename , double framesPerSeco
 
 
 //---------------------------------------------------------------------------
+unsigned long long ExtractTimeStampOrThrow(const std::string& name)
+{
+  // Parse timestamp.
+  boost::regex timeStampFilter ( "([0-9]{19})");
+  boost::cmatch what;
+  unsigned long long timeStamp = 0;
+
+  if ( boost::regex_match( (niftk::Basename(name)).c_str(), what, timeStampFilter) )
+  {
+    timeStamp = boost::lexical_cast<unsigned long long>(niftk::Basename(name));
+
+    if (timeStamp ==0)
+    {
+      std::ostringstream errorMessage;
+      errorMessage << "Failed to extract timestamp from name:" << name << std::endl;
+      mitkThrow() << errorMessage.str();
+    }
+  }
+  else
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Could not match timestamp in name:" << name << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  return timeStamp;
+}
+
+
+//---------------------------------------------------------------------------
 std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedTranslations(const std::string& directory)
 {
   std::vector< std::pair<unsigned long long, cv::Point3d> > timeStampedTranslations;
+
+  std::vector<std::string> trackingFiles = niftk::GetFilesInDirectory(directory);
+  std::sort(trackingFiles.begin(), trackingFiles.end());
+
+  for (unsigned int i = 0; i < trackingFiles.size(); i++)
+  {
+    std::string fileName = trackingFiles[i];
+    if (fileName.empty())
+    {
+      mitkThrow() << "Can't load empty file name";
+    }
+
+    unsigned long long timeStamp = ExtractTimeStampOrThrow(fileName);
+
+    vtkSmartPointer<vtkMatrix4x4> mat = niftk::LoadMatrix4x4FromFile(fileName);
+
+    cv::Point3d translation;
+    translation.x = mat->GetElement(0, 3);
+    translation.y = mat->GetElement(1, 3);
+    translation.z = mat->GetElement(2, 3);
+
+    timeStampedTranslations.push_back(std::pair<unsigned long long, cv::Point3d>(timeStamp, translation));
+  }
+
   return timeStampedTranslations;
 }
 
@@ -406,32 +461,8 @@ std::vector< std::pair<unsigned long long, cv::Point3d> > LoadTimeStampedPoints(
       }
     }
 
-    // Parse timestamp.
-    boost::regex timeStampFilter ( "([0-9]{19})");
-    boost::cmatch what;
-    unsigned long long timeStamp = 0;
-
-    if ( boost::regex_match( (niftk::Basename(fileName)).c_str(), what, timeStampFilter) )
-    {
-      timeStamp = boost::lexical_cast<unsigned long long>(niftk::Basename(fileName));
-
-      if (timeStamp != 0)
-      {
-        timeStampedPoints.push_back(std::pair<unsigned long long, cv::Point3d>(timeStamp, point));
-      }
-      else
-      {
-        std::ostringstream errorMessage;
-        errorMessage << "Failed to extract timestamp from name of file:" << fileName << std::endl;
-        mitkThrow() << errorMessage.str();
-      }
-    }
-    else
-    {
-      std::ostringstream errorMessage;
-      errorMessage << "Could not match timestamp in name of file:" << fileName << std::endl;
-      mitkThrow() << errorMessage.str();
-    }
+    unsigned long long timeStamp = ExtractTimeStampOrThrow(fileName);
+    timeStampedPoints.push_back(std::pair<unsigned long long, cv::Point3d>(timeStamp, point));
   }
 
   return timeStampedPoints;
