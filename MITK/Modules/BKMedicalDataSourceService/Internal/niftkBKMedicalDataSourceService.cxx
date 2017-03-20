@@ -47,7 +47,7 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
   m_Worker->ConnectToHost(host, portNumber); // must throw if failed.
   m_Worker->moveToThread(&m_WorkerThread);
 
-  connect(m_Worker, SIGNAL(ImageReceived(QImage)), this, SLOT(OnFrameAvailable(QImage)));
+  connect(m_Worker, SIGNAL(ImageReceived(QImage)), this, SLOT(OnFrameAvailable(QImage)), Qt::DirectConnection);
   connect(&m_WorkerThread, SIGNAL(finished()), m_Worker, SLOT(deleteLater()));
   connect(&m_WorkerThread, SIGNAL(started()), m_Worker, SLOT(ReceiveImages()));
 
