@@ -170,12 +170,14 @@ bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
   bool isOK = true;
   if (sentSize != messageSize)
   {
-    MITK_ERROR << "Failed to send message:" << message << " due to size mismatch:" << messageSize << " != " << sentSize;
+    MITK_ERROR << "Failed to send message:" << message
+               << " due to size mismatch:" << messageSize << " != " << sentSize;
     isOK = false;
   }
   if (!wasWritten)
   {
-    MITK_ERROR << "Failed to send message:" << message << " due to socket error:" << m_Socket.errorString().toStdString();
+    MITK_ERROR << "Failed to send message:" << message
+               << " due to socket error:" << m_Socket.errorString().toStdString();
     isOK = false;
   }
 
@@ -231,7 +233,7 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
     MITK_ERROR << "Failed to read message of size:" << expectedSize;
   }
 
-  MITK_INFO << "BKMedicalDataSourceWorker:received:" << result ;
+  MITK_INFO << "BKMedicalDataSourceWorker:received:" << result;
   return result;
 }
 

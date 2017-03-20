@@ -43,13 +43,17 @@ std::vector<TimingSample3D> ConvertOpenCVDataToTimingSamples(
 int DoTimingCalibrationFromDirectories(const std::string& trackingDir,
                                        const std::string& pointsDir)
 {
-  std::vector< std::pair<unsigned long long, cv::Point3d> > trackingData = mitk::LoadTimeStampedTranslations(trackingDir);
+  std::vector< std::pair<unsigned long long, cv::Point3d> > trackingData
+    = mitk::LoadTimeStampedTranslations(trackingDir);
+
   if (trackingData.empty())
   {
     mitkThrow() << "Failed to load tracking data from " << trackingDir << std::endl;
   }
 
-  std::vector< std::pair<unsigned long long, cv::Point3d> > pointData = mitk::LoadTimeStampedPoints(pointsDir);
+  std::vector< std::pair<unsigned long long, cv::Point3d> > pointData
+    = mitk::LoadTimeStampedPoints(pointsDir);
+
   if (pointData.empty())
   {
     mitkThrow() << "Failed to load point data from " << pointsDir << std::endl;

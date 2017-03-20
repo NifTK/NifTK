@@ -41,8 +41,6 @@ public:
   mitkNewMacro3Param(BKMedicalDataSourceService, QString,
                      const IGIDataSourceProperties&, mitk::DataStorage::Pointer)
 
-
-
 protected:
 
   BKMedicalDataSourceService(QString factoryName,
