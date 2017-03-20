@@ -55,6 +55,10 @@ protected:
    */
   virtual std::unique_ptr<niftk::IGIDataType> GrabImage() override;
 
+  static const int BK_FRAMES_PER_SECOND;
+  static const int BK_TIMEOUT;
+  static const int BK_PORT;
+
 private slots:
 
   void OnFrameAvailable(const QImage&);

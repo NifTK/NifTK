@@ -32,7 +32,7 @@ class BKMedicalDataSourceWorker : public QObject
   Q_OBJECT
 
 public:
-  BKMedicalDataSourceWorker();
+  BKMedicalDataSourceWorker(const int& timeOut, const int& framesPerSecond);
   ~BKMedicalDataSourceWorker();
 
   void ConnectToHost(QString address, int port);
@@ -57,6 +57,7 @@ private:
                                 const char& b);
 
   int           m_Timeout;
+  int           m_FramesPerSecond;
   QTcpSocket    m_Socket;
   QByteArray    m_IntermediateBuffer;
   char          m_OutgoingMessageBuffer[256];

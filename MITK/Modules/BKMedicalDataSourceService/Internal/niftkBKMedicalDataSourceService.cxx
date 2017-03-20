@@ -20,6 +20,10 @@
 namespace niftk
 {
 
+const int BKMedicalDataSourceService::BK_FRAMES_PER_SECOND(20);
+const int BKMedicalDataSourceService::BK_TIMEOUT(1000); // ms
+const int BKMedicalDataSourceService::BK_PORT(7915);
+
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceService::BKMedicalDataSourceService(
     QString factoryName,
@@ -27,8 +31,8 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
     mitk::DataStorage::Pointer dataStorage)
 : QImageDataSourceService(QString("BKMedical-"),
                           factoryName,
-                          40, // expected frames per second,
-                          80, // ring buffer size,
+                          BK_FRAMES_PER_SECOND,     // frame rate
+                          2 * BK_FRAMES_PER_SECOND, // ring buffer size,
                           properties,
                           dataStorage
                          )
@@ -41,10 +45,8 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
 
   this->SetStatus("Initialising");
 
-  int portNumber = 7915;
-
-  m_Worker = new BKMedicalDataSourceWorker();
-  m_Worker->ConnectToHost(host, portNumber); // must throw if failed.
+  m_Worker = new BKMedicalDataSourceWorker(BK_TIMEOUT, BK_FRAMES_PER_SECOND);
+  m_Worker->ConnectToHost(host, BK_PORT); // must throw if failed.
   m_Worker->moveToThread(&m_WorkerThread);
 
   connect(m_Worker, SIGNAL(ImageReceived(QImage)), this, SLOT(OnFrameAvailable(QImage)), Qt::DirectConnection);

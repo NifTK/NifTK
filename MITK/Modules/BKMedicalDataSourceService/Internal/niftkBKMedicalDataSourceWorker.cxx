@@ -21,8 +21,9 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-BKMedicalDataSourceWorker::BKMedicalDataSourceWorker()
-: m_Timeout(1000)
+BKMedicalDataSourceWorker::BKMedicalDataSourceWorker(const int& timeOut, const int& framesPerSecond)
+: m_Timeout(timeOut)
+, m_FramesPerSecond(framesPerSecond)
 {
   for (int i = 0; i < 256; i++)
   {
@@ -34,17 +35,18 @@ BKMedicalDataSourceWorker::BKMedicalDataSourceWorker()
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceWorker::~BKMedicalDataSourceWorker()
 {
-  std::string message = "QUERY:GRAB_FRAME \"OFF\",30;";
-  bool sentOK = this->SendCommandMessage(message);
+  std::ostringstream message;
+  message << "QUERY:GRAB_FRAME \"OFF\"," << m_FramesPerSecond << ";";
+  bool sentOK = this->SendCommandMessage(message.str());
   if (!sentOK)
   {
-    MITK_ERROR << "Failed to send:" << message
+    MITK_ERROR << "Failed to send:" << message.str()
                << ", but we are in destructor anyway.";
   }
   std::string response = this->ReceiveResponseMessage(4); // Should be ACK;
   if (response.empty())
   {
-    MITK_ERROR << "Failed to parse response for:" << message
+    MITK_ERROR << "Failed to parse response for:" << message.str()
                << ", but we are in destructor anyway.";
   }
 }
@@ -92,11 +94,12 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
     mitkThrow() << "Invalid BK Medical image size.";
   }
 
-  message = "QUERY:GRAB_FRAME \"ON\",20;";
-  sentOK = this->SendCommandMessage(message);
+  std::ostringstream streamMessage;
+  streamMessage << "QUERY:GRAB_FRAME \"ON\"," << m_FramesPerSecond << ";";
+  sentOK = this->SendCommandMessage(streamMessage.str());
   if (!sentOK)
   {
-    mitkThrow() << "Failed to send message '" << message
+    mitkThrow() << "Failed to send message '" << streamMessage.str()
                 << "', to start streaming, socket status=" << m_Socket.errorString().toStdString();
   }
   response = this->ReceiveResponseMessage(4); // Should be ACK;
