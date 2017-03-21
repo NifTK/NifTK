@@ -380,12 +380,24 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
           char *endImageData = &(m_IntermediateBuffer.data()[endImageChar + 1]);
           char *rp = startImageData;
           char *wp = reinterpret_cast<char*>(image.bits());
+          unsigned char uc = 0;
+          unsigned char ucp1 = 0;
+          unsigned char uc1 = 1;
+          unsigned char uc4 = 4;
+          unsigned char uc27 = 27;
+          unsigned char ucN1 = ~uc1;
+          unsigned char ucN4 = ~uc4;
+          unsigned char ucN27 = ~uc27;
+
           while (rp != endImageData)
           {
+            uc = *(reinterpret_cast<unsigned char*>(rp));
+            ucp1 = *(reinterpret_cast<unsigned char*>(rp) + 1);
+
             // See page 9 of 142 in BK doc PS12640-44
-            if (   (*rp == 0x27 && *(rp+1) == ~(0x1))
-                || (*rp == 0x27 && *(rp+1) == ~(0x4))
-                || (*rp == 0x27 && *(rp+1) == ~(0x27))
+            if (   (uc == uc27 && ucp1 == ucN1)
+                || (uc == uc27 && ucp1 == ucN4)
+                || (uc == uc27 && ucp1 == ucN27)
                )
             {
               rp++;         // skip escape char
