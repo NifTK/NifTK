@@ -145,16 +145,17 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
 
 
 //-----------------------------------------------------------------------------
-int BKMedicalDataSourceWorker::FindFirstANotPreceededByB(const QByteArray& buf,
+int BKMedicalDataSourceWorker::FindFirstANotPreceededByB(const int& startingPosition,
+                                                         const QByteArray& buf,
                                                          const char& a,
                                                          const char& b)
 {
   int indexOf = 0;
-  int startingPosition = 0;
+  int sp = startingPosition;
 
   while (indexOf != -1)
   {
-    indexOf = buf.indexOf(a, startingPosition);
+    indexOf = buf.indexOf(a, sp);
     if (indexOf != -1)
     {
       // first character, can't be preceeded by 'b', so is valid.
@@ -175,7 +176,7 @@ int BKMedicalDataSourceWorker::FindFirstANotPreceededByB(const QByteArray& buf,
       else
       {
         // Keep searching from the next position.
-        startingPosition = indexOf + 1;
+        sp = indexOf + 1;
       }
     }
   }
@@ -288,6 +289,8 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
 
   unsigned int minimumSize = m_ImageSize[0] * m_ImageSize[1] + 20;
   int preceedingChar = 0;
+  int hashChar = 0;
+  int sizeOfDataChar = 0;
   int startImageChar = 0;
   int endImageChar = 0;
   int terminatingChar = 0;
@@ -316,13 +319,25 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
       {
         m_IntermediateBuffer.append(tmpData);
 
-        preceedingChar = this->FindFirstANotPreceededByB(m_IntermediateBuffer,
+        preceedingChar = this->FindFirstANotPreceededByB(0,
+                                                         m_IntermediateBuffer,
                                                          0x01,
                                                          0x27);
-        startImageChar = preceedingChar + 5;
-        terminatingChar = this->FindFirstANotPreceededByB(m_IntermediateBuffer,
+
+        hashChar = m_IntermediateBuffer.indexOf('#', preceedingChar);
+
+        sizeOfDataChar = hashChar + 1;
+
+        startImageChar = sizeOfDataChar
+                       + (m_IntermediateBuffer[sizeOfDataChar] - '0') // as we are dealing with ASCII codes.
+                       + 1  // to move onto next char
+                       + 4; // timestamp = 4 bytes.
+
+        terminatingChar = this->FindFirstANotPreceededByB(startImageChar,
+                                                          m_IntermediateBuffer,
                                                           0x04,
                                                           0x27);
+
         endImageChar = terminatingChar - 2;
         dataSize =  terminatingChar - preceedingChar + 1;
         imageSize = endImageChar - startImageChar + 1;

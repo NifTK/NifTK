@@ -56,7 +56,8 @@ private:
   std::string ReceiveResponseMessage(const size_t& expectedSize);
   void StopStreaming();
   void ReceiveImage(QImage& image);
-  int FindFirstANotPreceededByB(const QByteArray& buf,
+  int FindFirstANotPreceededByB(const int& startingPosition,
+                                const QByteArray& buf,
                                 const char& a,
                                 const char& b);
 
