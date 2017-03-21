@@ -82,9 +82,10 @@ mitk::BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(Ti
   LabeledLookupTableProperty::Pointer  labeledLUT = LabeledLookupTableProperty::New();
 
   TiXmlElement* child  = element->FirstChildElement("LabelList");
+  LabeledLookupTableProperty::LabelListType labels;
+
   if (child)
   {
-    LabeledLookupTableProperty::LabelListType labels;
     for (TiXmlElement* grandChild = child->FirstChildElement("Label");
          grandChild;
          grandChild = grandChild->NextSiblingElement("Label"))
@@ -119,7 +120,36 @@ mitk::BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(Ti
   NamedLookupTableProperty* namedLUTProp = dynamic_cast<NamedLookupTableProperty*>(baseProp.GetPointer());
   if (namedLUTProp != NULL)
   {
-    labeledLUT->SetLookupTable(namedLUTProp->GetLookupTable());
+    vtkSmartPointer<vtkLookupTable> vtkLUT = namedLUTProp->GetLookupTable()->GetVtkLookupTable();
+    double* range = vtkLUT->GetRange();
+    
+    // this is to account for the fact mitk write all the table values not just those in range 
+    // vtk by default pads the table with (0,0,0,0) and the begining and end of the dynamic range.
+    if (vtkLUT->GetNumberOfColors() != (range[1] - range[0] + 1))
+    {
+      vtkSmartPointer<vtkLookupTable> newVtkLUT = vtkSmartPointer<vtkLookupTable>::New();
+      newVtkLUT->SetRange(range);
+      newVtkLUT->SetHueRange(vtkLUT->GetHueRange());
+      newVtkLUT->SetValueRange(vtkLUT->GetValueRange());
+
+      newVtkLUT->SetSaturationRange(vtkLUT->GetSaturationRange());
+      newVtkLUT->SetAlphaRange(vtkLUT->GetAlphaRange());
+
+      newVtkLUT->SetNumberOfColors((range[1] - range[0] + 1));
+      for (unsigned int i = 0; i < newVtkLUT->GetNumberOfColors(); i++)
+      {
+        newVtkLUT->SetTableValue(i, vtkLUT->GetTableValue(i));
+      }
+
+      mitk::LookupTable::Pointer mitkLut = mitk::LookupTable::New();
+      mitkLut->SetVtkLookupTable(newVtkLUT);
+      labeledLUT->SetLookupTable(mitkLut);
+    }
+    else
+    {
+      labeledLUT->SetLookupTable(namedLUTProp->GetLookupTable());    
+    }
+
     labeledLUT->SetIsScaled(namedLUTProp->GetIsScaled());
     labeledLUT->SetName(namedLUTProp->GetName());
   }
