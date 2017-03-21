@@ -20,7 +20,7 @@
 namespace niftk
 {
 
-const int BKMedicalDataSourceService::BK_FRAMES_PER_SECOND(20);
+const int BKMedicalDataSourceService::BK_FRAMES_PER_SECOND(40);
 const int BKMedicalDataSourceService::BK_TIMEOUT(1000); // ms
 const int BKMedicalDataSourceService::BK_PORT(7915);
 
