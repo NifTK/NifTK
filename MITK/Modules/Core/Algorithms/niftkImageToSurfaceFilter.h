@@ -112,7 +112,7 @@ public:
   itkBooleanMacro(PerformInputSmoothing);
 
   /// \brief Returns if input image smoothing is enabled
-  itkGetConstMacro(PerformInputSmoothing,bool);
+  itkGetConstMacro(PerformInputSmoothing, bool);
 
   /// \brief Sets the smoothing radius of the input image smoothing method
   itkSetMacro(InputSmoothingRadius, float);
@@ -135,13 +135,13 @@ public:
   itkSetMacro(SurfaceSmoothingType, SurfaceSmoothingMethod);
 
   /// \brief Enables surface smoothing. The preferred method can be specified, along with the parameters.
-  itkSetMacro(PerformSurfaceSmoothing,bool);
+  itkSetMacro(PerformSurfaceSmoothing, bool);
 
   /// \brief Enable/Disable surface smoothing.
   itkBooleanMacro(PerformSurfaceSmoothing);
 
   /// \brief Returns if surface smoothing is enabled
-  itkGetConstMacro(PerformSurfaceSmoothing,bool);
+  itkGetConstMacro(PerformSurfaceSmoothing, bool);
 
   /// \brief Sets the smoothing radius of the surface smoothing method
   itkSetMacro(SurfaceSmoothingRadius, float);
@@ -164,13 +164,13 @@ public:
   itkSetMacro(SurfaceDecimationType, SurfaceDecimationMethod);
 
   /// \brief Enables surface decimation. The preferred method can be specified, along with the radius.
-  itkSetMacro(PerformSurfaceDecimation,bool);
+  itkSetMacro(PerformSurfaceDecimation, bool);
 
   /// \brief Enable/Disable surface decimation.
   itkBooleanMacro(PerformSurfaceDecimation);
 
   /// \brief Returns if surface decimation is enabled
-  itkGetConstMacro(PerformSurfaceDecimation,bool);
+  itkGetConstMacro(PerformSurfaceDecimation, bool);
 
   /// \brief Set desired  amount of reduction of triangles in the range from 0.0 to 1.0. For example 0.9 will reduce the data set to 10%.
   itkSetMacro(TargetReduction, float);
@@ -186,9 +186,9 @@ public:
 
 
   /// \brief Enable/Disable surface cleaning and small object removal.
-  itkSetMacro(PerformSurfaceCleaning,bool);
+  itkSetMacro(PerformSurfaceCleaning, bool);
   /// \brief Returns true if surface cleaning is enabled
-  itkGetConstMacro(PerformSurfaceCleaning,bool);
+  itkGetConstMacro(PerformSurfaceCleaning, bool);
 
   /// \brief Sets the number threshold for small object removal
   itkSetMacro(SurfaceCleaningThreshold, int);
