@@ -65,6 +65,7 @@ BKMedicalDataSourceService::~BKMedicalDataSourceService()
 {
   if (m_WorkerThread.isRunning())
   {
+    m_Worker->RequestStopStreaming();
     m_WorkerThread.quit();
     m_WorkerThread.wait();
   }

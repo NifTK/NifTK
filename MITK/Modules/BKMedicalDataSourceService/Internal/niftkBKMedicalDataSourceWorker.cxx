@@ -16,14 +16,18 @@
 #include <mitkLogMacros.h>
 #include <mitkExceptionMacro.h>
 #include <QThread>
+#include <QMutexLocker>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceWorker::BKMedicalDataSourceWorker(const int& timeOut, const int& framesPerSecond)
-: m_Timeout(timeOut)
+: m_Lock(QMutex::Recursive)
+, m_Timeout(timeOut)
 , m_FramesPerSecond(framesPerSecond)
+, m_RequestStopStreaming(false)
+, m_IsStreaming(false)
 {
   for (int i = 0; i < 256; i++)
   {
@@ -35,26 +39,54 @@ BKMedicalDataSourceWorker::BKMedicalDataSourceWorker(const int& timeOut, const i
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceWorker::~BKMedicalDataSourceWorker()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+void BKMedicalDataSourceWorker::RequestStopStreaming()
+{
+  QMutexLocker locker(&m_Lock);
+
+  m_RequestStopStreaming = true;
+}
+
+
+//-----------------------------------------------------------------------------
+void BKMedicalDataSourceWorker::StopStreaming()
+{
+  QMutexLocker locker(&m_Lock);
+
   std::ostringstream message;
   message << "QUERY:GRAB_FRAME \"OFF\"," << m_FramesPerSecond << ";";
   bool sentOK = this->SendCommandMessage(message.str());
   if (!sentOK)
   {
     MITK_ERROR << "Failed to send:" << message.str()
-               << ", but we are in destructor anyway.";
+               << ", but we are stopping anyway.";
   }
+/*
+ * I think we can ignore this for now. The incoming buffer will
+ * be queued up with images. So, we would have to process all images,
+ * and then hunt for an ACK. But we don't really care, as this is only
+ * called when shutting down the service.
+ *
   std::string response = this->ReceiveResponseMessage(4); // Should be ACK;
   if (response.empty())
   {
     MITK_ERROR << "Failed to parse response for:" << message.str()
-               << ", but we are in destructor anyway.";
+               << ", but we are stopping anyway.";
   }
+*/
+  m_IsStreaming = false;
+  m_RequestStopStreaming = false;
 }
 
 
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
 {
+  QMutexLocker locker(&m_Lock);
+
   m_Socket.connectToHost(address, port);
   if (!m_Socket.waitForConnected(m_Timeout))
   {
@@ -107,6 +139,8 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
   {
     mitkThrow() << "Failed to parse acknowledgement to turn streaming on.";
   }
+
+  m_IsStreaming = true;
 }
 
 
@@ -152,6 +186,8 @@ int BKMedicalDataSourceWorker::FindFirstANotPreceededByB(const QByteArray& buf,
 //-----------------------------------------------------------------------------
 size_t BKMedicalDataSourceWorker::GenerateCommandMessage(const std::string& message)
 {
+  QMutexLocker locker(&m_Lock);
+
   size_t counter = 0;
   m_OutgoingMessageBuffer[counter++] = 0x01;
   for (int i = 0; i < message.size(); i++)
@@ -166,6 +202,8 @@ size_t BKMedicalDataSourceWorker::GenerateCommandMessage(const std::string& mess
 //-----------------------------------------------------------------------------
 bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
 {
+  QMutexLocker locker(&m_Lock);
+
   size_t messageSize = this->GenerateCommandMessage(message);
   size_t sentSize = m_Socket.write(m_OutgoingMessageBuffer, messageSize);
   bool wasWritten = m_Socket.waitForBytesWritten(m_Timeout);
@@ -192,6 +230,8 @@ bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
 //-----------------------------------------------------------------------------
 std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expectedSize)
 {
+  QMutexLocker locker(&m_Lock);
+
   std::string result;
   unsigned int counter = 0;
   size_t actualSize = expectedSize + 2; // due to start and end terminator.
@@ -244,6 +284,8 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
 {
+  QMutexLocker locker(&m_Lock);
+
   unsigned int minimumSize = m_ImageSize[0] * m_ImageSize[1] + 20;
   int preceedingChar = 0;
   int startImageChar = 0;
@@ -355,12 +397,24 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
 void BKMedicalDataSourceWorker::ReceiveImages()
 {
   QImage image;
-  while(true)
+  while(m_IsStreaming)
   {
-    this->ReceiveImage(image);
-    if (image.width() > 0 && image.height() > 0)
     {
-      emit ImageReceived(image);
+      QMutexLocker locker(&m_Lock);
+
+      // This blocks if no data, so effectively this thread waits.
+      this->ReceiveImage(image);
+      if (image.width() > 0 && image.height() > 0)
+      {
+        emit ImageReceived(image);
+      }
+
+      // If another thread (e.g. GUI) has requested to stop,
+      // we send this stop request, which ultimately sets m_IsStreaming to false.
+      if (m_RequestStopStreaming)
+      {
+        this->StopStreaming();
+      }
     }
   }
 }

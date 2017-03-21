@@ -18,6 +18,7 @@
 #include <QImage>
 #include <QTcpSocket>
 #include <QByteArray>
+#include <QMutex>
 
 namespace niftk
 {
@@ -36,9 +37,11 @@ public:
   ~BKMedicalDataSourceWorker();
 
   void ConnectToHost(QString address, int port);
+  void RequestStopStreaming();
 
 public slots:
 
+  /** Called by QThread, and it the main processing method. */
   void ReceiveImages();
 
 signals:
@@ -51,11 +54,13 @@ private:
   size_t GenerateCommandMessage(const std::string& message);
   bool SendCommandMessage(const std::string& message);
   std::string ReceiveResponseMessage(const size_t& expectedSize);
+  void StopStreaming();
   void ReceiveImage(QImage& image);
   int FindFirstANotPreceededByB(const QByteArray& buf,
                                 const char& a,
                                 const char& b);
 
+  QMutex        m_Lock;
   int           m_Timeout;
   int           m_FramesPerSecond;
   QTcpSocket    m_Socket;
@@ -64,6 +69,8 @@ private:
   char          m_ImageBuffer[1024*1024*4];
   int           m_ImageSize[2];
   QVector<QRgb> m_DefaultLUT;
+  bool          m_RequestStopStreaming;
+  bool          m_IsStreaming;
 };
 
 } // end namespace
