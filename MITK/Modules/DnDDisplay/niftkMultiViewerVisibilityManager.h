@@ -105,12 +105,6 @@ public:
   /// \brief Sets the default render window layout for when images are dropped into a render window.
   void SetDefaultWindowLayout(WindowLayout windowLayout) { m_DefaultWindowLayout = windowLayout; }
 
-  /// \brief When we drop nodes onto a window, if true, we add all the children.
-  bool GetAutomaticallyAddChildren() const { return m_AutomaticallyAddChildren; }
-
-  /// \brief When we drop nodes onto a window, if true, we add all the children.
-  void SetAutomaticallyAddChildren(bool autoAdd) { m_AutomaticallyAddChildren = autoAdd; }
-
   /// \brief Gets the flag deciding whether we accumulate images each time we drop.
   bool GetAccumulateWhenDropped() const { return m_Accumulate; }
 
@@ -119,6 +113,12 @@ public:
 
   /// \brief Called when one of the viewers receives the focus.
   void OnFocusChanged();
+
+  /// \brief Tells if the visibility of data nodes is bound across the viewers.
+  bool IsVisibilityBound() const;
+
+  /// \brief Binds the visibility of data nodes across the viewers.
+  void SetVisibilityBinding(bool bound);
 
 public slots:
 
@@ -138,12 +138,6 @@ protected:
   /// If the global property has changed, renderer is NULL.
   virtual void OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
-  /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to its global visibility.
-  virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node);
-
-  /// \brief For a given window (denoted by its windowIndex, or index number in m_Viewers), effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
-  virtual void RemoveNodesFromViewer(int windowIndex);
-
 private slots:
 
   /// \brief Called when a window of an initialised viewer gets selected.
@@ -152,12 +146,15 @@ private slots:
 
 private:
 
+  /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to its global visibility.
+  virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node);
+
+  /// \brief For a given viewer, effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
+  virtual void RemoveNodesFromViewer(SingleViewerWidget* viewer);
+
   /// \brief Updates the global visibilities of every node to the same as in the given renderer.
   /// The function ignores the crosshair plane nodes.
   void UpdateGlobalVisibilities(mitk::BaseRenderer* renderer);
-
-  /// \brief Gets the number of nodes currently visible in a window.
-  virtual int GetNodesInViewer(int windowIndex);
 
   /// \brief Works out the correct window layout from the data, and from the preferences.
   WindowLayout GetWindowLayout(std::vector<mitk::DataNode*> nodes);
@@ -176,14 +173,8 @@ private:
   //   Picks out the first geometry.
   mitk::TimeGeometry::Pointer GetTimeGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex);
 
-  // We maintain a set of data nodes present in each window.
-  // So, it's a vector, as we have one set for each of the registered windows.
-  std::vector< std::set<mitk::DataNode*> > m_DataNodesPerViewer;
-
   // Additionally, we manage a list of viewers, where m_DataNodes.size() == m_Viewers.size() should always be true.
   std::vector< SingleViewerWidget* > m_Viewers;
-
-  SingleViewerWidget* m_SelectedViewer;
 
   // Keeps track of the current mode, as it effects the response when images are dropped, as images are spread over single, multiple or all windows.
   DnDDisplayDropType m_DropType;
@@ -195,13 +186,11 @@ private:
   // as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
   DnDDisplayInterpolationType m_InterpolationType;
 
-  // Boolean to indicate whether to automatically add children, default to true.
-  bool m_AutomaticallyAddChildren;
-
   // Boolean to indicate whether successive drops into the same window are cumulative.
   bool m_Accumulate;
 
-  unsigned long m_FocusManagerObserverTag;
+  bool m_VisibilityBinding;
+
 };
 
 }

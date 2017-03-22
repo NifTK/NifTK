@@ -28,13 +28,20 @@ namespace niftk
 //-----------------------------------------------------------------------------
 MultiViewerVisibilityManager::MultiViewerVisibilityManager(mitk::DataStorage::Pointer dataStorage)
   : niftk::DataNodePropertyListener(dataStorage, "visible"),
-    m_SelectedViewer(nullptr),
     m_DropType(DNDDISPLAY_DROP_SINGLE),
     m_DefaultWindowLayout(WINDOW_LAYOUT_CORONAL),
     m_InterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION),
-    m_AutomaticallyAddChildren(true),
-    m_Accumulate(false)
+    m_Accumulate(false),
+    m_VisibilityBinding(false)
 {
+  bool wasBlocked = this->SetBlocked(true);
+  mitk::DataStorage::SetOfObjects::ConstPointer all = this->GetDataStorage()->GetAll();
+  for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
+  {
+    mitk::DataNode::Pointer node = it->Value();
+    node->SetVisibility(false);
+  }
+  this->SetBlocked(wasBlocked);
 }
 
 
@@ -47,11 +54,7 @@ MultiViewerVisibilityManager::~MultiViewerVisibilityManager()
 //-----------------------------------------------------------------------------
 void MultiViewerVisibilityManager::RegisterViewer(SingleViewerWidget* viewer)
 {
-  std::set<mitk::DataNode*> newNodes;
-  m_DataNodesPerViewer.push_back(newNodes);
   m_Viewers.push_back(viewer);
-
-  std::size_t viewerIndex = m_Viewers.size() - 1;
 
   std::vector<mitk::DataNode*> nodes;
 
@@ -66,7 +69,7 @@ void MultiViewerVisibilityManager::RegisterViewer(SingleViewerWidget* viewer)
     }
   }
 
-  m_Viewers[viewerIndex]->SetVisibility(nodes, false);
+  viewer->SetVisibility(nodes, false);
 
   this->connect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
   this->connect(viewer, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
@@ -80,13 +83,12 @@ void MultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex, std
   {
     endIndex = m_Viewers.size();
   }
-  for (std::size_t i = startIndex; i < endIndex; ++i)
+  for (auto viewer: m_Viewers)
   {
-    QObject::disconnect(m_Viewers[i], SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
-    QObject::disconnect(m_Viewers[i], SIGNAL(WindowSelected()), this, SLOT(OnWindowSelected()));
-    this->RemoveNodesFromViewer(i);
+    QObject::disconnect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
+    QObject::disconnect(viewer, SIGNAL(WindowSelected()), this, SLOT(OnWindowSelected()));
+    this->RemoveNodesFromViewer(viewer);
   }
-  m_DataNodesPerViewer.erase(m_DataNodesPerViewer.begin() + startIndex, m_DataNodesPerViewer.begin() + endIndex);
   m_Viewers.erase(m_Viewers.begin() + startIndex, m_Viewers.begin() + endIndex);
 }
 
@@ -98,27 +100,62 @@ void MultiViewerVisibilityManager::ClearViewers(std::size_t startIndex, std::siz
   {
     endIndex = m_Viewers.size();
   }
-  for (std::size_t i = startIndex; i < endIndex; i++)
+  for (auto viewer: m_Viewers)
   {
-    this->RemoveNodesFromViewer(i);
+    this->RemoveNodesFromViewer(viewer);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+bool MultiViewerVisibilityManager::IsVisibilityBound() const
+{
+  return m_VisibilityBinding;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerVisibilityManager::SetVisibilityBinding(bool bound)
+{
+  m_VisibilityBinding = bound;
 }
 
 
 //-----------------------------------------------------------------------------
 void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
 {
-  // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
-  for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
+  /// Note:
+  /// Do not manage the visibility of the crosshair planes.
+  if (node->GetProperty("renderer"))
   {
-    /// Note:
-    /// Do not manage the visibility of the crosshair planes.
-    if (!node->GetProperty("renderer"))
-    {
-      std::vector<mitk::DataNode*> nodes;
-      nodes.push_back(node);
-      m_Viewers[viewerIndex]->SetVisibility(nodes, false);
-    }
+    return;
+  }
+
+  bool globalVisibility = node->IsVisible(nullptr);
+
+  // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
+
+  mitk::DataNode::Pointer greyScaleSource = niftk::FindParentGreyScaleImage(this->GetDataStorage(), node);
+  bool hasVisibleSource = greyScaleSource.IsNotNull() && greyScaleSource->IsVisible(nullptr);
+
+  if (globalVisibility && !hasVisibleSource)
+  {
+    globalVisibility = false;
+    bool wasBlocked = this->SetBlocked(true);
+    node->SetVisibility(false);
+    this->SetBlocked(wasBlocked);
+  }
+
+  for (auto viewer: m_Viewers)
+  {
+    // We set the local visibility to the same as the global visibility in the selected viewer.
+    // In the other viewers we set the local visibility to either the same or to false, depending
+    // on whether the visibility is bound across the viewers.
+    bool visibility = (viewer->IsFocused() || m_VisibilityBinding) ? globalVisibility : false;
+
+    std::vector<mitk::DataNode*> nodes(1);
+    nodes[0] = node;
+    viewer->SetVisibility(nodes, visibility);
   }
 
   mitk::VtkResliceInterpolationProperty* interpolationProperty =
@@ -139,38 +176,6 @@ void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
     }
   }
 
-  // Furthermore, if a node has a parent, and that parent is already visible, we add this new node to all the same
-  // viewer as its parent. This is useful in segmentation when we add a segmentation (binary) volume that is
-  // registered as a child of a grey scale image. If the parent grey scale image is already
-  // registered as visible in a viewer, then the child image is made visible, which has the effect of
-  // immediately showing the segmented volume.
-  mitk::DataNode::Pointer parent = niftk::FindParentGreyScaleImage(this->GetDataStorage(), node);
-  if (parent.IsNotNull())
-  {
-    for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
-    {
-      std::set<mitk::DataNode*>::iterator it = m_DataNodesPerViewer[i].find(parent);
-      if (it != m_DataNodesPerViewer[i].end())
-      {
-        this->AddNodeToViewer(i, node);
-      }
-    }
-  }
-  else
-  {
-    /// TODO This should not be handled here.
-    if (node->GetName() == std::string("One of FeedbackContourTool's feedback nodes"))
-    {
-      for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
-      {
-        if (m_Viewers[viewerIndex]->IsFocused())
-        {
-          this->AddNodeToViewer(viewerIndex, node);
-        }
-      }
-    }
-  }
-
   Superclass::OnNodeAdded(node);
 }
 
@@ -185,19 +190,9 @@ void MultiViewerVisibilityManager::OnNodeRemoved(mitk::DataNode* node)
   {
     if (m_Viewers[viewerIndex]->IsFocused())
     {
-      std::vector<mitk::DataNode*> nodes;
-      nodes.push_back(node);
+      std::vector<mitk::DataNode*> nodes(1);
+      nodes[0] = node;
       m_Viewers[viewerIndex]->SetVisibility(nodes, false);
-    }
-  }
-
-  for (std::size_t i = 0; i < m_DataNodesPerViewer.size(); i++)
-  {
-    std::set<mitk::DataNode*>::iterator it;
-    it = m_DataNodesPerViewer[i].find(const_cast<mitk::DataNode*>(node));
-    if (it != m_DataNodesPerViewer[i].end())
-    {
-      m_DataNodesPerViewer[i].erase(it);
     }
   }
 }
@@ -208,79 +203,37 @@ void MultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, const
 {
   /// Note:
   /// The renderer must be 0 because we are listening to the global visibility only.
+  assert(renderer == nullptr);
 
-  for (std::size_t viewerIndex = 0; viewerIndex < m_Viewers.size(); ++viewerIndex)
+  bool globalVisibility = node->IsVisible(nullptr);
+
+  for (auto viewer: m_Viewers)
   {
-    if (m_Viewers[viewerIndex]->IsFocused())
+    // We set the local visibility to the new global visibility in the selected viewer,
+    // and if the visibility is bound across the viewers then in the other viewers as well.
+    if (viewer->IsFocused() || m_VisibilityBinding)
     {
-      bool globalVisibility = node->IsVisible(0);
-
-      std::set<mitk::DataNode*>::iterator nodesBegin = m_DataNodesPerViewer[viewerIndex].begin();
-      std::set<mitk::DataNode*>::iterator nodesEnd = m_DataNodesPerViewer[viewerIndex].end();
-      std::set<mitk::DataNode*>::iterator it = std::find(nodesBegin, nodesEnd, node);
-      if (it != nodesEnd)
-      {
-        std::vector<mitk::DataNode*> nodes;
-        nodes.push_back(node);
-        m_Viewers[viewerIndex]->SetVisibility(nodes, globalVisibility);
-
-//        if (!globalVisibility)
-//        {
-//          if (m_DataNodesPerViewer[viewerIndex].size() > 1)
-//          {
-//            std::vector<mitk::DataNode*> newNodes(m_DataNodesPerViewer[viewerIndex].size() - 1);
-//            std::vector<mitk::DataNode*>::iterator newNodesIt = std::copy(nodesBegin, it, newNodes.begin());
-//            ++it;
-//            std::copy(it, nodesEnd, newNodesIt);
-//            m_Viewers[viewerIndex]->OnNodesDropped(newNodes);
-//          }
-//          else
-//          {
-//            this->RemoveNodesFromViewer(viewerIndex);
-//          }
-//        }
-      }
-//      else
-//      {
-//        if (globalVisibility)
-//        {
-//          std::vector<mitk::DataNode*> newNodes(m_DataNodesPerViewer[viewerIndex].size() + 1);
-//          std::copy(nodesBegin, nodesEnd, newNodes.begin());
-//          newNodes[newNodes.size() - 1] = node;
-//          m_Viewers[viewerIndex]->OnNodesDropped(newNodes);
-//        }
-//      }
-
-      /// Only one viewer can be focused at a time.
-      break;
+      std::vector<mitk::DataNode*> nodes(1);
+      nodes[0] = node;
+      viewer->SetVisibility(nodes, globalVisibility);
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerVisibilityManager::RemoveNodesFromViewer(int viewerIndex)
+void MultiViewerVisibilityManager::RemoveNodesFromViewer(SingleViewerWidget* viewer)
 {
-  SingleViewerWidget *viewer = m_Viewers[viewerIndex];
   assert(viewer);
 
+  mitk::DataStorage::SetOfObjects::ConstPointer allNodes = this->GetDataStorage()->GetAll();
   std::vector<mitk::DataNode*> nodes;
-  std::set<mitk::DataNode*>::iterator iter;
-
-  for (iter = m_DataNodesPerViewer[viewerIndex].begin(); iter != m_DataNodesPerViewer[viewerIndex].end(); iter++)
+  for (auto it = allNodes->Begin(); it != allNodes->End(); ++it)
   {
-    nodes.push_back(*iter);
+    mitk::DataNode::Pointer node = it->Value();
+    nodes.push_back(node.GetPointer());
   }
-
   viewer->SetVisibility(nodes, false);
-  m_DataNodesPerViewer[viewerIndex].clear();
-}
-
-
-//-----------------------------------------------------------------------------
-int MultiViewerVisibilityManager::GetNodesInViewer(int viewerIndex)
-{
-  return m_DataNodesPerViewer[viewerIndex].size();
 }
 
 
@@ -290,27 +243,22 @@ void MultiViewerVisibilityManager::AddNodeToViewer(int viewerIndex, mitk::DataNo
   SingleViewerWidget* viewer = m_Viewers[viewerIndex];
   assert(viewer);
 
-  m_DataNodesPerViewer[viewerIndex].insert(node);
-  node->Modified();
-
   std::vector<mitk::DataNode*> nodes;
   nodes.push_back(node);
 
-  if (m_AutomaticallyAddChildren)
-  {
-    mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = this->GetDataStorage()->GetDerivations(node, NULL, false);
-    for (std::size_t i = 0; i < possibleChildren->size(); i++)
-    {
-      mitk::DataNode* possibleNode = (*possibleChildren)[i];
-//      if (possibleNode->IsVisible(0))
-      {
-        m_DataNodesPerViewer[viewerIndex].insert(possibleNode);
-        possibleNode->Modified();
+  bool wasBlocked = this->SetBlocked(true);
 
-        nodes.push_back(possibleNode);
-      }
-    }
+  node->SetVisibility(true);
+
+  mitk::DataStorage::SetOfObjects::ConstPointer derivedNodes = this->GetDataStorage()->GetDerivations(node, NULL, false);
+  for (auto it = derivedNodes->Begin(); it != derivedNodes->End(); ++it)
+  {
+    mitk::DataNode* derivedNode = it->Value();
+    nodes.push_back(derivedNode);
+    derivedNode->SetVisibility(true);
   }
+
+  this->SetBlocked(wasBlocked);
 
   viewer->ApplyGlobalVisibility(nodes);
 }
@@ -507,15 +455,7 @@ WindowLayout MultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk::Dat
 void MultiViewerVisibilityManager::OnWindowSelected()
 {
   SingleViewerWidget* selectedViewer = qobject_cast<SingleViewerWidget*>(QObject::sender());
-
-//  if (selectedViewer != m_SelectedViewer)
-  {
-    m_SelectedViewer = selectedViewer;
-    if (selectedViewer->GetTimeGeometry() != nullptr)
-    {
-      this->UpdateGlobalVisibilities(selectedViewer->GetSelectedRenderWindow()->GetRenderer());
-    }
-  }
+  this->UpdateGlobalVisibilities(selectedViewer->GetSelectedRenderWindow()->GetRenderer());
 }
 
 
@@ -530,8 +470,8 @@ void MultiViewerVisibilityManager::UpdateGlobalVisibilities(mitk::BaseRenderer* 
     mitk::DataNode::Pointer node = it->Value();
     if (!node->GetProperty("renderer"))
     {
-      bool rendererSpecificVisibility = node->IsVisible(renderer);
-      node->SetVisibility(rendererSpecificVisibility, 0);
+      bool visibility = node->IsVisible(renderer);
+      node->SetVisibility(visibility);
     }
   }
   this->SetBlocked(wasBlocked);
@@ -570,13 +510,15 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
       }
 
       // Clear all nodes from the single viewer denoted by viewerIndex (the one that was dropped into).
-      if (this->GetNodesInViewer(viewerIndex) > 0 && !this->GetAccumulateWhenDropped())
+//      if (this->GetNodesInViewer(viewerIndex) > 0 && !this->GetAccumulateWhenDropped())
+      if (!this->GetAccumulateWhenDropped())
       {
-        this->RemoveNodesFromViewer(viewerIndex);
+        this->RemoveNodesFromViewer(viewer);
       }
 
       // Then set up geometry of that single viewer.
-      if (this->GetNodesInViewer(viewerIndex) == 0 || !this->GetAccumulateWhenDropped())
+//      if (this->GetNodesInViewer(viewerIndex) == 0 || !this->GetAccumulateWhenDropped())
+      if (!this->GetAccumulateWhenDropped())
       {
         m_Viewers[viewerIndex]->SetTimeGeometry(timeGeometry.GetPointer());
         m_Viewers[viewerIndex]->SetWindowLayout(windowLayout);
@@ -612,6 +554,8 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
           dropIndex = 0;
         }
 
+        auto viewerDroppedOnto = m_Viewers[dropIndex];
+
         mitk::TimeGeometry::Pointer timeGeometry = this->GetTimeGeometry(nodes, i);
         if (timeGeometry.IsNull())
         {
@@ -620,17 +564,19 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
         }
 
         // So we are removing all images that are present from the viewer denoted by dropIndex,
-        if (this->GetNodesInViewer(dropIndex) > 0 && !this->GetAccumulateWhenDropped())
+//        if (this->GetNodesInViewer(dropIndex) > 0 && !this->GetAccumulateWhenDropped())
+        if (!this->GetAccumulateWhenDropped())
         {
-          this->RemoveNodesFromViewer(dropIndex);
+          this->RemoveNodesFromViewer(viewerDroppedOnto);
         }
 
         // Initialise geometry according to first image
-        if (this->GetNodesInViewer(dropIndex) == 0 || !this->GetAccumulateWhenDropped())
+//        if (this->GetNodesInViewer(dropIndex) == 0 || !this->GetAccumulateWhenDropped())
+        if (!this->GetAccumulateWhenDropped())
         {
-          m_Viewers[dropIndex]->SetTimeGeometry(timeGeometry.GetPointer());
-          m_Viewers[dropIndex]->SetWindowLayout(windowLayout);
-          m_Viewers[dropIndex]->SetEnabled(true);
+          viewerDroppedOnto->SetTimeGeometry(timeGeometry.GetPointer());
+          viewerDroppedOnto->SetWindowLayout(windowLayout);
+          viewerDroppedOnto->SetEnabled(true);
         }
 
         // ...and then adding a single image to that viewer, denoted by dropIndex.
@@ -652,7 +598,8 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
       }
 
       // Clear all nodes from every viewer.
-      if (this->GetNodesInViewer(0) > 0 && !this->GetAccumulateWhenDropped())
+//      if (this->GetNodesInViewer(0) > 0 && !this->GetAccumulateWhenDropped())
+      if (!this->GetAccumulateWhenDropped())
       {
         this->ClearViewers();
       }
@@ -682,7 +629,8 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
       // spread the slices, one per viewer, until we run out of viewers.
       //
       // If we have more slices than viewers, we need to interpolate the number of slices.
-      if (this->GetNodesInViewer(viewerIndex) == 0 || !this->GetAccumulateWhenDropped())
+//      if (this->GetNodesInViewer(viewerIndex) == 0 || !this->GetAccumulateWhenDropped())
+      if (!this->GetAccumulateWhenDropped())
       {
         m_Viewers[0]->SetTimeGeometry(timeGeometry.GetPointer());
         m_Viewers[0]->SetWindowLayout(windowLayout);
@@ -700,7 +648,8 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
         // In this method, we have less slices than viewers, so we just spread them in increasing order.
         for (std::size_t i = 0; i < viewersToUse; i++)
         {
-          if (this->GetNodesInViewer(i) == 0 || !this->GetAccumulateWhenDropped())
+//          if (this->GetNodesInViewer(i) == 0 || !this->GetAccumulateWhenDropped())
+          if (!this->GetAccumulateWhenDropped())
           {
             m_Viewers[i]->SetTimeGeometry(timeGeometry.GetPointer());
             m_Viewers[i]->SetWindowLayout(windowLayout);
@@ -716,7 +665,8 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
         // In this method, we have more slices than viewers, so we spread them evenly over the max number of viewers.
         for (std::size_t i = 0; i < viewersToUse; i++)
         {
-          if (this->GetNodesInViewer(i) == 0 || !this->GetAccumulateWhenDropped())
+//          if (this->GetNodesInViewer(i) == 0 || !this->GetAccumulateWhenDropped())
+          if (!this->GetAccumulateWhenDropped())
           {
             m_Viewers[i]->SetTimeGeometry(timeGeometry.GetPointer());
             m_Viewers[i]->SetWindowLayout(windowLayout);
