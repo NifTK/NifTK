@@ -3170,10 +3170,13 @@ bool MultiWindowWidget::BlockUpdate(bool blocked)
         m_FocusHasChanged = false;
         if (m_IsFocused && m_ReferenceGeometry)
         {
+          /// Note:
+          /// The Qt signal has to be sent before the focus event, so that the viewer can finish updating itself
+          /// first, before other plugins would be notified about the focus change.
           m_BlockFocusEvents = true;
+          emit WindowSelected();
           m_RenderWindows[m_SelectedWindowIndex]->setFocus();
           mitk::GlobalInteraction::GetInstance()->SetFocus(m_RenderWindows[m_SelectedWindowIndex]->GetRenderer());
-          emit WindowSelected();
           m_BlockFocusEvents = false;
         }
       }
