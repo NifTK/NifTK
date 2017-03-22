@@ -18,7 +18,7 @@
 #include <QApplication>
 
 #include <QmitkUltrasoundPinCalibrationWidget.h>
-#include <niftkUltrasoundPinCalibrationClickerCLP.h>
+#include <niftkCalibrationPointClickerCLP.h>
 
 int main(int argc, char** argv)
 {
