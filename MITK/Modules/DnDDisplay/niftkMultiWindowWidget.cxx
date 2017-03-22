@@ -673,15 +673,15 @@ void MultiWindowWidget::SetCursorVisible(bool visible)
 {
   // Here, "locally" means, for this widget, so we are setting Renderer Specific properties.
   m_CursorVisibility = visible;
-  this->SetVisibility(mitkWidget1, m_PlaneNode1, visible);
-  this->SetVisibility(mitkWidget1, m_PlaneNode2, visible);
-  this->SetVisibility(mitkWidget1, m_PlaneNode3, visible);
-  this->SetVisibility(mitkWidget2, m_PlaneNode1, visible);
-  this->SetVisibility(mitkWidget2, m_PlaneNode2, visible);
-  this->SetVisibility(mitkWidget2, m_PlaneNode3, visible);
-  this->SetVisibility(mitkWidget3, m_PlaneNode1, visible);
-  this->SetVisibility(mitkWidget3, m_PlaneNode2, visible);
-  this->SetVisibility(mitkWidget3, m_PlaneNode3, visible);
+  m_PlaneNode1->SetVisibility(visible, mitkWidget1->GetRenderer());
+  m_PlaneNode1->SetVisibility(visible, mitkWidget2->GetRenderer());
+  m_PlaneNode1->SetVisibility(visible, mitkWidget3->GetRenderer());
+  m_PlaneNode2->SetVisibility(visible, mitkWidget1->GetRenderer());
+  m_PlaneNode2->SetVisibility(visible, mitkWidget2->GetRenderer());
+  m_PlaneNode2->SetVisibility(visible, mitkWidget3->GetRenderer());
+  m_PlaneNode3->SetVisibility(visible, mitkWidget1->GetRenderer());
+  m_PlaneNode3->SetVisibility(visible, mitkWidget2->GetRenderer());
+  m_PlaneNode3->SetVisibility(visible, mitkWidget3->GetRenderer());
   this->RequestUpdate();
 }
 
@@ -809,49 +809,29 @@ void MultiWindowWidget::Update3DWindowVisibility()
           visibleIn3DWindow = false;
         }
       }
-      this->SetVisibility(this->mitkWidget4, it->Value(), visibleIn3DWindow);
+      it->Value()->SetVisibility(visibleIn3DWindow, mitkWidget4->GetRenderer());
       if (visibleIn3DWindow)
       {
         show3DPlanes = true;
       }
     }
 
-    this->SetVisibility(this->mitkWidget4, m_PlaneNode1, show3DPlanes);
-    this->SetVisibility(this->mitkWidget4, m_PlaneNode2, show3DPlanes);
-    this->SetVisibility(this->mitkWidget4, m_PlaneNode3, show3DPlanes);
+    m_PlaneNode1->SetVisibility(show3DPlanes, mitkWidget4->GetRenderer());
+    m_PlaneNode2->SetVisibility(show3DPlanes, mitkWidget4->GetRenderer());
+    m_PlaneNode3->SetVisibility(show3DPlanes, mitkWidget4->GetRenderer());
   }
   m_RenderingManager->RequestUpdate(this->mitkWidget4->GetRenderWindow());
 }
 
 
 //-----------------------------------------------------------------------------
-void MultiWindowWidget::SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visibility)
-{
-  if (renderWindow != NULL && node != NULL)
-  {
-    mitk::BaseRenderer* renderer = renderWindow->GetRenderer();
-    if (renderer != NULL)
-    {
-      bool currentVisibility = false;
-      node->GetVisibility(currentVisibility, renderer);
-
-      if (visibility != currentVisibility)
-      {
-        node->SetVisibility(visibility, renderer);
-      }
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void MultiWindowWidget::SetVisibility(const std::vector<mitk::DataNode*>& nodes, bool visibility)
 {
-  for (std::size_t i = 0; i < nodes.size(); ++i)
+  for (auto node: nodes)
   {
-    this->SetVisibility(mitkWidget1, nodes[i], visibility);
-    this->SetVisibility(mitkWidget2, nodes[i], visibility);
-    this->SetVisibility(mitkWidget3, nodes[i], visibility);
+    node->SetVisibility(visibility, mitkWidget1->GetRenderer());
+    node->SetVisibility(visibility, mitkWidget2->GetRenderer());
+    node->SetVisibility(visibility, mitkWidget3->GetRenderer());
   }
   this->UpdatePositionAnnotation(m_SelectedWindowIndex);
   this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
@@ -866,9 +846,9 @@ void MultiWindowWidget::ApplyGlobalVisibility(const std::vector<mitk::DataNode*>
   for (auto node: nodes)
   {
     bool visibility = node->IsVisible(nullptr);
-    this->SetVisibility(mitkWidget1, node, visibility);
-    this->SetVisibility(mitkWidget2, node, visibility);
-    this->SetVisibility(mitkWidget3, node, visibility);
+    node->SetVisibility(visibility, mitkWidget1->GetRenderer());
+    node->SetVisibility(visibility, mitkWidget2->GetRenderer());
+    node->SetVisibility(visibility, mitkWidget3->GetRenderer());
   }
   this->UpdatePositionAnnotation(m_SelectedWindowIndex);
   this->UpdateIntensityAnnotation(m_SelectedWindowIndex);

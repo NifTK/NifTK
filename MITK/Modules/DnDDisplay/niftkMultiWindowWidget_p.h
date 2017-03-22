@@ -461,9 +461,6 @@ private:
   /// \brief Method to update the visibility property of all nodes in 3D window.
   void Update3DWindowVisibility();
 
-  /// \brief For the given window and the list of nodes, will set the renderer specific visibility property, for all the contained renderers.
-  void SetVisibility(QmitkRenderWindow* renderWindow, mitk::DataNode* node, bool visibility);
-
   /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
   void AddDisplayGeometryModificationObserver(int windowIndex);
 
