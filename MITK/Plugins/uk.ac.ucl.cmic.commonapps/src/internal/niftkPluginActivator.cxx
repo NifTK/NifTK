@@ -529,10 +529,10 @@ void PluginActivator::RegisterInterpolationProperty(mitk::DataNode* node)
         niftk::LabeledLookupTableProperty::Pointer labelProperty
           = dynamic_cast<niftk::LabeledLookupTableProperty*>(mitkLUT.GetPointer());
 
-        if (labelProperty.IsNotNull() && labelProperty->GetIsScaled())
+        if (labelProperty.IsNotNull() && !labelProperty->GetIsScaled())
         {
           imageResliceInterpolation = systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
-          imageTextureInterpolation = systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_RESLICE_INTERPOLATION, 0);
+          imageTextureInterpolation = systemPreferences->GetInt(BaseApplicationPreferencePage::IMAGE_TEXTURE_INTERPOLATION, 0);
         }
       }
 
