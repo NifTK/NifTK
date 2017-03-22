@@ -190,6 +190,7 @@ MultiViewerWidget::MultiViewerWidget(
   this->connect(m_ControlPanel, SIGNAL(ViewerPositionBindingChanged(bool)), SLOT(OnViewerPositionBindingControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ViewerCursorBindingChanged(bool)), SLOT(OnViewerCursorBindingControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ViewerMagnificationBindingChanged(bool)), SLOT(OnViewerMagnificationBindingControlChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ViewerVisibilityBindingChanged(bool)), SLOT(OnViewerVisibilityBindingControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ViewerWindowLayoutBindingChanged(bool)), SLOT(OnViewerWindowLayoutBindingControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ViewerGeometryBindingChanged(bool)), SLOT(OnViewerGeometryBindingControlChanged(bool)));
 
@@ -416,6 +417,17 @@ void MultiViewerWidget::SetBindingOptions(int bindingOptions)
 
     bool signalsWereBlocked = m_ControlPanel->blockSignals(true);
     m_ControlPanel->SetViewerMagnificationsBound(newMagnificationBinding);
+    m_ControlPanel->blockSignals(signalsWereBlocked);
+  }
+
+  bool oldVisibilityBinding = m_BindingOptions & VisibilityBinding;
+  bool newVisibilityBinding = bindingOptions & VisibilityBinding;
+  if (oldVisibilityBinding != newVisibilityBinding)
+  {
+    m_VisibilityManager->SetVisibilityBinding(newVisibilityBinding);
+
+    bool signalsWereBlocked = m_ControlPanel->blockSignals(true);
+    m_ControlPanel->SetViewerVisibilitiesBound(newVisibilityBinding);
     m_ControlPanel->blockSignals(signalsWereBlocked);
   }
 
@@ -1989,6 +2001,26 @@ void MultiViewerWidget::OnViewerMagnificationBindingControlChanged(bool bound)
   else
   {
     bindingOptions &= ~MagnificationBinding;
+  }
+
+  bool signalsWereBlocked = this->blockSignals(true);
+  this->SetBindingOptions(bindingOptions);
+  this->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::OnViewerVisibilityBindingControlChanged(bool bound)
+{
+  int bindingOptions = m_BindingOptions;
+
+  if (bound)
+  {
+    bindingOptions |= VisibilityBinding;
+  }
+  else
+  {
+    bindingOptions &= ~VisibilityBinding;
   }
 
   bool signalsWereBlocked = this->blockSignals(true);

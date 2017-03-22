@@ -78,8 +78,9 @@ public:
     PositionBinding = 1,
     CursorBinding = 2,
     MagnificationBinding = 4,
-    WindowLayoutBinding = 8,
-    GeometryBinding = 16
+    VisibilityBinding = 8,
+    WindowLayoutBinding = 16,
+    GeometryBinding = 32
   };
 
   /// \brief Constructor which builds up the controls and layout, and sets the selected viewer to the first (0th),
@@ -328,6 +329,9 @@ protected slots:
 
   /// \brief Called when the viewer magnification binding has been changed through the control panel.
   void OnViewerMagnificationBindingControlChanged(bool bound);
+
+  /// \brief Called when the viewer visibility binding has been changed through the control panel.
+  void OnViewerVisibilityBindingControlChanged(bool bound);
 
   /// \brief Called when the viewer geometry binding has been changed through the control panel.
   void OnViewerGeometryBindingControlChanged(bool bound);

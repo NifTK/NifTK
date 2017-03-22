@@ -104,6 +104,12 @@ public:
   /// \brief Sets the bind viewer magnifications check box to the given value.
   void SetViewerMagnificationsBound(bool bound);
 
+  /// \brief Returns true if the data node visibilities in the viewers are bound, otherwise false.
+  bool AreViewerVisibilitiesBound() const;
+
+  /// \brief Sets the bind viewer visiblities check box to the given value.
+  void SetViewerVisibilitiesBound(bool bound);
+
   /// \brief Returns true if the window layout of the viewers is bound, otherwise false.
   bool AreViewerWindowLayoutsBound() const;
 
@@ -135,6 +141,9 @@ signals:
 
   /// \brief Emitted when the viewer magnification binding option has been changed.
   void ViewerMagnificationBindingChanged(bool bound);
+
+  /// \brief Emitted when the viewer visibility binding option has been changed.
+  void ViewerVisibilityBindingChanged(bool bound);
 
   /// \brief Emitted when the viewer window layout binding option has been changed.
   void ViewerWindowLayoutBindingChanged(bool bound);

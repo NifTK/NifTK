@@ -54,6 +54,7 @@ MultiViewerControls::MultiViewerControls(QWidget *parent)
   this->connect(m_BindViewerPositionsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerPositionBindingChanged(bool)));
   this->connect(m_BindViewerCursorsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerCursorBindingChanged(bool)));
   this->connect(m_BindViewerMagnificationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerMagnificationBindingChanged(bool)));
+  this->connect(m_BindViewerVisibilitiesCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerVisibilityBindingChanged(bool)));
   this->connect(m_BindViewerWindowLayoutsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerWindowLayoutBindingChanged(bool)));
   this->connect(m_BindViewerGeometriesCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerGeometryBindingChanged(bool)));
 
@@ -289,6 +290,22 @@ void MultiViewerControls::SetViewerMagnificationsBound(bool bound)
   bool wasBlocked = m_BindViewerMagnificationsCheckBox->blockSignals(true);
   m_BindViewerMagnificationsCheckBox->setChecked(bound);
   m_BindViewerMagnificationsCheckBox->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+bool MultiViewerControls::AreViewerVisibilitiesBound() const
+{
+  return m_BindViewerVisibilitiesCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerControls::SetViewerVisibilitiesBound(bool bound)
+{
+  bool wasBlocked = m_BindViewerVisibilitiesCheckBox->blockSignals(true);
+  m_BindViewerVisibilitiesCheckBox->setChecked(bound);
+  m_BindViewerVisibilitiesCheckBox->blockSignals(wasBlocked);
 }
 
 
