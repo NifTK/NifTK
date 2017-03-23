@@ -76,6 +76,7 @@ if(BUILD_NiftyIGI)
     IGIDataSources
     USRecon
     USReconGui
+    USReg
     NiftyCal
 
     # Notice how the IGIDataSourcesManager does NOT know about
