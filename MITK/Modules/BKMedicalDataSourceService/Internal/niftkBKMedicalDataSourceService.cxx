@@ -53,7 +53,7 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
 
   connect(m_Worker, SIGNAL(ImageReceived(QImage)), this, SLOT(OnFrameAvailable(QImage)), Qt::DirectConnection);
   connect(m_WorkerThread, SIGNAL(started()),  m_Worker, SLOT(Start()));
-  connect(m_Worker,       SIGNAL(finished()), m_WorkerThread, SLOT(quit()));
+  connect(m_Worker,       SIGNAL(Finished()), m_WorkerThread, SLOT(quit()));
   connect(m_WorkerThread, SIGNAL(finished()), m_Worker, SLOT(deleteLater()));
 
   m_WorkerThread->start();
@@ -100,4 +100,3 @@ void BKMedicalDataSourceService::OnFrameAvailable(const QImage& image)
 }
 
 } // end namespace
-

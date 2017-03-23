@@ -33,7 +33,7 @@ class BKMedicalDataSourceWorker : public QObject
   Q_OBJECT
 
 public:
-  BKMedicalDataSourceWorker(const int& timeOut, 
+  BKMedicalDataSourceWorker(const int& timeOut,
                             const int& framesPerSecond);
   ~BKMedicalDataSourceWorker();
 
@@ -48,7 +48,7 @@ signals:
 
   void ImageReceived(const QImage&);
   void ErrorGenerated(QString);
-  void finished();
+  void Finished();
 
 private:
 

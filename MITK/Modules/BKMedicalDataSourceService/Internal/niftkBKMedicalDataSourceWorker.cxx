@@ -465,7 +465,7 @@ void BKMedicalDataSourceWorker::Start()
   }
 
   this->DisconnectFromHost();
-  emit finished();
+  emit Finished();
 }
 
 } // end namespace
