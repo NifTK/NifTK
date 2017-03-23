@@ -371,6 +371,9 @@ protected slots:
   /// \brief Called when the scale factor binding has changed in a viewer.
   void OnScaleFactorBindingChanged(bool bound);
 
+  /// \brief Called when the visibility binding has changed in the visibility manager.
+  void OnVisibilityBindingChanged(bool bound);
+
   /// \brief Called when the show cursor option has been changed in a viewer.
   void OnCursorVisibilityChanged(bool visible);
 

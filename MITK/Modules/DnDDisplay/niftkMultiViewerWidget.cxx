@@ -198,6 +198,8 @@ MultiViewerWidget::MultiViewerWidget(
   this->connect(m_ControlPanel, SIGNAL(DropAccumulateChanged(bool)), SLOT(OnDropAccumulateControlChanged(bool)));
 
   this->connect(m_PopupWidget, SIGNAL(popupOpened(bool)), SLOT(OnPopupOpened(bool)));
+
+  this->connect(m_VisibilityManager, SIGNAL(VisibilityBindingChanged(bool)), SLOT(OnVisibilityBindingChanged(bool)));
 }
 
 
@@ -424,9 +426,11 @@ void MultiViewerWidget::SetBindingOptions(int bindingOptions)
   bool newVisibilityBinding = bindingOptions & VisibilityBinding;
   if (oldVisibilityBinding != newVisibilityBinding)
   {
+    bool signalsWereBlocked = m_VisibilityManager->blockSignals(true);
     m_VisibilityManager->SetVisibilityBinding(newVisibilityBinding);
+    m_VisibilityManager->blockSignals(signalsWereBlocked);
 
-    bool signalsWereBlocked = m_ControlPanel->blockSignals(true);
+    signalsWereBlocked = m_ControlPanel->blockSignals(true);
     m_ControlPanel->SetViewerVisibilitiesBound(newVisibilityBinding);
     m_ControlPanel->blockSignals(signalsWereBlocked);
   }
@@ -1138,6 +1142,13 @@ void MultiViewerWidget::OnScaleFactorBindingChanged(bool bound)
       }
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::OnVisibilityBindingChanged(bool bound)
+{
+  m_ControlPanel->SetViewerVisibilitiesBound(bound);
 }
 
 

@@ -366,12 +366,15 @@ void MultiViewerControls::SetDropType(DnDDisplayDropType dropType)
   {
   case DNDDISPLAY_DROP_SINGLE:
     m_DropSingleRadioButton->setChecked(true);
+    m_BindViewerVisibilitiesCheckBox->setEnabled(true);
     break;
   case DNDDISPLAY_DROP_MULTIPLE:
     m_DropMultipleRadioButton->setChecked(true);
+    m_BindViewerVisibilitiesCheckBox->setEnabled(true);
     break;
   case DNDDISPLAY_DROP_ALL:
     m_DropThumbnailRadioButton->setChecked(true);
+    m_BindViewerVisibilitiesCheckBox->setEnabled(false);
     break;
   default:
     MITK_ERROR << "MultiViewerControlPanel::SetDropType: Invalid DnDDisplayDropType=" << dropType << std::endl;
@@ -492,6 +495,7 @@ void MultiViewerControls::OnDropSingleRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
+    m_BindViewerVisibilitiesCheckBox->setEnabled(true);
     emit DropTypeChanged(DNDDISPLAY_DROP_SINGLE);
   }
 }
@@ -502,6 +506,7 @@ void MultiViewerControls::OnDropMultipleRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
+    m_BindViewerVisibilitiesCheckBox->setEnabled(true);
     emit DropTypeChanged(DNDDISPLAY_DROP_MULTIPLE);
   }
 }
@@ -512,6 +517,7 @@ void MultiViewerControls::OnDropThumbnailRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
+    m_BindViewerVisibilitiesCheckBox->setEnabled(false);
     emit DropTypeChanged(DNDDISPLAY_DROP_ALL);
   }
 }

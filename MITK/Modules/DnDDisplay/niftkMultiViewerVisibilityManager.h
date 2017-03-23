@@ -73,9 +73,6 @@ public:
   /// \brief Destructor, which unregisters all the listeners.
   virtual ~MultiViewerVisibilityManager();
 
-  MultiViewerVisibilityManager(const MultiViewerVisibilityManager&); // Purposefully not implemented.
-  MultiViewerVisibilityManager& operator=(const MultiViewerVisibilityManager&); // Purposefully not implemented.
-
   /// \brief Each new viewer should first be registered with this class, so this class can manage renderer specific visibility properties.
   void RegisterViewer(SingleViewerWidget *viewer);
 
@@ -88,28 +85,28 @@ public:
   void ClearViewers(std::size_t startIndex = 0, std::size_t endIndex = -1);
 
   /// \brief Get the drop type, which controls the behaviour when multiple images are dropped into a single viewer.
-  DnDDisplayDropType GetDropType() const { return m_DropType; }
+  DnDDisplayDropType GetDropType() const;
 
   /// \brief Set the drop type, which controls the behaviour when multiple images are dropped into a single viewer.
-  void SetDropType(DnDDisplayDropType dropType) { m_DropType = dropType; }
+  void SetDropType(DnDDisplayDropType dropType);
 
   /// \brief Returns the default interpolation type, which takes effect when a new image is dropped.
-  DnDDisplayInterpolationType GetInterpolationType() const { return m_InterpolationType; }
+  DnDDisplayInterpolationType GetInterpolationType() const;
 
   /// \brief Sets the default interpolation type, which takes effect when a new image is dropped.
-  void SetInterpolationType(DnDDisplayInterpolationType interpolationType) { m_InterpolationType = interpolationType; }
+  void SetInterpolationType(DnDDisplayInterpolationType interpolationType);
 
   /// \brief Returns the default render window layout for when images are dropped into a render window.
-  WindowLayout GetDefaultWindowLayout() const { return m_DefaultWindowLayout; }
+  WindowLayout GetDefaultWindowLayout() const;
 
   /// \brief Sets the default render window layout for when images are dropped into a render window.
-  void SetDefaultWindowLayout(WindowLayout windowLayout) { m_DefaultWindowLayout = windowLayout; }
+  void SetDefaultWindowLayout(WindowLayout defaultWindowLayout);
 
   /// \brief Gets the flag deciding whether we accumulate images each time we drop.
-  bool GetAccumulateWhenDropped() const { return m_Accumulate; }
+  bool GetAccumulateWhenDropping() const;
 
   /// \brief Sets the flag deciding whether we prefer to accumulate images each time they are dropped.
-  void SetAccumulateWhenDropping(bool accumulate) { m_Accumulate = accumulate; }
+  void SetAccumulateWhenDropping(bool accumulate);
 
   /// \brief Called when one of the viewers receives the focus.
   void OnFocusChanged();
@@ -119,6 +116,10 @@ public:
 
   /// \brief Binds the visibility of data nodes across the viewers.
   void SetVisibilityBinding(bool bound);
+
+signals:
+
+  void VisibilityBindingChanged(bool bound);
 
 public slots:
 
@@ -146,8 +147,8 @@ private slots:
 
 private:
 
-  /// \brief For a given window, effectively sets the rendering window specific visibility property for the given node to its global visibility.
-  virtual void AddNodeToViewer(int windowIndex, mitk::DataNode* node);
+  /// \brief For a given viewer, effectively sets the rendering window specific visibility property for the given node to its global visibility.
+  virtual void AddNodeToViewer(SingleViewerWidget* viewer, mitk::DataNode* node);
 
   /// \brief For a given viewer, effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
   virtual void RemoveNodesFromViewer(SingleViewerWidget* viewer);
@@ -172,6 +173,9 @@ private:
   // Else
   //   Picks out the first geometry.
   mitk::TimeGeometry::Pointer GetTimeGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex);
+
+  MultiViewerVisibilityManager(const MultiViewerVisibilityManager&); // Purposefully not implemented.
+  MultiViewerVisibilityManager& operator=(const MultiViewerVisibilityManager&); // Purposefully not implemented.
 
   // Additionally, we manage a list of viewers, where m_DataNodes.size() == m_Viewers.size() should always be true.
   std::vector< SingleViewerWidget* > m_Viewers;
