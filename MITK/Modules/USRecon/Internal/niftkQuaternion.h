@@ -28,18 +28,28 @@ class niftkQuaternion : public vector<double>
 
 public:
 	// constructors
-  niftkQuaternion (double val = 0) : vector<double>(4, val)  { m_Angle = 0; m_Axis[0] = m_Axis[1] = m_Axis[2] = 0; }
-	niftkQuaternion (double A,double B,double C,int flag); // Create the quaternion from three Euler angles 
-	niftkQuaternion (const vector<double>& v) : vector<double>(4), m_Angle(0)
-	{
-		int s = (int)v.size(); if(s>4) s = 4;
-		for(int i=0; i<s; i++) begin()[i] = v[i];
+  niftkQuaternion() : vector<double>(4, 0)
+  {
+    m_Angle = 0;
+    m_Axis[0] = m_Axis[1] = m_Axis[2] = 0;
+  }
 
-     m_Angle = 0; 
+  niftkQuaternion(const vector<double>& v) : vector<double>(4)
+	{
+		int s = (int)v.size(); 
+    
+    if(s>4) s = 4;
+		
+    for(int i=0; i<s; i++) begin()[i] = v[i];
+
+     m_Angle = 0;
      m_Axis[0] = m_Axis[1] = m_Axis[2] = 0;
 	}
 
-	void		Create(double a, double b, double c, double d);
+  niftkQuaternion(double angle, const vector<double> v); // Create the quaternion from a rotation around an aixs
+	niftkQuaternion(double A, double B, double C, int flag); // Create the quaternion from three Euler angles 
+
+  void		Create(double a, double b, double c, double d);
 	void		CreateFromEulerAngles(double a, double b, double c, int flag);
 
 	niftkQuaternion& operator = (const vector<double>& v)
@@ -69,8 +79,10 @@ public:
 	const double&	operator [] (int index) const;
 }; // class niftkQuaternion
 
+
 inline niftkQuaternion operator + (const niftkQuaternion& v) { return v; }
 inline niftkQuaternion operator - (const niftkQuaternion& v) { niftkQuaternion r; r.Create(-v[0], -v[1], -v[2], -v[3]); return r; }
+
 
 inline double& niftkQuaternion::operator [] (int index)
 {
@@ -78,12 +90,14 @@ inline double& niftkQuaternion::operator [] (int index)
 	return begin()[index];
 }
 
+
 // subscript operator [] (const object)
 inline const double& niftkQuaternion::operator [] (int index) const
 {
 	assert (index >= 0 && index < 4) ;
 	return begin()[index];
 }
+
 
 // overloaded insertion operator <<
 inline std::ostream& operator << (std::ostream& s, const niftkQuaternion& v)

@@ -16,19 +16,26 @@
 
 #include <cmath>
 
+// Create the quaternion from a rotation around an aixs
+niftkQuaternion::niftkQuaternion(double angle, const vector<double> v) : vector<double>(4)
+{
+	SetAngleAxis(angle, v[0], v[1], v[2]);
+}
 
 
-//Euler angle to quaternion
+// Euler angle to quaternion
 niftkQuaternion::niftkQuaternion(double A, double B, double C, int flag) : vector<double>(4)
 {
 	CreateFromEulerAngles(A, B, C, flag);
 }
 
-// public member functions:
+
+// Public member functions:
 void niftkQuaternion::Create(double a, double b, double c, double d)
 {
 	begin()[0] = a; begin()[1] = b; begin()[2] = c; begin()[3] = d;
 }
+
 
 void niftkQuaternion::CreateFromEulerAngles(double A, double B, double C, int flag)
 {
@@ -85,6 +92,7 @@ void niftkQuaternion::CreateFromEulerAngles(double A, double B, double C, int fl
 	m_Angle *= 2;
 }
 
+
 double niftkQuaternion::Norm() const
 {
 	double q0, q1, q2, q3;
@@ -96,6 +104,7 @@ double niftkQuaternion::Norm() const
 
 	return sqrt( q0*q0 + q1*q1 +q2*q2 +q3*q3 );
 }
+
 
 bool niftkQuaternion::IsUnit() const
 {
@@ -119,6 +128,7 @@ niftkQuaternion niftkQuaternion::Conjugate() const
 	
 	return result;
 }
+
 void niftkQuaternion::SetAngleAxis(double angle, double x, double y, double z)
 {
 	m_Angle = angle;
@@ -184,6 +194,7 @@ niftkQuaternion niftkQuaternion::operator * (const niftkQuaternion& q) const
 	return result;
 }
 
+
 // multiplication operator *
 niftkQuaternion& niftkQuaternion::operator *= (const niftkQuaternion& q)
 {
@@ -206,6 +217,7 @@ niftkQuaternion& niftkQuaternion::operator *= (const niftkQuaternion& q)
 
 	return *this;
 }
+
 
 void niftkQuaternion::GetAngleAxis(double& angle, double* axis)
 {
