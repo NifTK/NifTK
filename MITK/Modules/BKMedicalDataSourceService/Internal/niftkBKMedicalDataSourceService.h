@@ -68,7 +68,7 @@ private:
   BKMedicalDataSourceService(const BKMedicalDataSourceService&); // deliberately not implemented
   BKMedicalDataSourceService& operator=(const BKMedicalDataSourceService&); // deliberately not implemented
 
-  QThread                    m_WorkerThread;
+  QThread*                   m_WorkerThread;
   BKMedicalDataSourceWorker* m_Worker;
   mutable QImage*            m_TemporaryWrapper;
 

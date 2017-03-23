@@ -33,38 +33,40 @@ class BKMedicalDataSourceWorker : public QObject
   Q_OBJECT
 
 public:
-  BKMedicalDataSourceWorker(const int& timeOut, const int& framesPerSecond);
+  BKMedicalDataSourceWorker(const int& timeOut, 
+                            const int& framesPerSecond);
   ~BKMedicalDataSourceWorker();
 
-  void ConnectToHost(QString address, int port);
-  void RequestStopStreaming();
+  void ConnectToHost(const QString& address, const int& port);
+  void RequestStop();
 
 public slots:
 
-  /** Called by QThread, and it the main processing method. */
-  void ReceiveImages();
+  void Start();
 
 signals:
 
-  void ImageReceived(QImage);
+  void ImageReceived(const QImage&);
   void ErrorGenerated(QString);
+  void finished();
 
 private:
 
+  void DisconnectFromHost();
   size_t GenerateCommandMessage(const std::string& message);
   bool SendCommandMessage(const std::string& message);
   std::string ReceiveResponseMessage(const size_t& expectedSize);
   void StopStreaming();
+  void StartStreaming();
   void ReceiveImage(QImage& image);
   int FindFirstANotPreceededByB(const int& startingPosition,
                                 const QByteArray& buf,
                                 const char& a,
                                 const char& b);
-
   QMutex        m_Lock;
   int           m_Timeout;
   int           m_FramesPerSecond;
-  QTcpSocket    m_Socket;
+  QTcpSocket*   m_Socket;
   QByteArray    m_IntermediateBuffer;
   char          m_OutgoingMessageBuffer[256];
   char          m_ImageBuffer[1024*1024*4];
@@ -72,6 +74,7 @@ private:
   QVector<QRgb> m_DefaultLUT;
   bool          m_RequestStopStreaming;
   bool          m_IsStreaming;
+  QImage        m_Image;
 };
 
 } // end namespace

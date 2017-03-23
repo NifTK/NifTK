@@ -17,15 +17,18 @@
 #include <mitkExceptionMacro.h>
 #include <QThread>
 #include <QMutexLocker>
+#include <cassert>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-BKMedicalDataSourceWorker::BKMedicalDataSourceWorker(const int& timeOut, const int& framesPerSecond)
+BKMedicalDataSourceWorker::BKMedicalDataSourceWorker(const int& timeOut,
+                                                     const int& framesPerSecond)
 : m_Lock(QMutex::Recursive)
 , m_Timeout(timeOut)
 , m_FramesPerSecond(framesPerSecond)
+, m_Socket(nullptr)
 , m_RequestStopStreaming(false)
 , m_IsStreaming(false)
 {
@@ -33,6 +36,7 @@ BKMedicalDataSourceWorker::BKMedicalDataSourceWorker(const int& timeOut, const i
   {
     m_DefaultLUT.push_back(qRgb(i, i, i));
   }
+  m_Socket = new QTcpSocket(this);
 }
 
 
@@ -43,7 +47,19 @@ BKMedicalDataSourceWorker::~BKMedicalDataSourceWorker()
 
 
 //-----------------------------------------------------------------------------
-void BKMedicalDataSourceWorker::RequestStopStreaming()
+void BKMedicalDataSourceWorker::DisconnectFromHost()
+{
+  QMutexLocker locker(&m_Lock);
+
+  if (m_Socket->state() == QTcpSocket::ConnectedState)
+  {
+    m_Socket->disconnectFromHost();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void BKMedicalDataSourceWorker::RequestStop()
 {
   QMutexLocker locker(&m_Lock);
 
@@ -64,43 +80,54 @@ void BKMedicalDataSourceWorker::StopStreaming()
     MITK_ERROR << "Failed to send:" << message.str()
                << ", but we are stopping anyway.";
   }
-/*
- * I think we can ignore this for now. The incoming buffer will
- * be queued up with images. So, we would have to process all images,
- * and then hunt for an ACK. But we don't really care, as this is only
- * called when shutting down the service.
- *
-  std::string response = this->ReceiveResponseMessage(4); // Should be ACK;
-  if (response.empty())
-  {
-    MITK_ERROR << "Failed to parse response for:" << message.str()
-               << ", but we are stopping anyway.";
-  }
-*/
+
   m_IsStreaming = false;
   m_RequestStopStreaming = false;
 }
 
 
 //-----------------------------------------------------------------------------
-void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
+void BKMedicalDataSourceWorker::StartStreaming()
 {
   QMutexLocker locker(&m_Lock);
 
-  m_Socket.connectToHost(address, port);
-  if (!m_Socket.waitForConnected(m_Timeout))
+  std::ostringstream streamMessage;
+  streamMessage << "QUERY:GRAB_FRAME \"ON\"," << m_FramesPerSecond << ";";
+  bool sentOK = this->SendCommandMessage(streamMessage.str());
+  if (!sentOK)
+  {
+    mitkThrow() << "Failed to send message '" << streamMessage.str()
+                << "', to start streaming, socket status=" << m_Socket->errorString().toStdString();
+  }
+  std::string response = this->ReceiveResponseMessage(4); // Should be ACK;
+  if (response.empty())
+  {
+    mitkThrow() << "Failed to parse acknowledgement to turn streaming on.";
+  }
+
+  m_IsStreaming = true;
+}
+
+
+//-----------------------------------------------------------------------------
+void BKMedicalDataSourceWorker::ConnectToHost(const QString& address, const int& port)
+{
+  QMutexLocker locker(&m_Lock);
+
+  m_Socket->connectToHost(address, port);
+  if (!m_Socket->waitForConnected(m_Timeout))
   {
     mitkThrow() << "Timed out while trying to connect to:" << address.toStdString() << ":" << port;
   }
-  if (!m_Socket.isValid())
+  if (!m_Socket->isValid())
   {
     mitkThrow() << "Socket is not valid.";
   }
-  if (!m_Socket.isOpen())
+  if (!m_Socket->isOpen())
   {
     mitkThrow() << "Socket is not open.";
   }
-  if (!m_Socket.isReadable())
+  if (!m_Socket->isReadable())
   {
     mitkThrow() << "Socket is not readable.";
   }
@@ -110,7 +137,7 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
   if (!sentOK)
   {
     mitkThrow() << "Failed to send message '" << message
-                << "'', to extract image size and socket status=" << m_Socket.errorString().toStdString();
+                << "'', to extract image size and socket status=" << m_Socket->errorString().toStdString();
   }
 
   std::string response = this->ReceiveResponseMessage(25);
@@ -125,22 +152,6 @@ void BKMedicalDataSourceWorker::ConnectToHost(QString address, int port)
   {
     mitkThrow() << "Invalid BK Medical image size.";
   }
-
-  std::ostringstream streamMessage;
-  streamMessage << "QUERY:GRAB_FRAME \"ON\"," << m_FramesPerSecond << ";";
-  sentOK = this->SendCommandMessage(streamMessage.str());
-  if (!sentOK)
-  {
-    mitkThrow() << "Failed to send message '" << streamMessage.str()
-                << "', to start streaming, socket status=" << m_Socket.errorString().toStdString();
-  }
-  response = this->ReceiveResponseMessage(4); // Should be ACK;
-  if (response.empty())
-  {
-    mitkThrow() << "Failed to parse acknowledgement to turn streaming on.";
-  }
-
-  m_IsStreaming = true;
 }
 
 
@@ -206,8 +217,8 @@ bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
   QMutexLocker locker(&m_Lock);
 
   size_t messageSize = this->GenerateCommandMessage(message);
-  size_t sentSize = m_Socket.write(m_OutgoingMessageBuffer, messageSize);
-  bool wasWritten = m_Socket.waitForBytesWritten(m_Timeout);
+  size_t sentSize = m_Socket->write(m_OutgoingMessageBuffer, messageSize);
+  bool wasWritten = m_Socket->waitForBytesWritten(m_Timeout);
 
   bool isOK = true;
   if (sentSize != messageSize)
@@ -219,7 +230,7 @@ bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
   if (!wasWritten)
   {
     MITK_ERROR << "Failed to send message:" << message
-               << " due to socket error:" << m_Socket.errorString().toStdString();
+               << " due to socket error:" << m_Socket->errorString().toStdString();
     isOK = false;
   }
 
@@ -239,10 +250,10 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
 
   while(counter < actualSize)
   {
-    qint64 bytesAvailable = m_Socket.bytesAvailable();
+    qint64 bytesAvailable = m_Socket->bytesAvailable();
     if (bytesAvailable > 0)
     {
-      QByteArray tmpData = m_Socket.readAll();
+      QByteArray tmpData = m_Socket->readAll();
       if (tmpData.size() != bytesAvailable)
       {
         MITK_ERROR << "Failed to read " << bytesAvailable << " message bytes from socket.";
@@ -265,9 +276,9 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
     }
     else
     {
-      if (!m_Socket.waitForReadyRead(-1))
+      if (!m_Socket->waitForReadyRead(-1))
       {
-        MITK_ERROR << "Failed while waiting for socket, due to:" << m_Socket.errorString().toStdString();
+        MITK_ERROR << "Failed while waiting for socket, due to:" << m_Socket->errorString().toStdString();
       }
     }
   }
@@ -300,12 +311,12 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
   bool imageAvailable = false;
   while(!imageAvailable)
   {
-    qint64 bytesAvailable = m_Socket.bytesAvailable();
+    qint64 bytesAvailable = m_Socket->bytesAvailable();
     if (bytesAvailable < minimumSize)
     {
-      if (!m_Socket.waitForReadyRead(-1))
+      if (!m_Socket->waitForReadyRead(-1))
       {
-        MITK_ERROR << "Failed while waiting on socket, due to:" << m_Socket.errorString().toStdString();
+        MITK_ERROR << "Failed while waiting on socket, due to:" << m_Socket->errorString().toStdString();
       }
     }
     else
@@ -313,7 +324,7 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
       QByteArray tmpData;
       tmpData.resize(bytesAvailable);
 
-      qint64 bytesRead = m_Socket.read(tmpData.data(), bytesAvailable);
+      qint64 bytesRead = m_Socket->read(tmpData.data(), bytesAvailable);
 
       if (bytesRead == bytesAvailable)
       {
@@ -421,29 +432,40 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
 
 
 //-----------------------------------------------------------------------------
-void BKMedicalDataSourceWorker::ReceiveImages()
+void BKMedicalDataSourceWorker::Start()
 {
-  QImage image;
+  // The Start() method is called from a non-GUI thread.
+  // So we start the streaming inside this method.
+  this->StartStreaming();
+
   while(m_IsStreaming)
   {
     {
       QMutexLocker locker(&m_Lock);
 
-      // This blocks if no data, so effectively this thread waits.
-      this->ReceiveImage(image);
-      if (image.width() > 0 && image.height() > 0)
-      {
-        emit ImageReceived(image);
-      }
-
       // If another thread (e.g. GUI) has requested to stop,
-      // we send this stop request, which ultimately sets m_IsStreaming to false.
+      // we send this stop request, which ultimately sets m_IsStreaming
+      // to false, thereby ending this loop.
       if (m_RequestStopStreaming)
       {
         this->StopStreaming();
       }
-    }
+      else
+      {
+        // This blocks if no data, so effectively this thread waits.
+        this->ReceiveImage(m_Image);
+
+        // Signal to the BKMedicalDataSourceService to do something with this new data.
+        if (m_Image.width() > 0 && m_Image.height() > 0)
+        {
+          emit ImageReceived(m_Image);
+        }
+      }
+    } // scope for QMutexLocker
   }
+
+  this->DisconnectFromHost();
+  emit finished();
 }
 
 } // end namespace

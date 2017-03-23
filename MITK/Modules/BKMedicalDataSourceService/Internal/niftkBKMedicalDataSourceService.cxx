@@ -45,15 +45,18 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
 
   this->SetStatus("Initialising");
 
+  m_WorkerThread = new QThread(this);
+
   m_Worker = new BKMedicalDataSourceWorker(BK_TIMEOUT, BK_FRAMES_PER_SECOND);
-  m_Worker->ConnectToHost(host, BK_PORT); // must throw if failed.
-  m_Worker->moveToThread(&m_WorkerThread);
+  m_Worker->ConnectToHost(host, BK_PORT);
+  m_Worker->moveToThread(m_WorkerThread);
 
   connect(m_Worker, SIGNAL(ImageReceived(QImage)), this, SLOT(OnFrameAvailable(QImage)), Qt::DirectConnection);
-  connect(&m_WorkerThread, SIGNAL(finished()), m_Worker, SLOT(deleteLater()));
-  connect(&m_WorkerThread, SIGNAL(started()), m_Worker, SLOT(ReceiveImages()));
+  connect(m_WorkerThread, SIGNAL(started()),  m_Worker, SLOT(Start()));
+  connect(m_Worker,       SIGNAL(finished()), m_WorkerThread, SLOT(quit()));
+  connect(m_WorkerThread, SIGNAL(finished()), m_Worker, SLOT(deleteLater()));
 
-  m_WorkerThread.start();
+  m_WorkerThread->start();
 
   this->SetStatus("Initialised");
   this->Modified();
@@ -63,11 +66,12 @@ BKMedicalDataSourceService::BKMedicalDataSourceService(
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceService::~BKMedicalDataSourceService()
 {
-  if (m_WorkerThread.isRunning())
+  if (m_WorkerThread->isRunning())
   {
-    m_Worker->RequestStopStreaming();
-    m_WorkerThread.quit();
-    m_WorkerThread.wait();
+    disconnect(m_Worker, SIGNAL(ImageReceived(QImage)), this, SLOT(OnFrameAvailable(QImage)));
+    m_Worker->RequestStop();
+    m_WorkerThread->quit();
+    m_WorkerThread->wait();
   }
 }
 
@@ -96,3 +100,4 @@ void BKMedicalDataSourceService::OnFrameAvailable(const QImage& image)
 }
 
 } // end namespace
+
