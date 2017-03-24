@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>122</height>
+    <height>125</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,13 +20,22 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="m_ControlPanelGridLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <property name="horizontalSpacing">
     <number>2</number>
    </property>
    <property name="verticalSpacing">
-    <number>0</number>
-   </property>
-   <property name="margin">
     <number>0</number>
    </property>
    <item row="0" column="5" rowspan="4">
@@ -159,7 +168,7 @@
    </item>
    <item row="2" column="3" rowspan="2" colspan="2">
     <widget class="QWidget" name="m_ViewerBindingWidget" native="true">
-     <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0">
+     <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0,0">
       <property name="leftMargin">
        <number>3</number>
       </property>
@@ -175,7 +184,7 @@
       <property name="spacing">
        <number>2</number>
       </property>
-      <item row="1" column="1" rowspan="2">
+      <item row="3" column="1">
        <widget class="QCheckBox" name="m_BindViewerPositionsCheckBox">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -191,17 +200,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="m_BindViewerCursorsCheckBox">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the cursor positions relative to the window size, across multiple image viewers.&lt;/p&gt;&lt;p&gt;If the magnification is not bound then if you pan the image or select a position then the image will be shifted in the other image viewers, so that the cursor planes get to the same position relative to the size of the windows.&lt;/p&gt;&lt;p&gt;Note that this option controls only the displayed position of the cursor, not the selected position in space. The selected position in space is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; linked across the image viewers by default, but you can bind them by the 'position' check box.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>cursor</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
+      <item row="6" column="1">
        <widget class="QCheckBox" name="m_BindViewerGeometriesCheckBox">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
@@ -217,20 +216,33 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QCheckBox" name="m_BindViewerWindowLayoutsCheckBox">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the window layout (e.g. single coronal or 2x2) across several image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <item row="0" column="1">
+       <spacer name="m_BindViewersVerticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
         </property>
-        <property name="text">
-         <string>layout</string>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>0</height>
+         </size>
         </property>
-       </widget>
+       </spacer>
       </item>
       <item row="0" column="0" rowspan="3">
        <widget class="QLabel" name="m_BindViewersLabel">
         <property name="text">
          <string>bind viewers</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="m_BindViewerCursorsCheckBox">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the cursor positions relative to the window size, across multiple image viewers.&lt;/p&gt;&lt;p&gt;If the magnification is not bound then if you pan the image or select a position then the image will be shifted in the other image viewers, so that the cursor planes get to the same position relative to the size of the windows.&lt;/p&gt;&lt;p&gt;Note that this option controls only the displayed position of the cursor, not the selected position in space. The selected position in space is &lt;span style=&quot; font-style:italic;&quot;&gt;not&lt;/span&gt; linked across the image viewers by default, but you can bind them by the 'position' check box.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>cursor</string>
         </property>
        </widget>
       </item>
@@ -250,18 +262,22 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <spacer name="m_BindViewersVerticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
+      <item row="6" column="0">
+       <widget class="QCheckBox" name="m_BindViewerWindowLayoutsCheckBox">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Binds the window layout (e.g. single coronal or 2x2) across several image viewers.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>0</height>
-         </size>
+        <property name="text">
+         <string>layout</string>
         </property>
-       </spacer>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="m_BindViewerVisibilitiesCheckBox">
+        <property name="text">
+         <string>visibility</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

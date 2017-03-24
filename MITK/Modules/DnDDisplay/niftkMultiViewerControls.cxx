@@ -54,6 +54,7 @@ MultiViewerControls::MultiViewerControls(QWidget *parent)
   this->connect(m_BindViewerPositionsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerPositionBindingChanged(bool)));
   this->connect(m_BindViewerCursorsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerCursorBindingChanged(bool)));
   this->connect(m_BindViewerMagnificationsCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerMagnificationBindingChanged(bool)));
+  this->connect(m_BindViewerVisibilitiesCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerVisibilityBindingChanged(bool)));
   this->connect(m_BindViewerWindowLayoutsCheckBox, SIGNAL(toggled(bool)), SLOT(OnViewerWindowLayoutBindingChanged(bool)));
   this->connect(m_BindViewerGeometriesCheckBox, SIGNAL(toggled(bool)), SIGNAL(ViewerGeometryBindingChanged(bool)));
 
@@ -293,6 +294,22 @@ void MultiViewerControls::SetViewerMagnificationsBound(bool bound)
 
 
 //-----------------------------------------------------------------------------
+bool MultiViewerControls::AreViewerVisibilitiesBound() const
+{
+  return m_BindViewerVisibilitiesCheckBox->isChecked();
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerControls::SetViewerVisibilitiesBound(bool bound)
+{
+  bool wasBlocked = m_BindViewerVisibilitiesCheckBox->blockSignals(true);
+  m_BindViewerVisibilitiesCheckBox->setChecked(bound);
+  m_BindViewerVisibilitiesCheckBox->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
 bool MultiViewerControls::AreViewerWindowLayoutsBound() const
 {
   return m_BindViewerWindowLayoutsCheckBox->isChecked();
@@ -349,12 +366,15 @@ void MultiViewerControls::SetDropType(DnDDisplayDropType dropType)
   {
   case DNDDISPLAY_DROP_SINGLE:
     m_DropSingleRadioButton->setChecked(true);
+    m_BindViewerVisibilitiesCheckBox->setEnabled(true);
     break;
   case DNDDISPLAY_DROP_MULTIPLE:
     m_DropMultipleRadioButton->setChecked(true);
+    m_BindViewerVisibilitiesCheckBox->setEnabled(true);
     break;
   case DNDDISPLAY_DROP_ALL:
     m_DropThumbnailRadioButton->setChecked(true);
+    m_BindViewerVisibilitiesCheckBox->setEnabled(false);
     break;
   default:
     MITK_ERROR << "MultiViewerControlPanel::SetDropType: Invalid DnDDisplayDropType=" << dropType << std::endl;
@@ -475,6 +495,7 @@ void MultiViewerControls::OnDropSingleRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
+    m_BindViewerVisibilitiesCheckBox->setEnabled(true);
     emit DropTypeChanged(DNDDISPLAY_DROP_SINGLE);
   }
 }
@@ -485,6 +506,7 @@ void MultiViewerControls::OnDropMultipleRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
+    m_BindViewerVisibilitiesCheckBox->setEnabled(true);
     emit DropTypeChanged(DNDDISPLAY_DROP_MULTIPLE);
   }
 }
@@ -495,6 +517,7 @@ void MultiViewerControls::OnDropThumbnailRadioButtonToggled(bool toggled)
 {
   if (toggled)
   {
+    m_BindViewerVisibilitiesCheckBox->setEnabled(false);
     emit DropTypeChanged(DNDDISPLAY_DROP_ALL);
   }
 }

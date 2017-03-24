@@ -190,6 +190,7 @@ MultiViewerWidget::MultiViewerWidget(
   this->connect(m_ControlPanel, SIGNAL(ViewerPositionBindingChanged(bool)), SLOT(OnViewerPositionBindingControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ViewerCursorBindingChanged(bool)), SLOT(OnViewerCursorBindingControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ViewerMagnificationBindingChanged(bool)), SLOT(OnViewerMagnificationBindingControlChanged(bool)));
+  this->connect(m_ControlPanel, SIGNAL(ViewerVisibilityBindingChanged(bool)), SLOT(OnViewerVisibilityBindingControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ViewerWindowLayoutBindingChanged(bool)), SLOT(OnViewerWindowLayoutBindingControlChanged(bool)));
   this->connect(m_ControlPanel, SIGNAL(ViewerGeometryBindingChanged(bool)), SLOT(OnViewerGeometryBindingControlChanged(bool)));
 
@@ -197,6 +198,8 @@ MultiViewerWidget::MultiViewerWidget(
   this->connect(m_ControlPanel, SIGNAL(DropAccumulateChanged(bool)), SLOT(OnDropAccumulateControlChanged(bool)));
 
   this->connect(m_PopupWidget, SIGNAL(popupOpened(bool)), SLOT(OnPopupOpened(bool)));
+
+  this->connect(m_VisibilityManager, SIGNAL(VisibilityBindingChanged(bool)), SLOT(OnVisibilityBindingChanged(bool)));
 }
 
 
@@ -416,6 +419,19 @@ void MultiViewerWidget::SetBindingOptions(int bindingOptions)
 
     bool signalsWereBlocked = m_ControlPanel->blockSignals(true);
     m_ControlPanel->SetViewerMagnificationsBound(newMagnificationBinding);
+    m_ControlPanel->blockSignals(signalsWereBlocked);
+  }
+
+  bool oldVisibilityBinding = m_BindingOptions & VisibilityBinding;
+  bool newVisibilityBinding = bindingOptions & VisibilityBinding;
+  if (oldVisibilityBinding != newVisibilityBinding)
+  {
+    bool signalsWereBlocked = m_VisibilityManager->blockSignals(true);
+    m_VisibilityManager->SetVisibilityBinding(newVisibilityBinding);
+    m_VisibilityManager->blockSignals(signalsWereBlocked);
+
+    signalsWereBlocked = m_ControlPanel->blockSignals(true);
+    m_ControlPanel->SetViewerVisibilitiesBound(newVisibilityBinding);
     m_ControlPanel->blockSignals(signalsWereBlocked);
   }
 
@@ -1126,6 +1142,13 @@ void MultiViewerWidget::OnScaleFactorBindingChanged(bool bound)
       }
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::OnVisibilityBindingChanged(bool bound)
+{
+  m_ControlPanel->SetViewerVisibilitiesBound(bound);
 }
 
 
@@ -1989,6 +2012,26 @@ void MultiViewerWidget::OnViewerMagnificationBindingControlChanged(bool bound)
   else
   {
     bindingOptions &= ~MagnificationBinding;
+  }
+
+  bool signalsWereBlocked = this->blockSignals(true);
+  this->SetBindingOptions(bindingOptions);
+  this->blockSignals(signalsWereBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::OnViewerVisibilityBindingControlChanged(bool bound)
+{
+  int bindingOptions = m_BindingOptions;
+
+  if (bound)
+  {
+    bindingOptions |= VisibilityBinding;
+  }
+  else
+  {
+    bindingOptions &= ~VisibilityBinding;
   }
 
   bool signalsWereBlocked = this->blockSignals(true);

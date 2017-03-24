@@ -225,6 +225,42 @@ public:
         MITK_INFO << Self::ConstPointer(this);
         QFAIL("Invalid state. The viewer is selected but there is no selected render window.");
       }
+
+      /// Note:
+      ///
+      /// The tests below had to be disabled.
+      ///
+      /// There are two ways of signalling a focus event. First is the FocusManager / GlobalInteraction, the
+      /// second is the WindowSelected() Qt signal of the viewer. The advantage of the first is that you do
+      /// not need a reference to the viewer to get notified about the focus change. This allows you to
+      /// decouple your plugin of the DnD Display, and make your code work with other viewers (e.g. MITK Display).
+      ///
+      /// The disadvantage of the FocusManager approach is that the listeners (aka. observers) are notified
+      /// in the order that they have been registered. Although this is true for Qt signals as well, the
+      /// focus manager is a bit different, as it is a "global" instance that survives the actual sources of
+      /// the events.
+      ///
+      /// In the past I tried to use only MITK focus events to update the state of the viewer / multi viewer
+      /// and other plugins, e.g. the side viewer. However, if the side viewer was created before the DnD
+      /// Display then it registered its focus listener before the DnD Display registered theirs. This caused
+      /// weird effects, since the side viewer got notified about the focus changes in the DnD Display
+      /// *before* the DnD Display has finished updating its state. When, however, the side viewer was created
+      /// later, everything was working as normal.
+      ///
+      /// The other disadvantage of the FocusManager approach is that it has been removed in newer version
+      /// of MITK.
+      ///
+      /// As a solution, the DnD Display now only uses Qt signals for updating its state. This involves
+      /// the single viewer, the multi viewer and the multi viewer visibility manager. When the Qt signal
+      /// (WindowSelected()) has been emitted and processed, only then is the FocusManager notified. This
+      /// guarantees that any other plugin (e.g. side viewer) will find the viewer in consistent state.
+      ///
+      /// However, since the MITK focus event is sent after the Qt signal, if we get the focused window
+      /// from the focus manager when we catch the Qt signal, we will get the previously focused window.
+      /// This is not really a problem because the plugins that use the focus manager will not catch the
+      /// Qt signal, because they do not have a dependency on the DnD Display plugin.
+
+/*
       /// Note:
       /// If the display is redirected (like during the overnight builds) then the application
       /// will not have key focus. Therefore, here we check if the focus is on the right window
@@ -241,6 +277,7 @@ public:
         MITK_INFO << Self::ConstPointer(this);
         QFAIL("Invalid state. The viewer is selected but the selected render window has not got the MITK interaction focus.");
       }
+*/
     }
     else
     {
