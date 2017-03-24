@@ -15,6 +15,9 @@
 #define niftkBKMedicalDataSourceService_h
 
 #include <niftkQImageDataSourceService.h>
+#include "niftkBKMedicalDataSourceWorker.h"
+#include <QThread>
+#include <QImage>
 
 namespace niftk
 {
@@ -28,6 +31,8 @@ namespace niftk
 class BKMedicalDataSourceService : public QImageDataSourceService
 {
 
+  Q_OBJECT
+
 public:
 
   mitkClassMacroItkParent(BKMedicalDataSourceService,
@@ -35,8 +40,6 @@ public:
 
   mitkNewMacro3Param(BKMedicalDataSourceService, QString,
                      const IGIDataSourceProperties&, mitk::DataStorage::Pointer)
-
-
 
 protected:
 
@@ -52,10 +55,22 @@ protected:
    */
   virtual std::unique_ptr<niftk::IGIDataType> GrabImage() override;
 
+  static const int BK_FRAMES_PER_SECOND;
+  static const int BK_TIMEOUT;
+  static const int BK_PORT;
+
+private slots:
+
+  void OnFrameAvailable(const QImage&);
+
 private:
 
   BKMedicalDataSourceService(const BKMedicalDataSourceService&); // deliberately not implemented
   BKMedicalDataSourceService& operator=(const BKMedicalDataSourceService&); // deliberately not implemented
+
+  QThread*                   m_WorkerThread;
+  BKMedicalDataSourceWorker* m_Worker;
+  mutable QImage*            m_TemporaryWrapper;
 
 }; // end class
 

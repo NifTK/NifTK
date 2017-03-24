@@ -12,8 +12,18 @@
 #
 #============================================================================*/
 
-set(CPP_FILES
-  niftkNiftyCalVideoCalibrationManager.cxx
-  niftkTimingCalibrationInterface.cxx
+NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+  NAME niftkCalibrationPointClicker
+  BUILD_SLICER
+  INSTALL_SCRIPT
+  TARGET_LIBRARIES
+    niftkcommon
+    MitkLegacyIO
+    ${Boost_LIBRARIES}
+    MitkSegmentation
+    niftkOpenCVUtils
+    niftkIGIGui
+    niftkPointReg
+    niftkSurfRecon
+    niftkICPReg
 )
-

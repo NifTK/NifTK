@@ -15,7 +15,7 @@
 #include "niftkBKMedicalDataSourceFactory.h"
 #include "niftkBKMedicalDataSourceService.h"
 #include <niftkLagDialog.h>
-#include <niftkIPHostPortExtensionDialog.h>
+#include <niftkIPHostExtensionDialog.h>
 
 namespace niftk
 {
@@ -23,7 +23,7 @@ namespace niftk
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceFactory::BKMedicalDataSourceFactory()
 : IGIDataSourceFactoryServiceI("BKMedical (Local)",
-                               true,  // configure host, port, extension at startup
+                               true,  // configure host, extension at startup
                                true   // can configure lag while running
                                )
 {
@@ -54,7 +54,8 @@ IGIDataSourceI::Pointer BKMedicalDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* BKMedicalDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  return new niftk::IPHostPortExtensionDialog(parent);
+  return new niftk::IPHostExtensionDialog(parent,
+                                          "uk.ac.ucl.cmic.niftkBKMedicalDataSourceService.IPHostExtensionDialog");
 }
 
 

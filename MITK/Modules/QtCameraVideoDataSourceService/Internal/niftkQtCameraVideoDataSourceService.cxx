@@ -64,7 +64,7 @@ QtCameraVideoDataSourceService::QtCameraVideoDataSourceService(
   m_Camera->setViewfinder(m_CameraFrameGrabber);
 
   bool ok = QObject::connect(m_CameraFrameGrabber, SIGNAL(frameAvailable(QImage)),
-                             this, SLOT(OnFrameAvailable(QImage)));
+                             this, SLOT(OnFrameAvailable(QImage)), Qt::DirectConnection);
   assert(ok);
 
   m_Camera->start();

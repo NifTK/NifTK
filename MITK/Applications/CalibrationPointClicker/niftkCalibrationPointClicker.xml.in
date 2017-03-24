@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Smart Liver.Calibration</category>
-  <title>Ultrasound Point Clicker</title>
+  <title>Point Clicker</title>
   <description><![CDATA[Enables the user to scroll through images, and click on a single point per image.]]></description>
   <version>@NIFTK_VERSION_STRING@</version>
   <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
@@ -15,19 +15,19 @@
     <directory>
       <name>inputImageDirectory</name>
       <longflag>inputImageDirectory</longflag>
-      <description>Directory containing ultrasound images.</description>
+      <description>Directory containing individual images.</description>
       <label>Input Image Directory</label>
     </directory>
     <directory>
       <name>outputPointDirectory</name>
       <longflag>outputPointDirectory</longflag>
-      <description>Directory to write selected 2D pin locations.</description>
+      <description>Directory to write 2D point locations.</description>
       <label>Output Points Directory</label>
     </directory>
     <boolean>
       <name>outputTimeStamp</name>
       <longflag>outputTimeStamp</longflag>
-      <description>Output timestamp in file.</description>
+      <description>Output timestamp in file in the first column.</description>
       <label>Output Timestamp</label>
       <default>false</default>
       <channel>input</channel>
@@ -35,7 +35,7 @@
     <boolean>
       <name>outputZ</name>
       <longflag>outputZ</longflag>
-      <description>Output Z value of zero in file.</description>
+      <description>Output Z value of zero in the file as last column.</description>
       <label>Output Z</label>
       <default>false</default>
       <channel>input</channel>

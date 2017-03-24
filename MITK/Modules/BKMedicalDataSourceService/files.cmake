@@ -16,5 +16,10 @@ set(CPP_FILES
   Internal/niftkBKMedicalDataSourceFactory.cxx
   Internal/niftkBKMedicalDataSourceActivator.cxx
   Internal/niftkBKMedicalDataSourceService.cxx
+  Internal/niftkBKMedicalDataSourceWorker.cxx
 )
 
+set(MOC_H_FILES
+  Internal/niftkBKMedicalDataSourceWorker.h
+  Internal/niftkBKMedicalDataSourceService.h
+)

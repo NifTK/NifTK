@@ -14,3 +14,4 @@ niftkWindowsHotkeyHandler\.h MemberFunctions Disable
 niftkSharedOGLContext\.h InternalVariables Disable
 niftkNiftyCalVideoCalibrationManager\.h InternalVariables Disable
 niftkSingleFrameDataSourceService\.h InternalVariables Disable
+niftkBKMedicalDataSourceService\.h InternalVariables Disable
