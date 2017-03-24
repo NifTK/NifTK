@@ -85,7 +85,7 @@ mitk::BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(Ti
   TiXmlElement* child  = element->FirstChildElement("LabelList");
   LabeledLookupTableProperty::LabelListType labels;
 
-  int maxValue = INT_MIN; 
+  int maxValue = INT_MIN;
 
   if (child)
   {
@@ -131,7 +131,7 @@ mitk::BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(Ti
   {
     mitk::LookupTable* mitkLUT = namedLUTProp->GetLookupTable();
     vtkSmartPointer<vtkLookupTable> vtkLUT = mitkLUT->GetVtkLookupTable();
- 
+
     vtkSmartPointer<vtkLookupTable> newVtkLUT = vtkSmartPointer<vtkLookupTable>::New();
     newVtkLUT->SetHueRange(vtkLUT->GetHueRange());
     newVtkLUT->SetValueRange(vtkLUT->GetValueRange());
@@ -149,7 +149,7 @@ mitk::BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(Ti
     vtkSmartPointer<vtkIntArray> annotationValueArray = vtkIntArray::New();
     vtkSmartPointer<vtkStringArray> annotationNameArray = vtkStringArray::New();
 
-    for (unsigned int i =0 ; i < labels.size(); ++i)
+    for (unsigned int i =0; i < labels.size(); ++i)
     {
       int vtkInd = labels.at(i).first;
       std::string name = labels.at(i).second.toStdString();
