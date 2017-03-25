@@ -20,7 +20,6 @@
 #include <niftkFileIOUtils.h>
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
-#include <niftkQuaternion.h>
 #include <cv.h>
 
 int main(int argc, char** argv)
@@ -50,9 +49,9 @@ int main(int argc, char** argv)
 
       // Run calibration - must throw exceptions on failure.
       niftk::DoUltrasoundPointCalibration(trackedPoints,  // input data
-                                        scaleFactors,  // output scale factors
-                                        imageToSensor  // output trasnformation
-                                        );
+                                          scaleFactors,   // output scale factors
+                                          imageToSensor   // output trasnformation
+                                          );
     }
     else // Ball calibration
     {
@@ -61,10 +60,10 @@ int main(int argc, char** argv)
 
       // Run calibration - must throw exceptions on failure.
       niftk::DoUltrasoundBallCalibration(ballSize,      // command line arg
-                                   trackedImages,          // input data
-                                   scaleFactors,  // output scale factors
-                                   imageToSensor  // output trasnformation
-                                   );
+                                         trackedImages, // input data
+                                         scaleFactors,  // output scale factors
+                                         imageToSensor  // output trasnformation
+                                        );
     }
 
     // Convert outputs to matrices (only for consistency - I certainly dont mind if this changes).
