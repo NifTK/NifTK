@@ -63,27 +63,34 @@ NIFTKUSRECON_EXPORT TrackedPointData MatchPointAndTrackingDataFromDirectories(co
                                                                              );
 
 /**
-* \brief Entry point for Guofang's Ultrasound Calibration.
+* \brief Additional entry point for Guofang's Ultrasound Calibration,
+* that takes images containing balls, extracts balls and calls DoUltrasoundPointCalibration.
 */
 NIFTKUSRECON_EXPORT void DoUltrasoundBallCalibration(const int& ballSize,
-                                                     const TrackedImageData& data,
+                                                     const niftk::TrackedImageData& data,
                                                      mitk::Point2D& pixelScaleFactors,
-                                                     RotationTranslation& imageToSensorTransform
-                                                     );
-
-
-NIFTKUSRECON_EXPORT void DoUltrasoundPointCalibration(const TrackedPointData& data,
-                                                      mitk::Point2D& pixelScaleFactors,
-                                                      RotationTranslation& imageToSensorTransform
+                                                     niftk::RotationTranslation& imageToSensorTransform
                                                      );
 
 
 /**
-* \brief Entry point for Guofang's Ultrasound Reconstruction.
+* \brief Main entry point for Guofang's Ultrasound Calibration.
+* \param data pixel locations with matched tracking matrices.
 */
-NIFTKUSRECON_EXPORT mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
+NIFTKUSRECON_EXPORT void DoUltrasoundPointCalibration(const niftk::TrackedPointData& data,
+                                                      mitk::Point2D& pixelScaleFactors,
+                                                      niftk::RotationTranslation& imageToSensorTransform
+                                                     );
+
+
+/**
+* \brief Main entry point for Guofang's Ultrasound Reconstruction.
+* \param imageToSensorTransform a pair containing rotation as quaternion and translation vector
+* \param data images with matched tracking data as matrices.
+*/
+NIFTKUSRECON_EXPORT mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::TrackedImageData& data,
                                                                     const mitk::Point2D& pixelScaleFactors,
-                                                                    RotationTranslation& imageToSensorTransform,
+                                                                    const niftk::RotationTranslation& imageToSensorTransform,
                                                                     const mitk::Vector3D& voxelSpacing
                                                                    );
 

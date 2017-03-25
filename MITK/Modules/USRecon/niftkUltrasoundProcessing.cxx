@@ -552,10 +552,10 @@ The diameter of the circle in the images should be measured with an interactive 
 Ring model width = diameter + 15
 */
 void DoUltrasoundBallCalibration(const int& ballSize,
-                             const TrackedImageData& trackedImages,
-                             mitk::Point2D& pixelScaleFactors,
-                             RotationTranslation& imageToSensorTransform
-                            )
+                                 const niftk::TrackedImageData& trackedImages,
+                                 mitk::Point2D& pixelScaleFactors,
+                                 RotationTranslation& imageToSensorTransform
+                                )
 {
 
   MITK_INFO << "DoUltrasoundBallCalibration: Doing Ultrasound Ball Calibration with "
@@ -600,7 +600,7 @@ void DoUltrasoundBallCalibration(const int& ballSize,
 
 
 //-------------------------------------------------------------------------------------------------------
-void DoUltrasoundPointCalibration(const TrackedPointData& trackedPoints,
+void DoUltrasoundPointCalibration(const niftk::TrackedPointData& trackedPoints,
                                   mitk::Point2D& pixelScaleFactors,
                                   RotationTranslation& imageToSensorTransform
                                   )
@@ -664,9 +664,9 @@ void DoUltrasoundReconstructionFor1Slice(InputImageType::Pointer itk2D,
 
 
 //-----------------------------------------------------------------------------
-mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
+mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::TrackedImageData& data,
                                                 const mitk::Point2D& pixelScaleFactors,
-                                                RotationTranslation& imageToSensorTransform,
+                                                const niftk::RotationTranslation& imageToSensorTransform,
                                                 const mitk::Vector3D& voxelSpacing
                                                 )
 {
