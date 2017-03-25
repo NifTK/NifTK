@@ -31,6 +31,13 @@ namespace niftk
 
 typedef std::pair<niftkQuaternion, niftkQuaternion> TrackingQuaternions;
 
+typedef unsigned char InputPixelType;
+typedef double OutputPixelType;
+const unsigned int dim = 3;
+typedef itk::Image<InputPixelType, dim> InputImageType;
+typedef itk::Image<OutputPixelType, dim> OutputImageType;
+
+
 //-------------------------------------------------------------------------------------
 int HoughForRadius(const cv::Mat& image, int x, int y, int& max_radius, int medianR)
 {
@@ -41,38 +48,45 @@ int HoughForRadius(const cv::Mat& image, int x, int y, int& max_radius, int medi
   int radius;
   int max_weight = 0;
 
-  for (i = 0; i<10; i++)
+  for (i = 0; i < 10; i++)
+  {
     hist[i] = pixel_num[i] = 0;
+  }
 
   max_radius = 0;
   int outerR = medianR + 5;
   int innerR = medianR - 5;
 
   for (j = y - outerR; j <= y + outerR; j++)
+  {
     for (i = x - outerR; i <= x + outerR; i++)
     {
-      if (j<0 || j >= int(image.rows) || i<0 || i >= int(image.cols))
-        continue;
-
-      radius = int(sqrt((j - y)*(j - y) + (i - x)*(i - x)) + 0.5);
-
-      if ((radius >= innerR) && (radius<outerR))
+      if (j < 0 || j >= int(image.rows) || i < 0 || i >= int(image.cols))
       {
-        hist[radius - innerR] += *(image.data + j*image.cols + i);
+        continue;
+      }
+
+      radius = int(sqrt((j - y) * (j - y) + (i - x) * (i - x)) + 0.5);
+
+      if ((radius >= innerR) && (radius < outerR))
+      {
+        hist[radius - innerR] += *(image.data + j * image.cols + i);
         pixel_num[radius - innerR]++;
       }
     }
+  }
 
-  for (i = 0; i<10; i++)
+  for (i = 0; i < 10; i++)
   {
     int value = hist[i] / pixel_num[i];
 
-    if (value>max_weight)
+    if (value > max_weight)
     {
       max_weight = value;
       max_radius = i + innerR;
     }
   }
+
   return max_weight;
 }
 
@@ -88,11 +102,12 @@ void RawHough(const cv::Mat& image, int& x, int& y, int& r, int medianR)
   int max_weight = 0;
 
   for (int j = y - 5; j <= y + 5; j++)
+  {
     for (int i = x - 5; i <= x + 5; i++)
     {
       weight = HoughForRadius(image, i, j, radius, medianR);
 
-      if (weight>max_weight)
+      if (weight > max_weight)
       {
         max_weight = weight;
         max_radius = radius;
@@ -100,6 +115,7 @@ void RawHough(const cv::Mat& image, int& x, int& y, int& r, int medianR)
         max_y = j;
       }
     }
+  }
 
   x = max_x;
   y = max_y;
@@ -122,14 +138,18 @@ cv::Mat CreateRingModel(const int model_width)
 
   cv::MatIterator_<unsigned char> iter = model.begin<unsigned char>();
 
-  for (int i = 0; i<model_width; i++)
-    for (int j = 0; j<model_width; j++, iter++)
+  for (int i = 0; i < model_width; i++)
+  {
+    for (int j = 0; j < model_width; j++, iter++)
     {
-      int d2 = (i - outerR)*(i - outerR) + (j - outerR)*(j - outerR);
+      int d2 = (i - outerR) * (i - outerR) + (j - outerR) * (j - outerR);
 
       if ((d2 <= outerR2) && (d2 >= innerR2))
+      {
         *iter = 255;
+      }
     }
+  }
 
   return model;
 }
@@ -148,7 +168,7 @@ cv::Point2d FindCircleInImage(const cv::Mat& image, cv::Mat& model)
   int endx = image_width - 1 - model_width * 3 / 4;
   int endy = image_height - 1 - model_width * 3 / 4;
 
-  double min_diff = 1000000000;
+  double min_diff = std::numeric_limits<double>::max();
   int max_x = 0;
   int max_y = 0;
   int max_radius = 0;
@@ -163,23 +183,25 @@ cv::Point2d FindCircleInImage(const cv::Mat& image, cv::Mat& model)
     {
       for (int i = startx; i <= endx; i += rate)
       {
-        ptr_image = image.data + j*image_width;
+        ptr_image = image.data + j * image_width;
         ptr_model = model.data;
 
         double  val2 = 0;
         int  pixel_num = 0;
 
-        for (int n = 0; (n<model_width) && ( j+n < image_height);
-          n += rate, ptr_image += image_width*rate, ptr_model += model_width*rate)
-          for (int m = i>0 ? 0 : -i; (m<model_width) && ( i+m < image_width); m += rate)
+        for (int n = 0; (n < model_width) && ( j + n < image_height);
+          n += rate, ptr_image += image_width * rate, ptr_model += model_width * rate)
+        {
+          for (int m = i > 0 ? 0 : -i; (m < model_width) && ( i + m < image_width); m += rate)
           {
-            if (*(ptr_model+m) > 0)
+            if (*(ptr_model + m) > 0)
             {
               double val = *(ptr_image + m+i) - *(ptr_model + m);
               val2 += val * val;
               pixel_num++;
             }
           }
+        }
 
         val2 /= pixel_num;
 
@@ -189,8 +211,8 @@ cv::Point2d FindCircleInImage(const cv::Mat& image, cv::Mat& model)
           max_x = i;
           max_y = j;
         }
-      }// end for i,j
-    }
+      }// end for i
+    }// end for j
 
     startx = max_x - rate / 2;
     starty = max_y - rate / 2;
@@ -198,7 +220,7 @@ cv::Point2d FindCircleInImage(const cv::Mat& image, cv::Mat& model)
     endx = max_x + rate / 2;
     endy = max_y + rate / 2;
 
-    min_diff = 1000000000;
+    min_diff = std::numeric_limits<double>::max();
   }// end for rate
 
   max_x += (model_width - 1) / 2;
@@ -306,13 +328,13 @@ cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
   double lambda = 0.001;
   cv::Mat I = cv::Mat::eye(12, 12, CV_64FC1);
 
-  for (int times = 0; times<100; times++) // 100 iteratios for the LM algorithm
+  for (int times = 0; times < 100; times++) // 100 iteratios for the LM algorithm
   {
-    for (int i = 0; i<number_of_scans; i++)
+    for (int i = 0; i < number_of_scans; i++)
     {
       qx[0] = 0;
-      qx[1] = sx*points[i].x;
-      qx[2] = sy*points[i].y;
+      qx[1] = sx * points[i].x;
+      qx[2] = sy * points[i].y;
       qx[3] = 0;
 
       p22 = Q2[i][0] * Q2[i][0]
@@ -442,10 +464,14 @@ cv::Mat UltrasoundCalibration(const std::vector<cv::Point2d>& points,
 
     if (times != 0)
     {
-      if ( norm(F) > norm(Ftmp) )
+      if (norm(F) > norm(Ftmp))
+      {
         lambda *= 10;
+      }
       else
+      {
         lambda /= 10;
+      }
     }
 
     Ftmp = F;
@@ -561,24 +587,12 @@ void DoUltrasoundCalibration(const int& modelWidth,
 
 
 //-----------------------------------------------------------------------------
-void DoUltrasoundReconstructionFor1Slice(mitk::Image::ConstPointer image2D,
-                                         mitk::Image::Pointer accumulatorImage,
-                                         const vtkMatrix4x4& indexToWorldFor2DImage,
-                                         mitk::Image::Pointer image3D
+void DoUltrasoundReconstructionFor1Slice(InputImageType::ConstPointer itk2D,
+                                         OutputImageType::Pointer accumulator,
+                                         OutputImageType::Pointer itk3D
                                          )
 {
-  // At this point, image2D, image 3D are definitely unsigned char,
-  // and accumulatorImage and counterImage are definitely double.
-  // Also each image should have correct geometry.
-  typedef unsigned char InputPixelType;
-  typedef double OutputPixelType;
-  const unsigned int dim = 3;
-  typedef itk::Image<InputPixelType, dim> InputImageType;
-  typedef itk::Image<OutputPixelType, dim> OutputImageType;
 
-  InputImageType::ConstPointer itk2D = mitk::ImageToItkImage< InputPixelType, dim >(image2D);
-  OutputImageType::Pointer itk3D = mitk::ImageToItkImage< OutputPixelType, dim >(image3D);
-  OutputImageType::Pointer accumulator = mitk::ImageToItkImage< OutputPixelType, dim >(accumulatorImage);
 
 }
 
@@ -706,8 +720,8 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
         {
           maxCornerInMillimetres[j] = cornersWorldArray[i][j];
         }
-      }
-    }
+      }// end for j
+    }// end for i
   } // end for num
 
   mitk::Point3D origin;
@@ -720,7 +734,7 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   dims[1] = (maxCornerInMillimetres[1] - minCornerInMillimetres[1]) / voxelSpacing[1] + 1; // Number of voxels in y
   dims[2] = (maxCornerInMillimetres[2] - minCornerInMillimetres[2]) / voxelSpacing[2] + 1; // Number of voxels in z
 
-  MITK_INFO << "DoUltrasoundReconstruction creating 3 volumes of ("
+  MITK_INFO << "DoUltrasoundReconstruction creating 2 volumes of ("
             << dims[0] << ", " << dims[1] << ", " << dims[2] << "), "
             << "with resolution "
             << voxelSpacing[0] << "x" << voxelSpacing[1] << "x" << voxelSpacing[2]
@@ -744,21 +758,22 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
   pixelSpacing[0] = pixelScaleFactors[0]; // Size of 2D pixels in x in millimetres
   pixelSpacing[1] = pixelScaleFactors[1]; // Size of 2D pixels in y in millimetres
   pixelSpacing[2] = 1.0;                  // Size of 2D pixels in z in millimetres.
-                                          // Matt set this to 1. Im not sure if 0 will crash things.
+
+
+  // At this point, image2D is definitely unsigned char,
+  // and accumulatorImage and image3D are definitely double.
+  // Also each image should have correct geometry.
+
+  OutputImageType::Pointer itk3D = mitk::ImageToItkImage< OutputPixelType, dim >(image3D);
+  OutputImageType::Pointer accumulator = mitk::ImageToItkImage< OutputPixelType, dim >(accumulatorImage);
 
   // Now iterate through each image/tracking, and put in volume.
   for (unsigned int i = 0; i < data.size(); i++)
   {
-    mitk::Image::Pointer image2D = data[i].first;
-
     niftk::ConvertRotationAndTranslationToMatrix(data[i].second.first,
                                                  data[i].second.second,
                                                  *trackingMatrix);
 
-    vtkMatrix4x4::Multiply4x4(trackingMatrix, pixelToSensorMatrix, indexToWorld);
-
-/* Matt - I dont think you need this.
- *
     cv::Mat newOrigin(3, 1, CV_64F);
     cv::Mat newDirection(3, 3, CV_64F);
     cv::Mat trackingRotation(3, 3, CV_64F);
@@ -773,32 +788,32 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const TrackedImageData& data,
         trackingRotation.at<double>(row, col) = trackingMatrix->Element[row][col];
         trackingTranslation.at<double>(row) = trackingMatrix->Element[row][3];
 
-        calibratedRotation.at<double>(row, col) = imageToSensorTransform.Element[row][col];
-        calibratedTranslation.at<double>(row) = imageToSensorTransform.Element[row][3];
+        calibratedRotation.at<double>(row, col) = imageToSensorMatrix->Element[row][col];
+        calibratedTranslation.at<double>(row) = imageToSensorMatrix->Element[row][3];
       }
     }
 
     newOrigin = trackingTranslation + trackingRotation * calibratedRotation;
     newDirection = trackingRotation * calibratedRotation;
 
-    vtkSmartPointer<vtkMatrix4x4> newDirectionMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-    image2D->SetSpacing(spacing);
-    image2D->SetOrigin(newOrigin);
-*/
+    InputImageType::DirectionType itk2DImageDirection;
+    itk2DImageDirection.SetIdentity();// !!! Copy from newDirection
 
-    // So, if indexToWorld worked for the computation of bounding boxes
-    // shown above, then it should also work for reconstruction.
-    mitk::BaseGeometry* imageGeometry = image2D->GetGeometry();
-    imageGeometry->SetIndexToWorldTransformByVtkMatrix(indexToWorld);
+    mitk::Image::Pointer image2D = data[i].first;
+    image2D->SetSpacing(pixelSpacing);
+    image2D->SetOrigin(newOrigin);
 
     mitk::Image::ConstPointer const2DImage = const_cast<const mitk::Image*>(image2D.GetPointer());
+    
+    InputImageType::ConstPointer itk2D = mitk::ImageToItkImage< InputPixelType, dim >(image2D);
+    itk2D->SetDirection(itk2DImageDirection);
 
-    // Do reconstruction for each slice - go get a coffee :-)
-    DoUltrasoundReconstructionFor1Slice(const2DImage,
-                                        accumulatorImage,
-                                        *indexToWorld, // might not be needed
-                                        image3D);
-  }
+    DoUltrasoundReconstructionFor1Slice(itk2D,
+                                        accumulator,
+                                        itk3D);
+  }// end for i
+
+
 
   // And returns the image.
   return image3D;
