@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkUSReconstructor_h
-#define niftkUSReconstructor_h
+#ifndef niftkUltrasoundProcessing_h
+#define niftkUltrasoundProcessing_h
 
 #include "niftkUSReconExports.h"
 #include <mitkImage.h>
@@ -59,7 +59,7 @@ NIFTKUSRECON_EXPORT TrackedImageData LoadImageAndTrackingDataFromDirectories(con
                                                                             );
 
 NIFTKUSRECON_EXPORT TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& pointDir,
-                                                                              const std::string& trackingDir  
+                                                                              const std::string& trackingDir
                                                                              );
 
 /**
@@ -90,7 +90,7 @@ NIFTKUSRECON_EXPORT void DoUltrasoundPointCalibration(const niftk::TrackedPointD
 */
 NIFTKUSRECON_EXPORT mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::TrackedImageData& data,
                                                                     const mitk::Point2D& pixelScaleFactors,
-                                                                    const niftk::RotationTranslation& imageToSensorTransform,
+                                                                    const RotationTranslation& imageToSensorTransform,
                                                                     const mitk::Vector3D& voxelSpacing
                                                                    );
 

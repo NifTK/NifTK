@@ -264,7 +264,7 @@ cv::Mat UltrasoundCalibration(const TrackedPointData& trackedPoints)
   niftkQuaternion qx;
 
   // Parameter initialisation
-	cv::Mat a(12, 1, CV_64F, cv::Scalar(0));
+  cv::Mat a(12, 1, CV_64F, cv::Scalar(0));
 
   double sx = a.at<double>(0) = 1.0;
   double sy = a.at<double>(1) = 1.0;
@@ -824,7 +824,8 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::TrackedImageData& d
   mitk::Vector3D pixelSpacing;
   pixelSpacing[0] = pixelScaleFactors[0]; // Size of 2D pixels in x in millimetres
   pixelSpacing[1] = pixelScaleFactors[1]; // Size of 2D pixels in y in millimetres
-  pixelSpacing[2] = 1.0;                  // Size of 2D pixels in z in millimetres - any value will do as the z coordinate is zero
+  pixelSpacing[2] = 1.0;                  // Size of 2D pixels in z in millimetres
+                                          // - any value will do as the z coordinate is zero
 
   auto itk3D = mitk::ImageToItkImage< OutputPixelType, dim >(image3D);
   auto accumulator = mitk::ImageToItkImage< OutputPixelType, dim >(accumulatorImage);
@@ -940,7 +941,7 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::TrackedImageData& d
   auto filteredImage = filter->GetOutput();
   resultImage->InitializeByItk(filteredImage);
   resultImage->SetVolume(filteredImage->GetBufferPointer());
-  resultImage->SetGeometry(image3D->GetGeometry()); 
+  resultImage->SetGeometry(image3D->GetGeometry());
 
   // And returns the image.
   return resultImage;
@@ -977,7 +978,7 @@ void LoadOxfordQuaternionTrackingFile(std::string filename,
 
 //-----------------------------------------------------------------------------
 TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& pointDir,
-                                                          const std::string& trackingDir  
+                                                          const std::string& trackingDir
                                                           )
 {
   std::vector<std::string> pointFiles = niftk::GetFilesInDirectory(pointDir);
@@ -1174,7 +1175,9 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
   if (imageFiles.size() != images.size())
   {
     std::ostringstream errorMessage;
-    errorMessage << "Retrieved " << imageFiles.size() << " file names for images, but could only load " << images.size() << " images!" << std::endl;
+    errorMessage << "Retrieved " << imageFiles.size()
+                 << " file names for images, but could only load "
+                 << images.size() << " images!" << std::endl;
     mitkThrow() << errorMessage.str();
   }
 
@@ -1218,14 +1221,21 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
   if (trackingFiles.size() != trackingQuaternions.size())
   {
     std::ostringstream errorMessage;
-    errorMessage << "Retrieved " << trackingFiles.size() << " file names for tracking data, but could only load " << trackingQuaternions.size() << " tracking data!" << std::endl;
+    errorMessage << "Retrieved " << trackingFiles.size()
+                 << " file names for tracking data, but could only load "
+                 << trackingQuaternions.size() << " tracking data!"
+                 << std::endl;
     mitkThrow() << errorMessage.str();
   }
 
   if (trackingQuaternions.size() < images.size())
   {
     std::ostringstream errorMessage;
-    errorMessage << "Loaded " << trackingQuaternions.size() << " tracking data, and loaded a difference number of images " << images.size() << ", and number of images must be less than number of tracking data." << std::endl;
+    errorMessage << "Loaded " << trackingQuaternions.size()
+                 << " tracking data, and loaded a difference number of images "
+                 << images.size()
+                 << ", and number of images must be less than number of tracking data."
+                 << std::endl;
     mitkThrow() << errorMessage.str();
   }
  
