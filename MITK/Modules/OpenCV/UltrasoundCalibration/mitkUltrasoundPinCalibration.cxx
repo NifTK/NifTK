@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "mitkUltrasoundPinCalibration.h"
+#include <mitkOpenCVFileIOUtils.h>
 #include <itkUltrasoundPinCalibrationCostFunction.h>
 #include <itkLevenbergMarquardtOptimizer.h>
 #include <cassert>
@@ -62,6 +63,28 @@ void UltrasoundPinCalibration::SetOptimiseImageScaleFactors(const bool& optimise
 bool UltrasoundPinCalibration::GetOptimiseImageScaleFactors() const
 {
   return m_DownCastCostFunction->GetOptimiseScaleFactors();
+}
+
+
+//-----------------------------------------------------------------------------
+void UltrasoundPinCalibration::SaveScalingTransformation(const std::string& fileName)
+{
+  if (fileName.size() > 0)
+  {
+    mitk::Point2D scaleFactors = this->GetImageScaleFactors();
+    cv::Matx44d matrix = cv::Matx44d::eye();
+    matrix(0, 0) = scaleFactors[0];
+    matrix(1, 1) = scaleFactors[1];
+
+    if (!mitk::SaveTrackerMatrix(fileName, matrix))
+    {
+      mitkThrow() << "Failed to save matrix in file:" << fileName << std::endl;
+    }
+  }
+  else
+  {
+    mitkThrow() << "Empty fileName supplied.";
+  }
 }
 
 

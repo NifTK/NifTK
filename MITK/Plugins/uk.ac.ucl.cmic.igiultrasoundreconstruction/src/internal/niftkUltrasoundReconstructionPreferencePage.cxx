@@ -25,12 +25,9 @@
 namespace niftk
 {
 
-const QString UltrasoundReconstructionPreferencePage::OUTPUT_DIR_NODE_NAME("output dir");
-
 //-----------------------------------------------------------------------------
 UltrasoundReconstructionPreferencePage::UltrasoundReconstructionPreferencePage()
 : m_MainControl(0)
-, m_OutputDirName(nullptr)
 , m_Initializing(false)
 {
 
@@ -72,9 +69,6 @@ void UltrasoundReconstructionPreferencePage::CreateQtControl(QWidget* parent)
   QFormLayout *formLayout = new QFormLayout;
   m_MainControl->setLayout(formLayout);
 
-  m_OutputDirName = new ctkDirectoryButton();
-  formLayout->addRow("output dir", m_OutputDirName);
-
   this->Update();
 
   m_Initializing = false;
@@ -91,7 +85,6 @@ QWidget* UltrasoundReconstructionPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool UltrasoundReconstructionPreferencePage::PerformOk()
 {
-  m_UltrasoundReconstructionPreferencesNode->Put(UltrasoundReconstructionPreferencePage::OUTPUT_DIR_NODE_NAME, m_OutputDirName->directory());
   return true;
 }
 
@@ -105,7 +98,6 @@ void UltrasoundReconstructionPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void UltrasoundReconstructionPreferencePage::Update()
 {
-  m_OutputDirName->setDirectory(m_UltrasoundReconstructionPreferencesNode->Get(UltrasoundReconstructionPreferencePage::OUTPUT_DIR_NODE_NAME, ""));
 }
 
 } // end namespace

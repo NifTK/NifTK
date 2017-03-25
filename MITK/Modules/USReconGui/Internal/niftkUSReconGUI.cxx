@@ -28,8 +28,10 @@ USReconGUI::USReconGUI(QWidget* parent)
   this->connect(m_ImageComboBox, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), SIGNAL(OnImageSelectionChanged(const mitk::DataNode*)));
   this->connect(m_TrackingComboBox, SIGNAL(OnSelectionChanged(const mitk::DataNode*)), SIGNAL(OnTrackingSelectionChanged(const mitk::DataNode*)));
   this->connect(m_GrabSingleFramePushButton, SIGNAL(pressed()), SIGNAL(OnGrabPressed()));
-  this->connect(m_ReconstructVolumePushButton, SIGNAL(pressed()), SIGNAL(OnReconstructPressed()));
   this->connect(m_ClearDataPushButton, SIGNAL(pressed()), SIGNAL(OnClearDataPressed()));
+  this->connect(m_SaveMatchedDataPushButton, SIGNAL(pressed()), SIGNAL(OnSaveDataPressed()));
+  this->connect(m_CalibrationRunPushButton, SIGNAL(pressed()), SIGNAL(OnCalibratePressed()));
+  this->connect(m_ReconstructVolumePushButton, SIGNAL(pressed()), SIGNAL(OnReconstructPressed()));
   this->SetEnableButtons(true);
 }
 
@@ -61,8 +63,45 @@ void USReconGUI::SetDataStorage(mitk::DataStorage* dataStorage)
 void USReconGUI::SetEnableButtons(bool isEnabled)
 {
   m_GrabSingleFramePushButton->setEnabled(isEnabled);
-  m_ReconstructVolumePushButton->setEnabled(isEnabled);
   m_ClearDataPushButton->setEnabled(isEnabled);
+  m_SaveMatchedDataPushButton->setEnabled(isEnabled);
+  m_CalibrationRunPushButton->setEnabled(isEnabled);
+  m_ReconstructVolumePushButton->setEnabled(isEnabled);
+}
+
+
+//-----------------------------------------------------------------------------
+void USReconGUI::SetNumberOfFramesLabel(int value)
+{
+  m_NumberOfFramesValueLabel->setText(QString::number(value));
+}
+
+
+//-----------------------------------------------------------------------------
+void USReconGUI::SetScalingMatrix(const vtkMatrix4x4& matrix)
+{
+  m_ScalingMatrix->SetMatrix(matrix);
+}
+
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkMatrix4x4> USReconGUI::GetScalingMatrix() const
+{
+  return m_ScalingMatrix->CloneMatrix();
+}
+
+
+//-----------------------------------------------------------------------------
+void USReconGUI::SetRigidMatrix(const vtkMatrix4x4& matrix)
+{
+  m_RigidMatrix->SetMatrix(matrix);
+}
+
+
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkMatrix4x4> USReconGUI::GetRigidMatrix() const
+{
+  return m_RigidMatrix->CloneMatrix();
 }
 
 

@@ -12,15 +12,19 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE(
-  DEPENDS niftkOpenCVImageConversion
-  PACKAGE_DEPENDS OpenCV
+NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+  NAME niftkUltrasoundBallCalibration
+  BUILD_SLICER
+  INSTALL_SCRIPT
+  TARGET_LIBRARIES
+    niftkcommon
+    MitkLegacyIO
+    ${Boost_LIBRARIES}
+    MitkSegmentation
+    niftkOpenCVUtils
+    niftkIGIGui
+    niftkPointReg
+    niftkSurfRecon
+    niftkICPReg
+    niftkUSRecon
 )
-
-if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(niftkUSRecon)
-endif()
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()

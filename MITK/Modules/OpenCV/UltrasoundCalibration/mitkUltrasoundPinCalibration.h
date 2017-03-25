@@ -40,6 +40,11 @@ public:
   bool GetOptimiseImageScaleFactors() const;
 
   /**
+   * \brief Saves the scaling as a 4x4 matrix (call after calibration).
+   */
+  void SaveScalingTransformation(const std::string& fileName);
+
+  /**
    * \see mitk::InvariantPointCalibration::Calibrate().
    */
   virtual double Calibrate() override;

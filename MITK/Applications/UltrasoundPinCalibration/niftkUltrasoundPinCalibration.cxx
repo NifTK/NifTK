@@ -27,9 +27,10 @@ int main(int argc, char** argv)
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  if ( matrixDirectory.length() == 0
-       || outputMatrixFile.length() == 0
+  if (    matrixDirectory.length() == 0
        || pointDirectory.length() == 0
+       || rigidMatrixFile.length() == 0
+       || scalingMatrixFile.length() == 0
        )
   {
     commandLine.getOutput()->usage(commandLine);
@@ -40,7 +41,8 @@ int main(int argc, char** argv)
   {
     std::cout << "niftkUltrasoundPinCalibration: matrices       = " << matrixDirectory << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: points         = " << pointDirectory << std::endl;
-    std::cout << "niftkUltrasoundPinCalibration: output         = " << outputMatrixFile << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: output rigid   = " << rigidMatrixFile << std::endl;
+    std::cout << "niftkUltrasoundPinCalibration: output scaling = " << scalingMatrixFile << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: opt scaling    = " << optimiseScaling << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: mm/pix         = " << millimetresPerPixel[0] << ", " << millimetresPerPixel[1] << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: opt inv point  = " << optimiseInvariantPoint << std::endl;
@@ -85,7 +87,8 @@ int main(int argc, char** argv)
     calibration->SetPointData(&pointData);
 
     double residualError = calibration->Calibrate();
-    calibration->SaveRigidTransformation(outputMatrixFile);
+    calibration->SaveRigidTransformation(rigidMatrixFile);
+    calibration->SaveScalingTransformation(scalingMatrixFile);
 
     std::cout << "niftkUltrasoundPinCalibration: residual  = " << residualError << std::endl;
     std::cout << "niftkUltrasoundPinCalibration: scaling   = " << calibration->GetImageScaleFactors() << std::endl;

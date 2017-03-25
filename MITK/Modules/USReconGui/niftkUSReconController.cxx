@@ -13,17 +13,22 @@
 =============================================================================*/
 
 #include "niftkUSReconController.h"
-#include <niftkUSReconstructor.h>
+#include <niftkUltrasoundProcessing.h>
+#include <niftkCoordinateAxesData.h>
 #include <Internal/niftkUSReconGUI.h>
-#include <mitkRenderingManager.h>
 #include <mitkIOUtil.h>
 #include <niftkFileHelper.h>
+#include <niftkMITKMathsUtils.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
+#include <cv.h>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
 #include <QMessageBox>
+#include <QFileDialog>
 
 namespace niftk
 {
@@ -39,36 +44,29 @@ public:
   ~USReconControllerPrivate();
 
   USReconGUI*                       m_GUI;
-  QString                           m_OutputDirName;
+  QString                           m_PreviousDirName;
   QString                           m_RecordingDirName;
   bool                              m_IsRecording;
-  bool                              m_DumpEachFrameWhileRecording;
-  bool                              m_DumpEachReconstructedVolume;
-  int                               m_FrameId;
   int                               m_ReconstructedId;
   mitk::DataNode::Pointer           m_CurrentImage;
   mitk::DataNode::Pointer           m_CurrentTracking;
   QMutex                            m_Lock;
   QFuture<void>                     m_BackgroundProcess;
   QFutureWatcher<void>              m_BackgroundProcessWatcher;
-  niftk::USReconstructor::Pointer   m_Reconstructor;
+  niftk::TrackedImageData           m_TrackedImages;
 };
 
 
 //-----------------------------------------------------------------------------
 USReconControllerPrivate::USReconControllerPrivate(USReconController* usreconController)
 : q_ptr(usreconController)
+, m_GUI(nullptr)
 , m_Lock(QMutex::Recursive)
-, m_OutputDirName("")
 , m_RecordingDirName("")
 , m_IsRecording(false)
-, m_DumpEachFrameWhileRecording(false)
-, m_DumpEachReconstructedVolume(false)
-, m_FrameId(0)
 , m_ReconstructedId(0)
 {
   Q_Q(USReconController);
-  m_Reconstructor = niftk::USReconstructor::New();
 }
 
 
@@ -117,20 +115,11 @@ void USReconController::SetupGUI(QWidget* parent)
   connect(d->m_GUI, SIGNAL(OnImageSelectionChanged(const mitk::DataNode*)), this, SLOT(OnImageSelectionChanged(const mitk::DataNode*)));
   connect(d->m_GUI, SIGNAL(OnTrackingSelectionChanged(const mitk::DataNode*)), this, SLOT(OnTrackingSelectionChanged(const mitk::DataNode*)));
   connect(d->m_GUI, SIGNAL(OnGrabPressed()), this, SLOT(OnGrabPressed()));
-  connect(d->m_GUI, SIGNAL(OnReconstructPressed()), this, SLOT(OnReconstructPressed()));
   connect(d->m_GUI, SIGNAL(OnClearDataPressed()), this, SLOT(OnClearDataPressed()));
-
+  connect(d->m_GUI, SIGNAL(OnSaveDataPressed()), this, SLOT(OnSaveDataPressed()));
+  connect(d->m_GUI, SIGNAL(OnCalibratePressed()), this, SLOT(OnCalibratePressed()));
+  connect(d->m_GUI, SIGNAL(OnReconstructPressed()), this, SLOT(OnReconstructPressed()));
   connect(&d->m_BackgroundProcessWatcher, SIGNAL(finished()), this, SLOT(OnBackgroundProcessFinished()));
-}
-
-
-//-----------------------------------------------------------------------------
-void USReconController::SetOutputDirName(const QString& outputDir)
-{
-  Q_D(USReconController);
-  QMutexLocker locker(&d->m_Lock);
-
-  d->m_OutputDirName = outputDir;
 }
 
 
@@ -182,78 +171,30 @@ void USReconController::SetRecordingStopped()
 
 
 //-----------------------------------------------------------------------------
-void USReconController::SaveImages(const QString& dirName)
-{
-  Q_D(USReconController);
-
-  if(!dirName.isEmpty())
-  {
-    bool savedSomething = false;
-    mitk::DataNode::Pointer imageNode = d->m_GUI->GetImageNode();
-    if (imageNode.IsNotNull())
-    {
-      std::ostringstream fileName;
-      fileName << dirName.toStdString()
-               << niftk::GetFileSeparator()
-               << "image-"
-               << d->m_FrameId
-               << ".png";
-
-      mitk::IOUtil::Save(imageNode->GetData(), fileName.str());
-      savedSomething = true;
-    }
-    mitk::DataNode::Pointer trackingNode = d->m_GUI->GetTrackingNode();
-    if (trackingNode.IsNotNull())
-    {
-      std::ostringstream fileName;
-      fileName << dirName.toStdString()
-               << niftk::GetFileSeparator()
-               << "tracker-"
-               << d->m_FrameId
-               << ".4x4";
-
-      mitk::IOUtil::Save(trackingNode->GetData(), fileName.str());
-      savedSomething = true;
-    }
-    if (savedSomething)
-    {
-      d->m_FrameId++;
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void USReconController::CaptureImages()
 {
   Q_D(USReconController);
+  QMutexLocker locker(&d->m_Lock);
 
   mitk::DataNode::Pointer imageNode = d->m_GUI->GetImageNode();
   mitk::DataNode::Pointer trackingNode = d->m_GUI->GetTrackingNode();
 
   if (imageNode.IsNotNull() && trackingNode.IsNotNull())
   {
-    d->m_Reconstructor->AddPair(dynamic_cast<mitk::Image*>(imageNode->GetData()),
-                                dynamic_cast<niftk::CoordinateAxesData*>(trackingNode->GetData())
-                                );
-  }
-}
+    mitk::Image::Pointer clonedImage = dynamic_cast<mitk::Image*>(imageNode->GetData())->Clone();
+    niftk::CoordinateAxesData::Pointer transform = dynamic_cast<niftk::CoordinateAxesData*>(trackingNode->GetData());
 
+    vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
+    transform->GetVtkMatrix(*vtkMat);
 
-//-----------------------------------------------------------------------------
-void USReconController::Update()
-{
-  Q_D(USReconController);
+    mitk::Point4D rotationQuaternion;
+    mitk::Vector3D translationVector;
+    niftk::ConvertMatrixToRotationAndTranslation(*vtkMat, rotationQuaternion, translationVector);
 
-  if (d->m_IsRecording)
-  {
-    QMutexLocker locker(&d->m_Lock);
-    this->CaptureImages();
+    RotationTranslation rotationTranslation(rotationQuaternion, translationVector);
 
-    if (d->m_DumpEachFrameWhileRecording && !d->m_RecordingDirName.isEmpty())
-    {
-      this->SaveImages(d->m_RecordingDirName);
-    }
+    d->m_TrackedImages.push_back(TrackedImage(clonedImage, rotationTranslation));
+    d->m_GUI->SetNumberOfFramesLabel(d->m_TrackedImages.size());
   }
 }
 
@@ -265,8 +206,24 @@ void USReconController::OnClearDataPressed()
   QMutexLocker locker(&d->m_Lock);
 
   MITK_INFO << "Clearing all previously collected image and tracking data";
-  d->m_Reconstructor->ClearData();
+
+  d->m_TrackedImages.clear();
+  d->m_GUI->SetNumberOfFramesLabel(d->m_TrackedImages.size());
+
   MITK_INFO << "Clearing all previously collected image and tracking data - DONE";
+}
+
+
+//-----------------------------------------------------------------------------
+void USReconController::Update()
+{
+  Q_D(USReconController);
+  QMutexLocker locker(&d->m_Lock);
+
+  if (d->m_IsRecording)
+  {  
+    this->CaptureImages();
+  }
 }
 
 
@@ -276,30 +233,113 @@ void USReconController::OnGrabPressed()
   Q_D(USReconController);
   QMutexLocker locker(&d->m_Lock);
 
-  QString dirName = d->m_OutputDirName;
+  if (!d->m_IsRecording)
+  {
+    this->CaptureImages();
+  }
+}
 
-  if (dirName.isEmpty())
+
+//-----------------------------------------------------------------------------
+void USReconController::OnSaveDataPressed()
+{
+  Q_D(USReconController);
+  QMutexLocker locker(&d->m_Lock);
+
+  if (d->m_TrackedImages.empty())
   {
     QMessageBox msgBox;
-    msgBox.setText("An Error Occurred.");
-    msgBox.setInformativeText("The output directory name is empty - check preferences.");
+    msgBox.setText("No data!");
+    msgBox.setInformativeText("No data has been collected. Please grab some, or start recording.");
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.setDefaultButton(QMessageBox::Ok);
     msgBox.exec();
     return;
   }
-  else
-  {
-    // Normally, the manual grab function is just for calibration, so we save the data.
-    this->SaveImages(dirName);
 
-    // But you could use the manual grab to do reconstruction!
-    // So, here we optionally collect them up, if we are not already recording.
-    if (!d->m_IsRecording)
-    {
-      this->CaptureImages();
-    }
+  QString previous = d->m_PreviousDirName;
+  if (previous.isEmpty())
+  {
+    previous = d->m_RecordingDirName;
   }
+
+  QString dirName = QFileDialog::getExistingDirectory(d->m_GUI->GetParent(),
+      tr("Output directory"), previous);
+
+  if (!dirName.isEmpty())
+  {
+    for (int i = 0; i < d->m_TrackedImages.size(); i++)
+    {
+      std::ostringstream imageFileName;
+      imageFileName << dirName.toStdString()
+                    << niftk::GetFileSeparator()
+                    << "image-"
+                    << i
+                    << ".png";
+
+      mitk::IOUtil::Save(d->m_TrackedImages[i].first, imageFileName.str());
+
+      vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
+      niftk::ConvertRotationAndTranslationToMatrix(d->m_TrackedImages[i].second.first,
+                                                   d->m_TrackedImages[i].second.second,
+                                                   *vtkMat);
+
+      niftk::CoordinateAxesData::Pointer transform = niftk::CoordinateAxesData::New();
+      transform->SetVtkMatrix(*vtkMat);
+
+      std::ostringstream trackingFileName;
+      trackingFileName << dirName.toStdString()
+                       << niftk::GetFileSeparator()
+                       << "tracker-"
+                       << i
+                       << ".4x4";
+
+      mitk::IOUtil::Save(transform, trackingFileName.str());
+    }
+    previous = dirName;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void USReconController::OnCalibratePressed()
+{
+  Q_D(USReconController);
+  QMutexLocker locker(&d->m_Lock);
+
+  if (d->m_TrackedImages.empty())
+  {
+    QMessageBox msgBox;
+    msgBox.setText("No data!");
+    msgBox.setInformativeText("No data has been collected. Please grab some, or start recording.");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+    return;
+  }
+
+  mitk::Point2D scaleFactors;
+  niftk::RotationTranslation imageToSensorTransform;
+
+  niftk::DoUltrasoundBallCalibration(315, // should come from preference page.
+                                 d->m_TrackedImages,
+                                 scaleFactors,
+                                 imageToSensorTransform
+                                );
+
+  vtkSmartPointer<vtkMatrix4x4> scalingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  scalingMatrix->Identity();
+  scalingMatrix->SetElement(0, 0, scaleFactors[0]);
+  scalingMatrix->SetElement(1, 1, scaleFactors[1]);
+
+  d->m_GUI->SetScalingMatrix(*scalingMatrix);
+
+  vtkSmartPointer<vtkMatrix4x4> rigidMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  ConvertRotationAndTranslationToMatrix(imageToSensorTransform.first,
+                                        imageToSensorTransform.second,
+                                        *rigidMatrix);
+
+  d->m_GUI->SetRigidMatrix(*rigidMatrix);
 }
 
 
@@ -335,44 +375,42 @@ void USReconController::DoReconstructionInBackground()
 
   MITK_INFO << "Running Ultrasound Reconstruction in Background";
 
-  // Do some reconstruction, which happens in a background thread, and always generates a new image.
-  mitk::Image::Pointer newImage = d->m_Reconstructor->DoReconstruction();
+  vtkSmartPointer<vtkMatrix4x4> scalingMatrix = d->m_GUI->GetScalingMatrix();
+  mitk::Point2D scaleFactors;
+  scaleFactors[0] = scalingMatrix->GetElement(0, 0);
+  scaleFactors[1] = scalingMatrix->GetElement(1, 1);
 
+  vtkSmartPointer<vtkMatrix4x4> rigidMatrix = d->m_GUI->GetRigidMatrix();
+
+
+  niftk::RotationTranslation imageToSensorTransform;
+  ConvertMatrixToRotationAndTranslation(*rigidMatrix,
+                                        imageToSensorTransform.first,
+                                        imageToSensorTransform.second
+                                        );
+
+  mitk::Vector3D voxelSpacing;
+  voxelSpacing[0] = 0.3;
+  voxelSpacing[1] = 0.3;
+  voxelSpacing[2] = 0.3;
+
+  mitk::Image::Pointer newImage = niftk::DoUltrasoundReconstruction(d->m_TrackedImages,
+                                                                    scaleFactors,
+                                                                    imageToSensorTransform,
+                                                                    voxelSpacing
+                                                                   );
   if (newImage.IsNotNull())
   {
-    // Temporary: Save image straight to disk.
-    // We can use any valid file type recognised by MITK/ITK file IO.
-
     std::ostringstream imageName;
     imageName << "reconstructed-"
-              << d->m_ReconstructedId
-              << ".nii.gz";
+              << d->m_ReconstructedId;
 
-    std::ostringstream fileName;
-    if (d->m_IsRecording)
-    {
-      fileName << d->m_RecordingDirName.toStdString();
-    }
-    else
-    {
-      fileName << d->m_OutputDirName.toStdString();
-    }
-    fileName << niftk::GetFileSeparator()
-             << imageName.str();
-
-    if(d->m_DumpEachReconstructedVolume)
-    {
-      mitk::IOUtil::Save(newImage, fileName.str());
-    }
-
-    // Here we add it to data-storage, so the user can control
-    // if/when they want to save it, and what file name etc.
     mitk::DataNode::Pointer newNode = mitk::DataNode::New();
     newNode->SetData(newImage);
     newNode->SetName(imageName.str());
     this->GetDataStorage()->Add(newNode);
 
-    // Increase the volume number, so we can keep grabbing.
+    // Increase the volume number, so we can keep grabbing new volumes.
     d->m_ReconstructedId++;
   }
   else
@@ -391,26 +429,6 @@ void USReconController::OnBackgroundProcessFinished()
   MITK_INFO << "Re-enabling Ultrasound Reconstruction buttons";
 
   d->m_GUI->SetEnableButtons(true);
-}
-
-
-//-----------------------------------------------------------------------------
-void USReconController::SetDumpEachFrameWhileRecording(bool doIt)
-{
-  Q_D(USReconController);
-  QMutexLocker locker(&d->m_Lock);
-
-  d->m_DumpEachFrameWhileRecording = doIt;
-}
-
-
-//-----------------------------------------------------------------------------
-void USReconController::SetDumpEachReconstructedVolume(bool doIt)
-{
-  Q_D(USReconController);
-  QMutexLocker locker(&d->m_Lock);
-
-  d->m_DumpEachReconstructedVolume = doIt;
 }
 
 } // end namespace

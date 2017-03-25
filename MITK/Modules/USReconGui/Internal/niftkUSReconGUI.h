@@ -18,6 +18,8 @@
 #include "ui_niftkUSReconGUI.h"
 #include <niftkBaseGUI.h>
 #include <mitkDataStorage.h>
+#include <vtkMatrix4x4.h>
+#include <vtkSmartPointer.h>
 
 namespace niftk
 {
@@ -37,6 +39,11 @@ public:
 
   void SetDataStorage(mitk::DataStorage* storage);
   void SetEnableButtons(bool isEnabled);
+  void SetNumberOfFramesLabel(int);
+  void SetScalingMatrix(const vtkMatrix4x4&);
+  vtkSmartPointer<vtkMatrix4x4> GetScalingMatrix() const;
+  void SetRigidMatrix(const vtkMatrix4x4&);
+  vtkSmartPointer<vtkMatrix4x4> GetRigidMatrix() const;
   mitk::DataNode::Pointer GetImageNode() const;
   mitk::DataNode::Pointer GetTrackingNode() const;
 
@@ -45,8 +52,10 @@ signals:
   void OnImageSelectionChanged(const mitk::DataNode*);
   void OnTrackingSelectionChanged(const mitk::DataNode*);
   void OnGrabPressed();
-  void OnReconstructPressed();
   void OnClearDataPressed();
+  void OnSaveDataPressed();
+  void OnCalibratePressed();
+  void OnReconstructPressed();
 
 private:
 
