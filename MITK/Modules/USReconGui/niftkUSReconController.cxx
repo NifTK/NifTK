@@ -60,6 +60,7 @@ public:
 //-----------------------------------------------------------------------------
 USReconControllerPrivate::USReconControllerPrivate(USReconController* usreconController)
 : q_ptr(usreconController)
+, m_GUI(nullptr)
 , m_Lock(QMutex::Recursive)
 , m_RecordingDirName("")
 , m_IsRecording(false)
