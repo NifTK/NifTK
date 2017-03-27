@@ -200,6 +200,12 @@ void ImageLookupTablesView::EnableControls(bool enabled)
   m_Controls->m_LookupTableComboBox->setEnabled(enabled);
   m_Controls->m_LoadButton->setEnabled(enabled);
   m_Controls->m_NewButton->setEnabled(enabled);
+
+  if (!enabled)
+  {
+    this->EnableScaleControls(false);
+    this->EnableLabelControls(false);
+  }
 }
 
 
