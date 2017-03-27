@@ -21,6 +21,7 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
   if(SlicerExecutionModel_FOUND)
 
     add_subdirectory(PointSetStatistics)
+    add_subdirectory(CreatePolyDataFromImage)
 
     if(BUILD_NiftyIGI)
       add_subdirectory(AverageStationaryChessboards)

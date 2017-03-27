@@ -311,8 +311,6 @@ void ImageToSurfaceFilter::CreateSurface(mitk::Image *inputImage, mitk::Surface 
       MITK_INFO << "Performing Gaussian smoothing on the input data: " <<m_InputSmoothingRadius <<"\n";
       gaussian = vtkImageGaussianSmooth::New();
       gaussian->SetInputData(vtkImage);
-      //gaussian->SetDimensionality(3);
-      //gaussian->SetRadiusFactor(0.49);
       gaussian->SetStandardDeviation(m_InputSmoothingRadius);
       gaussian->Update();
 
