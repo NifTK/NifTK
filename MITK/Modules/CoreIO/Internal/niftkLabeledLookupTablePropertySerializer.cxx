@@ -16,7 +16,8 @@
 #include "niftkLabeledLookupTableProperty.h"
 
 #include "niftkSerializerMacros.h"
-
+#include <vtkIntArray.h>
+#include <vtkStringArray.h>
 
 namespace niftk
 {
@@ -82,9 +83,12 @@ mitk::BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(Ti
   LabeledLookupTableProperty::Pointer  labeledLUT = LabeledLookupTableProperty::New();
 
   TiXmlElement* child  = element->FirstChildElement("LabelList");
+  LabeledLookupTableProperty::LabelListType labels;
+
+  int maxValue = INT_MIN;
+
   if (child)
   {
-    LabeledLookupTableProperty::LabelListType labels;
     for (TiXmlElement* grandChild = child->FirstChildElement("Label");
          grandChild;
          grandChild = grandChild->NextSiblingElement("Label"))
@@ -98,6 +102,11 @@ mitk::BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(Ti
       if (grandChild->QueryStringAttribute("LabelName", &labelName) != TIXML_SUCCESS)
       {
         return NULL;
+      }
+
+      if (maxValue < int(value))
+      {
+        maxValue = int(value);
       }
 
       LabeledLookupTableProperty::LabelType newLabel =
@@ -117,9 +126,44 @@ mitk::BaseProperty::Pointer LabeledLookupTablePropertySerializer::Deserialize(Ti
   }
 
   NamedLookupTableProperty* namedLUTProp = dynamic_cast<NamedLookupTableProperty*>(baseProp.GetPointer());
+
   if (namedLUTProp != NULL)
   {
-    labeledLUT->SetLookupTable(namedLUTProp->GetLookupTable());
+    mitk::LookupTable* mitkLUT = namedLUTProp->GetLookupTable();
+    vtkSmartPointer<vtkLookupTable> vtkLUT = mitkLUT->GetVtkLookupTable();
+
+    vtkSmartPointer<vtkLookupTable> newVtkLUT = vtkSmartPointer<vtkLookupTable>::New();
+    newVtkLUT->SetHueRange(vtkLUT->GetHueRange());
+    newVtkLUT->SetValueRange(vtkLUT->GetValueRange());
+    newVtkLUT->SetSaturationRange(vtkLUT->GetSaturationRange());
+    newVtkLUT->SetAlphaRange(vtkLUT->GetAlphaRange());
+
+    int numberOfValues = maxValue + 2;
+    newVtkLUT->SetNumberOfTableValues(numberOfValues);
+    newVtkLUT->SetTableRange(0, maxValue);
+    newVtkLUT->SetNanColor(0, 0, 0, 0);
+    newVtkLUT->SetIndexedLookup(true);
+
+    newVtkLUT->Build();
+    
+    vtkSmartPointer<vtkIntArray> annotationValueArray = vtkIntArray::New();
+    vtkSmartPointer<vtkStringArray> annotationNameArray = vtkStringArray::New();
+
+    for (unsigned int i =0; i < labels.size(); ++i)
+    {
+      int vtkInd = labels.at(i).first;
+      std::string name = labels.at(i).second.toStdString();
+
+      newVtkLUT->SetTableValue(vtkInd, vtkLUT->GetTableValue(vtkInd));
+      annotationValueArray->InsertValue(vtkInd, vtkInd);
+      annotationNameArray->InsertValue(vtkInd, name);
+
+    }
+
+    newVtkLUT->SetAnnotations(annotationValueArray, annotationNameArray);
+
+    mitkLUT->SetVtkLookupTable(newVtkLUT);
+    labeledLUT->SetLookupTable(mitkLUT);
     labeledLUT->SetIsScaled(namedLUTProp->GetIsScaled());
     labeledLUT->SetName(namedLUTProp->GetName());
   }
