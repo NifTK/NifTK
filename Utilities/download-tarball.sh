@@ -118,7 +118,7 @@ fi
 
 if [[ $keep_repository && ! $keep_history ]]
 then
-  git_version_regex="^git version ([0-9]+)\.([0-9]+)\.([0-9]+)(\.([0-9]+))?$"
+  git_version_regex="^git version ([0-9]+)\.([0-9]+)\.([0-9]+)"
   git_version=`git --version`
   if [[ $git_version =~ $git_version_regex ]]
   then
@@ -334,7 +334,7 @@ function download_from_sourceforge_git() {
     cd ..
   else
     mkdir $directory
-    git clone git://git.code.sf.net/p/$project_lowercase/$suffix $directory.git
+    git clone git://git.code.sf.net/p/$project_lowercase/$suffix $directory
     cd $directory
     if ! git cat-file -e $version 2> /dev/null
     then

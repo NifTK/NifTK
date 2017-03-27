@@ -44,6 +44,8 @@ if(MITK_USE_DCMTK)
       )
     endif()
 
+    set(ubuntu_16_04_isnan_patch COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/DCMTK-3.6.1-std-isnan.patch)
+
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ^^
       PREFIX ${proj_CONFIG}
@@ -58,6 +60,7 @@ if(MITK_USE_DCMTK)
       # The other patches were originally for the Xcode generator, but we always
       # apply them for consistency.
       PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/DCMTK-3.6.1.patch
+        ${ubuntu_16_04_isnan_patch}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}

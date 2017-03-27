@@ -1,0 +1,22 @@
+diff --git a/ofstd/libsrc/ofstd.cc b/ofstd/libsrc/ofstd.cc
+index c995391..8100d3e 100644
+--- a/ofstd/libsrc/ofstd.cc
++++ b/ofstd/libsrc/ofstd.cc
+@@ -1859,7 +1859,7 @@ void OFStandard::ftoa(
+ #ifdef HAVE_WINDOWS_H
+   if (_isnan(val))
+ #else
+-  if (isnan(val))
++  if (std::isnan(val))
+ #endif
+   {
+     OFStandard::strlcpy(dst, "nan", siz);
+@@ -1868,7 +1868,7 @@ void OFStandard::ftoa(
+ 
+   // check if val is infinity
+ #ifdef HAVE_ISINF
+-  if (isinf(val))
++  if (std::isinf(val))
+ #else
+   if (my_isinf(val))
+ #endif
