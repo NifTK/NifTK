@@ -212,25 +212,14 @@ void ImageLookupTablesView::EnableControls(bool enabled)
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::EnableScaleControls(bool enabled)
 {
-  m_Controls->m_MinSlider->setEnabled(enabled);
-  m_Controls->m_MaxSlider->setEnabled(enabled);
-  m_Controls->m_WindowSlider->setEnabled(enabled);
-  m_Controls->m_LevelSlider->setEnabled(enabled);
-  m_Controls->m_MinLimitDoubleSpinBox->setEnabled(enabled);
-  m_Controls->m_MaxLimitDoubleSpinBox->setEnabled(enabled);
-  m_Controls->m_ResetButton->setEnabled(enabled);
+  m_Controls->tabWidget->setTabEnabled(0, enabled);
 }
 
 
 //-----------------------------------------------------------------------------
 void ImageLookupTablesView::EnableLabelControls(bool enabled)
 {
-  m_Controls->m_SaveButton->setEnabled(enabled);
-  m_Controls->m_AddLabelButton->setEnabled(enabled);
-  m_Controls->m_RemoveLabelButton->setEnabled(enabled);
-  m_Controls->m_MoveLabelUpButton->setEnabled(enabled);
-  m_Controls->m_MoveLabelDownButton->setEnabled(enabled);
-  m_Controls->widget_LabelTable->setEnabled(enabled);
+  m_Controls->tabWidget->setTabEnabled(1, enabled);
 
   if (enabled)
   {
