@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_NiftySeg)
 
-  set(version "080202fae9")
+  set(version "d7ba4fa396")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySeg-${version}.tar.gz")
 
   niftkMacroDefineExternalProjectVariables(NiftySeg ${version} ${location})
