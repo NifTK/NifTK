@@ -988,6 +988,9 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
 
   for (int i = 0; i < fileList1.size(); i++)
   {
+    if (i == 194)
+      cout << "Here!" << endl;
+
     std::size_t found = fileList1[i].find_last_of(".");
 
     // Time stamp used
@@ -997,7 +1000,6 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
     long long int firstFileTime = std::stoll(firstFileTimeStamp);
 
     std::string matchTime; // For debugging
-
     long long int closestTime = 0;
 
     for (int j = matchNumber; j < fileList2.size(); j++)
@@ -1020,7 +1022,18 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
       if (timeDifference < minTimeDifference)
       {
         minTimeDifference = timeDifference;
-        continue;
+
+        if (j != fileList2.size() - 1)
+        {
+          continue;
+        }
+        else
+        {
+          matchNumber = j;
+          matchTime = fileList2[matchNumber].substr(found - 14, 12); // For debugging
+          closestTime  = minTimeDifference;
+          break;
+        }
       }
       else
       {
