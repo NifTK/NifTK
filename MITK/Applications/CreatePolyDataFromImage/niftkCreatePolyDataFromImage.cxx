@@ -61,24 +61,42 @@ struct arguments
 {
   std::string fileInputImage;
   std::string fileOutputPolyData;
-  double threshold = 100.0;
-  int extractionType = 0;
+  double threshold;
+  int extractionType;
 
-  int inputSmoothingType = 0;
-  int inputSmoothingIterations = 1;
-  float inputSmoothingRadius = 0.5f;
+  int inputSmoothingType;
+  int inputSmoothingIterations;
+  float inputSmoothingRadius;
   
-  double samplingRatio = 1.0;
+  double samplingRatio;
 
-  int decimationType = 0;
-  float targetReduction = 0.1f;
+  int decimationType;
+  float targetReduction;
 
-  int surfSmoothingType = 0;
-  int surfSmoothingIterations = 1;
-  float surfSmoothingRadius = 0.5f;
+  int surfSmoothingType;
+  int surfSmoothingIterations;
+  float surfSmoothingRadius;
 
-  bool useSurfClean = false;
-  int  surfCleanThreshold = 1000;
+  bool useSurfClean;
+  int  surfCleanThreshold;
+
+  arguments()
+  {
+    threshold = 100.0;
+    extractionType = 0;
+    inputSmoothingType = 0;
+    inputSmoothingIterations = 1;
+    inputSmoothingRadius = 0.5f;
+    samplingRatio = 1.0;
+    decimationType = 0;
+    targetReduction = 0.1f;
+    surfSmoothingType = 0;
+    surfSmoothingIterations = 1;
+    surfSmoothingRadius = 0.5f;
+    useSurfClean = false;
+    surfCleanThreshold = 1000;
+  }
+
 };
 
 
