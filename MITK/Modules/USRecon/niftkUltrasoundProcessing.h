@@ -58,7 +58,7 @@ NIFTKUSRECON_EXPORT TrackedImageData LoadImageAndTrackingDataFromDirectories(con
                                                                              const std::string& trackingDir
                                                                             );
 
-NIFTKUSRECON_EXPORT TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& pointDir,
+NIFTKUSRECON_EXPORT TrackedPointData LoadPointAndTrackingDataFromDirectories(const std::string& pointDir,
                                                                               const std::string& trackingDir
                                                                              );
 

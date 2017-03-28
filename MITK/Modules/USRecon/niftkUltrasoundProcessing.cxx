@@ -976,10 +976,86 @@ void LoadOxfordQuaternionTrackingFile(std::string filename,
 }
 
 
-//-----------------------------------------------------------------------------
-TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& pointDir,
-                                                          const std::string& trackingDir
-                                                          )
+/* For each time-stamped file in fileList1, find the closest time-matched file in fileList2*/
+//---------------------------------------------------------------------------------
+std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const std::vector<std::string>& fileList1,
+                                                                          const std::vector<std::string>& fileList2
+                                                                          )
+{
+  std::vector<std::pair<std::string, std::string>> pairedFiles;
+
+  int matchNumber = 0;
+
+  for (int i = 0; i < fileList1.size(); i++)
+  {
+    std::size_t found = fileList1[i].find_last_of(".");
+
+    // Time stamp used
+    std::string firstFileTimeStamp = fileList1[i].substr(found - 14, 12);
+
+    long long int minTimeDifference = std::numeric_limits<long long int>::max();
+    long long int firstFileTime = std::stoll(firstFileTimeStamp);
+
+    std::string matchTime; // For debugging
+
+    long long int closestTime = 0;
+
+    for (int j = matchNumber; j < fileList2.size(); j++)
+    {
+      found = fileList2[j].find_last_of(".");
+
+      std::string secondFileTimeStamp = fileList2[j].substr(found - 14, 12);
+
+      long long int secondFileTime = std::stoll(secondFileTimeStamp);
+      long long int timeDifference = abs(secondFileTime - firstFileTime);
+
+      if (timeDifference == 0) // Time matched exactly!
+      {
+        matchNumber = j;
+        matchTime = fileList2[matchNumber].substr(found - 14, 12); // For debugging
+        closestTime  = minTimeDifference;
+        break;
+      }
+
+      if (timeDifference < minTimeDifference)
+      {
+        minTimeDifference = timeDifference;
+        continue;
+      }
+      else
+      {
+        matchNumber = j - 1;
+        matchTime = fileList2[matchNumber].substr(found - 14, 12); // For debugging
+        closestTime  = minTimeDifference;
+        break;
+      }
+    } // end for j
+
+    if (closestTime > 1000000) // This file has no closely matched tracking file, discarded
+    {
+      continue;
+    }
+
+    std::pair<std::string, std::string> aPairOfFiles;
+    aPairOfFiles.first = fileList1[i];
+    aPairOfFiles.second = fileList2[matchNumber];
+
+    pairedFiles.push_back(aPairOfFiles);
+
+    cout << "File " << i << "\t" << firstFileTime << std::endl;
+    cout << "Matched file " << matchNumber << "\t" << matchTime << std::endl;
+    cout << "Closest time " << closestTime << std::endl;
+  } // end for i
+
+  return pairedFiles;
+}
+
+
+// Pair and load time-stamped point and tracking data from directories.
+// Not applicable to old Oxford data
+TrackedPointData LoadPointAndTrackingDataFromDirectories(const std::string& pointDir,
+                                                         const std::string& trackingDir
+                                                         )
 {
   std::vector<std::string> pointFiles = niftk::GetFilesInDirectory(pointDir);
   std::vector<std::string> trackingFiles = niftk::GetFilesInDirectory(trackingDir);
@@ -987,7 +1063,7 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
   std::size_t found = pointFiles[0].find_last_of(".");
   std::string ext = pointFiles[0].substr(found + 1);
 
-  if (( ext != "txt") && ( ext != "4x4") && ( ext != "pos"))
+  if (( ext != "txt") && ( ext != "4x4"))
   {
     std::ostringstream errorMessage;
     errorMessage << pointFiles[0] << " is not a point file. Wrong directory?" << std::endl;
@@ -997,7 +1073,7 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
   found = trackingFiles[0].find_last_of(".");
   ext = trackingFiles[0].substr(found + 1);
 
-  if (( ext != "txt") && ( ext != "4x4") && ( ext != "pos"))
+  if (( ext != "txt") && ( ext != "4x4"))
   {
     std::ostringstream errorMessage;
     errorMessage << trackingFiles[0] << " is not a tracking file. Wrong directory?" << std::endl;
@@ -1011,71 +1087,19 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
     mitkThrow() << errorMessage.str();
   }
   
+  std::vector<std::pair<std::string, std::string>> pairedFiles;
+  pairedFiles = PairTimeStampedDataFiles(pointFiles, trackingFiles);
+
   TrackedPointData outputData;
 
-  int matchNumber = 0;
-
-  for (int i = 0; i < pointFiles.size(); i++)
+  for (int i = 0; i < pairedFiles.size(); i++)
   {
-    std::size_t found1 = pointFiles[i].find_last_of("/\\");
-    std::size_t found2 = pointFiles[i].find_last_of(".");
-
-    std::string pointFileTimeStamp = pointFiles[i].substr(found1 + 8, found2 - found1 - 8 - 2);
-
-    long long int minTimeDifference = std::numeric_limits<long long int>::max();
-    long long int pointFileTime = std::stoll(pointFileTimeStamp);
-
-    std::string matchTime; // Debug
-
-    long long int closestTime = 0;
-
-    for (int j = matchNumber; j < trackingFiles.size(); j++)
-    {
-      found1 = trackingFiles[j].find_last_of("/\\");
-      found2 = trackingFiles[j].find_last_of(".");
-
-      std::string trackingFileTimeStamp = trackingFiles[j].substr(found1 + 8, found2 - found1 - 8 - 2);
-
-      long long int trackingFileTime = std::stoll(trackingFileTimeStamp);
-      long long int timeDifference = abs(trackingFileTime - pointFileTime);
-
-      if (timeDifference == 0) // Time matched exactly!
-      {
-        matchNumber = j;
-        matchTime = trackingFiles[matchNumber].substr(found1 + 8, found2 - found1 - 8 - 2); // Debug
-        closestTime  = minTimeDifference;
-        break;
-      }
-
-      if (timeDifference < minTimeDifference)
-      {
-        minTimeDifference = timeDifference;
-        continue;
-      }
-      else
-      {
-        matchNumber = j - 1;
-        matchTime = trackingFiles[matchNumber].substr(found1 + 8, found2 - found1 - 8 - 2); // Debug
-        closestTime  = minTimeDifference;
-        break;
-      }
-    } // end for j
-
-    if (closestTime > 1000000) // Point file has no closely matched tracking file, discarded
-    {
-      continue;
-    }
-
-    cout << "Point file " << i << "\t" << pointFileTime << std::endl;
-    cout << "Match file " << matchNumber << "\t" << matchTime << std::endl;
-    cout << "Closest time " << closestTime << std::endl;
-
     // Read the point file -- Need to be changed to be able to read 2D points as well
     mitk::Point3D aPoint3D;
-    if(!niftk::Load3DPointFromFile(pointFiles[i], aPoint3D))
+    if(!niftk::Load3DPointFromFile(pairedFiles[i].first, aPoint3D))
     {
       std::ostringstream errorMessage;
-      errorMessage << "Can not read point file " << pointFiles[i] << std::endl;
+      errorMessage << "Can not read point file " << pairedFiles[i].first << std::endl;
       mitkThrow() << errorMessage.str();
     }
 
@@ -1083,31 +1107,26 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
     aPoint2D[0] = aPoint3D[0];
     aPoint2D[1] = aPoint3D[1];
 
-    // Read the matched tracking data
+    // Read the matched tracking data. If in matrix format, convert to quaternions
     mitk::Point4D rotation;
     mitk::Vector3D translation;
 
-    found = trackingFiles[matchNumber].find_last_of(".");
-    ext = trackingFiles[matchNumber].substr(found + 1);
+    found = pairedFiles[i].second.find_last_of(".");
+    ext = pairedFiles[i].second.substr(found + 1);
 
     if (( ext == "txt") || ( ext == "4x4"))
     {
-      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(trackingFiles[matchNumber]);
+      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(pairedFiles[i].second);
 
       //Convert to quaternions
       niftk::ConvertMatrixToRotationAndTranslation(*trackingMatrix, rotation, translation);
     }
     else
-      if ( ext == "pos") // For Oxford data
-      {
-        LoadOxfordQuaternionTrackingFile(trackingFiles[matchNumber], rotation, translation);
-      }
-      else
-      {
-        std::ostringstream errorMessage;
-        errorMessage << "Unknown tracking data type in " << trackingFiles[matchNumber] << std::endl;
-        mitkThrow() << errorMessage.str();
-      }
+    {
+      std::ostringstream errorMessage;
+      errorMessage << "Unknown tracking data type in " << pairedFiles[i].second << std::endl;
+      mitkThrow() << errorMessage.str();
+    }
 
     RotationTranslation aRotationTranslationPair;
     aRotationTranslationPair.first = rotation;
@@ -1123,7 +1142,7 @@ TrackedPointData MatchPointAndTrackingDataFromDirectories(const std::string& poi
   if (outputData.size() < 30)
   {
     std::ostringstream errorMessage;
-    errorMessage << "Not enough matched points and tracking data." << std::endl;
+    errorMessage << "Not enough matched points and tracking data for calibration!" << std::endl;
     mitkThrow() << errorMessage.str();
   }
 
@@ -1139,8 +1158,18 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
   std::vector<std::string> imageFiles = niftk::GetFilesInDirectory(imageDir);
   std::vector<std::string> trackingFiles = niftk::GetFilesInDirectory(trackingDir);
 
-  std::size_t found = trackingFiles[0].find_last_of(".");
-  std::string  ext = trackingFiles[0].substr(found + 1);
+  std::size_t found = imageFiles[0].find_last_of(".");
+  std::string  ext = imageFiles[0].substr(found + 1);
+
+  if (( ext != "png") && ( ext != "nii")) // Need to include more image formats...
+  {
+    std::ostringstream errorMessage;
+    errorMessage << imageFiles[0] << " is not an image file. Wrong directory?" << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
+  found = trackingFiles[0].find_last_of(".");
+  ext = trackingFiles[0].substr(found + 1);
 
   if (( ext != "txt") && ( ext != "4x4") && ( ext != "pos"))
   {
@@ -1156,58 +1185,62 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
     mitkThrow() << errorMessage.str();
   }
 
+  std::vector<std::pair<std::string, std::string>> pairedFiles;
+
+  if (ext == "pos") // Oxford data are already paired
+  {
+    for (int i = 0; i < imageFiles.size(); i++)
+    {
+       std::pair<std::string, std::string> aPairOfFiles;
+
+       aPairOfFiles.first = imageFiles[i];
+       aPairOfFiles.second = trackingFiles[i];
+
+       pairedFiles.push_back(aPairOfFiles);
+    }
+  }
+  else
+  {
+    pairedFiles = PairTimeStampedDataFiles(imageFiles, trackingFiles);
+  }
+
   TrackedImageData outputData;
 
-  // Load images using mitk::IOUtil, assuming there is enough memory
-  std::vector<mitk::Image::Pointer> images;
-
-  for (int i = 0; i < imageFiles.size(); i++)
+  // Load all images using mitk::IOUtil, assuming there is enough memory
+  // Load tracking data and if of matrix type, convert to quaternions
+  for (int i = 0; i < pairedFiles.size(); i++)
   {
-    mitk::Image::Pointer tmpImage = mitk::IOUtil::LoadImage(imageFiles[i]);
+    // Load one image file
+    mitk::Image::Pointer tmpImage = mitk::IOUtil::LoadImage(pairedFiles[i].first);
     mitk::Convert2Dto3DImageFilter::Pointer filter = mitk::Convert2Dto3DImageFilter::New();
     filter->SetInput(tmpImage);
     filter->Update();
 
     mitk::Image::Pointer convertedImage = filter->GetOutput();
-    images.push_back(convertedImage);
-  }
 
-  if (imageFiles.size() != images.size())
-  {
-    std::ostringstream errorMessage;
-    errorMessage << "Retrieved " << imageFiles.size()
-                 << " file names for images, but could only load "
-                 << images.size() << " images!" << std::endl;
-    mitkThrow() << errorMessage.str();
-  }
-
-  // Load tracking data and if of matrix type, and convert to quaternions
-  std::vector<RotationTranslation> trackingQuaternions;
-
-  for (int i = 0; i < trackingFiles.size(); i++)
-  {
+    // Load one tracking file
     mitk::Point4D rotation;
     mitk::Vector3D translation;
 
-    found = trackingFiles[i].find_last_of(".");
-    ext = trackingFiles[i].substr(found + 1);
+    found = pairedFiles[i].second.find_last_of(".");
+    ext = pairedFiles[i].second.substr(found + 1);
 
     if (( ext == "txt") || ( ext == "4x4"))
     {
-      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(trackingFiles[i]);
+      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(pairedFiles[i].second);
 
       //Convert to quaternions
       niftk::ConvertMatrixToRotationAndTranslation(*trackingMatrix, rotation, translation);
     }
     else
-      if ( ext == "pos") // For Oxford data
+      if ( ext == "pos") // For Oxford data, in quaternions
       {
-        LoadOxfordQuaternionTrackingFile(trackingFiles[i], rotation, translation);
+        LoadOxfordQuaternionTrackingFile(pairedFiles[i].second, rotation, translation);
       }
       else
       {
         std::ostringstream errorMessage;
-        errorMessage << "Unknown tracking data type in " << trackingFiles[i] << std::endl;
+        errorMessage << "Unknown tracking data type in " << pairedFiles[i].second << std::endl;
         mitkThrow() << errorMessage.str();
       }
 
@@ -1215,37 +1248,10 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
     aRotationTranslationPair.first = rotation;
     aRotationTranslationPair.second = translation;
 
-    trackingQuaternions.push_back(aRotationTranslationPair);
-  } // end i
-
-  if (trackingFiles.size() != trackingQuaternions.size())
-  {
-    std::ostringstream errorMessage;
-    errorMessage << "Retrieved " << trackingFiles.size()
-                 << " file names for tracking data, but could only load "
-                 << trackingQuaternions.size() << " tracking data!"
-                 << std::endl;
-    mitkThrow() << errorMessage.str();
-  }
-
-  if (trackingQuaternions.size() < images.size())
-  {
-    std::ostringstream errorMessage;
-    errorMessage << "Loaded " << trackingQuaternions.size()
-                 << " tracking data, and loaded a difference number of images "
-                 << images.size()
-                 << ", and number of images must be less than number of tracking data."
-                 << std::endl;
-    mitkThrow() << errorMessage.str();
-  }
- 
-  // Making image/tracking quaternion pairs
-  for (int i = 0; i < images.size(); i++)
-  {
     TrackedImage aTrackedImage;
 
-    aTrackedImage.first = images[i];
-    aTrackedImage.second = trackingQuaternions[i];
+    aTrackedImage.first = convertedImage;
+    aTrackedImage.second = aRotationTranslationPair;
 
     outputData.push_back(aTrackedImage);
   }
