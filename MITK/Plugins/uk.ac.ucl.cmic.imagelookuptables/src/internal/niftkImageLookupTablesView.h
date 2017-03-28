@@ -82,20 +82,19 @@ protected:
 protected slots:
 
   /**
-   * \brief Called when a different image is selected or the min/max intensity limits has changed,
-   * which affects the actual minimum and maximum values that the sliders can reach.
+   * \brief Called when the min/max intensity limits has changed, which affects the actual minimum and maximum values that the sliders can reach.
    */
-  void OnRangeChanged();
+  void OnDataLimitSpinBoxesChanged();
 
   /**
    * \brief Called when the min/max slider has changed.
    */
-  void OnWindowBoundsChanged();
+  void OnWindowBoundSlidersChanged();
 
   /**
    * \brief Called when the window/level slider has changed.
    */
-  void OnLevelWindowChanged();
+  void OnLevelWindowSlidersChanged();
 
   /**
    * \brief Called when the lookup table combo box value changes, trigger the lookup table to be swapped.
@@ -178,12 +177,12 @@ private:
   /**
    * \brief Called when a node is successfully registered, to initialize/reset the controls to appropriate ranges.
    */
-  void DifferentImageSelected();
+  void UpdateLookupTableComboBoxSelection();
 
   /**
    * \brief Makes the GUI controls reflect the values on the level window property.
    */
-  void UpdateGuiFromLevelWindow();
+  void UpdateLevelWindowControls();
 
   /**
    * \brief Blocks all signals.
@@ -216,7 +215,7 @@ private:
   /**
    * \brief Updates the list of lookuptables
    */
-  void UpdateLookupTableComboBox();
+  void UpdateLookupTableComboBoxEntries();
 
   /**
    * \brief Retrieves the pref values from preference service, and stores in member variables.
