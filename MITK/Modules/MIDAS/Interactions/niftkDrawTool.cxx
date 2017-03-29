@@ -268,12 +268,12 @@ bool DrawTool::StopDrawing(mitk::StateMachineAction* /*action*/, mitk::Interacti
 
     /// Re-initialize contours to zero length.
     this->ClearData();
-    FeedbackContourTool::SetFeedbackContourVisible(false);
-    ContourTool::SetBackgroundContourVisible(false);
-
     /// Set this flag to indicate that we have stopped editing, which will trigger an update of the region growing.
     this->UpdateWorkingDataNodeBoolProperty(SEGMENTATION, ContourTool::EDITING_PROPERTY_NAME, false);
   }
+
+  FeedbackContourTool::SetFeedbackContourVisible(false);
+  ContourTool::SetBackgroundContourVisible(false);
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
   m_DrawingInProgress = false;
