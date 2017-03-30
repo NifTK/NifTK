@@ -248,9 +248,16 @@ void BaseControllerPrivate::OnFocusChanged()
         m_SliceChangeObserverTag = sliceNavigationController->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), sliceChangedCommand);
       }
 
-      ImageOrientation orientation = q->GetOrientation();
-      int sliceIndex = q->GetSliceIndex();
-      q->OnSelectedSliceChanged(orientation, sliceIndex);
+      /// The renderer always has a slice navigation controller, but if it has not been initialised with a valid geometry,
+      /// the slice navigation controller won't have a plane geometry.
+      bool sncIsInitialised = sliceNavigationController->GetCurrentPlaneGeometry() != nullptr;
+
+      if (sncIsInitialised)
+      {
+        ImageOrientation orientation = q->GetOrientation();
+        int sliceIndex = q->GetSliceIndex();
+        q->OnSelectedSliceChanged(orientation, sliceIndex);
+      }
     }
   }
 }
