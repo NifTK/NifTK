@@ -575,14 +575,9 @@ void DoUltrasoundBallCalibration(const int& ballSize,
     mitk::Vector3D translation;
     niftk::ConvertMatrixToRotationAndTranslation(*(trackedImages[i].second), rotation, translation);
 
-    RotationTranslation aRotationTranslationPair;
-    aRotationTranslationPair.first = rotation;
-    aRotationTranslationPair.second = translation;
+    RotationTranslation aRotationTranslationPair(rotation, translation);
 
-    QuaternionTrackedPoint aTrackedPoint;
-    aTrackedPoint.first = pixelLocation;
-    aTrackedPoint.second = aRotationTranslationPair;
-
+    QuaternionTrackedPoint aTrackedPoint(pixelLocation, aRotationTranslationPair);
     trackedPoints.push_back(aTrackedPoint);
   }
 
@@ -988,8 +983,8 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
     std::size_t found = fileList1[i].find_last_of(".");
 
     // Time stamp used
-    std::string firstFileTimeStamp = fileList1[i].substr(found - 30, 12); // For folder UltrasonixRemote_2
-//    std::string firstFileTimeStamp = fileList1[i].substr(found - 14, 12); // For normal time-stamped names
+//    std::string firstFileTimeStamp = fileList1[i].substr(found - 30, 12); // For folder UltrasonixRemote_2
+    std::string firstFileTimeStamp = fileList1[i].substr(found - 14, 12); // For normal time-stamped names
 
     long long int minTimeDifference = std::numeric_limits<long long int>::max();
     long long int firstFileTime = std::stoll(firstFileTimeStamp);
@@ -1045,10 +1040,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
       continue;
     }
 
-    std::pair<std::string, std::string> aPairOfFiles;
-    aPairOfFiles.first = fileList1[i];
-    aPairOfFiles.second = fileList2[matchNumber];
-
+    std::pair<std::string, std::string> aPairOfFiles(fileList1[i], fileList2[matchNumber]);
     pairedFiles.push_back(aPairOfFiles);
 
     // For debugging
@@ -1110,11 +1102,7 @@ QuaternionTrackedPointData LoadPointAndTrackingDataFromDirectories(const std::st
   {
     for (int i = 0; i < pointFiles.size(); i++)
     {
-       std::pair<std::string, std::string> aPairOfFiles;
-
-       aPairOfFiles.first = pointFiles[i];
-       aPairOfFiles.second = trackingFiles[i];
-
+       std::pair<std::string, std::string> aPairOfFiles(pointFiles[i], trackingFiles[i]);
        pairedFiles.push_back(aPairOfFiles);
     }
   }
@@ -1161,14 +1149,9 @@ QuaternionTrackedPointData LoadPointAndTrackingDataFromDirectories(const std::st
       mitkThrow() << errorMessage.str();
     }
 
-    RotationTranslation aRotationTranslationPair;
-    aRotationTranslationPair.first = rotation;
-    aRotationTranslationPair.second = translation;
+    RotationTranslation aRotationTranslationPair(rotation, translation);
 
-    QuaternionTrackedPoint aTrackedPoint;
-    aTrackedPoint.first = aPoint2D;
-    aTrackedPoint.second = aRotationTranslationPair;
-
+    QuaternionTrackedPoint aTrackedPoint(aPoint2D, aRotationTranslationPair);
     outputData.push_back(aTrackedPoint);
   } // end for i
 
@@ -1224,11 +1207,7 @@ MatrixTrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string
   {
     for (int i = 0; i < imageFiles.size(); i++)
     {
-       std::pair<std::string, std::string> aPairOfFiles;
-
-       aPairOfFiles.first = imageFiles[i];
-       aPairOfFiles.second = trackingFiles[i];
-
+       std::pair<std::string, std::string> aPairOfFiles(imageFiles[i], trackingFiles[i]);
        pairedFiles.push_back(aPairOfFiles);
     }
   }
@@ -1240,7 +1219,7 @@ MatrixTrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string
   MatrixTrackedImageData outputData;
 
   // Load all images using mitk::IOUtil, assuming there is enough memory
-  // Load tracking data and if of quaternion type, convert to matrix
+  // Load tracking data. If of quaternion type, convert to matrices
   for (int i = 0; i < pairedFiles.size(); i++)
   {
     // Load one image file
@@ -1279,11 +1258,7 @@ MatrixTrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string
         mitkThrow() << errorMessage.str();
       }
 
-    MatrixTrackedImage aTrackedImage;
-
-    aTrackedImage.first = convertedImage;
-    aTrackedImage.second = trackingMatrix;
-
+    MatrixTrackedImage aTrackedImage(convertedImage, trackingMatrix);
     outputData.push_back(aTrackedImage);
   }
 
