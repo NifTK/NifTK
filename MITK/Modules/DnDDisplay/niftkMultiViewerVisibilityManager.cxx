@@ -197,8 +197,19 @@ void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
 
   // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
 
-  mitk::DataNode::Pointer greyScaleSource = niftk::FindParentGreyScaleImage(this->GetDataStorage(), node);
-  bool hasVisibleSource = greyScaleSource.IsNotNull() && greyScaleSource->IsVisible(nullptr);
+  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
+
+  bool hasVisibleSource = false;
+  mitk::DataStorage::SetOfObjects::ConstPointer sources = dataStorage->GetSources(node, nullptr, false);
+  for (auto it = sources->Begin(); it != sources->End(); ++it)
+  {
+    mitk::DataNode::Pointer source = it->Value();
+    if (source.IsNotNull() && source->IsVisible(nullptr))
+    {
+      hasVisibleSource = true;
+      break;
+    }
+  }
 
   if (globalVisibility && !hasVisibleSource)
   {
