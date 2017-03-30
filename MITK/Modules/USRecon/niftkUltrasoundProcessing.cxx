@@ -986,20 +986,28 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
 
   int matchNumber = 0;
 
+  // For debugging
+  fstream fp("pairs.txt", ios::out);
+  if (!fp)
+  {
+    std::ostringstream errorMessage;
+    errorMessage << "Can't write pairing result!" << std::endl;
+    mitkThrow() << errorMessage.str();
+  }
+
   for (int i = 0; i < fileList1.size(); i++)
   {
-    if (i == 194)
-      cout << "Here!" << endl;
-
     std::size_t found = fileList1[i].find_last_of(".");
 
     // Time stamp used
-    std::string firstFileTimeStamp = fileList1[i].substr(found - 14, 12);
+//    std::string firstFileTimeStamp = fileList1[i].substr(found - 30, 12); // For folder UltrasonixRemote_2
+    std::string firstFileTimeStamp = fileList1[i].substr(found - 14, 12); // For normal time-stamped names
 
     long long int minTimeDifference = std::numeric_limits<long long int>::max();
     long long int firstFileTime = std::stoll(firstFileTimeStamp);
 
     std::string matchTime; // For debugging
+
     long long int closestTime = 0;
 
     for (int j = matchNumber; j < fileList2.size(); j++)
@@ -1015,7 +1023,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
       {
         matchNumber = j;
         matchTime = fileList2[matchNumber].substr(found - 14, 12); // For debugging
-        closestTime  = minTimeDifference;
+        closestTime  = timeDifference;
         break;
       }
 
@@ -1055,16 +1063,23 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
 
     pairedFiles.push_back(aPairOfFiles);
 
-    cout << "File " << i << "\t" << firstFileTime << std::endl;
-    cout << "Matched file " << matchNumber << "\t" << matchTime << std::endl;
-    cout << "Closest time " << closestTime << std::endl;
+    // For debugging
+    cout << "File:" << "\t" << i << "\t" << firstFileTime << std::endl;
+    cout << "Match:" << "\t" << matchNumber << "\t" << matchTime << std::endl;
+    cout << "Lag:" << "\t" << closestTime << std::endl;
+
+    fp << "File:" << "\t" << i << "\t" << firstFileTime << std::endl;
+    fp << "Match:" << "\t" << matchNumber << "\t" << matchTime << std::endl;
+    fp << "Lag:" << "\t" << closestTime << std::endl;
   } // end for i
+
+  fp.close();
 
   return pairedFiles;
 }
 
 
-// Pair and load time-stamped point and tracking data from directories.
+// Pair and load time-stamped points and tracking data from directories.
 // Not applicable to old Oxford data
 TrackedPointData LoadPointAndTrackingDataFromDirectories(const std::string& pointDir,
                                                          const std::string& trackingDir
@@ -1101,7 +1116,23 @@ TrackedPointData LoadPointAndTrackingDataFromDirectories(const std::string& poin
   }
   
   std::vector<std::pair<std::string, std::string>> pairedFiles;
-  pairedFiles = PairTimeStampedDataFiles(pointFiles, trackingFiles);
+
+  if (pointFiles.size() == trackingFiles.size())
+  {
+    for (int i = 0; i < pointFiles.size(); i++)
+    {
+       std::pair<std::string, std::string> aPairOfFiles;
+
+       aPairOfFiles.first = pointFiles[i];
+       aPairOfFiles.second = trackingFiles[i];
+
+       pairedFiles.push_back(aPairOfFiles);
+    }
+  }
+  else
+  {
+    pairedFiles = PairTimeStampedDataFiles(pointFiles, trackingFiles);
+  }
 
   TrackedPointData outputData;
 
@@ -1194,13 +1225,13 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
   if (imageFiles.size() > trackingFiles.size())
   {
     std::ostringstream errorMessage;
-    errorMessage << "The number of images should not be more than number of tracking data." << std::endl;
+    errorMessage << "The number of images should not be more than the number of tracking data." << std::endl;
     mitkThrow() << errorMessage.str();
   }
 
   std::vector<std::pair<std::string, std::string>> pairedFiles;
 
-  if (ext == "pos") // Oxford data are already paired
+  if ((ext == "pos") || imageFiles.size() == trackingFiles.size()) // Oxford data are already paired
   {
     for (int i = 0; i < imageFiles.size(); i++)
     {
