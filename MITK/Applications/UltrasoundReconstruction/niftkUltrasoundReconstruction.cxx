@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 
   try
   {
-    niftk::TrackedImageData data = niftk::LoadImageAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
+    niftk::MatrixTrackedImageData data = niftk::LoadImageAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
     vtkSmartPointer<vtkMatrix4x4> rigidMatrix = niftk::LoadVtkMatrix4x4FromFile(rigidMatrixFile);
     vtkSmartPointer<vtkMatrix4x4> scalingMatrix = niftk::LoadVtkMatrix4x4FromFile(scalingMatrixFile);
 

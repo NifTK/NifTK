@@ -21,15 +21,13 @@
 #include <niftkFileHelper.h>
 #include <niftkFileIOUtils.h>
 #include <mitkOpenCVMaths.h>
-#include <vtkMatrix4x4.h>
-#include <vtkSmartPointer.h>
 #include <mitkImageToItk.h>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
 #include <itkImageRegionConstIteratorWithIndex.h>
 #include <itkImageRegionIterator.h>
-#include <vtkMath.h>
 #include <itkCastImageFilter.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
+#include <vtkMath.h>
 
 
 namespace niftk
@@ -249,7 +247,7 @@ mitk::Point2D FindCircleInImage(const cv::Mat& image, const cv::Mat& model)
 
 
 //---------------------------------------------------------------------------
-cv::Mat UltrasoundCalibration(const TrackedPointData& trackedPoints)
+cv::Mat UltrasoundCalibration(const QuaternionTrackedPointData& trackedPoints)
 {
   int number_of_scans = (int)trackedPoints.size();
 
@@ -552,7 +550,7 @@ The diameter of the circle in the images should be measured with an interactive 
 Ring model width = diameter + 15
 */
 void DoUltrasoundBallCalibration(const int& ballSize,
-                                 const niftk::TrackedImageData& trackedImages,
+                                 const niftk::MatrixTrackedImageData& trackedImages,
                                  mitk::Point2D& pixelScaleFactors,
                                  RotationTranslation& imageToSensorTransform
                                 )
@@ -561,7 +559,7 @@ void DoUltrasoundBallCalibration(const int& ballSize,
   MITK_INFO << "DoUltrasoundBallCalibration: Doing Ultrasound Ball Calibration with "
             << trackedImages.size() << " samples.";
 
-  TrackedPointData trackedPoints;
+  QuaternionTrackedPointData trackedPoints;
 
   cv::Mat model = CreateRingModel(ballSize + 15);
 
@@ -573,10 +571,17 @@ void DoUltrasoundBallCalibration(const int& ballSize,
 
     cout << "Circle " << i << " found" << std::endl;
 
-    TrackedPoint aTrackedPoint;
+    mitk::Point4D rotation;
+    mitk::Vector3D translation;
+    niftk::ConvertMatrixToRotationAndTranslation(*(trackedImages[i].second), rotation, translation);
 
+    RotationTranslation aRotationTranslationPair;
+    aRotationTranslationPair.first = rotation;
+    aRotationTranslationPair.second = translation;
+
+    QuaternionTrackedPoint aTrackedPoint;
     aTrackedPoint.first = pixelLocation;
-    aTrackedPoint.second = trackedImages[i].second;
+    aTrackedPoint.second = aRotationTranslationPair;
 
     trackedPoints.push_back(aTrackedPoint);
   }
@@ -600,7 +605,7 @@ void DoUltrasoundBallCalibration(const int& ballSize,
 
 
 //-------------------------------------------------------------------------------------------------------
-void DoUltrasoundPointCalibration(const niftk::TrackedPointData& trackedPoints,
+void DoUltrasoundPointCalibration(const niftk::QuaternionTrackedPointData& trackedPoints,
                                   mitk::Point2D& pixelScaleFactors,
                                   RotationTranslation& imageToSensorTransform
                                   )
@@ -664,7 +669,7 @@ void DoUltrasoundReconstructionFor1Slice(InputImageType::Pointer itk2D,
 
 
 //-----------------------------------------------------------------------------
-mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::TrackedImageData& data,
+mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::MatrixTrackedImageData& data,
                                                 const mitk::Point2D& pixelScaleFactors,
                                                 const niftk::RotationTranslation& imageToSensorTransform,
                                                 const mitk::Vector3D& voxelSpacing
@@ -741,9 +746,7 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::TrackedImageData& d
       mitkThrow() << "Ultrasound images should be 3D, with 1 slice.";
     }
 
-    niftk::ConvertRotationAndTranslationToMatrix(data[num].second.first,
-                                                 data[num].second.second,
-                                                 *trackingMatrix);
+    trackingMatrix = data[num].second;
 
     vtkMatrix4x4::Multiply4x4(trackingMatrix, pixelToSensorMatrix, indexToWorld);
 
@@ -839,40 +842,25 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::TrackedImageData& d
   itk3D->FillBuffer(0.0);
   accumulator->FillBuffer(0.0);
 
-  double quaternion[4];
-
-  quaternion[0] = imageToSensorTransform.first[0];
-  quaternion[1] = imageToSensorTransform.first[1];
-  quaternion[2] = imageToSensorTransform.first[2];
-  quaternion[3] = imageToSensorTransform.first[3];
-
-  double rotationMatrix[3][3];
-  vtkMath::QuaternionToMatrix3x3(quaternion, rotationMatrix);
-  cv::Mat calibratedRotation(3, 3, CV_64F, rotationMatrix);
-
+  cv::Mat calibratedRotation(3, 3, CV_64F);
   cv::Mat calibratedTranslation(3, 1, CV_64F);
-  for (int r = 0; r < 3; r++)
-  {
-    calibratedTranslation.at<double>(r) = imageToSensorTransform.second[r];
-  }
 
   // Now iterate through each image/tracking data pair, and put in volume.
-  for (int i = 0; i < data.size(); i++)
+  for (int num = 0; num < data.size(); num++)
   {
-    double quaternion[4];
-    quaternion[0] = data[i].second.first[0];
-    quaternion[1] = data[i].second.first[1];
-    quaternion[2] = data[i].second.first[2];
-    quaternion[3] = data[i].second.first[3];
-
-    double rotationMatrix[3][3];
-    vtkMath::QuaternionToMatrix3x3(quaternion, rotationMatrix);
-    cv::Mat trackingRotation(3, 3, CV_64F, rotationMatrix);
-
+    cv::Mat trackingRotation(3, 3, CV_64F);
     cv::Mat trackingTranslation(3, 1, CV_64F);
-    for (int r = 0; r < 3; r++)
+
+    for (int row = 0; row < 3; row++)
     {
-      trackingTranslation.at<double>(r) = data[i].second.second[r];
+      for (int col = 0; col < 3; col++)
+      {
+        calibratedRotation.at<double>(row, col) = imageToSensorMatrix->Element[row][col];
+        trackingRotation.at<double>(row, col) = data[num].second->Element[row][col];
+      }
+
+      calibratedTranslation.at<double>(row) = imageToSensorMatrix->Element[row][3];
+      trackingTranslation.at<double>(row) = data[num].second->Element[row][3];
     }
 
     cv::Mat newOrigin(3, 1, CV_64F);
@@ -881,7 +869,7 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::TrackedImageData& d
     newOrigin = trackingTranslation + trackingRotation * calibratedTranslation;
     newDirection = trackingRotation * calibratedRotation;
 
-    mitk::Image::Pointer image2D = data[i].first;
+    mitk::Image::Pointer image2D = data[num].first;
     image2D->SetSpacing(pixelSpacing);
 
     mitk::Point3D newOrigin2D;
@@ -910,9 +898,9 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::TrackedImageData& d
                                         accumulator,
                                         itk3D);
 
-    cout << "Slice " << i << " reconstructed" << std::endl;
+    cout << "Slice " << num << " reconstructed" << std::endl;
 
-  }// end for i
+  }// end for num
 
   //Do averaging
   typedef itk::ImageRegionIterator<OutputImageType> OutputIteratorType;
@@ -1000,8 +988,8 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
     std::size_t found = fileList1[i].find_last_of(".");
 
     // Time stamp used
-//    std::string firstFileTimeStamp = fileList1[i].substr(found - 30, 12); // For folder UltrasonixRemote_2
-    std::string firstFileTimeStamp = fileList1[i].substr(found - 14, 12); // For normal time-stamped names
+    std::string firstFileTimeStamp = fileList1[i].substr(found - 30, 12); // For folder UltrasonixRemote_2
+//    std::string firstFileTimeStamp = fileList1[i].substr(found - 14, 12); // For normal time-stamped names
 
     long long int minTimeDifference = std::numeric_limits<long long int>::max();
     long long int firstFileTime = std::stoll(firstFileTimeStamp);
@@ -1080,8 +1068,9 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
 
 
 // Pair and load time-stamped points and tracking data from directories.
+// For calibration, so convert to quaternions                                                                          
 // Not applicable to old Oxford data
-TrackedPointData LoadPointAndTrackingDataFromDirectories(const std::string& pointDir,
+QuaternionTrackedPointData LoadPointAndTrackingDataFromDirectories(const std::string& pointDir,
                                                          const std::string& trackingDir
                                                          )
 {
@@ -1134,7 +1123,7 @@ TrackedPointData LoadPointAndTrackingDataFromDirectories(const std::string& poin
     pairedFiles = PairTimeStampedDataFiles(pointFiles, trackingFiles);
   }
 
-  TrackedPointData outputData;
+  QuaternionTrackedPointData outputData;
 
   for (int i = 0; i < pairedFiles.size(); i++)
   {
@@ -1176,7 +1165,7 @@ TrackedPointData LoadPointAndTrackingDataFromDirectories(const std::string& poin
     aRotationTranslationPair.first = rotation;
     aRotationTranslationPair.second = translation;
 
-    TrackedPoint aTrackedPoint;
+    QuaternionTrackedPoint aTrackedPoint;
     aTrackedPoint.first = aPoint2D;
     aTrackedPoint.second = aRotationTranslationPair;
 
@@ -1195,7 +1184,7 @@ TrackedPointData LoadPointAndTrackingDataFromDirectories(const std::string& poin
 
 
 //-----------------------------------------------------------------------------
-TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imageDir,
+MatrixTrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imageDir,
                                                          const std::string& trackingDir
                                                          )
 {
@@ -1248,10 +1237,10 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
     pairedFiles = PairTimeStampedDataFiles(imageFiles, trackingFiles);
   }
 
-  TrackedImageData outputData;
+  MatrixTrackedImageData outputData;
 
   // Load all images using mitk::IOUtil, assuming there is enough memory
-  // Load tracking data and if of matrix type, convert to quaternions
+  // Load tracking data and if of quaternion type, convert to matrix
   for (int i = 0; i < pairedFiles.size(); i++)
   {
     // Load one image file
@@ -1263,23 +1252,25 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
     mitk::Image::Pointer convertedImage = filter->GetOutput();
 
     // Load one tracking file
-    mitk::Point4D rotation;
-    mitk::Vector3D translation;
+    vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
 
     found = pairedFiles[i].second.find_last_of(".");
     ext = pairedFiles[i].second.substr(found + 1);
 
     if (( ext == "txt") || ( ext == "4x4"))
     {
-      vtkSmartPointer<vtkMatrix4x4> trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(pairedFiles[i].second);
-
-      //Convert to quaternions
-      niftk::ConvertMatrixToRotationAndTranslation(*trackingMatrix, rotation, translation);
+      trackingMatrix = niftk::LoadVtkMatrix4x4FromFile(pairedFiles[i].second);
     }
     else
-      if ( ext == "pos") // For Oxford data, in quaternions
+      if ( ext == "pos") // For Oxford tracking data, in quaternions
       {
+        mitk::Point4D rotation;
+        mitk::Vector3D translation;
+
         LoadOxfordQuaternionTrackingFile(pairedFiles[i].second, rotation, translation);
+
+        //Convert to matrix
+        niftk::ConvertRotationAndTranslationToMatrix(rotation, translation, *trackingMatrix);
       }
       else
       {
@@ -1288,14 +1279,10 @@ TrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imag
         mitkThrow() << errorMessage.str();
       }
 
-    RotationTranslation aRotationTranslationPair;
-    aRotationTranslationPair.first = rotation;
-    aRotationTranslationPair.second = translation;
-
-    TrackedImage aTrackedImage;
+    MatrixTrackedImage aTrackedImage;
 
     aTrackedImage.first = convertedImage;
-    aTrackedImage.second = aRotationTranslationPair;
+    aTrackedImage.second = trackingMatrix;
 
     outputData.push_back(aTrackedImage);
   }
