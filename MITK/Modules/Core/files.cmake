@@ -32,6 +32,7 @@ set(CPP_FILES
   Common/niftkMergePointClouds.cxx
   Common/niftkBinaryMaskUtils.cxx
   Common/niftkMITKMathsUtils.cxx
+  Common/niftkPolyDataUtils.cxx
   DataManagement/niftkAffineTransformParametersDataNodeProperty.cxx
   DataManagement/niftkAffineTransformDataNodeProperty.cxx
   DataManagement/niftkBasicMesh.cxx

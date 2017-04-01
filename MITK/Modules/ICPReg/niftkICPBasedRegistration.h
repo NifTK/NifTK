@@ -47,8 +47,6 @@ public:
 
   itkSetMacro(MaximumIterations, int);
   itkSetMacro(MaximumNumberOfLandmarkPointsToUse, int);
-  itkSetMacro(CameraNode, mitk::DataNode::Pointer);
-  itkSetMacro(FlipNormals, bool);
   itkSetMacro(TLSIterations, unsigned int);
   itkSetMacro(TLSPercentage, unsigned int);
 
@@ -58,22 +56,12 @@ public:
   * \param movingNode pointer to mitk::DataNode containing either mitk::Surface or mitk::Pointset.
   * \return RMS residual for points in moving node
   */
-  double Update(const mitk::DataNode::Pointer fixedNode,
-                const mitk::DataNode::Pointer movingNode,
-                vtkMatrix4x4& transformMovingToFixed);
-
-  /**
-  * \brief Generates a poly data from a mitk::DataNode.
-  */
-  static void NodeToPolyData (const mitk::DataNode::Pointer& node,
-                              vtkPolyData& polyOut,
-                              const mitk::DataNode::Pointer& cameranode = mitk::DataNode::Pointer(),
-                              bool flipnormals = false);
-
-  /**
-  * \brief Generates a poly data from a mitk::PointSet.
-  */
-  static void PointSetToPolyData (const mitk::PointSet::Pointer& pointsIn, vtkPolyData& polyOut);
+  double Update(const mitk::DataNode::Pointer& fixedNode,
+                const mitk::DataNode::Pointer& movingNode,
+                vtkMatrix4x4& transformMovingToFixed,
+                const mitk::DataNode::Pointer& cameraNode = mitk::DataNode::Pointer(),
+                bool flipNormals = false
+               );
 
 protected:
 
@@ -89,8 +77,6 @@ private:
   int                           m_MaximumNumberOfLandmarkPointsToUse;
   unsigned int                  m_TLSIterations;
   unsigned int                  m_TLSPercentage;
-  mitk::DataNode::Pointer       m_CameraNode;
-  bool                          m_FlipNormals;
 
   double RunVTKICP(vtkPolyData* fixedPoly,
                    vtkPolyData* movingPoly,

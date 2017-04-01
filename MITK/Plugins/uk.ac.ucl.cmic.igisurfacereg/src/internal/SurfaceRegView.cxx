@@ -29,6 +29,7 @@
 #include <mitkSurface.h>
 #include <QmitkIGIUtils.h>
 
+#include <niftkPolyDataUtils.h>
 #include <niftkDataStorageUtils.h>
 #include <niftkVTKFunctions.h>
 
@@ -157,10 +158,10 @@ void SurfaceRegView::OnComputeDistance()
     // we should do that before we kick off the worker thread! 
     // otherwise someone else might move around the node's matrices.
     vtkPolyData *fixedPoly = vtkPolyData::New();
-    niftk::ICPBasedRegistration::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), *fixedPoly);
+    niftk::NodeToPolyData(m_Controls->m_FixedSurfaceComboBox->GetSelectedNode(), *fixedPoly);
 
     vtkPolyData *movingPoly = vtkPolyData::New();
-    niftk::ICPBasedRegistration::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), *movingPoly);
+    niftk::NodeToPolyData(m_Controls->m_MovingSurfaceComboBox->GetSelectedNode(), *movingPoly);
 
     // this seems a bit messy here:
     // the "surface" passed in first needs to have vtk cells, otherwise it crashes.
@@ -298,17 +299,26 @@ void SurfaceRegView::OnCalculateButtonPressed()
   }
   
   niftk::ICPBasedRegistration::Pointer registration = niftk::ICPBasedRegistration::New();
-  if (m_Controls->m_HiddenSurfaceRemovalGroupBox->isChecked())
-  {
-    registration->SetCameraNode(m_Controls->m_CameraNodeComboBox->GetSelectedNode());
-    registration->SetFlipNormals(m_Controls->m_FlipNormalsCheckBox->isChecked());
-  }
   registration->SetMaximumNumberOfLandmarkPointsToUse(m_MaxPoints);
   registration->SetMaximumIterations(m_MaxIterations);
   registration->SetTLSIterations(m_TLSITerations);
   registration->SetTLSPercentage(m_TLSPercentage);
-  registration->Update(fixednode, movingnode, *m_Matrix);
-
+  if (m_Controls->m_HiddenSurfaceRemovalGroupBox->isChecked())
+  {
+    registration->Update(fixednode,
+                         movingnode,
+                         *m_Matrix,
+                         m_Controls->m_CameraNodeComboBox->GetSelectedNode(),
+                         m_Controls->m_FlipNormalsCheckBox->isChecked()
+                        );
+  }
+  else
+  {
+    registration->Update(fixednode,
+                         movingnode,
+                         *m_Matrix
+                        );
+  }
   for (int i = 0; i < 4; i++)
   {
     for (int j = 0; j < 4; j++)
