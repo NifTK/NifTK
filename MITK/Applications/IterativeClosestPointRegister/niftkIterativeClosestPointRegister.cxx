@@ -85,7 +85,8 @@ int main(int argc, char** argv)
   vtkMatrix4x4 * resultMatrix = vtkMatrix4x4::New();
   registerer->SetMaximumIterations(maxIterations);
   registerer->SetMaximumNumberOfLandmarkPointsToUse(maxLandmarks);
-  
+  registerer->SetTLSIterations(tlsIterations);
+  registerer->SetTLSPercentage(tlsPercentage);
   MITK_INFO << "Starting registration";
   registerer->Update(fixednode, movingnode, *resultMatrix);
   MITK_INFO << "Init" << *initialTransform;

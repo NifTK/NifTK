@@ -48,6 +48,22 @@
       <default>10000</default>
     </integer>
 
+    <integer>
+      <name>tlsIterations</name>
+      <longflag>tlsIterations</longflag>
+      <description>The number of trimmed least squares iterations to use.</description>
+      <label>TLS Iterations</label>
+      <default>0</default>
+    </integer>
+
+    <integer>
+      <name>tlsPercentage</name>
+      <longflag>tlsPercentage</longflag>
+      <description>The percentage [1,100] of points to keep at each trimmed least squares iteration.</description>
+      <label>TLS Percentage</label>
+      <default>0</default>
+    </integer>
+
     <boolean>
       <name>visualise</name>
       <longflag>visualise</longflag>
