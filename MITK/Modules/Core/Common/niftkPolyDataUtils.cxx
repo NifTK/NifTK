@@ -99,9 +99,9 @@ void NodeToPolyData(const mitk::DataNode::Pointer& node,
     {
       vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter= vtkSmartPointer<vtkTransformPolyDataFilter>::New();
       transformFilter->SetInputDataObject(polyTemp);
-      transformFilter->SetOutput(&polyOut);
       transformFilter->SetTransform(transform);
       transformFilter->Update();
+      polyOut.DeepCopy(transformFilter->GetOutput());
     }
     else
     {

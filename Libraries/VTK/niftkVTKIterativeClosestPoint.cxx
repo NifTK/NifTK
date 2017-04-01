@@ -16,6 +16,7 @@
 
 #include <vtkLandmarkTransform.h>
 #include <vtkPolyData.h>
+#include <vtkCellArray.h>
 #include <vtkIterativeClosestPointTransform.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkIterativeClosestPointTransform.h>
@@ -233,11 +234,13 @@ double VTKIterativeClosestPoint::Run()
   else
   {
     vtkSmartPointer<vtkPoints> points[2];
+    vtkSmartPointer<vtkCellArray> cells[2];
     vtkSmartPointer<vtkPolyData> polies[2];
 
     for (int i = 0; i < 2; i++)
     {
       points[i] = vtkSmartPointer<vtkPoints>::New();
+      cells[i] = vtkSmartPointer<vtkCellArray>::New();
       polies[i] = vtkSmartPointer<vtkPolyData>::New();
     }
 
@@ -249,13 +252,18 @@ double VTKIterativeClosestPoint::Run()
     int step = this->GetStepSize(source);
     vtkIdType numberSourcePoints = source->GetNumberOfPoints();
     vtkIdType numberOfPointsInserted = 0;
+    cells[current]->Initialize();
     for (vtkIdType pointCounter = 0; pointCounter < numberSourcePoints
          && numberOfPointsInserted < m_ICPMaxLandmarks; pointCounter += step)
     {
       source->GetPoint(pointCounter, sourcePoint); // this retrieves x, y, z.
-      points[current]->InsertPoint(numberOfPointsInserted++, sourcePoint[0], sourcePoint[1], sourcePoint[2]);
+      points[current]->InsertPoint(numberOfPointsInserted, sourcePoint[0], sourcePoint[1], sourcePoint[2]);
+      cells[current]->InsertNextCell(1);
+      cells[current]->InsertCellPoint(numberOfPointsInserted);
+      numberOfPointsInserted++;
     }
     polies[current]->SetPoints(points[current]);
+    polies[current]->SetVerts(cells[current]);
 
     // Do a certain number of iterations of TLS based ICP.
     for (int i = 0; i < m_TLSIterations; i++)
@@ -295,15 +303,20 @@ double VTKIterativeClosestPoint::Run()
 
       // Iterate through the top m_TLSPercentage of closest points, and put into other point set
       points[other]->Initialize();
+      cells[other]->Initialize();
       std::map<double, vtkIdType>::iterator iter = map.begin();
       do
       {
         points[current]->GetPoint(iter->second, sourcePoint);
-        points[other]->InsertPoint(numberOfPointsCopied++, sourcePoint[0], sourcePoint[1], sourcePoint[2]);
+        points[other]->InsertPoint(numberOfPointsCopied, sourcePoint[0], sourcePoint[1], sourcePoint[2]);
+        cells[other]->InsertNextCell(1);
+        cells[other]->InsertCellPoint(numberOfPointsCopied);
+        numberOfPointsCopied++;
         iter++;
       } while (iter != map.end() && numberOfPointsCopied < numberOfPointsRequired);
 
       polies[other]->SetPoints(points[other]);
+      polies[other]->SetVerts(cells[other]);
 
       // Swap current/other
       int tmp = current;
