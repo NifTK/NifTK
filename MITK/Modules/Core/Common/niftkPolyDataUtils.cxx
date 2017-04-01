@@ -21,6 +21,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkTransformPolyDataFilter.h>
 #include <vtkPolyDataNormals.h>
+#include <vtkAppendPolyData.h>
 
 namespace niftk
 {
@@ -39,6 +40,7 @@ void PointSetToPolyData(const mitk::PointSet::Pointer& pointsIn,
     pointsIn->GetPointIfExists(i->Index(), &p);
     points->InsertNextPoint(p[0], p[1], p[2]);
   }
+
   if (pointsIn->GetSize() != points->GetNumberOfPoints())
   {
     mitkThrow() << "Number of points in mitk::PointSet (" << pointsIn->GetSize()
@@ -54,11 +56,10 @@ void PointSetToPolyData(const mitk::PointSet::Pointer& pointsIn,
 
 
 //-----------------------------------------------------------------------------
-void NodeToPolyData (
-    const mitk::DataNode::Pointer& node,
-    vtkPolyData& polyOut,
-    const mitk::DataNode::Pointer& cameraNode,
-    bool flipNormals)
+void NodeToPolyData(const mitk::DataNode::Pointer& node,
+                    vtkPolyData& polyOut,
+                    const mitk::DataNode::Pointer& cameraNode,
+                    bool flipNormals)
 {
   if (node.IsNull())
   {
@@ -70,7 +71,7 @@ void NodeToPolyData (
 
   if (points.IsNotNull())
   {
-    niftk::PointSetToPolyData (points, polyOut);
+    niftk::PointSetToPolyData(points, polyOut);
   }
   else if (surface.IsNotNull())
   {
@@ -130,10 +131,11 @@ void NodeToPolyData (
   }
   else
   {
-    mitkThrow() << "In ICPBasedRegistration::NodeToPolyData, \
-                   node is neither mitk::PointSet or mitk::Surface";
+    mitkThrow() << "In ICPBasedRegistration::NodeToPolyData, "
+                << "node is neither mitk::PointSet or mitk::Surface";
   }
 }
+
 
 //-----------------------------------------------------------------------------
 vtkSmartPointer<vtkPolyData> MergePolyData(const std::vector<mitk::DataNode::Pointer>& nodes,
@@ -141,7 +143,21 @@ vtkSmartPointer<vtkPolyData> MergePolyData(const std::vector<mitk::DataNode::Poi
                                            bool flipNormals
                                           )
 {
-  vtkSmartPointer<vtkPolyData> result;
+  vtkSmartPointer<vtkAppendPolyData> filter = vtkSmartPointer<vtkAppendPolyData>::New();
+
+  std::vector<vtkSmartPointer<vtkPolyData> > vectorOfPolys;
+
+  for (int i = 0; i < nodes.size(); i++)
+  {
+    vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
+    niftk::NodeToPolyData(nodes[i], *poly, cameraNode, flipNormals);
+    vectorOfPolys.push_back(poly);
+    filter->AddInputData(vectorOfPolys[i]);
+  }
+
+  filter->Update();
+
+  vtkSmartPointer<vtkPolyData> result = filter->GetOutput();
   return result;
 }
 
