@@ -20,6 +20,7 @@
 #include <mitkDataNode.h>
 #include <mitkPointSet.h>
 #include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 
 namespace niftk {
 
@@ -36,6 +37,14 @@ NIFTKCORE_EXPORT void NodeToPolyData (const mitk::DataNode::Pointer& node,
                                       vtkPolyData& polyOut,
                                       const mitk::DataNode::Pointer& cameraNode = mitk::DataNode::Pointer(),
                                       bool flipNormals = false);
+
+/**
+ * \brief Takes a vector of nodes, and creates a single poly data.
+ */
+NIFTKCORE_EXPORT vtkSmartPointer<vtkPolyData> MergePolyData(const std::vector<mitk::DataNode::Pointer>& nodes,
+                                                            const mitk::DataNode::Pointer& cameraNode = mitk::DataNode::Pointer(),
+                                                            bool flipNormals = false
+                                                           );
 
 } // end namespace
 

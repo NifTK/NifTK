@@ -133,4 +133,14 @@ void NodeToPolyData (
   }
 }
 
+//-----------------------------------------------------------------------------
+vtkSmartPointer<vtkPolyData> MergePolyData(const std::vector<mitk::DataNode::Pointer>& nodes,
+                                           const mitk::DataNode::Pointer& cameraNode,
+                                           bool flipNormals
+                                          )
+{
+  vtkSmartPointer<vtkPolyData> result;
+  return result;
+}
+
 } // end namespace

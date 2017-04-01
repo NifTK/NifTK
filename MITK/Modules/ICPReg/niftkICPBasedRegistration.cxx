@@ -19,6 +19,7 @@
 #include <niftkVTKIterativeClosestPoint.h>
 #include <niftkPolyDataUtils.h>
 #include <mitkExceptionMacro.h>
+#include <vtkAppendPolyData.h>
 #include <limits>
 
 namespace niftk
@@ -37,6 +38,53 @@ ICPBasedRegistration::ICPBasedRegistration()
 //-----------------------------------------------------------------------------
 ICPBasedRegistration::~ICPBasedRegistration()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+double ICPBasedRegistration::Update(const mitk::DataNode::Pointer& fixedNode,
+                                    const mitk::DataNode::Pointer& movingNode,
+                                    vtkMatrix4x4& transformMovingToFixed,
+                                    const mitk::DataNode::Pointer& cameraNode,
+                                    bool flipNormals
+                                   )
+{
+  vtkSmartPointer<vtkPolyData> fixedPoly = vtkSmartPointer<vtkPolyData>::New();
+  niftk::NodeToPolyData(fixedNode, *fixedPoly);
+
+  vtkSmartPointer<vtkPolyData> movingPoly = vtkSmartPointer<vtkPolyData>::New();
+  niftk::NodeToPolyData(movingNode, *movingPoly, cameraNode, flipNormals);
+
+  return RunVTKICP(fixedPoly, movingPoly, transformMovingToFixed);
+}
+
+
+//-----------------------------------------------------------------------------
+double ICPBasedRegistration::Update(const std::vector<mitk::DataNode::Pointer>& fixedNodes,
+                                    const std::vector<mitk::DataNode::Pointer>& movingNodes,
+                                    vtkMatrix4x4& transformMovingToFixed,
+                                    const mitk::DataNode::Pointer& cameraNode,
+                                    bool flipNormals
+                                   )
+{
+
+  if (fixedNodes.empty())
+  {
+    mitkThrow() << "Fixed node list is empty.";
+  }
+
+  if (movingNodes.empty())
+  {
+    mitkThrow() << "Moving node list is empty.";
+  }
+
+  vtkSmartPointer<vtkPolyData> mergedFixedPolyData
+    = niftk::MergePolyData(fixedNodes);
+
+  vtkSmartPointer<vtkPolyData> mergedMovingPolyData
+    = niftk::MergePolyData(movingNodes, cameraNode, flipNormals);
+
+  return RunVTKICP(mergedFixedPolyData, mergedMovingPolyData, transformMovingToFixed);
 }
 
 
@@ -84,23 +132,4 @@ double ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
   return residual;
 }
 
-
-//-----------------------------------------------------------------------------
-double ICPBasedRegistration::Update(const mitk::DataNode::Pointer& fixedNode,
-                                    const mitk::DataNode::Pointer& movingNode,
-                                    vtkMatrix4x4& transformMovingToFixed,
-                                    const mitk::DataNode::Pointer& cameraNode,
-                                    bool flipNormals
-                                   )
-{
-  vtkSmartPointer<vtkPolyData> fixedPoly = vtkSmartPointer<vtkPolyData>::New();
-  niftk::NodeToPolyData ( fixedNode, *fixedPoly);
-
-  vtkSmartPointer<vtkPolyData> movingPoly = vtkSmartPointer<vtkPolyData>::New();
-  niftk::NodeToPolyData ( movingNode, *movingPoly, cameraNode, flipNormals);
-
-  return RunVTKICP ( fixedPoly, movingPoly, transformMovingToFixed );
-}
-
-//-----------------------------------------------------------------------------
 } // end namespace

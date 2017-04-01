@@ -63,6 +63,12 @@ public:
                 bool flipNormals = false
                );
 
+  double Update(const std::vector<mitk::DataNode::Pointer>& fixedNodes,
+                const std::vector<mitk::DataNode::Pointer>& movingNodes,
+                vtkMatrix4x4& transformMovingToFixed,
+                const mitk::DataNode::Pointer& cameraNode = mitk::DataNode::Pointer(),
+                bool flipNormals = false
+               );
 protected:
 
   ICPBasedRegistration(); // Purposefully hidden.
