@@ -278,7 +278,7 @@ double VTKIterativeClosestPoint::Run()
       vtkIdType cellId = 0;
       int subId = 0;
       double distance = 0;
-      std::map<double, vtkIdType> map;
+      std::multimap<double, vtkIdType> map;
 
       // Get residual for each point.
       for (vtkIdType pointCounter = 0; pointCounter < points[current]->GetNumberOfPoints(); pointCounter++)
