@@ -80,6 +80,10 @@ double ICPBasedRegistration::Update(const std::vector<mitk::DataNode::Pointer>& 
   vtkSmartPointer<vtkPolyData> mergedMovingPolyData
     = niftk::MergePolyData(movingNodes, cameraNode, flipNormals);
 
+  MITK_INFO << "Merged point sets have "
+            << mergedFixedPolyData->GetNumberOfPoints() << ", "
+            << mergedMovingPolyData->GetNumberOfPoints();
+
   return RunVTKICP(mergedFixedPolyData, mergedMovingPolyData, transformMovingToFixed);
 }
 
@@ -110,6 +114,16 @@ double ICPBasedRegistration::RunVTKICP(vtkPolyData* fixedPoly,
     icp->SetTLSPercentage(m_TLSPercentage);
     icp->SetSource(movingPoly);
     icp->SetTarget(fixedPoly);
+
+    MITK_INFO << "Running ICP with "
+              << fixedPoly->GetNumberOfPoints() << ", "
+              << movingPoly->GetNumberOfPoints()
+              << " points"
+              << ", maxLandMarks=" << m_MaximumNumberOfLandmarkPointsToUse
+              << ", maxIters=" << m_MaximumIterations
+              << ", TLSIters=" << m_TLSIterations
+              << ", TLSPercentage=" << m_TLSPercentage
+              << std::endl;
 
     residual = icp->Run();
 

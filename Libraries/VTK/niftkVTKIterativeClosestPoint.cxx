@@ -227,6 +227,8 @@ double VTKIterativeClosestPoint::Run()
   {
     // Normal ICP, no TLS.
     result = this->InternalRunICP(source, target, m_ICPMaxLandmarks, m_ICPMaxIterations, inverted);
+
+    std::cout << "Run InternalICP using no TLS with " << source->GetNumberOfPoints() << " points." << std::endl;
   }
   else
   {
@@ -259,6 +261,8 @@ double VTKIterativeClosestPoint::Run()
     for (int i = 0; i < m_TLSIterations; i++)
     {
       result = this->InternalRunICP(polies[current], target, points[current]->GetNumberOfPoints(), m_ICPMaxIterations, inverted);
+
+      std::cout << "Run InternalICP using TLS with " << points[current]->GetNumberOfPoints() << " points." << std::endl;
 
       // Now iterate through all points, and form sorted list of residual errors.
       double transformedSourcePoint[4];
