@@ -13,13 +13,9 @@
 =============================================================================*/
 
 #include "niftkICPBasedRegistration.h"
-
-#include <niftkAffineTransformDataNodeProperty.h>
-#include <niftkVTKFunctions.h>
 #include <niftkVTKIterativeClosestPoint.h>
 #include <niftkPolyDataUtils.h>
 #include <mitkExceptionMacro.h>
-#include <vtkAppendPolyData.h>
 #include <limits>
 
 namespace niftk

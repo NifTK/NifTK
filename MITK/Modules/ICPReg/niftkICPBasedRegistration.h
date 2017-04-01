@@ -63,6 +63,12 @@ public:
                 bool flipNormals = false
                );
 
+  /**
+  * \brief Runs ICP registration on vectors of fixed and moving nodes.
+  * \param fixedNodes vector of pointers to mitk::DataNodes containing either mitk::Surface or mitk::Pointset.
+  * \param movingNodes vector of pointers to mitk::DataNode containing either mitk::Surface or mitk::Pointset.
+  * \return RMS residual for points in moving node
+  */
   double Update(const std::vector<mitk::DataNode::Pointer>& fixedNodes,
                 const std::vector<mitk::DataNode::Pointer>& movingNodes,
                 vtkMatrix4x4& transformMovingToFixed,
