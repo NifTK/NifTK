@@ -95,6 +95,7 @@ void NodeToPolyData (
     else
     {
       vtkSmartPointer<vtkPolyData> transformedPoly = vtkSmartPointer<vtkPolyData>::New();
+
       vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter= vtkSmartPointer<vtkTransformPolyDataFilter>::New();
       transformFilter->SetInputDataObject(polyTemp);
       transformFilter->SetOutput(transformedPoly);
@@ -102,7 +103,8 @@ void NodeToPolyData (
       transformFilter->Update();
 
       vtkSmartPointer<vtkPolyData> normalsPoly = vtkSmartPointer<vtkPolyData>::New();
-      vtkSmartPointer<vtkPolyDataNormals>   normalFilter = vtkSmartPointer<vtkPolyDataNormals>::New();
+
+      vtkSmartPointer<vtkPolyDataNormals> normalFilter = vtkSmartPointer<vtkPolyDataNormals>::New();
       normalFilter->SetInputDataObject(transformedPoly);
       normalFilter->SetOutput(normalsPoly);
       normalFilter->ComputeCellNormalsOn();
