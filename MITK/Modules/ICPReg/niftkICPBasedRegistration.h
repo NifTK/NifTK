@@ -73,10 +73,10 @@ protected:
 
 private:
 
-  int                           m_MaximumIterations;
-  int                           m_MaximumNumberOfLandmarkPointsToUse;
-  unsigned int                  m_TLSIterations;
-  unsigned int                  m_TLSPercentage;
+  int          m_MaximumIterations;
+  int          m_MaximumNumberOfLandmarkPointsToUse;
+  unsigned int m_TLSIterations;
+  unsigned int m_TLSPercentage;
 
   double RunVTKICP(vtkPolyData* fixedPoly,
                    vtkPolyData* movingPoly,
