@@ -33,10 +33,6 @@ void PointSetToPolyData(const mitk::PointSet::Pointer& pointsIn,
                         vtkPolyData& polyOut)
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
-  cells->Initialize();
-
-  vtkIdType pointCounter = 0;
 
   for (mitk::PointSet::PointsConstIterator i = pointsIn->Begin(); i != pointsIn->End(); ++i)
   {
@@ -45,9 +41,6 @@ void PointSetToPolyData(const mitk::PointSet::Pointer& pointsIn,
     mitk::PointSet::PointType p = i->Value();
     pointsIn->GetPointIfExists(i->Index(), &p);
     points->InsertNextPoint(p[0], p[1], p[2]);
-    cells->InsertNextCell(1);
-    cells->InsertCellPoint(pointCounter);
-    pointCounter++;
   }
 
   if (pointsIn->GetSize() != points->GetNumberOfPoints())
@@ -61,7 +54,6 @@ void PointSetToPolyData(const mitk::PointSet::Pointer& pointsIn,
   // I think its safer to start again, so I'm calling Initialize().
   polyOut.Initialize();
   polyOut.SetPoints(points);
-  polyOut.SetVerts(cells);
 }
 
 
