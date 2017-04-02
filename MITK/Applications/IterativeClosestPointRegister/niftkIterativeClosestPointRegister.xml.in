@@ -61,7 +61,7 @@
       <longflag>tlsPercentage</longflag>
       <description>The percentage [1,100] of points to keep at each trimmed least squares iteration.</description>
       <label>TLS Percentage</label>
-      <default>0</default>
+      <default>50</default>
     </integer>
 
     <boolean>
