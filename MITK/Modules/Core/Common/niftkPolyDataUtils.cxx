@@ -91,9 +91,9 @@ void NodeToPolyData(const mitk::DataNode::Pointer& node,
     {
       vtkSmartPointer<vtkTransformPolyDataFilter> transformFilter= vtkSmartPointer<vtkTransformPolyDataFilter>::New();
       transformFilter->SetInputDataObject(polyTemp);
+      transformFilter->SetOutput(&polyOut);
       transformFilter->SetTransform(transform);
       transformFilter->Update();
-      polyOut.DeepCopy(transformFilter->GetOutput());
     }
     else
     {
@@ -145,24 +145,56 @@ vtkSmartPointer<vtkPolyData> MergePolyData(const std::vector<mitk::DataNode::Poi
                                            bool flipNormals
                                           )
 {
-  vtkSmartPointer<vtkAppendPolyData> filter = vtkSmartPointer<vtkAppendPolyData>::New();
-
-  std::vector<vtkSmartPointer<vtkPolyData> > vectorOfPolys;
-
+  bool weAreDoingSurface = true;
   for (int i = 0; i < nodes.size(); i++)
   {
-    vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
-    niftk::NodeToPolyData(nodes[i], *poly, cameraNode, flipNormals);
-    vectorOfPolys.push_back(poly);
-    filter->AddInputData(vectorOfPolys[i]);
-
-    MITK_INFO << "MergePolyData: added " << poly->GetNumberOfPoints() << " points.";
+    if (dynamic_cast<mitk::PointSet*>(nodes[i]->GetData()) != nullptr)
+    {
+      weAreDoingSurface = false;
+    }
   }
 
-  filter->Update();
+  if (weAreDoingSurface)
+  {
+    std::vector<vtkSmartPointer<vtkPolyData> > vectorOfPolys;
+    vtkSmartPointer<vtkAppendPolyData> filter = vtkSmartPointer<vtkAppendPolyData>::New();
 
-  vtkSmartPointer<vtkPolyData> result = filter->GetOutput();
-  return result;
+    for (int i = 0; i < nodes.size(); i++)
+    {
+      vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
+      niftk::NodeToPolyData(nodes[i], *poly, cameraNode, flipNormals);
+      vectorOfPolys.push_back(poly);
+      filter->AddInputData(vectorOfPolys[i]);
+      MITK_INFO << "MergePolyData: added surface with " << poly->GetNumberOfPoints() << " points.";
+    }
+
+    filter->Update();
+
+    vtkSmartPointer<vtkPolyData> result = filter->GetOutput();
+    return result;
+  }
+  else
+  {
+    // If a vector has at least one point set, we convert all of
+    // them ourselves, just adding points, not cells.
+
+    vtkSmartPointer<vtkPolyData> outputPoly = vtkSmartPointer<vtkPolyData>::New();
+    vtkSmartPointer<vtkPoints> outputPoints = vtkSmartPointer<vtkPoints>::New();
+    for (int i = 0; i < nodes.size(); i++)
+    {
+      vtkSmartPointer<vtkPolyData> poly = vtkSmartPointer<vtkPolyData>::New();
+      niftk::NodeToPolyData(nodes[i], *poly, cameraNode, flipNormals);
+      vtkPoints *tmpPoints = poly->GetPoints();
+      for (vtkIdType j = 0; j < tmpPoints->GetNumberOfPoints(); j++)
+      {
+        double* tmpPoint = tmpPoints->GetPoint(j);
+        outputPoints->InsertNextPoint(tmpPoint[0], tmpPoint[1], tmpPoint[2]);
+      }
+      MITK_INFO << "MergePolyData: added point-set with " << tmpPoints->GetNumberOfPoints() << " points.";
+    }
+    outputPoly->SetPoints(outputPoints);
+    return outputPoly;
+  }
 }
 
 } // end namespace
