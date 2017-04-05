@@ -13,30 +13,38 @@
 =============================================================================*/
 
 #include "niftkQuaternion.h"
-
 #include <cmath>
 
-// Create the quaternion from a rotation around an aixs
+/**
+* Construct the quaternion from a rotation around an aixs
+*/
 niftkQuaternion::niftkQuaternion(double angle, const vector<double> v) : vector<double>(4)
 {
 	SetAngleAxis(angle, v[0], v[1], v[2]);
 }
 
 
-// Euler angle to quaternion
+/**
+* Construct the quaternion from three Euler angles
+*/
 niftkQuaternion::niftkQuaternion(double A, double B, double C, int flag) : vector<double>(4)
 {
 	CreateFromEulerAngles(A, B, C, flag);
 }
 
 
-// Public member functions:
+/**
+* Create the quaternion from four double numbers
+*/
 void niftkQuaternion::Create(double a, double b, double c, double d)
 {
 	begin()[0] = a; begin()[1] = b; begin()[2] = c; begin()[3] = d;
 }
 
 
+/**
+* Create the quaternion from three Euler Angles
+*/
 void niftkQuaternion::CreateFromEulerAngles(double A, double B, double C, int flag)
 {
 	niftkQuaternion q1,q2,q3,result;
@@ -93,6 +101,9 @@ void niftkQuaternion::CreateFromEulerAngles(double A, double B, double C, int fl
 }
 
 
+/**
+* Get the norm of the quaternion
+*/
 double niftkQuaternion::Norm() const
 {
 	double q0, q1, q2, q3;
@@ -106,6 +117,9 @@ double niftkQuaternion::Norm() const
 }
 
 
+/**
+* Is it a unit quaternion?
+*/
 bool niftkQuaternion::IsUnit() const
 {
 	if(( this->Norm() - 1.0) < 1e-10) 
@@ -114,9 +128,10 @@ bool niftkQuaternion::IsUnit() const
     return false;
 }
 
-// overloaded operators:
 
-//conjugate
+/**
+* Get the conjugate quaternion
+*/
 niftkQuaternion niftkQuaternion::Conjugate() const
 {
 	niftkQuaternion result;
@@ -129,6 +144,31 @@ niftkQuaternion niftkQuaternion::Conjugate() const
 	return result;
 }
 
+
+/**
+* Get the rotation angle and axis of the quaternion
+*/
+void niftkQuaternion::GetAngleAxis(double& angle, double* axis)
+{
+	angle = acos(begin()[0]);
+
+	if(angle!=0)
+	{
+		double sin_angle = sin(angle);
+		axis[0] = (*this)[1] / sin_angle;
+		axis[1] = (*this)[2] / sin_angle;
+		axis[2] = (*this)[3] / sin_angle;
+	}
+	else
+		axis[0] = axis[1] = axis[2] =1.0;
+
+	angle *= 2;
+}
+
+
+/**
+* Set the rotation angle and axis of the quaternion
+*/
 void niftkQuaternion::SetAngleAxis(double angle, double x, double y, double z)
 {
 	m_Angle = angle;
@@ -142,7 +182,10 @@ void niftkQuaternion::SetAngleAxis(double angle, double x, double y, double z)
 	begin()[3] = sin(angle/2) * z;
 }
 
-// add operator +
+
+/**
+* Add operator +
+*/
 niftkQuaternion niftkQuaternion::operator + (const niftkQuaternion& q) const
 {
 	niftkQuaternion result;
@@ -156,7 +199,9 @@ niftkQuaternion niftkQuaternion::operator + (const niftkQuaternion& q) const
 }
 
 
-// subtraction operator -
+/**
+* Subtraction operator -
+*/
 niftkQuaternion niftkQuaternion::operator - (const niftkQuaternion& q) const
 {
 	niftkQuaternion result;
@@ -170,7 +215,9 @@ niftkQuaternion niftkQuaternion::operator - (const niftkQuaternion& q) const
 }
 
 
-// multiplication operator *
+/**
+* Multiplication operator *
+*/
 niftkQuaternion niftkQuaternion::operator * (const niftkQuaternion& q) const
 {
 	niftkQuaternion result = *this ;
@@ -195,7 +242,9 @@ niftkQuaternion niftkQuaternion::operator * (const niftkQuaternion& q) const
 }
 
 
-// multiplication operator *
+/**
+* Multiplication operator *=
+*/
 niftkQuaternion& niftkQuaternion::operator *= (const niftkQuaternion& q)
 {
 	double s1,l1,m1,n1,s2,l2,m2,n2;
@@ -216,22 +265,4 @@ niftkQuaternion& niftkQuaternion::operator *= (const niftkQuaternion& q)
 	(*this)[3] = s1 * n2 + s2 * n1 + l1 * m2 - m1 * l2;
 
 	return *this;
-}
-
-
-void niftkQuaternion::GetAngleAxis(double& angle, double* axis)
-{
-	angle = acos(begin()[0]);
-
-	if(angle!=0)
-	{
-		double sin_angle = sin(angle);
-		axis[0] = (*this)[1] / sin_angle;
-		axis[1] = (*this)[2] / sin_angle;
-		axis[2] = (*this)[3] / sin_angle;
-	}
-	else
-		axis[0] = axis[1] = axis[2] =1.0;
-
-	angle *= 2;
 }

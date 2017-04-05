@@ -60,22 +60,33 @@ typedef std::vector<QuaternionTrackedPoint> QuaternionTrackedPointData;
 
 
 /**
-* \brief Loads data from 2 directories.
+* \brief Loads and pairs images and tracking data from 2 directories.
+* Called for calibration and reconstruction purposes.
+* If the tracking data are in quaternion form, convert to matrices.
 */
 NIFTKUSRECON_EXPORT MatrixTrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string& imageDir,
                                                                              const std::string& trackingDir
                                                                             );
 
+/**
+* \brief Loads and pairs point files and tracking data from 2 directories.
+* Called for calibration purpose.
+* A point file contains the coordinates of a 3D point.
+* Tracking data are in matrix form and are converted to quaternions.
+*/
 NIFTKUSRECON_EXPORT QuaternionTrackedPointData LoadPointAndTrackingDataFromDirectories(const std::string& pointDir,
                                                                               const std::string& trackingDir
                                                                              );
 
 /**
 * \brief Main entry point for Guofang's Ultrasound Calibration.
-* Takes images containing balls, extracts balls and calls DoUltrasoundPointCalibration.
+* Takes images containing balls, extracts balls and calls function UltrasoundCalibration.
+* The diameter of the circle in the images should be measured with an interactive tool.
+* Ring model width = diameter + 15
+* Solvess scale factors in x and y directions, and hand-eye calibration in quaternion form.
 * \param data ball images with matched tracking matrices.
 */
-NIFTKUSRECON_EXPORT void DoUltrasoundBallCalibration(const int& ballSize,
+NIFTKUSRECON_EXPORT void DoUltrasoundBallCalibration(const int ballSize,
                                                      const niftk::MatrixTrackedImageData& data,
                                                      mitk::Point2D& pixelScaleFactors,
                                                      niftk::RotationTranslation& imageToSensorTransform
@@ -84,7 +95,9 @@ NIFTKUSRECON_EXPORT void DoUltrasoundBallCalibration(const int& ballSize,
 
 /**
 * \brief Additional entry point for Guofang's Ultrasound Calibration.
-* \param data pixel locations with matched tracking data in quaternion form.
+* Calls function UltrasoundCalibration.
+* Solves scale factors in x and y directions, and hand-eye calibration in quaternion form.
+* \param data 2D point locations with matched tracking matrices.
 */
 NIFTKUSRECON_EXPORT void DoUltrasoundPointCalibration(const niftk::QuaternionTrackedPointData& data,
                                                       mitk::Point2D& pixelScaleFactors,
@@ -93,9 +106,10 @@ NIFTKUSRECON_EXPORT void DoUltrasoundPointCalibration(const niftk::QuaternionTra
 
 
 /**
-* \brief Main entry point for Guofang's Ultrasound Reconstruction.
-* \param imageToSensorTransform a pair containing rotation as quaternion and translation vector
+* \brief Main entry point for Guofang's 3D Free-hand Ultrasound Reconstruction.
 * \param data images with matched tracking data as matrices.
+* \param pixelScaleFactors scaling factor in x and y directions
+* \param imageToSensorTransform a pair containing rotation as a quaternion and translation as a three-element vector
 */
 NIFTKUSRECON_EXPORT mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::MatrixTrackedImageData& data,
                                                                     const mitk::Point2D& pixelScaleFactors,
