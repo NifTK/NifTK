@@ -46,7 +46,7 @@ typedef itk::Image<unsigned char, dim> ResultImageType;
 
 
 /**
-* Hough Transformation on radius to find the brightest circle at location x, y 
+* Hough Transformation on radius to find the brightest circle at location x, y
 */
 int HoughForRadius(const cv::Mat& image, int x, int y, int& max_radius, int medianR)
 {
@@ -116,7 +116,7 @@ void RawHough(const cv::Mat& image, int& x, int& y, int& r, int medianR)
   {
     for (int i = x - 5; i <= x + 5; i++)
     {
-      // Hough Transformation on radius to find the brightest circle at location i, j 
+      // Hough Transformation on radius to find the brightest circle at location i, j
       weight = HoughForRadius(image, i, j, radius, medianR);
 
       if (weight > max_weight)
@@ -245,7 +245,7 @@ mitk::Point2D FindCircleInImage(const cv::Mat& image, const cv::Mat& model)
   int medianR;
   medianR = (model_width - 15) / 2;
 
-  // Hough Transformation to fine tune the location of the center 
+  // Hough Transformation to fine tune the location of the center
   RawHough(image, max_x, max_y, max_radius, medianR);
 
   mitk::Point2D result;
@@ -1041,7 +1041,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
 
     // This file has no closely matched tracking file, discarded.
     //  Plus the last two digits (usually 00) ignored, this means closestTime > 10^8 x 10^-9 = 0.1 sec
-    if (closestTime > 1000000) 
+    if (closestTime > 1000000)
     {
       continue;
     }
