@@ -988,7 +988,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
     std::size_t found = fileList1[i].find_last_of("/\\");
 
     // Time stamps used, ignoring the first five and last two digits
-    std::string firstFileTimeStamp = fileList1[i].substr(found + 6, 12);
+    std::string firstFileTimeStamp = fileList1[i].substr(found + 1, 19);
 
     long long int minTimeDifference = std::numeric_limits<long long int>::max();
     long long int firstFileTime = std::stoll(firstFileTimeStamp);
@@ -1001,7 +1001,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
     {
       found = fileList2[j].find_last_of("/\\");
 
-      std::string secondFileTimeStamp = fileList2[j].substr(found + 6, 12);
+      std::string secondFileTimeStamp = fileList2[j].substr(found + 1, 19);
 
       long long int secondFileTime = std::stoll(secondFileTimeStamp);
       long long int timeDifference = abs(secondFileTime - firstFileTime);
@@ -1009,7 +1009,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
       if (timeDifference == 0) // Time matched exactly!
       {
         matchNumber = j;
-        matchTime = fileList2[matchNumber].substr(found + 6, 12); // For debugging
+        matchTime = fileList2[matchNumber].substr(found + 1, 19); // For debugging
         closestTime  = timeDifference;
         break;
       }
@@ -1025,7 +1025,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
         else
         {
           matchNumber = j;
-          matchTime = fileList2[matchNumber].substr(found + 6, 12); // For debugging
+          matchTime = fileList2[matchNumber].substr(found + 1, 19); // For debugging
           closestTime  = minTimeDifference;
           break;
         }
@@ -1033,16 +1033,17 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
       else
       {
         matchNumber = j - 1;
-        matchTime = fileList2[matchNumber].substr(found + 6, 12); // For debugging
+        matchTime = fileList2[matchNumber].substr(found + 1, 19); // For debugging
         closestTime  = minTimeDifference;
         break;
       }
     } // end for j
 
     // This file has no closely matched tracking file, discarded.
-    //  Plus the last two digits (usually 00) ignored, this means closestTime > 10^8 x 10^-9 = 0.1 sec
-    if (closestTime > 1000000)
+    //  closestTime > 10^8 x 10^-9 = 0.1 sec
+    if (closestTime > 100000000) 
     {
+      std::cout << "File " << fileList1[i] << "has no closely matched tracking file!" << std::endl;
       continue;
     }
 
