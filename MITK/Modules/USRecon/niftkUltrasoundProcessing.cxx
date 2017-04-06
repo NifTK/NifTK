@@ -1041,7 +1041,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
 
     // This file has no closely matched tracking file, discarded.
     //  closestTime > 10^8 x 10^-9 = 0.1 sec
-    if (closestTime > 100000000) 
+    if (closestTime > 100000000)
     {
       std::cout << "File " << fileList1[i] << "has no closely matched tracking file!" << std::endl;
       continue;
