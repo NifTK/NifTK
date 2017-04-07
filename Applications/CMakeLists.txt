@@ -218,9 +218,6 @@ set(_legacy_applications
 #  Dbc
 #  FFD
 #  KMeansWindowPiecewiseNormBSI
-#  MakeLapUSProbeARUCOModel
-#  MakeLapUSProbeBasicModel
-#  MakeLapUSProbeCheckerboardMarker
 #  SimpleBoundaryShiftIntegral
 )
 
