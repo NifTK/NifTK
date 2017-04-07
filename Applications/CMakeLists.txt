@@ -214,7 +214,7 @@ endif()
 
 set(_legacy_applications
   ContourExtractor2DImageFilter
-#  ConvertDofToNiftiReg
+  ConvertDofToNiftiReg
 #  CreateBreastMesh
 #  Dbc
 #  FFD
