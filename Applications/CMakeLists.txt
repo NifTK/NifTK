@@ -218,7 +218,7 @@ set(_legacy_applications
   Dbc
 #  FFD
   KMeansWindowPiecewiseNormBSI
-#  SimpleBoundaryShiftIntegral
+  SimpleBoundaryShiftIntegral
 )
 
 if(BUILD_LEGACY_COMMAND_LINE_PROGRAMS)
