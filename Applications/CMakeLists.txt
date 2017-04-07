@@ -214,16 +214,16 @@ endif()
 
 set(_legacy_applications
   ContourExtractor2DImageFilter
-  ConvertDofToNiftiReg
-  CreateBreastMesh
-  Dbc
-  FFD
-  KMeansWindowPiecewiseNormBSI
-  MakeLapUSProbeARUCOModel
-  MakeLapUSProbeBasicModel
-  MakeLapUSProbeCheckerboardMarker
-  SimpleBoundaryShiftIntegral
-  TomosynthesisGeometry
+#  ConvertDofToNiftiReg
+#  CreateBreastMesh
+#  Dbc
+#  FFD
+#  KMeansWindowPiecewiseNormBSI
+#  MakeLapUSProbeARUCOModel
+#  MakeLapUSProbeBasicModel
+#  MakeLapUSProbeCheckerboardMarker
+#  SimpleBoundaryShiftIntegral
+#  TomosynthesisGeometry
 )
 
 if(BUILD_LEGACY_COMMAND_LINE_PROGRAMS)
