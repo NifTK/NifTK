@@ -216,7 +216,6 @@ set(_legacy_applications
   ContourExtractor2DImageFilter
   ConvertDofToNiftiReg
   Dbc
-#  FFD
   KMeansWindowPiecewiseNormBSI
   SimpleBoundaryShiftIntegral
 )
