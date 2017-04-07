@@ -156,6 +156,7 @@ endforeach()
 # build. So, look in CMake/Superbuild.cmake to see where they are
 # passed to the main build of NifTK when doing the Superbuild.
 ######################################################################
+option(BUILD_LEGACY_COMMAND_LINE_PROGRAMS "Build legacy command line applications." OFF)
 option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications." ON)
 option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in." ON)
 option(BUILD_CAMINO "Build Camino." OFF)
@@ -1466,7 +1467,7 @@ endif(BUILD_VL)
 ######################################################################
 # Find SlicerExecutionModel
 ######################################################################
-if(BUILD_COMMAND_LINE_PROGRAMS)
+if(BUILD_COMMAND_LINE_PROGRAMS OR BUILD_LEGACY_COMMAND_LINE_PROGRAMS)
 
   set(_itk_dir ${ITK_DIR})
 
@@ -1900,9 +1901,7 @@ add_subdirectory(Documentation)
 
 add_subdirectory(Libraries)
 
-if(BUILD_COMMAND_LINE_PROGRAMS)
-  add_subdirectory(Applications)
-endif()
+add_subdirectory(Applications)
 
 if(BUILD_PROTOTYPE)
   add_subdirectory(Prototype)

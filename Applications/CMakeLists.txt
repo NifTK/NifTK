@@ -41,19 +41,6 @@ include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
 
 find_package(CUDA)
 
-set(_legacy_applications
-  ContourExtractor2DImageFilter
-  ConvertDofToNiftiReg
-  CreateBreastMesh
-  Dbc
-  FFD
-  KMeansWindowPiecewiseNormBSI
-  MakeLapUSProbeBasicModel
-  MakeLapUSProbeCheckerboardMarker
-  SimpleBoundaryShiftIntegral
-  TomosynthesisGeometry
-)
-
 set(_applications
   2DImagesTo3DVolume
   AbsImageFilter
@@ -66,6 +53,7 @@ set(_applications
   ApplyMaskToImage
   AtlasStatistics
   Average
+  BSI
   BackProject2Dto3D
   BasicImageFeatures
   BasicImageFeatures3D
@@ -78,7 +66,18 @@ set(_applications
   BreastDensityFromMRIsGivenMaskAndImage
   BreastDicomSeriesReadImageWrite
   BreastMaskSegmentationFromMRI
-  BSI
+  CTEAcosta2009Subsampling
+  CTEAssignAtlasValues
+  CTEBourgeat2008
+  CTEDas2009
+  CTEExtractGMWMBoundaryFromLabelImage
+  CTEHighRes
+  CTEHuttonLayering
+  CTEJones2000
+  CTEMaskedSmoothing
+  CTEPrepareVolumes
+  CTEYezzi2003
+  CUDAInfo
   CombineSegmentations
   ComposeITKAffineTransformations
   ComputeImageHistogram
@@ -100,18 +99,6 @@ set(_applications
   CreateMaskImage
   CreateTransformation
   CropImage
-  CTEAcosta2009Subsampling
-  CTEAssignAtlasValues
-  CTEBourgeat2008
-  CTEDas2009
-  CTEExtractGMWMBoundaryFromLabelImage
-  CTEHighRes
-  CTEHuttonLayering
-  CTEJones2000
-  CTEMaskedSmoothing
-  CTEPrepareVolumes
-  CTEYezzi2003
-  CUDAInfo
   CurveFitRegistration
   DecimatePolyData
   DecomposeAffineMatrix
@@ -123,10 +110,10 @@ set(_applications
   DistanceTransform
   DoubleWindowBSI
   DynamicContrastEnhancementAnalysis
+  EVFFCECT
   ElasticBodySplineWarp
   Erode
   ExportDICOMTagsToCSVFile
-  EVFFCECT
   Extract2DSliceFrom3DImage
   ExtractCurvatures
   ExtractRegion
@@ -141,6 +128,7 @@ set(_applications
   GradientVectorField
   HistogramEqualization
   HistogramMatchingImageFilter
+  ITKAffineResampleImage
   ImageInfo
   ImageMomentsRegistration
   ImageReconstruction
@@ -148,15 +136,15 @@ set(_applications
   InvertAffineTransform
   InvertImage
   InvertTransformation
-  ITKAffineResampleImage
   JacobianStatistics
-  KmeansClassifier
   KMeansWindowBSI
   KMeansWindowLinRegNormBSI
   KNDoubleWindowBSI
+  KmeansClassifier
   LandmarkBasedRegistration
   LinearSubdivisionPolyDataFilter
   LogInvertImage
+  MTPDbc
   MakeLapUSProbeAprilTagsVisualisation
   MammogramCharacteristics
   MammogramFatSubtraction
@@ -167,11 +155,10 @@ set(_applications
   MarchingCubes
   MaskDICOMMammograms
   MeshFromLabels
-  MTPDbc
-  Multiply
-  MultiplyTransformation
   MultiScaleHessianImageEnhancement2D
   MultiScaleHessianImageEnhancement3D
+  Multiply
+  MultiplyTransformation
   N4BiasFieldCorrection
   NegateImage
   OCTVolumeConstructor
@@ -185,10 +172,11 @@ set(_applications
   RescaleImageUsingHistogramPercentiles
   ResetDirectionField
   ResetVoxelDimensionsField
+  STAPLE
   SampleImage
   ScalarConnectedComponentImageFilter
-  SegmentationStatistics
   SegmentForegroundFromBackground
+  SegmentationStatistics
   SeriesReadVolumeWrite
   SetBorderPixel
   ShiftProb
@@ -196,7 +184,6 @@ set(_applications
   ShrinkImage
   SmoothPolyData
   SplitVolumeIntoVoxelPlanes
-  STAPLE
   SubsampleImage
   Subtract
   SubtractSliceFromVolume
@@ -206,20 +193,41 @@ set(_applications
   ThinPlateSplineScatteredDataPointSetToImage
   ThinPlateSplineWarp
   Threshold
-  Transformation
   TransformPoint3Dto2D
   TransformPolyData
+  Transformation
   UnaryImageOperatorsOnDirectoryTree
+  VTKDistanceToSurface
+  VTKIterativeClosestPointRegister
+  VTKRandomTransform
   VesselExtractor
   VolToFreeSurfer
   VotingBinaryIterativeHoleFillingImageFilter
   VoxelWiseMaximumIntensities
-  VTKDistanceToSurface
-  VTKIterativeClosestPointRegister
-  VTKRandomTransform
 )
 
+if(BUILD_COMMAND_LINE_PROGRAMS)
+  foreach(app ${_applications})
+    add_subdirectory(${app})
+  endforeach()
+endif()
 
-foreach(app ${_applications})
-  add_subdirectory(${app})
-endforeach()
+set(_legacy_applications
+  ContourExtractor2DImageFilter
+  ConvertDofToNiftiReg
+  CreateBreastMesh
+  Dbc
+  FFD
+  KMeansWindowPiecewiseNormBSI
+  MakeLapUSProbeARUCOModel
+  MakeLapUSProbeBasicModel
+  MakeLapUSProbeCheckerboardMarker
+  SimpleBoundaryShiftIntegral
+  TomosynthesisGeometry
+)
+
+if(BUILD_LEGACY_COMMAND_LINE_PROGRAMS)
+  foreach(app ${_legacy_applications})
+    add_subdirectory(${app})
+  endforeach()
+endif()
