@@ -215,7 +215,7 @@ endif()
 set(_legacy_applications
   ContourExtractor2DImageFilter
   ConvertDofToNiftiReg
-#  Dbc
+  Dbc
 #  FFD
 #  KMeansWindowPiecewiseNormBSI
 #  SimpleBoundaryShiftIntegral
