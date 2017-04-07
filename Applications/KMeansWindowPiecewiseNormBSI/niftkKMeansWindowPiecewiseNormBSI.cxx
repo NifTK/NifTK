@@ -264,7 +264,7 @@ void saveNormalisedImage(char* repeatImageName, char* outputImageName, double sl
   {
     short repeatValue = repeatImageIterator.Get(); 
         
-    repeatImageIterator.Set(static_cast<short>(itk::Math::Round(fabs(slope*repeatValue+intercept))));
+    repeatImageIterator.Set(static_cast<short>(itk::Math::Round<double, double>(fabs(slope*repeatValue+intercept))));
   }
   
   WriterType::Pointer writer = WriterType::New(); 

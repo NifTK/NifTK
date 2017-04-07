@@ -217,7 +217,7 @@ set(_legacy_applications
   ConvertDofToNiftiReg
   Dbc
 #  FFD
-#  KMeansWindowPiecewiseNormBSI
+  KMeansWindowPiecewiseNormBSI
 #  SimpleBoundaryShiftIntegral
 )
 
