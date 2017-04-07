@@ -41,6 +41,19 @@ include(${MITK_MODULES_PACKAGE_DEPENDS_DIR}/MITK_ITK_Config.cmake)
 
 find_package(CUDA)
 
+set(_legacy_applications
+  ContourExtractor2DImageFilter
+  ConvertDofToNiftiReg
+  CreateBreastMesh
+  Dbc
+  FFD
+  KMeansWindowPiecewiseNormBSI
+  MakeLapUSProbeBasicModel
+  MakeLapUSProbeCheckerboardMarker
+  SimpleBoundaryShiftIntegral
+  TomosynthesisGeometry
+)
+
 set(_applications
   2DImagesTo3DVolume
   AbsImageFilter
@@ -72,7 +85,6 @@ set(_applications
   ComputeJointHistogram
   ComputeMeanTransformation
   ConnectedComponents
-#  ContourExtractor2DImageFilter
   ConvertImage
   ConvertImageToDICOM
   ConvertImageToVTKStructuredGrid
@@ -84,7 +96,6 @@ set(_applications
   ConvertTransformToRIREFormat
   CreateAffineTransform
   CreateAffineTransform2D
-#  CreateBreastMesh
   CreateMaskFromLabels
   CreateMaskImage
   CreateTransformation
@@ -122,7 +133,6 @@ set(_applications
   ExtractScalp
   ExtractZeroCrossing
   ExtrudeMaskToVolume
-#  FFD
   FillHoles
   ForwardAndBackProjectionDifferenceFilter
   ForwardProject3Dto2D
@@ -148,8 +158,6 @@ set(_applications
   LinearSubdivisionPolyDataFilter
   LogInvertImage
   MakeLapUSProbeAprilTagsVisualisation
-  MakeLapUSProbeARUCOModel
-#  MakeLapUSProbeBasicModel
   MammogramCharacteristics
   MammogramFatSubtraction
   MammogramMaskSegmentation
