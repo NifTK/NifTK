@@ -222,7 +222,6 @@ set(_legacy_applications
 #  MakeLapUSProbeBasicModel
 #  MakeLapUSProbeCheckerboardMarker
 #  SimpleBoundaryShiftIntegral
-#  TomosynthesisGeometry
 )
 
 if(BUILD_LEGACY_COMMAND_LINE_PROGRAMS)
