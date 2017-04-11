@@ -245,7 +245,15 @@ bool CreateDirAndParents(const std::string& directoryPath)
 bool FileExists(const std::string& fileName)
 {
   fs::path full_path = ConvertToFullPath(fileName);
-  return fs::is_regular(full_path);
+  return fs::exists(full_path);
+}
+
+
+//-----------------------------------------------------------------------------
+bool FileIsRegular(const std::string& fileName)
+{
+  fs::path full_path = ConvertToFullPath(fileName);
+  return fs::is_regular_file(full_path);
 }
 
 
