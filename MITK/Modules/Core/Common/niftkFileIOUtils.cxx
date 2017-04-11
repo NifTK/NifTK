@@ -167,7 +167,7 @@ void LoadTimeStampData(const std::string& fileName, std::set<unsigned long long>
 {
   if (fileName.size() > 0)
   {
-    if (!FileExists(fileName))
+    if (!FileIsRegular(fileName))
     {
       mitkThrow() << "File:" << fileName << ", doesn't exist";
     }

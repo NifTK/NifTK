@@ -344,7 +344,7 @@ int DoMain( arguments args,
 
   // Write the image to the output file
 
-  if ( niftk::FileExists( fileOutputFullPath ) && ( ! args.flgOverwrite ) )
+  if ( niftk::FileIsRegular( fileOutputFullPath ) && ( ! args.flgOverwrite ) )
   {
     std::cerr << std::endl << "ERROR: File " << fileOutputFullPath << " exists"
               << std::endl << "       and can't be overwritten. Consider option: 'overwrite'."

@@ -859,7 +859,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
                                 niftk::ModifyImageFileSuffix( fileImage,
                                                               std::string( ".nii.gz" ) ) );
 
-      if ( m_FlgOverwrite || ( ! niftk::FileExists( fileOutput ) ) )
+      if ( m_FlgOverwrite || ( ! niftk::FileIsRegular( fileOutput ) ) )
       {
         CreateDirectoryAndParents( fileOutput );
 
@@ -898,7 +898,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
                                 niftk::ModifyImageFileSuffix( fileImage,
                                                               std::string( ".nii.gz" ) ) );
 
-      if ( m_FlgOverwrite || ( ! niftk::FileExists( fileOutput ) ) )
+      if ( m_FlgOverwrite || ( ! niftk::FileIsRegular( fileOutput ) ) )
       {
         CreateDirectoryAndParents( fileOutput );
 
@@ -937,7 +937,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
                                 niftk::ModifyImageFileSuffix( fileImage,
                                                               std::string( ".nii.gz" ) ) );
 
-      if ( m_FlgOverwrite || ( ! niftk::FileExists( fileOutput ) ) )
+      if ( m_FlgOverwrite || ( ! niftk::FileIsRegular( fileOutput ) ) )
       {
         CreateDirectoryAndParents( fileOutput );
 
@@ -1234,7 +1234,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
   typedef RescaleIntensityImageFilter< ImageType, TOutputImageType > CastFilterType;
   typedef ImageFileWriter< TOutputImageType > FileWriterType;
 
-  if ( niftk::FileExists( fileOutput ) )
+  if ( niftk::FileIsRegular( fileOutput ) )
   {
     if ( ! m_FlgOverwrite )
     {
@@ -1331,7 +1331,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
                                 niftk::ModifyImageFileSuffix( fileInput,
                                                               suffix ) );
 
-    if ( niftk::FileExists( fileModifiedOutput ) )
+    if ( niftk::FileIsRegular( fileModifiedOutput ) )
     {
       std::cerr << std::endl << "WARNING: File " << fileModifiedOutput << " exists"
                 << std::endl << "         but will be overwritten."
@@ -1570,7 +1570,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
     std::string fileModifiedOutput = BuildOutputFilename( fileInput, suffix );
 
-    if ( niftk::FileExists( fileModifiedOutput ) )
+    if ( niftk::FileIsRegular( fileModifiedOutput ) )
     {
       std::cerr << std::endl << "WARNING: File " << fileModifiedOutput << " exists"
                 << std::endl << "         but will be overwritten."
@@ -2314,7 +2314,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
 
     std::string fileModifiedOutput = BuildOutputFilename( fileInput, suffix );
 
-    if ( niftk::FileExists( fileModifiedOutput ) )
+    if ( niftk::FileIsRegular( fileModifiedOutput ) )
     {
       std::cerr << std::endl << "WARNING: File " << fileModifiedOutput << " exists"
                 << std::endl << "         but will be overwritten."
@@ -2558,7 +2558,7 @@ MammogramAnalysis< InputPixelType, InputDimension >
                                                                                                           static_cast<const ImageType * >( m_ImDiagnostic ) ).GetPointer() );
   int dof = transform->GetNumberOfDOF();
 
-  if ( niftk::FileExists( outputUCLTransformFile ) && ( ! m_FlgOverwrite ) )
+  if ( niftk::FileIsRegular( outputUCLTransformFile ) && ( ! m_FlgOverwrite ) )
   {
     std::cout << "Reading the registration transformation: " << outputUCLTransformFile << std::endl;
     transform = dynamic_cast<typename FactoryType::EulerAffineTransformType*>(builder->CreateTransform( outputUCLTransformFile ).GetPointer());

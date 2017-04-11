@@ -37,7 +37,7 @@ FixedLengthFileReader<T,S>::FixedLengthFileReader(const std::string& fileName, c
     throw niftk::IOException("Empty file name supplied!");
   }
 
-  if (!niftk::FileExists(fileName))
+  if (!niftk::FileIsRegular(fileName))
   {
     std::ostringstream oss;
     oss << "File '" << fileName << "' does not exist!";

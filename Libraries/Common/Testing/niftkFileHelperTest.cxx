@@ -505,7 +505,7 @@ int TestCreateAndDeleteUniqueFile()
     return EXIT_FAILURE;
   }
 
-  if ( ! niftk::FileExists ( filename ) )
+  if ( ! niftk::FileIsRegular ( filename ) )
   {
     std::cerr << "The method niftk::CreateUniqueTempFileName did not return a "
               << "writeable file name. " << filename << std::endl;
@@ -526,7 +526,7 @@ int TestCreateAndDeleteUniqueFile()
     return EXIT_FAILURE;
   }
 
-  if ( niftk::FileExists ( filename ) )
+  if ( niftk::FileIsRegular ( filename ) )
   {
     std::cerr << "The method niftk::FileDelete did not delete "
               << filename << std::endl;
