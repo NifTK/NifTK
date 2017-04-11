@@ -550,6 +550,66 @@ int TestFileSize(std::string file, int minExpectedSize, int maxExpectedSize )
   return EXIT_SUCCESS;
 }
 
+//-----------------------------------------------------------------------------
+int TestFileIsRegular(std::string regularFile, std::string nonExistentFile, std::string directory )
+{
+  if ( ! niftk::FileIsRegular ( regularFile ) )
+  {
+    std::cerr << "The method niftk::FileIsRegular should return true for  "
+              << regularFile
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if ( niftk::FileIsRegular ( nonExistentFile ) )
+  {
+    std::cerr << "The method niftk::FileIsRegular should return false for  "
+              << nonExistentFile
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if ( niftk::FileIsRegular ( directory ) )
+  {
+    std::cerr << "The method niftk::FileIsRegular should return false for  "
+              << directory
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+
+//-----------------------------------------------------------------------------
+int TestFileExists(std::string regularFile, std::string nonExistentFile, std::string directory )
+{
+  if ( ! niftk::FileExists ( regularFile ) )
+  {
+    std::cerr << "The method niftk::FileExists should return true for  "
+              << regularFile
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if ( niftk::FileExists ( nonExistentFile ) )
+  {
+    std::cerr << "The method niftk::FileExists should return false for  "
+              << nonExistentFile
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if ( ! niftk::FileExists ( directory ) )
+  {
+    std::cerr << "The method niftk::FileExists should return true for  "
+              << directory
+              << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+
 /**
  * \brief Basic test harness for FileHelper.h
  */
@@ -631,7 +691,14 @@ int niftkFileHelperTest(int argc, char * argv[])
   {
     return TestFileSize(argv[2], atoi(argv[3]), atoi(argv[4]));
   }
-
+   else if (testNumber == 18)
+  {
+    return TestFileIsRegular(argv[2], argv[3], argv[4]);
+  }
+   else if (testNumber == 19)
+  {
+    return TestFileExists(argv[2], argv[3], argv[4]);
+  }
 
   else
   {

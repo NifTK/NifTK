@@ -79,6 +79,8 @@ add_test(File-Helper-16 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHe
 add_test(File-Helper-17a ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 17 ${INPUT_DATA}/LapTrackingAccuracy/2013-07-26-17-00-36-631/dummyVideoFile02.264 0 0)
 add_test(File-Helper-17b ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 17 ${INPUT_DATA}/LapTrackingAccuracy/previous3DResult.txt 292 299)
 add_test(File-Helper-17c ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 17 ${INPUT_DATA}/LapTrackingAccuracy/2013-07-26-17-00-36-631/QmitkIGINVidiaDataSource_5/capture-2013_7_26-16_0_36.264 174469950 174469950)
+add_test(File-Helper-18 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 18 ${INPUT_DATA}/LapTrackingAccuracy/previous3DResult.txt ${INPUT_DATA}/LapTrackingAccuracy/nonExistentFile.txt ${INPUT_DATA}/LapTrackingAccuracy )
+add_test(File-Helper-19 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 19 ${INPUT_DATA}/LapTrackingAccuracy/previous3DResult.txt ${INPUT_DATA}/LapTrackingAccuracy/nonExistentFile.txt ${INPUT_DATA}/LapTrackingAccuracy )
 add_test(FixedLengthFileReader ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFixedLengthFileReaderTest ${INPUT_DATA}/AprilTagUnitTest/idmat.4x4)
 
 set(FileUnitTests_SRCS
