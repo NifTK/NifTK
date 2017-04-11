@@ -282,6 +282,28 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
     m_WorldPoints->AddDummyPointIfNotPresent ( *it );
   }
 
+  //check that gold standard frame numbers and time stamps match those in the framemap file.
+  for ( std::vector < mitk::PickedObject >::iterator it = m_GoldStandardPoints.begin() ; it < m_GoldStandardPoints.end() ; ++ it )
+  {
+    unsigned int frameNumber = it->m_FrameNumber;
+    unsigned long long gSTimeStamp = it->m_TimeStamp;
+
+    if ( frameNumber > trackerMatcher->GetNumberOfFrames() )
+    {
+      mitkThrow() << "Found a gold standard point with frame number " << frameNumber << " but there are only " <<
+        trackerMatcher->GetNumberOfFrames() << " frames in the video data set. Please check your input data";
+    }
+
+    if ( gSTimeStamp != trackerMatcher->GetVideoFrameTimeStamp(frameNumber) )
+    {
+      mitkThrow() << "Found a timestamp mismatch between gold standard and projected objects at frame "
+        << frameNumber << " : " << gSTimeStamp << " != " << trackerMatcher->GetVideoFrameTimeStamp(frameNumber)
+        << " you may be using the wrong gold standard directory for this data set";
+    }
+
+  }
+
+
   if ( ! ( m_DontProject ) && ( m_WorldPoints->GetListSize() == 0) )
   {
     MITK_WARN << "Called project with nothing to project";
@@ -914,7 +936,6 @@ void ProjectPointsOnStereoVideo::CalculateTriangulationErrors (std::string outPr
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (mitk::VideoTrackerMatching::Pointer trackerMatcher )
 {
-
   if ( ! m_GoldStandardPointsClassifiedOK )
   {
     ClassifyGoldStandardPoints ();
@@ -1093,7 +1114,6 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (const std::string& o
     MITK_ERROR << "Attempted to run CalculateProjectionErrors, before running project(), no result.";
     return;
   }
-
   if ( ! m_GoldStandardPointsClassifiedOK )
   {
     ClassifyGoldStandardPoints ();
@@ -1720,12 +1740,13 @@ mitk::PickedPointList::Pointer  ProjectPointsOnStereoVideo::TransformPickedPoint
   return transformedList;
 }
 
-
 //-----------------------------------------------------------------------------
 void ProjectPointsOnStereoVideo::ClassifyGoldStandardPoints ()
 {
   assert (m_ProjectOK);
+
   std::sort ( m_GoldStandardPoints.begin(), m_GoldStandardPoints.end());
+
   unsigned int startsize = m_GoldStandardPoints.size();
   MITK_INFO << "MITK classifing " << startsize << " gold standard points ";
   for ( std::vector<mitk::PickedObject>::iterator it = m_GoldStandardPoints.end() - 1  ; it >= m_GoldStandardPoints.begin() ; --it )
