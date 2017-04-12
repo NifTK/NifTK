@@ -38,7 +38,6 @@ SingleFrameDataSourceService::SingleFrameDataSourceService(
 : IGIDataSource((deviceName + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
                 factoryName.toStdString(),
                 dataStorage)
-, m_Lock(QMutex::Recursive)
 , m_ChannelNumber(0)
 , m_FrameId(0)
 , m_Buffer(bufferSize)
@@ -147,8 +146,6 @@ bool SingleFrameDataSourceService::ProbeRecordedData(niftk::IGIDataSourceI::IGIT
 void SingleFrameDataSourceService::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
                                                  niftk::IGIDataSourceI::IGITimeType lastTimeStamp)
 {
-  QMutexLocker locker(&m_Lock);
-
   IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
 
   m_Buffer.CleanBuffer();
@@ -170,8 +167,6 @@ void SingleFrameDataSourceService::StartPlayback(niftk::IGIDataSourceI::IGITimeT
 //-----------------------------------------------------------------------------
 void SingleFrameDataSourceService::StopPlayback()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_PlaybackIndex.clear();
   m_Buffer.CleanBuffer();
 
@@ -182,8 +177,6 @@ void SingleFrameDataSourceService::StopPlayback()
 //-----------------------------------------------------------------------------
 void SingleFrameDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp)
 {
-  QMutexLocker locker(&m_Lock);
-
   assert(this->GetIsPlayingBack());
   assert(!m_PlaybackIndex.empty()); // Should have failed probing if no data.
 
@@ -267,8 +260,6 @@ void SingleFrameDataSourceService::SaveItem(niftk::IGIDataType& data)
 //-----------------------------------------------------------------------------
 std::vector<IGIDataItemInfo> SingleFrameDataSourceService::Update(const niftk::IGIDataSourceI::IGITimeType& time)
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Buffer.UpdateFrameRate();
 
   // Create default return status.
