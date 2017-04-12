@@ -875,40 +875,17 @@ void ITKGenerateOutlineFromBinaryImage(
 
   // To convert 2D voxel coordinates, to 3D coordinates, we need to map the
   // X and Y axes of the 2D image into a 3D vector in the original 3D space.
-  Index3DType axes[2];
-
   // From this point forward, in this method, by X axis we mean, the first axis that
   // is not the through plane direction in the 2D slice. Similarly for Y, the second axis.
-  axes[0] = regionIndex;
-  axes[1] = regionIndex;
-  int axisCounter = 0;
-  for (int i = 0; i < 3; i++)
+  int xAxis;
+  int yAxis;
+  for (int i = 0, axisCounter = 0; i < 3; i++)
   {
     if (i != sliceAxis)
     {
-      axes[axisCounter][i] += 1;
+      (axisCounter == 0 ? xAxis : yAxis) = i;
       axisCounter++;
     }
-  }
-
-  // Calculate the 3D origin of the extracted slice and the projected slice,
-  // and hence an offset that must be applied to each coordinate to project it.
-  Point3DType originOfSlice;
-  itkImage->TransformIndexToPhysicalPoint(regionIndex, originOfSlice);
-
-  Point3DType originOfProjectedSlice;
-  Point3DType offsetToProject;
-  Point3DType axesInMm[2];
-
-  itkImage->TransformIndexToPhysicalPoint(projectedRegionIndex, originOfProjectedSlice);
-  itkImage->TransformIndexToPhysicalPoint(axes[0], axesInMm[0]);
-  itkImage->TransformIndexToPhysicalPoint(axes[1], axesInMm[1]);
-
-  for (int i = 0; i < 3; i++)
-  {
-    axesInMm[0][i] -= originOfSlice[i];
-    axesInMm[1][i] -= originOfSlice[i];
-    offsetToProject[i] = originOfProjectedSlice[i] - originOfSlice[i];
   }
 
   // Extract 2D slice, and the contours, using ITK pipelines.
@@ -927,6 +904,9 @@ void ITKGenerateOutlineFromBinaryImage(
   extractSliceFilter->SetInput(NULL);
   extractContoursFilter->SetInput(NULL);
 
+  itk::ContinuousIndex<double, 3> pointInVx;
+  pointInVx[sliceAxis] = projectedSliceIndex;
+
   // Now extract the contours, and convert to millimetre coordinates.
   unsigned int numberOfContours = extractContoursFilter->GetNumberOfOutputs();
   for (unsigned int i = 0; i < numberOfContours; i++)
@@ -937,6 +917,7 @@ void ITKGenerateOutlineFromBinaryImage(
     typename PathType::Pointer path = extractContoursFilter->GetOutput(i);
     const typename PathType::VertexListType* list = path->GetVertexList();
 
+    Point3DType pointInMmItk;
     mitk::Point3D pointInMm;
     for (unsigned long int j = 0; j < list->Size(); j++)
     {
@@ -950,9 +931,10 @@ void ITKGenerateOutlineFromBinaryImage(
         continue;
       }
 
-      pointInMm[0] = originOfSlice[0] + (vertex[0] * axesInMm[0][0]) + (vertex[1] * axesInMm[1][0]) + offsetToProject[0];
-      pointInMm[1] = originOfSlice[1] + (vertex[0] * axesInMm[0][1]) + (vertex[1] * axesInMm[1][1]) + offsetToProject[1];
-      pointInMm[2] = originOfSlice[2] + (vertex[0] * axesInMm[0][2]) + (vertex[1] * axesInMm[1][2]) + offsetToProject[2];
+      pointInVx[xAxis] = vertex[0];
+      pointInVx[yAxis] = vertex[1];
+      itkImage->TransformContinuousIndexToPhysicalPoint(pointInVx, pointInMmItk);
+      pointInMm.CastFrom(pointInMmItk);
 
       contour->AddVertex(pointInMm);
     }
