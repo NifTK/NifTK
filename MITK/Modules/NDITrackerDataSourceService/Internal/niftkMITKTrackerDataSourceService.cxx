@@ -39,7 +39,6 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
 : IGIDataSource((name + QString("-") + QString::number(s_Lock.GetNextSourceNumber())).toStdString(),
                 factoryName.toStdString(),
                 dataStorage)
-, m_Lock(QMutex::Recursive)
 , m_Lag(0)
 , m_FrameId(0)
 , m_DataGrabbingThread(NULL)
@@ -145,8 +144,6 @@ bool MITKTrackerDataSourceService::ProbeRecordedData(niftk::IGIDataSourceI::IGIT
 void MITKTrackerDataSourceService::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
                                                  niftk::IGIDataSourceI::IGITimeType lastTimeStamp)
 {
-  QMutexLocker locker(&m_Lock);
-
   IGIDataSource::StartPlayback(firstTimeStamp, lastTimeStamp);
 
   m_Buffers.clear();
@@ -157,8 +154,6 @@ void MITKTrackerDataSourceService::StartPlayback(niftk::IGIDataSourceI::IGITimeT
 //-----------------------------------------------------------------------------
 void MITKTrackerDataSourceService::StopPlayback()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_PlaybackIndex.clear();
   m_Buffers.clear();
 
@@ -248,8 +243,6 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeTy
 //-----------------------------------------------------------------------------
 void MITKTrackerDataSourceService::GrabData()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (this->GetIsPlayingBack())
   {
     return;
