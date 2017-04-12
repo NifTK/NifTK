@@ -510,6 +510,7 @@ void ITKUpdateRegionGrowing(
   params.m_DrawContours = drawContours;
   params.m_PolyContours = polyContours;
   params.m_EraseFullSlice = true;
+  params.m_Geometry = workingImage->GetGeometry();
 
   // Update pipeline.
   if (!skipUpdate)
@@ -577,6 +578,7 @@ void ITKUpdateRegionGrowing(
   params.m_DrawContours = drawContours;
   params.m_PolyContours = polyContours;
   params.m_EraseFullSlice = true;
+  params.m_Geometry = workingImage->GetGeometry();
 
   // Update pipeline.
   if (!skipUpdate)
@@ -1428,6 +1430,7 @@ void ITKSliceDoesHaveUnenclosedSeeds(
   params.m_PolyContours = polyToolContours;
   params.m_DrawContours = drawToolContours;
   params.m_EraseFullSlice = false;
+  params.m_Geometry = workingImage->GetGeometry();
 
   if (useThresholds)
   {
@@ -1493,6 +1496,7 @@ void ITKSliceDoesHaveUnenclosedSeedsNoThresholds(
   params.m_PolyContours = polyToolContours;
   params.m_DrawContours = drawToolContours;
   params.m_EraseFullSlice = false;
+  params.m_Geometry = workingImage->GetGeometry();
 
   params.m_LowerThreshold = 0;
   params.m_UpperThreshold = 0;
@@ -1563,6 +1567,7 @@ void ITKFilterContours(
   params.m_DrawContours = drawToolContours;
   params.m_PolyContours = polyToolContours;
   params.m_EraseFullSlice = true;
+  params.m_Geometry = workingImage->GetGeometry();
 
   // The pipeline *always* uses the thresholding version of the region growing filter for
   // scalar pixel types. If the 'isThresholding' variable is 'true', the minimum and the

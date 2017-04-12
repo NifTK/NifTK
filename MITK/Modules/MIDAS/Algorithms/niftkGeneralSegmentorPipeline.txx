@@ -91,13 +91,10 @@ GeneralSegmentorPipeline<TPixel, VImageDimension>
     m_ManualContours.clear();
 
     // 3. Convert seeds / contours.
-    mitk::Vector3D spacingInWorldCoordinateOrder;
-    GetSpacingInWorldCoordinateOrder(m_ExtractBinaryRegionOfInterestFilter->GetInput(), spacingInWorldCoordinateOrder);
-
     ConvertMITKSeedsAndAppendToITKSeeds(params.m_Seeds, m_AllSeeds);
-    ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, spacingInWorldCoordinateOrder);
-    ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, spacingInWorldCoordinateOrder);
-    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, spacingInWorldCoordinateOrder);
+    ConvertMITKContoursAndAppendToITKContours(params.m_DrawContours, m_ManualContours, params.m_Geometry);
+    ConvertMITKContoursAndAppendToITKContours(params.m_PolyContours, m_ManualContours, params.m_Geometry);
+    ConvertMITKContoursAndAppendToITKContours(params.m_SegmentationContours, m_SegmentationContours, params.m_Geometry);
      
     // 4. Update the pipeline so far to get output slice that we can draw onto.
     m_ExtractGreyRegionOfInterestFilter->SetExtractionRegion(region3D);

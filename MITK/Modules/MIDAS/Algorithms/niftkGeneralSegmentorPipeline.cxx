@@ -57,7 +57,7 @@ void ConvertMITKSeedsAndAppendToITKSeeds(const mitk::PointSet* seeds, itk::Point
 
 //-----------------------------------------------------------------------------
 void ConvertMITKContoursAndAppendToITKContours(
-    mitk::ContourModelSet* mitkContours, std::vector<ParametricPathType::Pointer>& itkContours, const mitk::Vector3D& spacingInWorldCoordinateOrder)
+    mitk::ContourModelSet* mitkContours, std::vector<ParametricPathType::Pointer>& itkContours, const mitk::BaseGeometry* geometry)
 {
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursIt = mitkContours->Begin();
   mitk::ContourModelSet::ContourModelSetIterator mitkContoursEnd = mitkContours->End();
@@ -89,15 +89,20 @@ void ConvertMITKContoursAndAppendToITKContours(
     idx.CastFrom(startPoint);
     itkContour->AddVertex(idx);
 
+    mitk::Point3D startPointIdx;
+    geometry->WorldToIndex(startPoint, startPointIdx);
+
     for (++mitkContourIt; mitkContourIt != mitkContourEnd; ++mitkContourIt)
     {
       mitk::Point3D endPoint = (*mitkContourIt)->Coordinates;
+      mitk::Point3D endPointIdx;
+      geometry->WorldToIndex(endPoint, endPointIdx);
 
       /// Find the axis of the running coordinate.
       int axisOfRunningCoordinate = -1;
       for (int axis = 0; axis < 3; ++ axis)
       {
-        if (std::abs(endPoint[axis] - startPoint[axis]) > 0.01)
+        if (std::abs(endPointIdx[axis] - startPointIdx[axis]) > 0.0001)
         {
           /// Only one coordinate can differ at this point, otherwise the representation
           /// is incorrect. The contour can turn only at voxel corners.
@@ -122,6 +127,9 @@ void ConvertMITKContoursAndAppendToITKContours(
       for (mitk::ContourModel::VertexIterator it = mitkContourIt + 1; it != mitkContourEnd; ++it)
       {
         const mitk::Point3D& newEndPoint = (*it)->Coordinates;
+        mitk::Point3D newEndPointIdx;
+        geometry->WorldToIndex(newEndPoint, newEndPointIdx);
+
         int numberOfDifferentCoordinates = 0;
         int axisWithDifferentCoordinate = -1;
         for (int axis = 0; axis < 3; ++ axis)
@@ -129,7 +137,7 @@ void ConvertMITKContoursAndAppendToITKContours(
           /// TODO
           /// This should be a simple '!=' operator, but the draw tool does not
           /// save perfect corner coordinates now.
-          if (std::abs(newEndPoint[axis] - startPoint[axis]) > 0.01)
+          if (std::abs(newEndPointIdx[axis] - startPointIdx[axis]) > 0.0001)
           {
             ++numberOfDifferentCoordinates;
             axisWithDifferentCoordinate = axis;
@@ -141,6 +149,7 @@ void ConvertMITKContoursAndAppendToITKContours(
           /// discard the previous end point, the end of the edge is this new point.
           mitkContourIt = it;
           endPoint = newEndPoint;
+          geometry->WorldToIndex(endPoint, endPointIdx);
         }
         else if (numberOfDifferentCoordinates == 2)
         {
@@ -167,23 +176,26 @@ void ConvertMITKContoursAndAppendToITKContours(
       }
 
       mitk::Point3D sidePoint = startPoint;
-      double startCoordinate = startPoint[axisOfRunningCoordinate];
-      double endCoordinate = endPoint[axisOfRunningCoordinate];
-      double s = spacingInWorldCoordinateOrder[axisOfRunningCoordinate];
-      if (startCoordinate < endCoordinate)
+      mitk::Point3D sidePointIdx;
+      geometry->WorldToIndex(sidePoint, sidePointIdx);
+      double startCoordinateIdx = startPointIdx[axisOfRunningCoordinate];
+      double endCoordinateIdx = endPointIdx[axisOfRunningCoordinate];
+      if (startCoordinateIdx < endCoordinateIdx)
       {
-        for (double runningCoordinate = startCoordinate + s / 2.0; runningCoordinate < endCoordinate; runningCoordinate += s)
+        for (double runningCoordinateIdx = startCoordinateIdx + 0.5; runningCoordinateIdx < endCoordinateIdx; ++runningCoordinateIdx)
         {
-          sidePoint[axisOfRunningCoordinate] = runningCoordinate;
+          sidePointIdx[axisOfRunningCoordinate] = runningCoordinateIdx;
+          geometry->IndexToWorld(sidePointIdx, sidePoint);
           idx.CastFrom(sidePoint);
           itkContour->AddVertex(idx);
         }
       }
       else
       {
-        for (double runningCoordinate = startCoordinate - s / 2.0; runningCoordinate > endCoordinate; runningCoordinate -= s)
+        for (double runningCoordinateIdx = startCoordinateIdx - 0.5; runningCoordinateIdx > endCoordinateIdx; --runningCoordinateIdx)
         {
-          sidePoint[axisOfRunningCoordinate] = runningCoordinate;
+          sidePointIdx[axisOfRunningCoordinate] = runningCoordinateIdx;
+          geometry->IndexToWorld(sidePointIdx, sidePoint);
           idx.CastFrom(sidePoint);
           itkContour->AddVertex(idx);
         }
@@ -193,6 +205,7 @@ void ConvertMITKContoursAndAppendToITKContours(
       itkContour->AddVertex(idx);
 
       startPoint = endPoint;
+      geometry->WorldToIndex(startPoint, startPointIdx);
     }
     itkContours.push_back(itkContour);
   }
