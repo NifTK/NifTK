@@ -993,7 +993,7 @@ void ProjectPointsOnStereoVideo::TriangulateGoldStandardPoints (mitk::VideoTrack
         point[1] = centroid.y;
         point[2] = centroid.z;
         triangulatedPoints->InsertPoint(m_TriangulatedGoldStandardPoints[i].m_Id,point);
-        MITK_INFO << "Point " <<  m_TriangulatedGoldStandardPoints[i].m_Id << " triangulated mean " << centroid << " SD " << stdDev;
+        MITK_INFO << "Point " <<  m_TriangulatedGoldStandardPoints[i].m_Id << " triangulated mean from " << matchingPoints.size() << " samples : " << centroid << " SD " << stdDev;
         pointIDTriangulated [ m_TriangulatedGoldStandardPoints[i].m_Id ] = true;
       }
     }
