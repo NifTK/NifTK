@@ -219,7 +219,6 @@ void SingleFrameDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeTy
 //-----------------------------------------------------------------------------
 void SingleFrameDataSourceService::GrabData()
 {
-  QMutexLocker locker(&m_Lock);
 
   if (this->GetIsPlayingBack())
   {
