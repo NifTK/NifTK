@@ -206,7 +206,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     fileMask = this->BuildOutputFilename( this->m_FileDiagnostic, diagMaskSuffix );
 
-    if ( niftk::FileExists( fileMask ) && ( ! this->m_FlgOverwrite ) )
+    if ( niftk::FileIsRegular( fileMask ) && ( ! this->m_FlgOverwrite ) )
     {
       typename ReaderType::Pointer reader = ReaderType::New();
       reader->SetFileName( fileMask );
@@ -234,7 +234,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       {
         this->m_FileDiagnosticRegnMask = this->BuildOutputFilename( this->m_FileDiagnostic, diagRegnMaskSuffix );
 
-        if ( niftk::FileExists( this->m_FileDiagnosticRegnMask ) )
+        if ( niftk::FileIsRegular( this->m_FileDiagnosticRegnMask ) )
         {
           reader->SetFileName( this->m_FileDiagnosticRegnMask );
 
@@ -281,7 +281,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     fileMask = this->BuildOutputFilename( this->m_FilePreDiagnostic, preDiagMaskSuffix );
 
-    if ( niftk::FileExists( fileMask ) && ( ! this->m_FlgOverwrite ) )
+    if ( niftk::FileIsRegular( fileMask ) && ( ! this->m_FlgOverwrite ) )
     {
       typename ReaderType::Pointer reader = ReaderType::New();
       reader->SetFileName( fileMask );
@@ -309,7 +309,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       {
         fileRegnMask = this->BuildOutputFilename( this->m_FilePreDiagnostic, preDiagRegnMaskSuffix );
 
-        if ( niftk::FileExists( fileRegnMask ) )
+        if ( niftk::FileIsRegular( fileRegnMask ) )
         {
           reader->SetFileName( fileRegnMask );
 
@@ -356,7 +356,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
 
     fileMask = this->BuildOutputFilename( this->m_FileControl, controlMaskSuffix );
 
-    if ( niftk::FileExists( fileMask ) && ( ! this->m_FlgOverwrite ) )
+    if ( niftk::FileIsRegular( fileMask ) && ( ! this->m_FlgOverwrite ) )
     {
       typename ReaderType::Pointer reader = ReaderType::New();
       reader->SetFileName( fileMask );
@@ -384,7 +384,7 @@ RegionalMammographicDensity< InputPixelType, InputDimension >
       {
         fileRegnMask = this->BuildOutputFilename( this->m_FileControl, controlRegnMaskSuffix );
 
-        if ( niftk::FileExists( fileRegnMask ) )
+        if ( niftk::FileIsRegular( fileRegnMask ) )
         {
           reader->SetFileName( fileRegnMask );
 

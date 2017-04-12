@@ -80,7 +80,7 @@ bool
 ReadImageFromFile( std::string fileInput, typename TInputImage::Pointer &image, 
                    std::string *description=0 )
 {
-  if ( ( fileInput.length() > 0 ) && niftk::FileExists( fileInput ) ) 
+  if ( ( fileInput.length() > 0 ) && niftk::FileIsRegular( fileInput ) ) 
   {
 
     typedef itk::ImageFileReader< TInputImage > FileReaderType;
@@ -113,7 +113,7 @@ bool
 ReadImageFromFile( std::string fileInput, typename TInputImage::ConstPointer &image, 
                    std::string *description=0 )
 {
-  if ( ( fileInput.length() > 0 ) && niftk::FileExists( fileInput ) ) 
+  if ( ( fileInput.length() > 0 ) && niftk::FileIsRegular( fileInput ) ) 
   {
 
     typedef itk::ImageFileReader< TInputImage > FileReaderType;

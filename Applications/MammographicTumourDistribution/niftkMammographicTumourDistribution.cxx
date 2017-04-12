@@ -825,7 +825,7 @@ int main(int argc, char** argv)
 			      niftk::ModifyImageFileSuffix( (*itPatient)->GetFileDiagnostic(), ".csv" ) );
 
 
-    if ( niftk::FileExists( fileCSV ) && ( ! flgOverwrite ) )
+    if ( niftk::FileIsRegular( fileCSV ) && ( ! flgOverwrite ) )
     {
       std::cout << "CSV file exists: " << fileCSV << std::endl;
 

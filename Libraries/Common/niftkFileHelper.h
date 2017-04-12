@@ -76,6 +76,10 @@ NIFTKCOMMON_WINEXPORT bool CreateDirAndParents(const std::string& directoryPath)
 */
 NIFTKCOMMON_WINEXPORT bool FileExists(const std::string& fileName);
 
+/**
+* @return True if file is regular, and false otherwise.
+*/
+NIFTKCOMMON_WINEXPORT bool FileIsRegular(const std::string& fileName);
 
 /**
 * @return Delete a file and return true if successfull, false otherwise.

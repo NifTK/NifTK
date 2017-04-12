@@ -187,7 +187,7 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
 
     fileMask = this->BuildOutputFilename( this->m_FileDiagnostic, diagMaskSuffix );
 
-    if ( niftk::FileExists( fileMask ) && ( ! this->m_FlgOverwrite ) )
+    if ( niftk::FileIsRegular( fileMask ) && ( ! this->m_FlgOverwrite ) )
     {
       typename ReaderType::Pointer reader = ReaderType::New();
       reader->SetFileName( fileMask );
@@ -214,7 +214,7 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
       {
         this->m_FileDiagnosticRegnMask = this->BuildOutputFilename( this->m_FileDiagnostic, diagRegnMaskSuffix );
 
-        if ( niftk::FileExists( this->m_FileDiagnosticRegnMask ) )
+        if ( niftk::FileIsRegular( this->m_FileDiagnosticRegnMask ) )
         {
           reader->SetFileName( this->m_FileDiagnosticRegnMask );
 
@@ -260,7 +260,7 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
 
     fileMask = this->BuildOutputFilename( this->m_FileControl, controlMaskSuffix );
 
-    if ( niftk::FileExists( fileMask ) && ( ! this->m_FlgOverwrite ) )
+    if ( niftk::FileIsRegular( fileMask ) && ( ! this->m_FlgOverwrite ) )
     {
       typename ReaderType::Pointer reader = ReaderType::New();
       reader->SetFileName( fileMask );
@@ -289,7 +289,7 @@ MammographicTumourDistribution< InputPixelType, InputDimension >
         fileRegnMask = this->BuildOutputFilename( this->m_FileControl,
 						  controlRegnMaskSuffix );
 
-        if ( niftk::FileExists( fileRegnMask ) )
+        if ( niftk::FileIsRegular( fileRegnMask ) )
         {
           reader->SetFileName( fileRegnMask );
 

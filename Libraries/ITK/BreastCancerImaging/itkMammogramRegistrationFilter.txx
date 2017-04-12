@@ -1063,12 +1063,12 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
   std::string progRegNonRigid( "reg_f3d" );
 
-  if ( ! niftk::FileExists( progRegNonRigid ) )
+  if ( ! niftk::FileIsRegular( progRegNonRigid ) )
   {
     std::string fileSearchRegNonRigid = niftk::ConcatenatePath( m_DirExecutable,
                                                           progRegNonRigid );
 
-    if ( niftk::FileExists( fileSearchRegNonRigid ) )
+    if ( niftk::FileIsRegular( fileSearchRegNonRigid ) )
     {
       progRegNonRigid = fileSearchRegNonRigid;
     }
@@ -1196,12 +1196,12 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
 
   std::string progBsplineToDeformation( "reg_transform" );
 
-  if ( ! niftk::FileExists( progBsplineToDeformation ) )
+  if ( ! niftk::FileIsRegular( progBsplineToDeformation ) )
   {
     std::string fileSearchBsplineToDeformation = niftk::ConcatenatePath( m_DirExecutable,
                                                           progBsplineToDeformation );
 
-    if ( niftk::FileExists( fileSearchBsplineToDeformation ) )
+    if ( niftk::FileIsRegular( fileSearchBsplineToDeformation ) )
     {
       progBsplineToDeformation = fileSearchBsplineToDeformation;
     }
@@ -1333,12 +1333,12 @@ MammogramRegistrationFilter<TInputImage, TOutputImage>
   unsigned int i;
   std::string progResample( "reg_resample" );
 
-  if ( ! niftk::FileExists( progResample ) )
+  if ( ! niftk::FileIsRegular( progResample ) )
   {
     std::string fileSearchResample = niftk::ConcatenatePath( m_DirExecutable,
 							     progResample );
 
-    if ( niftk::FileExists( fileSearchResample ) )
+    if ( niftk::FileIsRegular( fileSearchResample ) )
     {
       progResample = fileSearchResample;
     }
@@ -1509,7 +1509,7 @@ bool MammogramRegistrationFilter<TInputImage, TOutputImage>::ReadNonRigidDeforma
   unsigned int i;
 
   if ( fileInputDeformation.length() &&
-       niftk::FileExists( fileInputDeformation ) )
+       niftk::FileIsRegular( fileInputDeformation ) )
   {
 
     typedef itk::ImageFileReader< DeformationFieldType  > DeformationFieldReaderType;
@@ -1584,7 +1584,7 @@ bool MammogramRegistrationFilter<TInputImage, TOutputImage>::ReadRegistrationDat
   // The affine transformation
 
   if ( m_FileOutputAffineTransformation.length() &&
-       niftk::FileExists( m_FileOutputAffineTransformation ) )
+       niftk::FileIsRegular( m_FileOutputAffineTransformation ) )
   {
     return ReadAffineTransformation( m_FileOutputAffineTransformation );
   }
@@ -1781,7 +1781,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
   if ( ! m_TargetMask )
   {
-    if ( niftk::FileExists( m_FileTargetMask ) )
+    if ( niftk::FileIsRegular( m_FileTargetMask ) )
     {
       typename FileReaderType::Pointer imageReader = FileReaderType::New();
       imageReader->SetFileName( m_FileTargetMask );
@@ -1812,7 +1812,7 @@ void MammogramRegistrationFilter<TInputImage, TOutputImage>::GenerateData()
 
   if ( ! m_SourceMask )
   {
-    if ( niftk::FileExists( m_FileSourceMask ) )
+    if ( niftk::FileIsRegular( m_FileSourceMask ) )
     {
       typename FileReaderType::Pointer imageReader = FileReaderType::New();
       imageReader->SetFileName( m_FileSourceMask );

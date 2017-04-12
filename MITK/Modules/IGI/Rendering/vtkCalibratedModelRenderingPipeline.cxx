@@ -47,35 +47,35 @@ vtkCalibratedModelRenderingPipeline::vtkCalibratedModelRenderingPipeline(
   {
     mitkThrow() << "Invalid windowSize:" << windowSize;
   }
-  if (!niftk::FileExists(leftIntrinsicsFileName))
+  if (!niftk::FileIsRegular(leftIntrinsicsFileName))
   {
     mitkThrow() << "Left Intrinsics file does not exist:" << leftIntrinsicsFileName;
   }
-  if (!niftk::FileExists(rightIntrinsicsFileName))
+  if (!niftk::FileIsRegular(rightIntrinsicsFileName))
   {
     mitkThrow() << "Right Intrinsics file does not exist:" << rightIntrinsicsFileName;
   }
-  if (!niftk::FileExists(visualisationModelFileName))
+  if (!niftk::FileIsRegular(visualisationModelFileName))
   {
     mitkThrow() << "Model does not exist:" << visualisationModelFileName;
   }
-  if (rightToLeftFileName.length() > 0 && !niftk::FileExists(rightToLeftFileName))
+  if (rightToLeftFileName.length() > 0 && !niftk::FileIsRegular(rightToLeftFileName))
   {
     mitkThrow() << "Right to left file name is specified but doesn't exist:" << rightToLeftFileName;
   }
-  if (textureFileName.length() > 0 && !niftk::FileExists(textureFileName))
+  if (textureFileName.length() > 0 && !niftk::FileIsRegular(textureFileName))
   {
     mitkThrow() << "Texture file name is specified but doesn't exist:" << textureFileName;
   }
-  if (trackingModelFileName.length() > 0 && !niftk::FileExists(trackingModelFileName))
+  if (trackingModelFileName.length() > 0 && !niftk::FileIsRegular(trackingModelFileName))
   {
     mitkThrow() << "Tracking model file name is specified but doesn't exist:" << trackingModelFileName;
   }
-  if (ultrasoundCalibrationMatrixFileName.length() > 0 && !niftk::FileExists(ultrasoundCalibrationMatrixFileName))
+  if (ultrasoundCalibrationMatrixFileName.length() > 0 && !niftk::FileIsRegular(ultrasoundCalibrationMatrixFileName))
   {
     mitkThrow() << "Ultrasound calibration matrix file name is specified but doesn't exist:" << ultrasoundCalibrationMatrixFileName;
   }
-  if (ultrasoundImageFileName.length() > 0 && !niftk::FileExists(ultrasoundImageFileName))
+  if (ultrasoundImageFileName.length() > 0 && !niftk::FileIsRegular(ultrasoundImageFileName))
   {
     mitkThrow() << "Ultrasound image file name is specified but doesn't exist:" << ultrasoundImageFileName;
   }
@@ -87,7 +87,7 @@ vtkCalibratedModelRenderingPipeline::vtkCalibratedModelRenderingPipeline(
 
   m_RightIntrinsicMatrix = cvCreateMat (3,3,CV_64FC1);
   m_RightDistortionVector = cvCreateMat (1,4,CV_64FC1);
-  if (rightIntrinsicsFileName.length() > 0 && niftk::FileExists(rightIntrinsicsFileName))
+  if (rightIntrinsicsFileName.length() > 0 && niftk::FileIsRegular(rightIntrinsicsFileName))
   {
     mitk::LoadCameraIntrinsicsFromPlainText(rightIntrinsicsFileName, &m_RightIntrinsicMatrix, &m_RightDistortionVector);
   }
@@ -99,7 +99,7 @@ vtkCalibratedModelRenderingPipeline::vtkCalibratedModelRenderingPipeline(
   m_CameraMatrixInverted = vtkSmartPointer<vtkMatrix4x4>::New();
   m_RightToLeftMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
   m_RightToLeftMatrix->Identity();
-  if (rightToLeftFileName.length() > 0 && niftk::FileExists(rightToLeftFileName))
+  if (rightToLeftFileName.length() > 0 && niftk::FileIsRegular(rightToLeftFileName))
   {
     // This should throw exceptions on failure. Haven't checked yet.
     mitk::LoadStereoTransformsFromPlainText(rightToLeftFileName, &rightToLeftRotationMatrix, &rightToLeftTranslationVector);

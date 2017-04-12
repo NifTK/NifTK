@@ -489,7 +489,7 @@ public:
     std::stringstream message;
     std::string filePath = niftk::ConcatenatePath( dirOutput, filename );
 
-    if ( ! niftk::FileExists( filePath ) )
+    if ( ! niftk::FileIsRegular( filePath ) )
     {
       return;
     }
@@ -877,12 +877,12 @@ int main( int argc, char *argv[] )
   // Can we find the seg_EM executable or verify the path?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( ! niftk::FileExists( args.progSegEM ) )
+  if ( ! niftk::FileIsRegular( args.progSegEM ) )
   {
     std::string fileSearchSegEM = niftk::ConcatenatePath( dirExecutables.string(), 
                                                           args.progSegEM );
           
-    if ( niftk::FileExists( fileSearchSegEM ) )
+    if ( niftk::FileIsRegular( fileSearchSegEM ) )
     {
       args.progSegEM = fileSearchSegEM;
     }
@@ -892,12 +892,12 @@ int main( int argc, char *argv[] )
   // Can we find the reg_aladin executable or verify the path?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( ! niftk::FileExists( args.progRegAffine ) )
+  if ( ! niftk::FileIsRegular( args.progRegAffine ) )
   {
     std::string fileSearchRegAffine = niftk::ConcatenatePath( dirExecutables.string(), 
                                                               args.progRegAffine );
           
-    if ( niftk::FileExists( fileSearchRegAffine ) )
+    if ( niftk::FileIsRegular( fileSearchRegAffine ) )
     {
       args.progRegAffine = fileSearchRegAffine;
     }
@@ -907,12 +907,12 @@ int main( int argc, char *argv[] )
   // Can we find the reg_f3d executable or verify the path?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( ! niftk::FileExists( args.progRegNonRigid ) )
+  if ( ! niftk::FileIsRegular( args.progRegNonRigid ) )
   {
     std::string fileSearchRegNonRigid = niftk::ConcatenatePath( dirExecutables.string(), 
                                                                 args.progRegNonRigid );
           
-    if ( niftk::FileExists( fileSearchRegNonRigid ) )
+    if ( niftk::FileIsRegular( fileSearchRegNonRigid ) )
     {
       args.progRegNonRigid = fileSearchRegNonRigid;
     }

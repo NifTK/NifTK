@@ -555,7 +555,7 @@ public:
     std::stringstream message;
     std::string filePath = niftk::ConcatenatePath( dirOutput, filename );
 
-    if ( ! niftk::FileExists( filePath ) )
+    if ( ! niftk::FileIsRegular( filePath ) )
     {
       return;
     }
@@ -1080,12 +1080,12 @@ int main( int argc, char *argv[] )
   // Can we find the seg_EM executable or verify the path?
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  if ( ! niftk::FileExists( args.progSegEM ) )
+  if ( ! niftk::FileIsRegular( args.progSegEM ) )
   {
     std::string fileSearchSegEM = niftk::ConcatenatePath( dirExecutables.string(), 
                                                           args.progSegEM );
           
-    if ( niftk::FileExists( fileSearchSegEM ) )
+    if ( niftk::FileIsRegular( fileSearchSegEM ) )
     {
       args.progSegEM = fileSearchSegEM;
     }
@@ -1320,7 +1320,7 @@ int main( int argc, char *argv[] )
 
           if ( ! args.flgOverwrite ) 
           {
-            if ( niftk::FileExists( fileInputDensityMeasurements ) )
+            if ( niftk::FileIsRegular( fileInputDensityMeasurements ) )
             {
               std::ifstream fin( fileInputDensityMeasurements.c_str() );
 
