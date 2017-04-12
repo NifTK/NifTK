@@ -25,8 +25,7 @@ namespace niftk
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceWorker::BKMedicalDataSourceWorker(const int& timeOut,
                                                      const int& framesPerSecond)
-: m_Lock(QMutex::Recursive)
-, m_Timeout(timeOut)
+: m_Timeout(timeOut)
 , m_FramesPerSecond(framesPerSecond)
 , m_Socket(nullptr)
 , m_RequestStopStreaming(false)
@@ -49,8 +48,6 @@ BKMedicalDataSourceWorker::~BKMedicalDataSourceWorker()
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::DisconnectFromHost()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (m_Socket->state() == QTcpSocket::ConnectedState)
   {
     m_Socket->disconnectFromHost();
@@ -61,8 +58,6 @@ void BKMedicalDataSourceWorker::DisconnectFromHost()
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::RequestStop()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_RequestStopStreaming = true;
 }
 
@@ -70,8 +65,6 @@ void BKMedicalDataSourceWorker::RequestStop()
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::StopStreaming()
 {
-  QMutexLocker locker(&m_Lock);
-
   std::ostringstream message;
   message << "QUERY:GRAB_FRAME \"OFF\"," << m_FramesPerSecond << ";";
   bool sentOK = this->SendCommandMessage(message.str());
@@ -89,8 +82,6 @@ void BKMedicalDataSourceWorker::StopStreaming()
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::StartStreaming()
 {
-  QMutexLocker locker(&m_Lock);
-
   std::ostringstream streamMessage;
   streamMessage << "QUERY:GRAB_FRAME \"ON\"," << m_FramesPerSecond << ";";
   bool sentOK = this->SendCommandMessage(streamMessage.str());
@@ -112,8 +103,6 @@ void BKMedicalDataSourceWorker::StartStreaming()
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ConnectToHost(const QString& address, const int& port)
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Socket->connectToHost(address, port);
   if (!m_Socket->waitForConnected(m_Timeout))
   {
@@ -198,8 +187,6 @@ int BKMedicalDataSourceWorker::FindFirstANotPreceededByB(const int& startingPosi
 //-----------------------------------------------------------------------------
 size_t BKMedicalDataSourceWorker::GenerateCommandMessage(const std::string& message)
 {
-  QMutexLocker locker(&m_Lock);
-
   size_t counter = 0;
   m_OutgoingMessageBuffer[counter++] = 0x01;
   for (int i = 0; i < message.size(); i++)
@@ -214,8 +201,6 @@ size_t BKMedicalDataSourceWorker::GenerateCommandMessage(const std::string& mess
 //-----------------------------------------------------------------------------
 bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
 {
-  QMutexLocker locker(&m_Lock);
-
   size_t messageSize = this->GenerateCommandMessage(message);
   size_t sentSize = m_Socket->write(m_OutgoingMessageBuffer, messageSize);
   bool wasWritten = m_Socket->waitForBytesWritten(m_Timeout);
@@ -242,8 +227,6 @@ bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
 //-----------------------------------------------------------------------------
 std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expectedSize)
 {
-  QMutexLocker locker(&m_Lock);
-
   std::string result;
   unsigned int counter = 0;
   size_t actualSize = expectedSize + 2; // due to start and end terminator.
@@ -296,8 +279,6 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
 {
-  QMutexLocker locker(&m_Lock);
-
   unsigned int minimumSize = m_ImageSize[0] * m_ImageSize[1] + 20;
   int preceedingChar = 0;
   int hashChar = 0;
@@ -441,8 +422,6 @@ void BKMedicalDataSourceWorker::Start()
   while(m_IsStreaming)
   {
     {
-      QMutexLocker locker(&m_Lock);
-
       // If another thread (e.g. GUI) has requested to stop,
       // we send this stop request, which ultimately sets m_IsStreaming
       // to false, thereby ending this loop.

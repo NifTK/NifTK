@@ -18,7 +18,6 @@
 #include <QImage>
 #include <QTcpSocket>
 #include <QByteArray>
-#include <QMutex>
 
 namespace niftk
 {
@@ -63,7 +62,6 @@ private:
                                 const QByteArray& buf,
                                 const char& a,
                                 const char& b);
-  QMutex        m_Lock;
   int           m_Timeout;
   int           m_FramesPerSecond;
   QTcpSocket*   m_Socket;
