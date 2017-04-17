@@ -12,20 +12,13 @@
 #
 #============================================================================*/
 
-if(SlicerExecutionModel_FOUND AND VTK_FOUND)
-
-  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-    NAME niftkMakeLapUSProbeBasicModel
-    BUILD_SLICER
-    INSTALL_SCRIPT
-    TARGET_LIBRARIES
-      ${ITK_LIBRARIES}
-      vtkCommonCore
-      vtkIOLegacy
-      niftkcommon
-      niftkITK
-      niftkITKIO
-  )
-
-endif()
+NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+  NAME niftkSimpleBoundaryShiftIntegral
+  BUILD_CLI
+  TARGET_LIBRARIES
+    niftkcommon
+    niftkITK
+    niftkITKIO
+    ${ITK_LIBRARIES}
+)
 

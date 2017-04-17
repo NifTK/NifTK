@@ -22,7 +22,6 @@
 #include <itkSubtractImageFilter.h>
 #include <itkMedianImageFilter.h>
 #include <itkExpImageFilter.h>
-#include <itkDivideByConstantImageFilter.h>
 #include <itkMultiplyImageFilter.h>
 #include <itkDivideImageFilter.h>
 
@@ -117,10 +116,10 @@ int main(int argc, char** argv)
   typedef itk::SubtractImageFilter<InputImageType, InputImageType> SubtractImageFilterType; 
   typedef itk::MedianImageFilter<InputImageType, InputImageType> MedianImageFilterType; 
   typedef itk::ExpImageFilter<InputImageType, InputImageType> ExpImageFilterType; 
-  typedef itk::DivideByConstantImageFilter<InputImageType, PixelType, InputImageType> DivideByConstantImageFilterType; 
+  typedef itk::MultiplyImageFilter<InputImageType, InputImageType, InputImageType> MultiplyPixelsImageFilterType;
   typedef itk::MultiplyImageFilter<InputImageType, InputImageType> MultiplyImageFilterType; 
-  typedef itk::DivideImageFilter<InputImageType, InputImageType, InputImageType> DivideImageFilterType; 
-  
+  typedef itk::DivideImageFilter<InputImageType, InputImageType, InputImageType> DivideImageFilterType;
+
   try
   {
     ReaderType::Pointer inputReader1 = ReaderType::New();
@@ -209,13 +208,13 @@ int main(int argc, char** argv)
     medianImageFilter->SetRadius(kernelRadius); 
     
     // Divide the bias into two equal parts. 
-    DivideByConstantImageFilterType::Pointer divideByConstantImageFilter = DivideByConstantImageFilterType::New(); 
-    divideByConstantImageFilter->SetInput(medianImageFilter->GetOutput()); 
-    divideByConstantImageFilter->SetConstant(2.0); 
+    MultiplyPixelsImageFilterType::Pointer multiplyByConstantImageFilter = MultiplyPixelsImageFilterType::New();
+    multiplyByConstantImageFilter->SetInput(medianImageFilter->GetOutput());
+    multiplyByConstantImageFilter->SetConstant(1.0/2.0);
     
     // Exponential the output from the median filter to get the bias ratio. 
     ExpImageFilterType::Pointer expImageFilter = ExpImageFilterType::New(); 
-    expImageFilter->SetInput(divideByConstantImageFilter->GetOutput()); 
+    expImageFilter->SetInput(multiplyByConstantImageFilter->GetOutput());
     
     // Apply the bias to the images. 
     // 1. multiple the image2 by the bias. 

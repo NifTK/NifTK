@@ -12,24 +12,13 @@
 #
 #============================================================================*/
 
-if(VTK_FOUND)
-
-  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-    NAME niftkCreateBreastMesh
-    BUILD_CLI
-    TARGET_LIBRARIES
-      ${ITK_LIBRARIES}
-      vtkCommonCore
-      vtkFiltersCore
-      vtkFiltersSources
-      vtkIOCore
-      vtkIOLegacy
-      vtkRenderingCore
-      vtkRenderingFreeType
-      niftkcommon
-      niftkITK
-      niftkITKIO
-  )
-
-endif()
+NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+  NAME niftkDbc
+  BUILD_CLI
+  TARGET_LIBRARIES
+    niftkcommon
+    niftkITK
+    niftkITKIO
+    ${ITK_LIBRARIES}
+)
 

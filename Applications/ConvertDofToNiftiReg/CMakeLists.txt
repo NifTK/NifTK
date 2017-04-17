@@ -12,19 +12,14 @@
 #
 #============================================================================*/
 
-if(SlicerExecutionModel_FOUND AND VTK_FOUND)
-
-  NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-    NAME niftkMakeLapUSProbeARUCOModel
-    BUILD_SLICER
-    INSTALL_SCRIPT
-    TARGET_LIBRARIES
-      vtkCommonCore
-      vtkFiltersSources
-      vtkIOLegacy
-      niftkcommon
-      niftkVTK
-  )
-
-endif()
+NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+  NAME niftkConvertDofToNiftiReg
+  BUILD_CLI
+  TARGET_LIBRARIES
+    ${Boost_LIBRARIES}
+    ${ITK_LIBRARIES}
+    niftkcommon
+    niftkITK
+    niftkITKIO
+)
 

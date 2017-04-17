@@ -13,7 +13,7 @@
 #============================================================================*/
 
 NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-  NAME niftkFFD
+  NAME niftkKMeansWindowPiecewiseNormBSI
   BUILD_CLI
   TARGET_LIBRARIES
     niftkcommon
