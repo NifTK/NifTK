@@ -973,15 +973,6 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
 
   int matchNumber = 0;
 
-  // For debugging
-  fstream fp("pairs.txt", ios::out);
-  if (!fp)
-  {
-    std::ostringstream errorMessage;
-    errorMessage << "Can't write pairing result!" << std::endl;
-    mitkThrow() << errorMessage.str();
-  }
-
   for (int i = 0; i < fileList1.size(); i++)
   {
     // Note: images in folder UltrasonixRemote_2 have -ultrasoundImage after the time stamp
@@ -1050,17 +1041,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
     std::pair<std::string, std::string> aPairOfFiles(fileList1[i], fileList2[matchNumber]);
     pairedFiles.push_back(aPairOfFiles);
 
-    // For debugging
-    cout << "File:" << "\t" << i << "\t" << firstFileTime << std::endl;
-    cout << "Match:" << "\t" << matchNumber << "\t" << matchTime << std::endl;
-    cout << "Lag:" << "\t" << closestTime << std::endl;
-
-    fp << "File:" << "\t" << i << "\t" << firstFileTime << std::endl;
-    fp << "Match:" << "\t" << matchNumber << "\t" << matchTime << std::endl;
-    fp << "Lag:" << "\t" << closestTime << std::endl;
   } // end for i
-
-  fp.close();
 
   return pairedFiles;
 }
