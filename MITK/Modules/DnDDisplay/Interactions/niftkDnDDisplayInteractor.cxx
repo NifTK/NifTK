@@ -89,11 +89,22 @@ void DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("setWindowLayoutTo3D", SetWindowLayoutTo3D);
   CONNECT_FUNCTION("setWindowLayoutToMulti", SetWindowLayoutToMulti);
   CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
+  CONNECT_FUNCTION("selectPreviousWindow", SelectPreviousWindow);
+  CONNECT_FUNCTION("selectNextWindow", SelectNextWindow);
+  CONNECT_FUNCTION("selectWindow", SelectWindow);
+  CONNECT_FUNCTION("selectPreviousViewer", SelectPreviousViewer);
+  CONNECT_FUNCTION("selectNextViewer", SelectNextViewer);
+  CONNECT_FUNCTION("selectViewer", SelectViewer);
   CONNECT_FUNCTION("toggleCursorVisibility", ToggleCursorVisibility);
   CONNECT_FUNCTION("toggleDirectionAnnotations", ToggleDirectionAnnotations);
   CONNECT_FUNCTION("togglePositionAnnotation", TogglePositionAnnotation);
   CONNECT_FUNCTION("toggleIntensityAnnotation", ToggleIntensityAnnotation);
   CONNECT_FUNCTION("togglePropertyAnnotation", TogglePropertyAnnotation);
+
+  CONNECT_FUNCTION("selectVoxelOnLeft", SelectVoxelOnLeft);
+  CONNECT_FUNCTION("selectVoxelOnRight", SelectVoxelOnRight);
+  CONNECT_FUNCTION("selectVoxelAbove", SelectVoxelAbove);
+  CONNECT_FUNCTION("selectVoxelBelow", SelectVoxelBelow);
   CONNECT_FUNCTION("selectPreviousSlice", SelectPreviousSlice);
   CONNECT_FUNCTION("selectNextSlice", SelectNextSlice);
   CONNECT_FUNCTION("selectPreviousTimeStep", SelectPreviousTimeStep);
@@ -343,6 +354,48 @@ bool DnDDisplayInteractor::ToggleMultiWindowLayout(mitk::StateMachineAction* act
 
 
 //-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectPreviousWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectNextWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectPreviousViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectNextViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
 bool DnDDisplayInteractor::ToggleCursorVisibility(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   m_Viewer->ToggleCursorVisibility();
@@ -378,6 +431,138 @@ bool DnDDisplayInteractor::ToggleIntensityAnnotation(mitk::StateMachineAction* a
 bool DnDDisplayInteractor::TogglePropertyAnnotation(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   m_Viewer->TogglePropertyAnnotation();
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectVoxelOnLeft(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+
+  /// Note:
+  /// We do not selecting voxels for the 3D window.
+  if (renderer == m_Renderers[3])
+  {
+    return true;
+  }
+
+  WindowOrientation focusedOrientation = m_Viewer->GetOrientation();
+
+  WindowOrientation navigationOrientation;
+  int delta;
+  if (focusedOrientation == WINDOW_ORIENTATION_SAGITTAL)
+  {
+    navigationOrientation = WINDOW_ORIENTATION_CORONAL;
+    delta = +1;
+  }
+  else // if axial or coronal
+  {
+    navigationOrientation = WINDOW_ORIENTATION_SAGITTAL;
+    delta = -1;
+  }
+
+  m_Viewer->MoveSlice(navigationOrientation, delta);
+
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectVoxelOnRight(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+
+  /// Note:
+  /// We do not selecting voxels for the 3D window.
+  if (renderer == m_Renderers[3])
+  {
+    return true;
+  }
+
+  WindowOrientation focusedOrientation = m_Viewer->GetOrientation();
+
+  WindowOrientation navigationOrientation;
+  int delta;
+  if (focusedOrientation == WINDOW_ORIENTATION_SAGITTAL)
+  {
+    navigationOrientation = WINDOW_ORIENTATION_CORONAL;
+    delta = -1;
+  }
+  else // if axial or coronal
+  {
+    navigationOrientation = WINDOW_ORIENTATION_SAGITTAL;
+    delta = +1;
+  }
+
+  m_Viewer->MoveSlice(navigationOrientation, delta);
+
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectVoxelAbove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+
+  /// Note:
+  /// We do not selecting voxels for the 3D window.
+  if (renderer == m_Renderers[3])
+  {
+    return true;
+  }
+
+  WindowOrientation focusedOrientation = m_Viewer->GetOrientation();
+
+  WindowOrientation navigationOrientation;
+  int delta;
+  if (focusedOrientation == WINDOW_ORIENTATION_AXIAL)
+  {
+    navigationOrientation = WINDOW_ORIENTATION_CORONAL;
+    delta = +1;
+  }
+  else // if sagittal or coronal
+  {
+    navigationOrientation = WINDOW_ORIENTATION_AXIAL;
+    delta = -1;
+  }
+
+  m_Viewer->MoveSlice(navigationOrientation, delta);
+
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectVoxelBelow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  mitk::BaseRenderer* renderer = interactionEvent->GetSender();
+
+  /// Note:
+  /// We do not selecting voxels for the 3D window.
+  if (renderer == m_Renderers[3])
+  {
+    return true;
+  }
+
+  WindowOrientation focusedOrientation = m_Viewer->GetOrientation();
+
+  WindowOrientation navigationOrientation;
+  int delta;
+  if (focusedOrientation == WINDOW_ORIENTATION_AXIAL)
+  {
+    navigationOrientation = WINDOW_ORIENTATION_CORONAL;
+    delta = -1;
+  }
+  else // if sagittal or coronal
+  {
+    navigationOrientation = WINDOW_ORIENTATION_AXIAL;
+    delta = +1;
+  }
+
+  m_Viewer->MoveSlice(navigationOrientation, delta);
+
   return true;
 }
 

@@ -29,6 +29,19 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="startZooming"/>
         </transition>
 
+        <transition event_class="InteractionKeyEvent" event_variant="SelectVoxelOnLeft" target="start">
+            <action name="selectVoxelOnLeft"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectVoxelOnRight" target="start">
+            <action name="selectVoxelOnRight"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectVoxelAbove" target="start">
+            <action name="selectVoxelAbove"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectVoxelBelow" target="start">
+            <action name="selectVoxelBelow"/>
+        </transition>
+
         <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="selectPreviousSlice"/>
         </transition>
@@ -86,6 +99,62 @@ TODO Std move to abort interaction of scroll/pan/zoom
         </transition>
         <transition event_class="MouseDoubleClickEvent" event_variant="ToggleMultiWindowLayout" target="start">
             <action name="toggleMultiWindowLayout"/>
+        </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="SelectPreviousWindow" target="start">
+            <action name="selectPreviousWindow"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectNextWindow" target="start">
+            <action name="selectNextWindow"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectAxialWindow" target="start">
+            <action name="selectWindow" window="axial"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectSagittalWindow" target="start">
+            <action name="selectWindow" window="sagittal"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectCoronalWindow" target="start">
+            <action name="selectWindow" window="coronal"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="Select3DWindow" target="start">
+            <action name="selectWindow" window="3D"/>
+        </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="SelectPreviousViewer" target="start">
+            <action name="selectPreviousViewer"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectNextViewer" target="start">
+            <action name="selectNextViewer"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectFirstViewer" target="start">
+            <action name="selectViewer" index="0"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectSecondViewer" target="start">
+            <action name="selectViewer" index="1"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectThirdViewer" target="start">
+            <action name="selectViewer" index="2"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectFourthViewer" target="start">
+            <action name="selectViewer" index="3"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectFifthViewer" target="start">
+            <action name="selectViewer" index="4"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectSixthViewer" target="start">
+            <action name="selectViewer" index="5"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectSeventhViewer" target="start">
+            <action name="selectViewer" index="6"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectEighthViewer" target="start">
+            <action name="selectViewer" index="7"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectNinthViewer" target="start">
+            <action name="selectViewer" index="8"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectTenthViewer" target="start">
+            <action name="selectViewer" index="9"/>
         </transition>
 
         <transition event_class="InteractionKeyEvent" event_variant="ToggleCursorVisibility" target="start">

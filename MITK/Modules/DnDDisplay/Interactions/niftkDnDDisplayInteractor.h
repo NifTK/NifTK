@@ -115,6 +115,26 @@ protected:
   /// \brief Toggles between single and multi window layout.
   virtual bool ToggleMultiWindowLayout(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
+  /// \brief Selects the previous window of the current window layout.
+  virtual bool SelectPreviousWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the next window of the current window layout.
+  virtual bool SelectNextWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the given window if it is visible in the current window layout.
+  /// The name of the window is set as the "window" string parameter of the action ("axial", "sagittal", "coronal" or "3D").
+  virtual bool SelectWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the previous viewer.
+  virtual bool SelectPreviousViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the next viewer.
+  virtual bool SelectNextViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the viewer with the given index.
+  /// The index is provided by the "index" int parameter of the action. Numbering starts from 0.
+  virtual bool SelectViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
   /// \brief Toggles the visibility of the cursor.
   virtual bool ToggleCursorVisibility(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
@@ -129,6 +149,18 @@ protected:
 
   /// \brief Toggles displaying the intensity annotation on/off.
   virtual bool TogglePropertyAnnotation(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the left adjecant voxel of the currently selected voxel in the selected window.
+  virtual bool SelectVoxelOnLeft(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the right adjecant voxel of the currently selected voxel in the selected window.
+  virtual bool SelectVoxelOnRight(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the top adjecant voxel of the currently selected voxel in the selected window.
+  virtual bool SelectVoxelAbove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the bottom adjecant voxel of the currently selected voxel in the selected window.
+  virtual bool SelectVoxelBelow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Selects the previous slice.
   /// The slices are ordered in the following way:
