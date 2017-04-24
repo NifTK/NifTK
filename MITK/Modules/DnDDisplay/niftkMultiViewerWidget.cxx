@@ -243,6 +243,9 @@ SingleViewerWidget* MultiViewerWidget::CreateViewer(const QString& name)
   viewer->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
   this->connect(viewer, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
+  this->connect(viewer, SIGNAL(SelectPreviousViewer()), SLOT(OnSelectPreviousViewer()));
+  this->connect(viewer, SIGNAL(SelectNextViewer()), SLOT(OnSelectNextViewer()));
+  this->connect(viewer, SIGNAL(SelectViewer(int)), SLOT(OnSelectViewer(int)));
   this->connect(viewer, SIGNAL(TimeGeometryChanged(const mitk::TimeGeometry*)), SLOT(OnTimeGeometryChanged(const mitk::TimeGeometry*)));
   this->connect(viewer, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
   this->connect(viewer, SIGNAL(TimeStepChanged(int)), SLOT(OnTimeStepChanged(int)));
@@ -1167,6 +1170,16 @@ void MultiViewerWidget::SetFocused()
 
 
 //-----------------------------------------------------------------------------
+void MultiViewerWidget::SetSelectedViewer(int viewerIndex)
+{
+  if (viewerIndex >= 0 && viewerIndex < m_Viewers.size())
+  {
+    m_Viewers[viewerIndex]->SetFocused();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void MultiViewerWidget::OnWindowSelected()
 {
   auto it = std::find(m_Viewers.begin(), m_Viewers.end(), QObject::sender());
@@ -1209,6 +1222,27 @@ void MultiViewerWidget::OnWindowSelected()
   m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
 
   this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::OnSelectPreviousViewer()
+{
+  this->SetSelectedViewer(m_SelectedViewerIndex - 1);
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::OnSelectNextViewer()
+{
+  this->SetSelectedViewer(m_SelectedViewerIndex + 1);
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerWidget::OnSelectViewer(int viewerIndex)
+{
+  this->SetSelectedViewer(viewerIndex);
 }
 
 

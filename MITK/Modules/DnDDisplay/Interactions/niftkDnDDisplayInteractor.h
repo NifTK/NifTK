@@ -121,9 +121,17 @@ protected:
   /// \brief Selects the next window of the current window layout.
   virtual bool SelectNextWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
-  /// \brief Selects the given window if it is visible in the current window layout.
-  /// The name of the window is set as the "window" string parameter of the action ("axial", "sagittal", "coronal" or "3D").
-  virtual bool SelectWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+  /// \brief Selects the axial window if it is visible in the current window layout.
+  virtual bool SelectAxialWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the sagittal window if it is visible in the current window layout.
+  virtual bool SelectSagittalWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the coronal window if it is visible in the current window layout.
+  virtual bool SelectCoronalWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the 3D window if it is visible in the current window layout.
+  virtual bool Select3DWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Selects the previous viewer.
   virtual bool SelectPreviousViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
@@ -131,9 +139,35 @@ protected:
   /// \brief Selects the next viewer.
   virtual bool SelectNextViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
-  /// \brief Selects the viewer with the given index.
-  /// The index is provided by the "index" int parameter of the action. Numbering starts from 0.
-  virtual bool SelectViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+  /// \brief Selects viewer 0.
+  virtual bool SelectViewer0(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 1.
+  virtual bool SelectViewer1(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 2.
+  virtual bool SelectViewer2(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 3.
+  virtual bool SelectViewer3(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 4.
+  virtual bool SelectViewer4(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 5.
+  virtual bool SelectViewer5(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 6.
+  virtual bool SelectViewer6(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 7.
+  virtual bool SelectViewer7(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 8.
+  virtual bool SelectViewer8(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 9.
+  virtual bool SelectViewer9(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Toggles the visibility of the cursor.
   virtual bool ToggleCursorVisibility(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);

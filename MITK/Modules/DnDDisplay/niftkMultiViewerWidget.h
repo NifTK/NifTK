@@ -241,6 +241,13 @@ public:
   /// \brief Will return the selected viewer or the first viewer if none is selected.
   SingleViewerWidget* GetSelectedViewer() const;
 
+  /// \brief Will return the index of the selected viewer or 0 if none is selected.
+//  int GetSelectedViewerIndex() const;
+
+  /// \brief Selects the viewer of the given index.
+  /// If the index is out of range, it does not do anything.
+//  void SetSelectedViewerIndex(int viewerIndex);
+
   /// \see mitk::IRenderWindowPart::GetActiveRenderWindow(), where we return the currently selected QmitkRenderWindow.
   virtual QmitkRenderWindow* GetSelectedRenderWindow() const;
 
@@ -269,6 +276,9 @@ public:
 
   /// \brief Sets the focus to the selected viewer.
   void SetFocused();
+
+  /// \brief Sets the focus to the viewer of the given index.
+  void SetSelectedViewer(int viewerIndex);
 
   /// \brief Shows the control panel if the mouse pointer is moved over the pin button.
   virtual bool eventFilter(QObject* object, QEvent* event);
@@ -344,6 +354,15 @@ protected slots:
 
   /// \brief Called when a window of one of the viewers receives the focus.
   void OnWindowSelected();
+
+  /// \brief Called when the previous viewer is requested to be selected.
+  void OnSelectPreviousViewer();
+
+  /// \brief Called when the next viewer is requested to be selected.
+  void OnSelectNextViewer();
+
+  /// \brief Called when the viewer with of the given index is requested to be selected.
+  void OnSelectViewer(int viewerIndex);
 
   /// \brief Called when the selected position has changed in a render window of a viewer.
   /// Each of the contained viewers will signal when its slice navigation controllers have changed.

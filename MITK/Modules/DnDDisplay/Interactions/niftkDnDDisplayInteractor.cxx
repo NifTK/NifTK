@@ -91,10 +91,22 @@ void DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
   CONNECT_FUNCTION("selectPreviousWindow", SelectPreviousWindow);
   CONNECT_FUNCTION("selectNextWindow", SelectNextWindow);
-  CONNECT_FUNCTION("selectWindow", SelectWindow);
+  CONNECT_FUNCTION("selectAxialWindow", SelectAxialWindow);
+  CONNECT_FUNCTION("selectSagittalWindow", SelectSagittalWindow);
+  CONNECT_FUNCTION("selectCoronalWindow", SelectCoronalWindow);
+  CONNECT_FUNCTION("select3DWindow", Select3DWindow);
   CONNECT_FUNCTION("selectPreviousViewer", SelectPreviousViewer);
   CONNECT_FUNCTION("selectNextViewer", SelectNextViewer);
-  CONNECT_FUNCTION("selectViewer", SelectViewer);
+  CONNECT_FUNCTION("selectViewer0", SelectViewer0);
+  CONNECT_FUNCTION("selectViewer1", SelectViewer1);
+  CONNECT_FUNCTION("selectViewer2", SelectViewer2);
+  CONNECT_FUNCTION("selectViewer3", SelectViewer3);
+  CONNECT_FUNCTION("selectViewer4", SelectViewer4);
+  CONNECT_FUNCTION("selectViewer5", SelectViewer5);
+  CONNECT_FUNCTION("selectViewer6", SelectViewer6);
+  CONNECT_FUNCTION("selectViewer7", SelectViewer7);
+  CONNECT_FUNCTION("selectViewer8", SelectViewer8);
+  CONNECT_FUNCTION("selectViewer9", SelectViewer9);
   CONNECT_FUNCTION("toggleCursorVisibility", ToggleCursorVisibility);
   CONNECT_FUNCTION("toggleDirectionAnnotations", ToggleDirectionAnnotations);
   CONNECT_FUNCTION("togglePositionAnnotation", TogglePositionAnnotation);
@@ -354,22 +366,75 @@ bool DnDDisplayInteractor::ToggleMultiWindowLayout(mitk::StateMachineAction* act
 
 
 //-----------------------------------------------------------------------------
-bool DnDDisplayInteractor::SelectPreviousWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+bool DnDDisplayInteractor::SelectPreviousWindow(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
 {
+  if (auto previousWindow = m_Viewer->GetPreviousWindow())
+  {
+    m_Viewer->SetSelectedRenderWindow(previousWindow);
+  }
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-bool DnDDisplayInteractor::SelectNextWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+bool DnDDisplayInteractor::SelectNextWindow(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
 {
+  if (auto nextWindow = m_Viewer->GetNextWindow())
+  {
+    m_Viewer->SetSelectedRenderWindow(nextWindow);
+  }
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-bool DnDDisplayInteractor::SelectWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+bool DnDDisplayInteractor::SelectAxialWindow(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
 {
+  QmitkRenderWindow* window = m_Viewer->GetAxialWindow();
+  if (window && window->isVisible())
+  {
+    m_Viewer->SetSelectedRenderWindow(window);
+  }
+
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectSagittalWindow(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  QmitkRenderWindow* window = m_Viewer->GetSagittalWindow();
+  if (window && window->isVisible())
+  {
+    m_Viewer->SetSelectedRenderWindow(window);
+  }
+
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectCoronalWindow(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  QmitkRenderWindow* window = m_Viewer->GetCoronalWindow();
+  if (window && window->isVisible())
+  {
+    m_Viewer->SetSelectedRenderWindow(window);
+  }
+
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::Select3DWindow(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  QmitkRenderWindow* window = m_Viewer->Get3DWindow();
+  if (window && window->isVisible())
+  {
+    m_Viewer->SetSelectedRenderWindow(window);
+  }
+
   return true;
 }
 
@@ -377,6 +442,7 @@ bool DnDDisplayInteractor::SelectWindow(mitk::StateMachineAction* action, mitk::
 //-----------------------------------------------------------------------------
 bool DnDDisplayInteractor::SelectPreviousViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
+  emit m_Viewer->SelectPreviousViewer();
   return true;
 }
 
@@ -384,13 +450,87 @@ bool DnDDisplayInteractor::SelectPreviousViewer(mitk::StateMachineAction* action
 //-----------------------------------------------------------------------------
 bool DnDDisplayInteractor::SelectNextViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
+  emit m_Viewer->SelectNextViewer();
   return true;
 }
 
 
 //-----------------------------------------------------------------------------
-bool DnDDisplayInteractor::SelectViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+bool DnDDisplayInteractor::SelectViewer0(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
 {
+  emit m_Viewer->SelectViewer(0);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectViewer1(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  emit m_Viewer->SelectViewer(1);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectViewer2(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  emit m_Viewer->SelectViewer(2);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectViewer3(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  emit m_Viewer->SelectViewer(3);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectViewer4(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  emit m_Viewer->SelectViewer(4);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectViewer5(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  emit m_Viewer->SelectViewer(5);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectViewer6(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  emit m_Viewer->SelectViewer(6);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectViewer7(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  emit m_Viewer->SelectViewer(7);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectViewer8(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  emit m_Viewer->SelectViewer(8);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::SelectViewer9(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  emit m_Viewer->SelectViewer(9);
   return true;
 }
 

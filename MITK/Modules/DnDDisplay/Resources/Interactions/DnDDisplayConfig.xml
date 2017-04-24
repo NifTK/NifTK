@@ -183,11 +183,11 @@
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
   <event_variant class="InteractionKeyEvent" name="SelectPreviousWindow">
-    <attribute name="Key" value=","/>
+    <attribute name="Key" value="&lt;"/>
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
   <event_variant class="InteractionKeyEvent" name="SelectNextWindow">
-    <attribute name="Key" value="."/>
+    <attribute name="Key" value="&gt;"/>
     <attribute name="Modifiers" value="shift"/>
   </event_variant>
 
@@ -198,34 +198,34 @@
   <event_variant class="InteractionKeyEvent" name="SelectNextViewer">
     <attribute name="Key" value="."/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectFirstViewer">
+  <event_variant class="InteractionKeyEvent" name="SelectViewer0">
     <attribute name="Key" value="1"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectSecondViewer">
+  <event_variant class="InteractionKeyEvent" name="SelectViewer1">
     <attribute name="Key" value="2"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectThirdViewer">
+  <event_variant class="InteractionKeyEvent" name="SelectViewer2">
     <attribute name="Key" value="3"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectFourthViewer">
+  <event_variant class="InteractionKeyEvent" name="SelectViewer3">
     <attribute name="Key" value="4"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectFifthViewer">
+  <event_variant class="InteractionKeyEvent" name="SelectViewer4">
     <attribute name="Key" value="5"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectSixthViewer">
+  <event_variant class="InteractionKeyEvent" name="SelectViewer5">
     <attribute name="Key" value="6"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectSeventhViewer">
+  <event_variant class="InteractionKeyEvent" name="SelectViewer6">
     <attribute name="Key" value="7"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectEighthViewer">
+  <event_variant class="InteractionKeyEvent" name="SelectViewer7">
     <attribute name="Key" value="8"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectNinthViewer">
+  <event_variant class="InteractionKeyEvent" name="SelectViewer8">
     <attribute name="Key" value="9"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="SelectTenthViewer">
+  <event_variant class="InteractionKeyEvent" name="SelectViewer9">
     <attribute name="Key" value="0"/>
   </event_variant>
 

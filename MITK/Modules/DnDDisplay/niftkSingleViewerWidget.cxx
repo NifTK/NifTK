@@ -272,6 +272,20 @@ QmitkRenderWindow* SingleViewerWidget::Get3DWindow() const
 
 
 //-----------------------------------------------------------------------------
+QmitkRenderWindow* SingleViewerWidget::GetPreviousWindow() const
+{
+  return m_MultiWidget->GetPreviousWindow();
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkRenderWindow* SingleViewerWidget::GetNextWindow() const
+{
+  return m_MultiWidget->GetNextWindow();
+}
+
+
+//-----------------------------------------------------------------------------
 void SingleViewerWidget::SetEnabled(bool enabled)
 {
   m_MultiWidget->SetEnabled(enabled);
