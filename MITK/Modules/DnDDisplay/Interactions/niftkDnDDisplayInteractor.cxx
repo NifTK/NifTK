@@ -20,6 +20,7 @@
 
 #include <mitkBaseRenderer.h>
 #include <mitkGlobalInteraction.h>
+#include <mitkInteractionKeyEvent.h>
 #include <mitkInteractionPositionEvent.h>
 #include <mitkLine.h>
 #include <mitkSliceNavigationController.h>
@@ -80,6 +81,23 @@ void DnDDisplayInteractor::Notify(mitk::InteractionEvent* interactionEvent, bool
   {
     Superclass::Notify(interactionEvent, isHandled);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::FilterEvents(mitk::InteractionEvent* interactionEvent, mitk::DataNode* dataNode)
+{
+  /// We need key interactions in the 3D window as well. At least those for navigating
+  /// across windows and viewers.
+  if(interactionEvent->GetSender()->GetMapperID() == 2)
+  {
+    if (dynamic_cast<mitk::InteractionKeyEvent*>(interactionEvent))
+    {
+      return true;
+    }
+  }
+
+  return Superclass::FilterEvents(interactionEvent, dataNode);
 }
 
 

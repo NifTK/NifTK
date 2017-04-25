@@ -57,7 +57,7 @@ class NIFTKDNDDISPLAY_EXPORT DnDDisplayInteractor: public QObject, public mitk::
   Q_OBJECT
 
 public:
-  mitkClassMacro(DnDDisplayInteractor, DisplayInteractor)
+  mitkClassMacro(DnDDisplayInteractor, mitk::DisplayInteractor)
   mitkNewMacro1Param(Self, SingleViewerWidget*)
 
   /**
@@ -71,6 +71,9 @@ public:
 protected:
   DnDDisplayInteractor(SingleViewerWidget* viewer);
   virtual ~DnDDisplayInteractor();
+
+  /// Overrides superclass implementation to accept certain key events in the 3D window.
+  virtual bool FilterEvents(mitk::InteractionEvent* interactionEvent, mitk::DataNode* dataNode) override;
 
   virtual void ConnectActionsAndFunctions() override;
 
