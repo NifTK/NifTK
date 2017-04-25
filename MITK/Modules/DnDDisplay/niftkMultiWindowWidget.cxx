@@ -1724,7 +1724,7 @@ QmitkRenderWindow* MultiWindowWidget::GetPreviousWindow() const
       return nullptr;
     }
   }
-  else // ORTHO or ORTHO_NO_3D
+  else if (windowLayout == WINDOW_LAYOUT_ORTHO)
   {
     /// Order: coronal, sagittal, axial, 3D
     if (m_SelectedWindowIndex == 0)
@@ -1743,6 +1743,10 @@ QmitkRenderWindow* MultiWindowWidget::GetPreviousWindow() const
     {
       return m_RenderWindows[0];
     }
+  }
+  else // single window
+  {
+    return nullptr;
   }
 }
 
@@ -1932,7 +1936,7 @@ QmitkRenderWindow* MultiWindowWidget::GetNextWindow() const
       return nullptr;
     }
   }
-  else // ORTHO or ORTHO_NO_3D
+  else if (windowLayout == WINDOW_LAYOUT_ORTHO)
   {
     /// Order: coronal, sagittal, axial, 3D
     if (m_SelectedWindowIndex == 0)
@@ -1951,6 +1955,10 @@ QmitkRenderWindow* MultiWindowWidget::GetNextWindow() const
     {
       return nullptr;
     }
+  }
+  else // single window
+  {
+    return nullptr;
   }
 }
 
