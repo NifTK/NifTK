@@ -169,6 +169,8 @@ void DnDDisplayInteractor::ConnectActionsAndFunctions()
 
   CONNECT_FUNCTION("zoomIn", ZoomIn);
   CONNECT_FUNCTION("zoomOut", ZoomOut);
+
+  CONNECT_FUNCTION("recentre", Recentre);
 }
 
 
@@ -975,6 +977,14 @@ bool DnDDisplayInteractor::ZoomOut(mitk::StateMachineAction* action, mitk::Inter
   double scaleFactor = m_Viewer->GetScaleFactor(orientation);
   scaleFactor *= 1.05;
   m_Viewer->SetScaleFactor(orientation, scaleFactor);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::Recentre(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*interactionEvent*/)
+{
+  m_Viewer->FitToDisplay();
   return true;
 }
 

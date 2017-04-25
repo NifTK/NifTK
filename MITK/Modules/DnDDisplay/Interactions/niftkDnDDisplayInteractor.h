@@ -252,6 +252,9 @@ protected:
   /// \brief Zoom out
   virtual bool ZoomOut(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
+  /// \brief Recentre
+  virtual bool Recentre(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
 private slots:
 
   /// \brief Selects the previous slice or the last slice if the first slice is currently selected.

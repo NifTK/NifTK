@@ -100,6 +100,12 @@
     <attribute name="Modifiers" value="ctrl"/>
   </event_variant>
 
+  <!-- Recentre -->
+  <event_variant class="InteractionKeyEvent" name="Recentre">
+    <attribute name="Key" value="R"/>
+    <attribute name="Modifiers" value="ctrl"/>
+  </event_variant>
+
   <!-- Scrolling through slices -->
   <event_variant class="InteractionKeyEvent" name="SelectPreviousSlice">
     <attribute name="Key" value="A"/>

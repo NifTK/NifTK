@@ -62,6 +62,10 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="zoomOut"/>
         </transition>
 
+        <transition event_class="InteractionKeyEvent" event_variant="Recentre" target="start">
+            <action name="recentre"/>
+        </transition>
+
         <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="selectPreviousSlice"/>
         </transition>
