@@ -978,13 +978,13 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
     // Note: images in folder UltrasonixRemote_2 have -ultrasoundImage after the time stamp
     std::size_t found = fileList1[i].find_last_of("/\\");
 
-    // Time stamps used, ignoring the first five and last two digits
+    // Time stamp used - using all 19 digits
     std::string firstFileTimeStamp = fileList1[i].substr(found + 1, 19);
 
     long long int minTimeDifference = std::numeric_limits<long long int>::max();
     long long int firstFileTime = std::stoll(firstFileTimeStamp);
 
-    std::string matchTime; // For debugging
+    std::string matchTime; // Only used for debugging
 
     long long int closestTime = 0;
 
