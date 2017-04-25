@@ -568,6 +568,13 @@ private:
    * It is needed to unregister the observer on unload.
    */
   us::ServiceRegistrationU m_DisplayInteractorService;
+
+#if QT_VERSION < 0x050000
+  /// Signals are public in Qt5 but protected in Qt4. The display interactor has to raise
+  /// a SelectPreviousViewer(), SelectNextViewer() or SelectViewer(int) signal from this
+  /// viewer, therefore it needs to access the signal declarations.
+  friend class DnDDisplayInteractor;
+#endif
 };
 
 }
