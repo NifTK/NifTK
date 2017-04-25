@@ -25,6 +25,7 @@ set(CPP_FILES
   niftkSingleViewerControls.cxx
   niftkSingleViewerWidget.cxx
   Interactions/niftkDnDDisplayInteractor.cxx
+  Interactions/niftkVtkInteractorStyle.cxx
 )
 
 set(MOC_H_FILES 

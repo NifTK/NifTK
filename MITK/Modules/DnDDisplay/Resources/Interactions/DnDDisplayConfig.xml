@@ -58,6 +58,54 @@
     <attribute name="EventButton" value="RightMouseButton"/>
   </event_variant>
 
+  <!-- Select voxel -->
+  <event_variant class="InteractionKeyEvent" name="SelectVoxelOnLeft">
+    <attribute name="Key" value="ArrowLeft"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectVoxelOnRight">
+    <attribute name="Key" value="ArrowRight"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectVoxelAbove">
+    <attribute name="Key" value="ArrowUp"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectVoxelBelow">
+    <attribute name="Key" value="ArrowDown"/>
+  </event_variant>
+
+  <!-- Pan by keys -->
+  <event_variant class="InteractionKeyEvent" name="PanLeft">
+    <attribute name="Key" value="ArrowLeft"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="PanRight">
+    <attribute name="Key" value="ArrowRight"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="PanUp">
+    <attribute name="Key" value="ArrowUp"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="PanDown">
+    <attribute name="Key" value="ArrowDown"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+
+  <!-- Zoom by keys -->
+  <event_variant class="InteractionKeyEvent" name="ZoomIn">
+    <attribute name="Key" value="ArrowUp"/>
+    <attribute name="Modifiers" value="ctrl"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="ZoomOut">
+    <attribute name="Key" value="ArrowDown"/>
+    <attribute name="Modifiers" value="ctrl"/>
+  </event_variant>
+
+  <!-- Recentre -->
+  <event_variant class="InteractionKeyEvent" name="Recentre">
+    <attribute name="Key" value="R"/>
+    <attribute name="Modifiers" value="ctrl"/>
+  </event_variant>
+
   <!-- Scrolling through slices -->
   <event_variant class="InteractionKeyEvent" name="SelectPreviousSlice">
     <attribute name="Key" value="A"/>
@@ -149,6 +197,70 @@
   </event_variant>
   <event_variant class="MouseDoubleClickEvent" name="ToggleMultiWindowLayout">
     <attribute name="EventButton" value="LeftMouseButton"/>
+  </event_variant>
+
+  <!-- Select window -->
+  <event_variant class="InteractionKeyEvent" name="SelectAxialWindow">
+    <attribute name="Key" value="Q"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectSagittalWindow">
+    <attribute name="Key" value="W"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectCoronalWindow">
+    <attribute name="Key" value="E"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="Select3DWindow">
+    <attribute name="Key" value="R"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectPreviousWindow">
+    <attribute name="Key" value="&lt;"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectNextWindow">
+    <attribute name="Key" value="&gt;"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+
+  <!-- Select viewer -->
+  <event_variant class="InteractionKeyEvent" name="SelectPreviousViewer">
+    <attribute name="Key" value=","/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectNextViewer">
+    <attribute name="Key" value="."/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectViewer0">
+    <attribute name="Key" value="1"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectViewer1">
+    <attribute name="Key" value="2"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectViewer2">
+    <attribute name="Key" value="3"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectViewer3">
+    <attribute name="Key" value="4"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectViewer4">
+    <attribute name="Key" value="5"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectViewer5">
+    <attribute name="Key" value="6"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectViewer6">
+    <attribute name="Key" value="7"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectViewer7">
+    <attribute name="Key" value="8"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectViewer8">
+    <attribute name="Key" value="9"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="SelectViewer9">
+    <attribute name="Key" value="0"/>
   </event_variant>
 
   <!-- Toggle cursor visibility -->

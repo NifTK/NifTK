@@ -243,6 +243,12 @@ public:
   /// \brief Sets the render window layout to either axial, sagittal or coronal, 3D or ortho (2x2) etc, effectively causing a view reset.
   void SetWindowLayout(WindowLayout windowLayout);
 
+  /// \brief Gets the previous window of the selected window layout.
+  QmitkRenderWindow* GetPreviousWindow() const;
+
+  /// \brief Gets the next window of the selected window layout.
+  QmitkRenderWindow* GetNextWindow() const;
+
   /// \brief Get the currently selected position in world coordinates (mm)
   const mitk::Point3D& GetSelectedPosition() const;
 
@@ -370,6 +376,15 @@ signals:
 
   /// \brief Emitted when a window of the viewer gets selected.
   void WindowSelected();
+
+  /// \brief Emitted when the previous viewer is requested to be selected.
+  void SelectPreviousViewer();
+
+  /// \brief Emitted when the next viewer is requested to be selected.
+  void SelectNextViewer();
+
+  /// \brief Emitted when the viewer with of the given index is requested to be selected.
+  void SelectViewer(int index);
 
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
   void NodesDropped(std::vector<mitk::DataNode*> nodes);
@@ -553,6 +568,13 @@ private:
    * It is needed to unregister the observer on unload.
    */
   us::ServiceRegistrationU m_DisplayInteractorService;
+
+#if QT_VERSION < 0x050000
+  /// Signals are public in Qt5 but protected in Qt4. The display interactor has to raise
+  /// a SelectPreviousViewer(), SelectNextViewer() or SelectViewer(int) signal from this
+  /// viewer, therefore it needs to access the signal declarations.
+  friend class DnDDisplayInteractor;
+#endif
 };
 
 }

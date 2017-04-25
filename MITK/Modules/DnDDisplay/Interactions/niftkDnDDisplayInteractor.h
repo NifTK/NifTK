@@ -57,7 +57,7 @@ class NIFTKDNDDISPLAY_EXPORT DnDDisplayInteractor: public QObject, public mitk::
   Q_OBJECT
 
 public:
-  mitkClassMacro(DnDDisplayInteractor, DisplayInteractor)
+  mitkClassMacro(DnDDisplayInteractor, mitk::DisplayInteractor)
   mitkNewMacro1Param(Self, SingleViewerWidget*)
 
   /**
@@ -71,6 +71,9 @@ public:
 protected:
   DnDDisplayInteractor(SingleViewerWidget* viewer);
   virtual ~DnDDisplayInteractor();
+
+  /// Overrides superclass implementation to accept certain key events in the 3D window.
+  virtual bool FilterEvents(mitk::InteractionEvent* interactionEvent, mitk::DataNode* dataNode) override;
 
   virtual void ConnectActionsAndFunctions() override;
 
@@ -115,6 +118,60 @@ protected:
   /// \brief Toggles between single and multi window layout.
   virtual bool ToggleMultiWindowLayout(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
+  /// \brief Selects the previous window of the current window layout.
+  virtual bool SelectPreviousWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the next window of the current window layout.
+  virtual bool SelectNextWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the axial window if it is visible in the current window layout.
+  virtual bool SelectAxialWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the sagittal window if it is visible in the current window layout.
+  virtual bool SelectSagittalWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the coronal window if it is visible in the current window layout.
+  virtual bool SelectCoronalWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the 3D window if it is visible in the current window layout.
+  virtual bool Select3DWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the previous viewer.
+  virtual bool SelectPreviousViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the next viewer.
+  virtual bool SelectNextViewer(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 0.
+  virtual bool SelectViewer0(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 1.
+  virtual bool SelectViewer1(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 2.
+  virtual bool SelectViewer2(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 3.
+  virtual bool SelectViewer3(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 4.
+  virtual bool SelectViewer4(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 5.
+  virtual bool SelectViewer5(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 6.
+  virtual bool SelectViewer6(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 7.
+  virtual bool SelectViewer7(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 8.
+  virtual bool SelectViewer8(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects viewer 9.
+  virtual bool SelectViewer9(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
   /// \brief Toggles the visibility of the cursor.
   virtual bool ToggleCursorVisibility(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
@@ -129,6 +186,18 @@ protected:
 
   /// \brief Toggles displaying the intensity annotation on/off.
   virtual bool TogglePropertyAnnotation(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the left adjecant voxel of the currently selected voxel in the selected window.
+  virtual bool SelectVoxelOnLeft(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the right adjecant voxel of the currently selected voxel in the selected window.
+  virtual bool SelectVoxelOnRight(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the top adjecant voxel of the currently selected voxel in the selected window.
+  virtual bool SelectVoxelAbove(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Selects the bottom adjecant voxel of the currently selected voxel in the selected window.
+  virtual bool SelectVoxelBelow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
   /// \brief Selects the previous slice.
   /// The slices are ordered in the following way:
@@ -164,6 +233,27 @@ protected:
 
   /// \brief Stops scrolling through slices.
   virtual bool StopScrolling(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Pan left
+  virtual bool PanLeft(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Pan right
+  virtual bool PanRight(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Pan up
+  virtual bool PanUp(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Pan down
+  virtual bool PanDown(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Zoom in
+  virtual bool ZoomIn(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Zoom out
+  virtual bool ZoomOut(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Recentre
+  virtual bool Recentre(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
 private slots:
 

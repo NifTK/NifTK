@@ -29,6 +29,43 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="startZooming"/>
         </transition>
 
+        <transition event_class="InteractionKeyEvent" event_variant="SelectVoxelOnLeft" target="start">
+            <action name="selectVoxelOnLeft"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectVoxelOnRight" target="start">
+            <action name="selectVoxelOnRight"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectVoxelAbove" target="start">
+            <action name="selectVoxelAbove"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectVoxelBelow" target="start">
+            <action name="selectVoxelBelow"/>
+        </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="PanLeft" target="start">
+            <action name="panLeft"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="PanRight" target="start">
+            <action name="panRight"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="PanUp" target="start">
+            <action name="panUp"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="PanDown" target="start">
+            <action name="panDown"/>
+        </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="ZoomIn" target="start">
+            <action name="zoomIn"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="ZoomOut" target="start">
+            <action name="zoomOut"/>
+        </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="Recentre" target="start">
+            <action name="recentre"/>
+        </transition>
+
         <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="selectPreviousSlice"/>
         </transition>
@@ -86,6 +123,62 @@ TODO Std move to abort interaction of scroll/pan/zoom
         </transition>
         <transition event_class="MouseDoubleClickEvent" event_variant="ToggleMultiWindowLayout" target="start">
             <action name="toggleMultiWindowLayout"/>
+        </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="SelectPreviousWindow" target="start">
+            <action name="selectPreviousWindow"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectNextWindow" target="start">
+            <action name="selectNextWindow"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectAxialWindow" target="start">
+            <action name="selectAxialWindow"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectSagittalWindow" target="start">
+            <action name="selectSagittalWindow"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectCoronalWindow" target="start">
+            <action name="selectCoronalWindow"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="Select3DWindow" target="start">
+            <action name="select3DWindow"/>
+        </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="SelectPreviousViewer" target="start">
+            <action name="selectPreviousViewer"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectNextViewer" target="start">
+            <action name="selectNextViewer"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectViewer0" target="start">
+            <action name="selectViewer0"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectViewer1" target="start">
+            <action name="selectViewer1"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectViewer2" target="start">
+            <action name="selectViewer2"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectViewer3" target="start">
+            <action name="selectViewer3"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectViewer4" target="start">
+            <action name="selectViewer4"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectViewer5" target="start">
+            <action name="selectViewer5"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectViewer6" target="start">
+            <action name="selectViewer6"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectViewer7" target="start">
+            <action name="selectViewer7"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectViewer8" target="start">
+            <action name="selectViewer8"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="SelectViewer9" target="start">
+            <action name="selectViewer9"/>
         </transition>
 
         <transition event_class="InteractionKeyEvent" event_variant="ToggleCursorVisibility" target="start">

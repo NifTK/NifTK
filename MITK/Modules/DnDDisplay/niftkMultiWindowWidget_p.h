@@ -155,6 +155,12 @@ public:
   /// \brief Gets the window layout, i.e. the set and the arrangement of the render windows.
   WindowLayout GetWindowLayout() const;
 
+  /// \brief Gets the previous window of the selected window layout.
+  QmitkRenderWindow* GetPreviousWindow() const;
+
+  /// \brief Gets the next window of the selected window layout.
+  QmitkRenderWindow* GetNextWindow() const;
+
   /// \brief Set the background color, applied to 2D and 3D windows, and currently we don't do gradients.
   void SetBackgroundColour(QColor color);
 

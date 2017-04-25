@@ -1540,6 +1540,430 @@ WindowLayout MultiWindowWidget::GetWindowLayout() const
 
 
 //-----------------------------------------------------------------------------
+QmitkRenderWindow* MultiWindowWidget::GetPreviousWindow() const
+{
+  WindowLayout windowLayout = m_WindowLayout;
+
+  if (windowLayout == WINDOW_LAYOUT_3H)
+  {
+    /// Order: coronal, sagittal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return m_RenderWindows[1];
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[2];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_3V)
+  {
+    /// Order: sagittal, coronal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return m_RenderWindows[2];
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return m_RenderWindows[1];
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_COR_SAG_H)
+  {
+    /// Order: coronal, sagittal
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[2];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_COR_SAG_V)
+  {
+    /// Order: coronal, sagittal
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[2];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_COR_AX_H)
+  {
+    /// Order: coronal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return m_RenderWindows[2];
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_COR_AX_V)
+  {
+    /// Order: coronal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return m_RenderWindows[2];
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_SAG_AX_H)
+  {
+    /// Order: sagittal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return m_RenderWindows[1];
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_SAG_AX_V)
+  {
+    /// Order: sagittal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return m_RenderWindows[1];
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_ORTHO_NO_3D)
+  {
+    /// Order: coronal, sagittal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return m_RenderWindows[1];
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[2];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_ORTHO)
+  {
+    /// Order: coronal, sagittal, axial, 3D
+    if (m_SelectedWindowIndex == 0)
+    {
+      return m_RenderWindows[1];
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[2];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return m_RenderWindows[0];
+    }
+  }
+  else // single window
+  {
+    return nullptr;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+QmitkRenderWindow* MultiWindowWidget::GetNextWindow() const
+{
+  WindowLayout windowLayout = m_WindowLayout;
+
+  if (windowLayout == WINDOW_LAYOUT_3H)
+  {
+    /// Order: coronal, sagittal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[0];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return m_RenderWindows[1];
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_3V)
+  {
+    /// Order: sagittal, coronal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[2];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return m_RenderWindows[0];
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_COR_SAG_H)
+  {
+    /// Order: coronal, sagittal
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return m_RenderWindows[1];
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_COR_SAG_V)
+  {
+    /// Order: coronal, sagittal
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return m_RenderWindows[1];
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_COR_AX_H)
+  {
+    /// Order: coronal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return m_RenderWindows[0];
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_COR_AX_V)
+  {
+    /// Order: coronal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return m_RenderWindows[0];
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_SAG_AX_H)
+  {
+    /// Order: sagittal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[0];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_SAG_AX_V)
+  {
+    /// Order: sagittal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[0];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return nullptr;
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_ORTHO_NO_3D)
+  {
+    /// Order: coronal, sagittal, axial
+    if (m_SelectedWindowIndex == 0)
+    {
+      return nullptr;
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[0];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return m_RenderWindows[1];
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else if (windowLayout == WINDOW_LAYOUT_ORTHO)
+  {
+    /// Order: coronal, sagittal, axial, 3D
+    if (m_SelectedWindowIndex == 0)
+    {
+      return m_RenderWindows[3];
+    }
+    else if (m_SelectedWindowIndex == 1)
+    {
+      return m_RenderWindows[0];
+    }
+    else if (m_SelectedWindowIndex == 2)
+    {
+      return m_RenderWindows[1];
+    }
+    else
+    {
+      return nullptr;
+    }
+  }
+  else // single window
+  {
+    return nullptr;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 int MultiWindowWidget::GetMaxSlice(int windowIndex) const
 {
   int maxSlice = 0;
