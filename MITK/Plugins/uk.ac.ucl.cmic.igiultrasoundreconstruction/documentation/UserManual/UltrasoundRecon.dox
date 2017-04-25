@@ -1,19 +1,39 @@
 /**
 \page uk_ac_ucl_cmic_igiultrasoundreconstruction The Ultrasound Reconstruction View
 
+\image html icon.png "The Icon for the Ultrasound Reconstruction View"
+
 \section USReconIntro Introduction
 
-Write an intro.
+The Ultrasound Reconstruction plugin is for performing hand-eye calibration of the ultrasound probe,
+as well as reconstructing free-hand 2-D B-mode scans into a 3-D volume. 
 
-\section USReconPreferences Preferences
+In calibration, take about 40-50 scans of the calibration object (a ball with three wires intersecting at its centre,
+roughly orthognal to each other). In each scan make sure a clear circle (a great circle of the ball) can be seen with a cross
+at the centre (Figure 1). Hough Transform is used to detect the circle in each scan (which is also the centre of the cross).
+Single-point calibration is then performed using Levenberg-Marquardt (LM) method, with transformations represented as quaternions.
+The output of the calibration process are a scaling matrix and a rigid transformation matrix.
 
-Describe any preferences that can be set.
+\image html ball.png "Figure 1: A scan used for calibration"
+
+In reconstruction, a set of 2-D free-hand scans are reconstructed into a 3-D volume, given the hand-eye calibration result.
 
 \section USReconControls Controls
 
-Describe the main functionality.
+\image html MainScreen.png "Figure 2: The Main Controls"
+
+\li ultrasound source: Select the ultrasound source.
+\li tracking source: Select the tracking source.
+\li grab: Grab a 2-D scan from the ultrasound machine and its position from the tracking device, and keep them in the memory. 
+\li clear: Clear the data collected in the memory.
+\li calibrate: Perform hand-eye calibration. 
+\li reconstruct: Reconstruct the free-hand 2-D ultrasound scans collected into a 3-D volume.
+\li scaling matrix: The scaling matrix solved by the calibration process, of which the (0, 0) and (1, 1) elements are the scale factors
+(image to sensor, mm/pixel) in the x and y directions, respectively. Result from previous calibration can also be loaded. 
+\li rigid matrix: The rigid transformatiom matrix solved by the calibration process. Result from previous calibration can also be loaded. 
+\li save paired data: Save the paired 2-D scans and their corresponding position stored in the memory to selected file folders. 
 
 \section USReferences References
 
-\li [1] Provide links to key papers.
+
 */

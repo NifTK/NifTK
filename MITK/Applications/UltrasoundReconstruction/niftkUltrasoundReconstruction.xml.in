@@ -64,7 +64,7 @@
       <longflag>voxelSize</longflag>
       <description>Voxel size for reconstructed volume.</description>
       <label>Voxel Size (mm)</label>
-      <default>0.3,0.3,0.3</default>
+      <default>0.7,0.7,0.7</default>
       <channel>input</channel>
     </float-vector>
   </parameters>
