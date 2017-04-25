@@ -234,6 +234,24 @@ protected:
   /// \brief Stops scrolling through slices.
   virtual bool StopScrolling(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
+  /// \brief Pan left
+  virtual bool PanLeft(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Pan right
+  virtual bool PanRight(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Pan up
+  virtual bool PanUp(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Pan down
+  virtual bool PanDown(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Zoom in
+  virtual bool ZoomIn(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
+  /// \brief Zoom out
+  virtual bool ZoomOut(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
+
 private slots:
 
   /// \brief Selects the previous slice or the last slice if the first slice is currently selected.

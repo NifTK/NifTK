@@ -42,6 +42,26 @@ TODO Std move to abort interaction of scroll/pan/zoom
             <action name="selectVoxelBelow"/>
         </transition>
 
+        <transition event_class="InteractionKeyEvent" event_variant="PanLeft" target="start">
+            <action name="panLeft"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="PanRight" target="start">
+            <action name="panRight"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="PanUp" target="start">
+            <action name="panUp"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="PanDown" target="start">
+            <action name="panDown"/>
+        </transition>
+
+        <transition event_class="InteractionKeyEvent" event_variant="ZoomIn" target="start">
+            <action name="zoomIn"/>
+        </transition>
+        <transition event_class="InteractionKeyEvent" event_variant="ZoomOut" target="start">
+            <action name="zoomOut"/>
+        </transition>
+
         <transition event_class="InteractionEvent" event_variant="SelectPreviousSlice" target="start">
             <action name="selectPreviousSlice"/>
         </transition>

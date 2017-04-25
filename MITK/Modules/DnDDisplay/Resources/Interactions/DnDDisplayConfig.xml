@@ -72,6 +72,34 @@
     <attribute name="Key" value="ArrowDown"/>
   </event_variant>
 
+  <!-- Pan by keys -->
+  <event_variant class="InteractionKeyEvent" name="PanLeft">
+    <attribute name="Key" value="ArrowLeft"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="PanRight">
+    <attribute name="Key" value="ArrowRight"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="PanUp">
+    <attribute name="Key" value="ArrowUp"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="PanDown">
+    <attribute name="Key" value="ArrowDown"/>
+    <attribute name="Modifiers" value="shift"/>
+  </event_variant>
+
+  <!-- Zoom by keys -->
+  <event_variant class="InteractionKeyEvent" name="ZoomIn">
+    <attribute name="Key" value="ArrowUp"/>
+    <attribute name="Modifiers" value="ctrl"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="ZoomOut">
+    <attribute name="Key" value="ArrowDown"/>
+    <attribute name="Modifiers" value="ctrl"/>
+  </event_variant>
+
   <!-- Scrolling through slices -->
   <event_variant class="InteractionKeyEvent" name="SelectPreviousSlice">
     <attribute name="Key" value="A"/>

@@ -161,6 +161,14 @@ void DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("startScrollingThroughTimeStepsBackwards", StartScrollingThroughTimeStepsBackwards);
   CONNECT_FUNCTION("startScrollingThroughTimeStepsForwards", StartScrollingThroughTimeStepsForwards);
   CONNECT_FUNCTION("stopScrolling", StopScrolling);
+
+  CONNECT_FUNCTION("panLeft", PanLeft);
+  CONNECT_FUNCTION("panRight", PanRight);
+  CONNECT_FUNCTION("panUp", PanUp);
+  CONNECT_FUNCTION("panDown", PanDown);
+
+  CONNECT_FUNCTION("zoomIn", ZoomIn);
+  CONNECT_FUNCTION("zoomOut", ZoomOut);
 }
 
 
@@ -901,6 +909,72 @@ bool DnDDisplayInteractor::StopScrolling(mitk::StateMachineAction* action, mitk:
 
   m_AutoScrollTimer->stop();
   m_AutoScrollTimer->disconnect(this);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::PanLeft(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  auto cursorPosition = m_Viewer->GetCursorPosition(orientation);
+  cursorPosition[0] -= 0.005;
+  m_Viewer->SetCursorPosition(orientation, cursorPosition);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::PanRight(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  auto cursorPosition = m_Viewer->GetCursorPosition(orientation);
+  cursorPosition[0] += 0.005;
+  m_Viewer->SetCursorPosition(orientation, cursorPosition);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::PanUp(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  auto cursorPosition = m_Viewer->GetCursorPosition(orientation);
+  cursorPosition[1] += 0.005;
+  m_Viewer->SetCursorPosition(orientation, cursorPosition);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::PanDown(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  auto cursorPosition = m_Viewer->GetCursorPosition(orientation);
+  cursorPosition[1] -= 0.005;
+  m_Viewer->SetCursorPosition(orientation, cursorPosition);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::ZoomIn(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  double scaleFactor = m_Viewer->GetScaleFactor(orientation);
+  scaleFactor /= 1.05;
+  m_Viewer->SetScaleFactor(orientation, scaleFactor);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool DnDDisplayInteractor::ZoomOut(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
+{
+  WindowOrientation orientation = m_Viewer->GetOrientation();
+  double scaleFactor = m_Viewer->GetScaleFactor(orientation);
+  scaleFactor *= 1.05;
+  m_Viewer->SetScaleFactor(orientation, scaleFactor);
   return true;
 }
 
