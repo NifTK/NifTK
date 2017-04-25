@@ -26,6 +26,9 @@
 
 #include <niftkInteractionEventObserverMutex.h>
 
+#include <vtkSmartPointer.h>
+
+#include "niftkVtkInteractorStyle.h"
 #include "niftkSingleViewerWidget.h"
 
 
@@ -45,6 +48,19 @@ DnDDisplayInteractor::DnDDisplayInteractor(SingleViewerWidget* viewer)
   m_Renderers[1] = renderWindows[1]->GetRenderer();
   m_Renderers[2] = renderWindows[2]->GetRenderer();
   m_Renderers[3] = renderWindows[3]->GetRenderer();
+
+  /// Replacing mitkVtkInteractorStyle by niftk::VtkInteractorStyle.
+  /// It is used to supress the stereo mode that is assigned to key '3'
+  /// by the VTK base class.
+  for (int i = 0; i < 3; ++i)
+  {
+    if (auto renderer = dynamic_cast<mitk::VtkPropRenderer*>(m_Renderers[i]))
+    {
+      vtkSmartPointer<VtkInteractorStyle> style = vtkSmartPointer<VtkInteractorStyle>::New();
+      renderer->PrepareRender();
+      renderer->GetRenderWindow()->GetInteractor()->SetInteractorStyle(style);
+    }
+  }
 
   m_AutoScrollTimer->setInterval(200);
 }
