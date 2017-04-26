@@ -36,7 +36,7 @@ std::string xml_octvolumeconstructor=
 "   <category>Utils</category>\n"
 "   <title>OCT Volume Constructor</title>\n"
 "   <description>Vesselness filter</description>\n"
-"   <version>0.0.1</version>\n"
+"   <version@NIFTK_VERSION_STRING@</version>\n"
 "   <documentation-url></documentation-url>\n"
 "   <license>BSD</license>\n"
 "   <contributor>Maria A. Zuluaga (UCL)</contributor>\n"

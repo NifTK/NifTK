@@ -17,7 +17,7 @@ std::string xml_BreastMaskSegmentationFromMRI =
 "  <category>Breast Cancer Imaging Tools . MRI . Individual images</category>\n"
 "  <title>Breast Mask Segmentation from MRI</title>\n"
 "  <description>Executable to segment left and right breasts from a 3D MR volume.</description>\n"
-"  <version>0.1</version>\n"
+"  <version>@NIFTK_VERSION_STRING@</version>\n"
 "  <documentation-url>http://cmic.cs.ucl.ac.uk/home/software/</documentation-url>\n"
 "  <license>BSD</license>\n"
 "  <contributor>John H. Hipwell, Bjorn Eiben (UCL)</contributor>\n"
