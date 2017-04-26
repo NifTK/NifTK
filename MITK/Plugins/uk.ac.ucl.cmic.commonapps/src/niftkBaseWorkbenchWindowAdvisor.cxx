@@ -63,6 +63,13 @@ void BaseWorkbenchWindowAdvisor::OnHelpAbout()
 //-----------------------------------------------------------------------------
 void BaseWorkbenchWindowAdvisor::PreWindowOpen()
 {
+  QString productName = PluginActivator::GetInstance()->GetContext()->getProperty("applicationArgs.product-name").toString();
+
+  if (!productName.isEmpty())
+  {
+    this->SetProductName(productName);
+  }
+
   this->ShowMitkVersionInfo(false); // Please look in niftk::HelpAboutDialog.h
   this->ShowVersionInfo(false);     // Please look in niftk::HelpAboutDialog.h
 
