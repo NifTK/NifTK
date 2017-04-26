@@ -122,7 +122,7 @@ void DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("setWindowLayoutToCoronal", SetWindowLayoutToCoronal);
   CONNECT_FUNCTION("setWindowLayoutTo3D", SetWindowLayoutTo3D);
   CONNECT_FUNCTION("setWindowLayoutToMulti", SetWindowLayoutToMulti);
-  CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
+//  CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
   CONNECT_FUNCTION("selectPreviousWindow", SelectPreviousWindow);
   CONNECT_FUNCTION("selectNextWindow", SelectNextWindow);
   CONNECT_FUNCTION("selectAxialWindow", SelectAxialWindow);
