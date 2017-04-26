@@ -25,6 +25,8 @@
 #include <QStringList>
 #include <QVariant>
 
+#include <NifTKConfigure.h>
+
 namespace niftk
 {
 
@@ -32,14 +34,19 @@ const QString BaseApplication::PROP_OPEN = "applicationArgs.open";
 const QString BaseApplication::PROP_DERIVES_FROM = "applicationArgs.derives-from";
 const QString BaseApplication::PROP_PROPERTY = "applicationArgs.property";
 const QString BaseApplication::PROP_PERSPECTIVE = "applicationArgs.perspective";
+const QString BaseApplication::PROP_VERSION = "applicationArgs.version";
+const QString BaseApplication::PROP_PRODUCT_NAME = "applicationArgs.product-name";
 
 
+//-----------------------------------------------------------------------------
 BaseApplication::BaseApplication(int argc, char **argv)
   : mitk::BaseApplication(argc, argv)
 {
   this->setOrganizationName("CMIC");
 }
 
+
+//-----------------------------------------------------------------------------
 int BaseApplication::run()
 {
   try {
@@ -58,11 +65,17 @@ int BaseApplication::run()
   }
 }
 
+
+//-----------------------------------------------------------------------------
 void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
 {
   mitk::BaseApplication::defineOptions(options);
 
   this->ReformatOptionDescriptions(options);
+
+  Poco::Util::Option versionOption("version", "V", "Prints the version number.");
+  versionOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::PrintVersion));
+  options.addOption(versionOption);
 
   Poco::Util::Option openOption("open", "o",
       "\n"
@@ -151,8 +164,34 @@ void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
       "The initial window perspective.\n");
   perspectiveOption.argument("<perspective>").binding(PROP_PERSPECTIVE.toStdString());
   options.addOption(perspectiveOption);
+
+  Poco::Util::Option productNameOption("product-name", "N",
+      "\n"
+      "The product name that appears in the title of the application window.\n");
+  productNameOption.argument("<product name>").binding(PROP_PRODUCT_NAME.toStdString());
+  options.addOption(productNameOption);
 }
 
+
+//-----------------------------------------------------------------------------
+void BaseApplication::PrintVersion(const std::string& /*name*/, const std::string& /*value*/)
+{
+  // This stuff gets generated during CMake into NifTKConfigure.h
+  std::string platformName(NIFTK_PLATFORM);
+  std::string versionNumber(NIFTK_VERSION_STRING);
+  std::string copyrightText(NIFTK_COPYRIGHT);
+  std::string niftkVersion(NIFTK_VERSION);
+  std::string niftkDateTime(NIFTK_DATE_TIME);
+
+  std::cout << platformName << " " << versionNumber << " (" << niftkVersion << ")" << std::endl;
+  std::cout << "Built at: " << niftkDateTime << std::endl;
+  std::cout << copyrightText << std::endl;
+
+  std::exit(EXIT_OK);
+}
+
+
+//-----------------------------------------------------------------------------
 void BaseApplication::HandleRepeatableOption(const std::string& name, const std::string& value)
 {
   QString propertyName = "applicationArgs.";
@@ -163,6 +202,8 @@ void BaseApplication::HandleRepeatableOption(const std::string& name, const std:
   this->setProperty(propertyName, QVariant::fromValue(valueList));
 }
 
+
+//-----------------------------------------------------------------------------
 void BaseApplication::ReformatOptionDescriptions(Poco::Util::OptionSet& options)
 {
   /// We have to redefine the help option so that we can apply different formatting.
@@ -195,6 +236,7 @@ void BaseApplication::ReformatOptionDescriptions(Poco::Util::OptionSet& options)
 }
 
 
+//-----------------------------------------------------------------------------
 Poco::Util::HelpFormatter* BaseApplication::CreateHelpFormatter()
 {
   Poco::Util::HelpFormatter* helpFormatter = new Poco::Util::HelpFormatter(this->options());
@@ -264,9 +306,9 @@ Poco::Util::HelpFormatter* BaseApplication::CreateHelpFormatter()
       "        -p T1-1,T1-2:texture\\ interpolation=off\n"
       "\n"
       "The following command opens ${commandName} in 'Minimal' perspective, in which you have "
-      "only the viewer and the Data Manager open.\n"
+      "only the viewer and the Data Manager open. It also sets the title of the application window.\n"
       "\n"
-      "    ${commandName} --perspective Minimal\n"
+      "    ${commandName} --perspective Minimal --title \"Clinical Trial 1\"\n"
       "";
   examples.replace("${commandName}", QString::fromStdString(this->commandName()));
 
@@ -279,6 +321,7 @@ Poco::Util::HelpFormatter* BaseApplication::CreateHelpFormatter()
 }
 
 
+//-----------------------------------------------------------------------------
 void BaseApplication::PrintHelp(const std::string& /*name*/, const std::string& /*value*/)
 {
   Poco::Util::HelpFormatter* helpFormatter = this->CreateHelpFormatter();

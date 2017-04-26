@@ -77,6 +77,8 @@ public:
   static const QString PROP_DERIVES_FROM;
   static const QString PROP_PROPERTY;
   static const QString PROP_PERSPECTIVE;
+  static const QString PROP_VERSION;
+  static const QString PROP_PRODUCT_NAME;
 
   BaseApplication(int argc, char **argv);
 
@@ -89,6 +91,9 @@ protected:
   /// \brief Define command line arguments
   /// \param options
   void defineOptions(Poco::Util::OptionSet& options) override;
+
+  /// \brief Prints the version number and exits.
+  void PrintVersion(const std::string& name, const std::string& value);
 
   /// \brief Collects values for repeatable options and stores them as a list
   ///
