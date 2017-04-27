@@ -135,7 +135,7 @@ int main( int argc, char ** argv )
   // Parse the command line
   // ~~~~~~~~~~~~~~~~~~~~~~
   
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
 
   CommandLineOptions.GetArgument(O_MASK_VALUE, mask_value);
   CommandLineOptions.GetArgument(O_MASK, maskName);

@@ -103,7 +103,7 @@ int main(int argc, char** argv)
   char **multipleStrings = NULL;
   int inputRegionExpansion = 5;
   
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
   CommandLineOptions.GetArgument(O_INT_RADIUS, inputRadius); 
   CommandLineOptions.GetArgument(O_INT_MODE, inputMode); 
   CommandLineOptions.GetArgument(O_INT_EXPANSION, inputRegionExpansion);
