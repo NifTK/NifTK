@@ -41,6 +41,7 @@
 #include <mitkGlobalInteraction.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkRenderingModeProperty.h>
+#include <mitkUndoController.h>
 
 #include <service/cm/ctkConfigurationAdmin.h>
 #include <service/cm/ctkConfiguration.h>
@@ -117,6 +118,8 @@ void PluginActivator::start(ctkPluginContext* context)
   propertyExtensions->AddExtension("Image Rendering.Highest Value Opacity", opacityPropertyExtension.GetPointer());
 
   this->LoadCachedLookupTables();
+
+  mitk::UndoController::GetCurrentUndoModel()->SetUndoLimit(100);
 
   this->ProcessOptions();
 }
