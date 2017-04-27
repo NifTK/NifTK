@@ -7,7 +7,7 @@ stages:
 
 before_script:
   - export src_dir=${CI_PROJECT_DIR}
-  - export git_hash=${CI_BUILD_REF:0:6}
+  - export git_hash=${CI_COMMIT_SHA:0:6}
   - export ep_dir="${CI_PROJECT_DIR}-ep"
   - export sb_dir="${CI_PROJECT_DIR}-sb-${git_hash}"
   - export pb_dir="${sb_dir}/NifTK-build"
@@ -601,7 +601,7 @@ Release docs:
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export pb_dir="${sb_dir}/NifTK-build"
-    - version=${CI_BUILD_TAG}
+    - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - rm -rf Doxygen/html
     - chmod a+rx bin/GenerateCommandLineDoxygen
@@ -638,7 +638,7 @@ Ubuntu 14.04 release installer:
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export pb_dir="${sb_dir}/NifTK-build"
-    - version=${CI_BUILD_TAG}
+    - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
     - source /etc/os-release
@@ -664,7 +664,7 @@ Ubuntu 16.04 release installer:
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export pb_dir="${sb_dir}/NifTK-build"
-    - version=${CI_BUILD_TAG}
+    - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
     - source /etc/os-release
@@ -690,7 +690,7 @@ CentOS 7 release installer:
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export pb_dir="${sb_dir}/NifTK-build"
-    - version=${CI_BUILD_TAG}
+    - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
     - source /etc/os-release
@@ -736,7 +736,7 @@ CentOS 6 release installer:
     - export FFMPEG_DIR=/share/apps/cmic/niftk/ffmpeg-2.1.8
     - export PATH="${FFMPEG_DIR}/bin:${PATH}"
     - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
-    - version=${CI_BUILD_TAG}
+    - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
     - os_version="centos-6"
@@ -775,7 +775,7 @@ Mac release installer:
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export pb_dir="${sb_dir}/NifTK-build"
-    - version=${CI_BUILD_TAG}
+    - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
     - cpack --config CPackConfig.cmake
@@ -799,7 +799,7 @@ Windows release installer:
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export pb_dir="${sb_dir}/NifTK-build"
-    - version=${CI_BUILD_TAG}
+    - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
     - ${src_dir}/Utilities/NifTKReleaseDeploy.bat
@@ -823,7 +823,7 @@ Windows 32 bit release installer:
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export pb_dir="${sb_dir}/NifTK-build"
-    - version=${CI_BUILD_TAG}
+    - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
     - ${src_dir}/Utilities/NifTKReleaseDeploy.bat
