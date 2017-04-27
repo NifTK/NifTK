@@ -213,7 +213,7 @@ void CommandLineParser::PrintHelp(struct CommandLineArgumentDescription *clArgLi
   /* Print programme name and standard help options. */
 
   sprintf(optstr, "\n Usage: %s", m_ProgramName);
-  strcat(optstr, " [-U] [-h]");
+  strcat(optstr, " [-U] [-h] [--version]");
   length = strlen(optstr);
   fprintf(stdout, "%s", optstr);
 
@@ -252,6 +252,7 @@ void CommandLineParser::PrintHelp(struct CommandLineArgumentDescription *clArgLi
     fputc('\n', stdout);
     fprintf(stdout,"       -U\tPrint usage message and exit.\n");
     fprintf(stdout,"       -h\tPrint this help message and exit.\n");
+    fprintf(stdout,"       --version\tDisplays version information and exits.\n");
 
     /* Options in clArgList */
 
@@ -715,7 +716,7 @@ struct ml *CommandLineParser::ParseArguments(int argc, char *argv[],
 
 void CommandLineParser::ParseStandardArguments(char *key, struct CommandLineArgumentDescription *clArgList)
 {
-  if (STREQUAL(key,"-h") || STREQUAL(key,"-help"))
+  if (STREQUAL(key,"-h") || STREQUAL(key,"-help") || STREQUAL(key,"--help"))
   {
     PrintHelp(clArgList, HLP_VERBOSE);
     exit(0);
