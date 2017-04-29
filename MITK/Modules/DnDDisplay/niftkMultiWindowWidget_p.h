@@ -26,6 +26,12 @@
 
 #include <niftkDnDDisplayEnums.h>
 
+// On Windows we need to undefine the GetNextWindow macro from Windows.h
+// because it conflicts with the GetNextWindow() function below.
+#ifdef GetNextWindow
+#undef GetNextWindow
+#endif
+
 class QGridLayout;
 class QStackedLayout;
 
