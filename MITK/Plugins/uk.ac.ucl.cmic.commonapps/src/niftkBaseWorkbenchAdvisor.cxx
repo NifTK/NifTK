@@ -92,6 +92,13 @@ void BaseWorkbenchAdvisor::PostStartup()
   {
     this->SetPerspective(perspectiveLabel);
   }
+
+  QVariant resetArg = PluginActivator::GetInstance()->GetContext()->getProperty("applicationArgs.reset-perspective");
+
+  if (resetArg.isValid())
+  {
+    this->ResetPerspective();
+  }
 }
 
 
@@ -110,8 +117,7 @@ void BaseWorkbenchAdvisor::SetPerspective(const QString& perspectiveLabel)
     }
     else
     {
-      /// TODO there is no active workbench window.
-      MITK_ERROR << "There is no active workbench window.";
+      MITK_ERROR << "There is no active workbench window. Cannot set perspective.";
       return;
     }
   }
@@ -126,6 +132,30 @@ void BaseWorkbenchAdvisor::SetPerspective(const QString& perspectiveLabel)
   }
 
   workbench->ShowPerspective(perspectiveDescriptor->GetId(), workbenchWindow);
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseWorkbenchAdvisor::ResetPerspective()
+{
+  berry::IWorkbenchConfigurer::Pointer workbenchConfigurer = this->GetWorkbenchConfigurer();
+  berry::IWorkbench* workbench = workbenchConfigurer->GetWorkbench();
+  berry::IWorkbenchWindow::Pointer workbenchWindow = workbench->GetActiveWorkbenchWindow();
+  if (!workbenchWindow)
+  {
+    QList<berry::IWorkbenchWindow::Pointer> workbenchWindows = workbench->GetWorkbenchWindows();
+    if (!workbenchWindows.empty())
+    {
+      workbenchWindow = workbenchWindows[0];
+    }
+    else
+    {
+      MITK_ERROR << "There is no active workbench window. Cannot reset perspective.";
+      return;
+    }
+  }
+
+  workbenchWindow->GetActivePage()->ResetPerspective();
 }
 
 

@@ -66,6 +66,8 @@ public:
 
   void SetPerspective(const QString& perspectiveLabel);
 
+  void ResetPerspective();
+
 protected:
 
   /**

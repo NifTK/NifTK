@@ -34,6 +34,7 @@ const QString BaseApplication::PROP_OPEN = "applicationArgs.open";
 const QString BaseApplication::PROP_DERIVES_FROM = "applicationArgs.derives-from";
 const QString BaseApplication::PROP_PROPERTY = "applicationArgs.property";
 const QString BaseApplication::PROP_PERSPECTIVE = "applicationArgs.perspective";
+const QString BaseApplication::PROP_RESET_PERSPECTIVE = "applicationArgs.reset-perspective";
 const QString BaseApplication::PROP_VERSION = "applicationArgs.version";
 const QString BaseApplication::PROP_PRODUCT_NAME = "applicationArgs.product-name";
 
@@ -164,6 +165,10 @@ void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
       "The initial window perspective.\n");
   perspectiveOption.argument("<perspective>").binding(PROP_PERSPECTIVE.toStdString());
   options.addOption(perspectiveOption);
+
+  Poco::Util::Option resetPerspectiveOption("reset-perspective", "", "Reverts the perspective to its original layout.");
+  resetPerspectiveOption.binding(PROP_RESET_PERSPECTIVE.toStdString());
+  options.addOption(resetPerspectiveOption);
 
   Poco::Util::Option productNameOption("product-name", "N",
       "\n"

@@ -77,6 +77,7 @@ public:
   static const QString PROP_DERIVES_FROM;
   static const QString PROP_PROPERTY;
   static const QString PROP_PERSPECTIVE;
+  static const QString PROP_RESET_PERSPECTIVE;
   static const QString PROP_VERSION;
   static const QString PROP_PRODUCT_NAME;
 
