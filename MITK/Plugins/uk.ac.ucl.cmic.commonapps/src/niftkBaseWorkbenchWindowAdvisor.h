@@ -18,6 +18,7 @@
 #include <uk_ac_ucl_cmic_commonapps_Export.h>
 #include <QmitkExtWorkbenchWindowAdvisor.h>
 
+#include <berryIContributionItem.h>
 
 namespace niftk
 {
@@ -63,6 +64,9 @@ protected:
    * \brief Checks if the environment variable contains a string value "ON" or "1", and if so tries to open the given editor.
    */
   void OpenEditorIfEnvironmentVariableIsON(const std::string& envVariable, const QString& editorName);
+
+  berry::IContributionItem::Pointer m_SavePerspectiveItem;
+
 };
 
 }

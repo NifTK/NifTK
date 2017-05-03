@@ -23,6 +23,9 @@
 #include <QMenu>
 #include <QMenuBar>
 
+#include <berryCommandContributionItemParameter.h>
+#include <berryIWorkbenchCommandConstants.h>
+
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
 #include <mitkDataStorageEditorInput.h>
@@ -94,21 +97,16 @@ void BaseWorkbenchWindowAdvisor::PostWindowCreate()
   // Get rid of Welcome menu item, and re-connect the About menu item.
   //
   // 1. Get hold of menu bar
-  berry::IWorkbenchWindow::Pointer window =
-   this->GetWindowConfigurer()->GetWindow();
-  QMainWindow* mainWindow =
-   static_cast<QMainWindow*> (window->GetShell()->GetControl());
+  berry::IWorkbenchWindow::Pointer window = this->GetWindowConfigurer()->GetWindow();
+  QMainWindow* mainWindow = static_cast<QMainWindow*>(window->GetShell()->GetControl());
   QMenuBar* menuBar = mainWindow->menuBar();
-  QList<QMenu *> allMenus = menuBar->findChildren<QMenu *>();
+  QList<QMenu *> menus = menuBar->findChildren<QMenu*>();
 
-  for (int i = 0; i < allMenus.count(); i++)
+  for (QMenu* menu: menus)
   {
-    QList<QAction*> actionsForMenu = allMenus.at(i)->findChildren<QAction*>();
-    for (int j = 0; j < actionsForMenu.count(); j++)
+    for (QAction* action: menu->actions())
     {
-      QAction *action = actionsForMenu.at(j);
-
-      if (action != NULL && action->text() == "&About")
+      if (action->text() == "&About")
       {
         // 1.1. Disconnect existing slot
         action->disconnect();
@@ -116,10 +114,21 @@ void BaseWorkbenchWindowAdvisor::PostWindowCreate()
         // 1.2. Reconnect slot to our method to call our About Dialog.
         QObject::connect(action, SIGNAL(triggered()), this, SLOT(OnHelpAbout()));
       }
-
-      if (action != NULL && action->text() == "&Welcome")
+      else if (action->text() == "&Welcome")
       {
         action->setVisible(false);
+      }
+      else if (action->text() == "&Reset Perspective")
+      {
+        berry::CommandContributionItemParameter::Pointer param(
+              new berry::CommandContributionItemParameter(
+                window.GetPointer(),
+                QString(),
+                berry::IWorkbenchCommandConstants::WINDOW_SAVE_PERSPECTIVE_AS,
+                berry::CommandContributionItem::STYLE_PUSH));
+        param->label = "Save Perspective &As...";
+        m_SavePerspectiveItem = new berry::CommandContributionItem(param);
+        m_SavePerspectiveItem->Fill(menu, action);
       }
     }
   }
