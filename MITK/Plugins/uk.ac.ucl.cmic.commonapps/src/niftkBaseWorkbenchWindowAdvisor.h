@@ -53,6 +53,9 @@ public slots:
   /// \brief Opens the Help About dialog box.
   void OnHelpAbout();
 
+  /// \brief Deletes the current perspective and reverts to the default perspective.
+  void OnDeletePerspective();
+
 protected:
 
   /**

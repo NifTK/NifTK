@@ -25,6 +25,7 @@
 
 #include <berryCommandContributionItemParameter.h>
 #include <berryIWorkbenchCommandConstants.h>
+#include <berryIWorkbenchWindowConfigurer.h>
 
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
@@ -60,6 +61,31 @@ void BaseWorkbenchWindowAdvisor::OnHelpAbout()
   niftk::HelpAboutDialog *dialog = new niftk::HelpAboutDialog(QApplication::activeWindow(), QApplication::applicationName());
   dialog->setModal(true);
   dialog->show();
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseWorkbenchWindowAdvisor::OnDeletePerspective()
+{
+  berry::IWorkbenchWindowConfigurer::Pointer windowConfigurer = this->GetWindowConfigurer();
+  berry::IWorkbenchWindow::Pointer workbenchWindow = windowConfigurer->GetWindow();
+
+  berry::IWorkbench* workbench = workbenchWindow->GetWorkbench();
+  berry::IPerspectiveRegistry* perspectiveRegistry = workbench->GetPerspectiveRegistry();
+
+  berry::IWorkbenchPage::Pointer workbenchPage = workbenchWindow->GetActivePage();
+
+  berry::IPerspectiveDescriptor::Pointer currentPerspective = workbenchPage->GetPerspective();
+  berry::IPerspectiveDescriptor::Pointer defaultPerspective =
+      perspectiveRegistry->FindPerspectiveWithId(perspectiveRegistry->GetDefaultPerspective());
+
+  if (currentPerspective.IsNotNull()
+      && defaultPerspective.IsNotNull()
+      && currentPerspective != defaultPerspective)
+  {
+    workbenchPage->SetPerspective(defaultPerspective);
+    perspectiveRegistry->DeletePerspective(currentPerspective);
+  }
 }
 
 
@@ -129,6 +155,13 @@ void BaseWorkbenchWindowAdvisor::PostWindowCreate()
         param->label = "Save Perspective &As...";
         m_SavePerspectiveItem = new berry::CommandContributionItem(param);
         m_SavePerspectiveItem->Fill(menu, action);
+
+        QAction* deletePerspectiveAction = new QAction("&Delete perspective", menu);
+        this->connect(deletePerspectiveAction, SIGNAL(triggered(bool)), SLOT(OnDeletePerspective()));
+        menu->insertAction(action, deletePerspectiveAction);
+
+        /// TODO
+        /// The Open Perspective menu should be regenerated after saving or deleting a perspective.
       }
     }
   }
