@@ -13,10 +13,12 @@
 =============================================================================*/
 
 #include "niftkMultiViewerVisibilityManager.h"
-#include <mitkVtkResliceInterpolationProperty.h>
-#include <mitkImageAccessByItk.h>
+
 #include <itkConversionUtils.h>
 #include <itkSpatialOrientationAdapter.h>
+
+#include <mitkVtkResliceInterpolationProperty.h>
+#include <mitkImageAccessByItk.h>
 
 #include <niftkDataStorageUtils.h>
 
@@ -32,7 +34,8 @@ MultiViewerVisibilityManager::MultiViewerVisibilityManager(mitk::DataStorage::Po
     m_DefaultWindowLayout(WINDOW_LAYOUT_CORONAL),
     m_InterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION),
     m_Accumulate(false),
-    m_VisibilityBinding(false)
+    m_VisibilityBinding(false),
+    m_VisibilityOfForeignNodesLocked(true)
 {
   bool wasBlocked = this->SetBlocked(true);
   mitk::DataStorage::SetOfObjects::ConstPointer all = this->GetDataStorage()->GetAll();
@@ -111,6 +114,7 @@ void MultiViewerVisibilityManager::SetAccumulateWhenDropping(bool accumulate)
 //-----------------------------------------------------------------------------
 void MultiViewerVisibilityManager::RegisterViewer(SingleViewerWidget* viewer)
 {
+  m_DroppedNodes[viewer] = std::set<mitk::DataNode*>();
   m_Viewers.push_back(viewer);
 
   std::vector<mitk::DataNode*> nodes;
@@ -146,6 +150,7 @@ void MultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex, std
     QObject::disconnect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
     QObject::disconnect(viewer, SIGNAL(WindowSelected()), this, SLOT(OnWindowSelected()));
     this->RemoveNodesFromViewer(viewer);
+    m_DroppedNodes.erase(viewer);
   }
   m_Viewers.erase(m_Viewers.begin() + startIndex, m_Viewers.begin() + endIndex);
 }
@@ -184,6 +189,23 @@ void MultiViewerVisibilityManager::SetVisibilityBinding(bool bound)
 
 
 //-----------------------------------------------------------------------------
+bool MultiViewerVisibilityManager::IsVisibilityOfForeignNodesLocked() const
+{
+  return m_VisibilityOfForeignNodesLocked;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerVisibilityManager::SetVisibilityOfForeignNodesLocked(bool locked)
+{
+  if (locked != m_VisibilityOfForeignNodesLocked)
+  {
+    m_VisibilityOfForeignNodesLocked = locked;
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
 {
   /// Note:
@@ -197,21 +219,17 @@ void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
 
   // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
 
-  mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
-
-  bool hasVisibleSource = false;
-  mitk::DataStorage::SetOfObjects::ConstPointer sources = dataStorage->GetSources(node, nullptr, false);
-  for (auto it = sources->Begin(); it != sources->End(); ++it)
+  SingleViewerWidget* selectedViewer = nullptr;
+  for (auto viewer: m_Viewers)
   {
-    mitk::DataNode::Pointer source = it->Value();
-    if (source.IsNotNull() && source->IsVisible(nullptr))
+    if (viewer->IsFocused())
     {
-      hasVisibleSource = true;
+      selectedViewer = viewer;
       break;
     }
   }
 
-  if (globalVisibility && !hasVisibleSource)
+  if (globalVisibility && this->IsForeignNode(node, selectedViewer))
   {
     globalVisibility = false;
     bool wasBlocked = this->SetBlocked(true);
@@ -219,16 +237,17 @@ void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
     this->SetBlocked(wasBlocked);
   }
 
+  std::vector<mitk::DataNode*> nodes(1);
+  nodes[0] = node;
   for (auto viewer: m_Viewers)
   {
-    // We set the local visibility to the same as the global visibility in the selected viewer.
-    // In the other viewers we set the local visibility to either the same or to false, depending
-    // on whether the visibility is bound across the viewers.
-    bool visibility = (viewer->IsFocused() || m_VisibilityBinding) ? globalVisibility : false;
-
-    std::vector<mitk::DataNode*> nodes(1);
-    nodes[0] = node;
-    viewer->SetVisibility(nodes, visibility);
+    /// We set the local visibility to the same as the global visibility in the selected viewer.
+    /// In the other viewers we set the local visibility to either the same or to false, depending
+    /// on whether the visibility is bound across the viewers.
+    /// It is important to set a local visibility for each viewer explicitly, even if it is
+    /// the same as the global visibility.
+    bool localVisibility = (viewer == selectedViewer || m_VisibilityBinding) ? globalVisibility : false;
+    viewer->SetVisibility(nodes, localVisibility);
   }
 
   mitk::VtkResliceInterpolationProperty* interpolationProperty =
@@ -275,21 +294,45 @@ void MultiViewerVisibilityManager::OnNodeRemoved(mitk::DataNode* node)
 void MultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, const mitk::BaseRenderer* renderer)
 {
   /// Note:
-  /// The renderer must be 0 because we are listening to the global visibility only.
+  /// The renderer must be nullptr because we are listening to the global visibility only.
   assert(renderer == nullptr);
 
   bool globalVisibility = node->IsVisible(nullptr);
 
+  SingleViewerWidget* selectedViewer = nullptr;
   for (auto viewer: m_Viewers)
   {
-    // We set the local visibility to the new global visibility in the selected viewer,
-    // and if the visibility is bound across the viewers then in the other viewers as well.
-    if (viewer->IsFocused() || m_VisibilityBinding)
+    if (viewer->IsFocused())
     {
-      std::vector<mitk::DataNode*> nodes(1);
-      nodes[0] = node;
-      viewer->SetVisibility(nodes, globalVisibility);
+      selectedViewer = viewer;
+      break;
     }
+  }
+
+  /// A node is 'foreign' to a viewer if neither itself nor any of its source nodes
+  /// have not been dropped on the viewer. If the node is foreign to the selected
+  /// viewer and the visibility of foreign nodes is locked, we need to 'undo' the
+  /// property change.
+
+  if (selectedViewer == nullptr
+      || (this->IsForeignNode(node, selectedViewer)
+          && m_VisibilityOfForeignNodesLocked))
+  {
+    bool wasBlocked = this->SetBlocked(true);
+    node->SetVisibility(!globalVisibility);
+    this->SetBlocked(wasBlocked);
+    return;
+  }
+
+  /// Otherwise, we set the local visibility to the new global visibility
+  /// in the selected viewer, and if the visibility is bound across the
+  /// viewers then in the other viewers as well.
+  std::vector<mitk::DataNode*> nodes(1);
+  nodes[0] = node;
+  for (auto viewer: m_Viewers)
+  {
+    bool localVisibility = (viewer == selectedViewer || m_VisibilityBinding) ? globalVisibility : false;
+    viewer->SetVisibility(nodes, localVisibility);
   }
 }
 
@@ -307,6 +350,8 @@ void MultiViewerVisibilityManager::RemoveNodesFromViewer(SingleViewerWidget* vie
     nodes.push_back(node.GetPointer());
   }
   viewer->SetVisibility(nodes, false);
+
+  m_DroppedNodes[viewer].clear();
 }
 
 
@@ -321,6 +366,7 @@ void MultiViewerVisibilityManager::AddNodeToViewer(SingleViewerWidget* viewer, m
   bool wasBlocked = this->SetBlocked(true);
 
   node->SetVisibility(true);
+  m_DroppedNodes[viewer].insert(node);
 
   mitk::DataStorage::SetOfObjects::ConstPointer derivedNodes = this->GetDataStorage()->GetDerivations(node, NULL, false);
   for (auto it = derivedNodes->Begin(); it != derivedNodes->End(); ++it)
@@ -333,6 +379,31 @@ void MultiViewerVisibilityManager::AddNodeToViewer(SingleViewerWidget* viewer, m
   this->SetBlocked(wasBlocked);
 
   viewer->ApplyGlobalVisibility(nodes);
+}
+
+
+//-----------------------------------------------------------------------------
+bool MultiViewerVisibilityManager::IsForeignNode(mitk::DataNode* node, SingleViewerWidget* viewer)
+{
+  auto& nodesDroppedOnViewer = m_DroppedNodes[viewer];
+
+  if (nodesDroppedOnViewer.find(node) != nodesDroppedOnViewer.end())
+  {
+    return false;
+  }
+
+  mitk::DataStorage* dataStorage = this->GetDataStorage();
+  mitk::DataStorage::SetOfObjects::ConstPointer sources = dataStorage->GetSources(node, nullptr, false);
+  for (auto it = sources->Begin(); it != sources->End(); ++it)
+  {
+    mitk::DataNode::Pointer source = it->Value();
+    if (nodesDroppedOnViewer.find(source) != nodesDroppedOnViewer.end())
+    {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 
@@ -469,7 +540,6 @@ MultiViewerVisibilityManager::GetAsAcquiredOrientation(itk::Image<TPixel, VImage
 //-----------------------------------------------------------------------------
 WindowLayout MultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk::DataNode*> nodes)
 {
-
   WindowLayout windowLayout = m_DefaultWindowLayout;
   if (windowLayout == WINDOW_LAYOUT_AS_ACQUIRED)
   {

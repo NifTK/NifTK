@@ -117,6 +117,15 @@ public:
   /// \brief Binds the visibility of data nodes across the viewers.
   void SetVisibilityBinding(bool bound);
 
+  /// \brief Tells if the visibility of the "foreign" data nodes are locked.
+  /// A data node is "foreign" if it has not been dropped on the selected viewer and nor any of its
+  /// source data node has been. The lock can prevent toggling on the visibility of data nodes that
+  /// are not supposed to be shown in a given viewer.
+  bool IsVisibilityOfForeignNodesLocked() const;
+
+  /// \brief Locks or unlocks the visibility of the "foreign" data nodes.
+  void SetVisibilityOfForeignNodesLocked(bool locked);
+
 signals:
 
   void VisibilityBindingChanged(bool bound);
@@ -153,6 +162,11 @@ private:
   /// \brief For a given viewer, effectively sets the rendering window specific visibility property of all nodes registered with that window to false.
   virtual void RemoveNodesFromViewer(SingleViewerWidget* viewer);
 
+  /// \brief Tells if the given node is "foreign" to the given viewer.
+  /// A node is considered foreign to a viewer if neither itself nor any of its sources
+  /// have not been dropped on the viewer. Otherwise, it is considered "local".
+  bool IsForeignNode(mitk::DataNode* node, SingleViewerWidget* viewer);
+
   /// \brief Updates the global visibilities of every node to the same as in the given renderer.
   /// The function ignores the crosshair plane nodes.
   void UpdateGlobalVisibilities(mitk::BaseRenderer* renderer);
@@ -164,36 +178,48 @@ private:
   template<typename TPixel, unsigned int VImageDimension>
   void GetAsAcquiredOrientation(itk::Image<TPixel, VImageDimension>* itkImage, WindowOrientation& outputOrientation);
 
-  // Will retrieve the correct geometry from a list of nodes.
-  // If nodeIndex < 0 (for single drop case).
-  //   Search for first available image
-  //   Failing that, first geometry.
-  // If node index >=0, and < nodes.size()
-  //   Picks out the geometry of the object for that index.
-  // Else
-  //   Picks out the first geometry.
+  /// \brief Will retrieve the correct geometry from a list of nodes.
+  /// If nodeIndex < 0 (for single drop case).
+  ///   Search for first available image
+  ///   Failing that, first geometry.
+  /// If node index >=0, and < nodes.size()
+  ///   Picks out the geometry of the object for that index.
+  /// Else
+  ///   Picks out the first geometry.
   mitk::TimeGeometry::Pointer GetTimeGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex);
 
   MultiViewerVisibilityManager(const MultiViewerVisibilityManager&); // Purposefully not implemented.
   MultiViewerVisibilityManager& operator=(const MultiViewerVisibilityManager&); // Purposefully not implemented.
 
-  // Additionally, we manage a list of viewers, where m_DataNodes.size() == m_Viewers.size() should always be true.
-  std::vector< SingleViewerWidget* > m_Viewers;
+  /// \brief List of viewers whose visibility are managed.
+  std::vector<SingleViewerWidget*> m_Viewers;
 
-  // Keeps track of the current mode, as it effects the response when images are dropped, as images are spread over single, multiple or all windows.
+  /// \brief Sets of nodes that have been dropped on the individual viewers.
+  std::map<SingleViewerWidget*, std::set<mitk::DataNode*>> m_DroppedNodes;
+
+  /// Keeps track of the current mode, as it effects the response when images are dropped, as images are spread over single, multiple or all windows.
   DnDDisplayDropType m_DropType;
 
-  // Keeps track of the default window layout, as it affects the response when images are dropped, as the image should be oriented axial, coronal, sagittal, or as acquired (as per the X-Y plane).
+  /// Keeps track of the default window layout, as it affects the response when images are dropped, as the image should be oriented axial, coronal, sagittal, or as acquired (as per the X-Y plane).
   WindowLayout m_DefaultWindowLayout;
 
-  // Keeps track of the default interpolation, as it affects the response when images are dropped,
-  // as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
+  /// Keeps track of the default interpolation, as it affects the response when images are dropped,
+  /// as the dropped image should switch to that interpolation type, although as it is a node based property will affect all windows.
   DnDDisplayInterpolationType m_InterpolationType;
 
-  // Boolean to indicate whether successive drops into the same window are cumulative.
+  /// Boolean to indicate whether successive drops into the same window are cumulative.
   bool m_Accumulate;
 
+  /// \brief Binds the visibility of data nodes across viewers.
+  /// If the visibility is bound, toggling the global visibility of the data node changes the local
+  /// visibility in each viewer, not only in the selected viewer.
   bool m_VisibilityBinding;
+
+  /// \brief Controls if the visibility of the "foreign" data nodes are locked.
+  /// A data node is "foreign" if it has not been dropped on the selected viewer and nor any of its
+  /// source data node has been. The lock can prevent toggling on the visibility of data nodes that
+  /// are not supposed to be shown in a given viewer.
+  bool m_VisibilityOfForeignNodesLocked;
 
 };
 
