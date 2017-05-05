@@ -26,6 +26,7 @@
 #include <berryCommandContributionItemParameter.h>
 #include <berryIWorkbenchCommandConstants.h>
 #include <berryIWorkbenchWindowConfigurer.h>
+#include <internal/berryQtOpenPerspectiveAction.h>
 
 #include <mitkDataNode.h>
 #include <mitkDataStorage.h>
@@ -45,6 +46,110 @@
 
 namespace niftk
 {
+
+class PerspectiveListener: public berry::IPerspectiveListener
+{
+public:
+
+  PerspectiveListener(berry::IWorkbenchWindow::Pointer window)
+    : m_Window(window),
+      m_PerspectiveMenu(nullptr)
+  {
+    berry::IPerspectiveRegistry* perspectiveRegistry = m_Window->GetWorkbench()->GetPerspectiveRegistry();
+    berry::IPerspectiveDescriptor::Pointer activePerspective = m_Window->GetActivePage()->GetPerspective();
+
+    QMainWindow* mainWindow = static_cast<QMainWindow*>(m_Window->GetShell()->GetControl());
+    QMenuBar* menuBar = mainWindow->menuBar();
+    QList<QMenu*> menus = menuBar->findChildren<QMenu*>();
+    for (QMenu* menu: menus)
+    {
+      for (QAction* action: menu->actions())
+      {
+        if (action->text() == "&Open Perspective")
+        {
+          m_PerspectiveMenu = action->menu();
+          for (QAction* perspectiveAction: m_PerspectiveMenu->actions())
+          {
+            berry::IPerspectiveDescriptor::Pointer perspective =
+                perspectiveRegistry->FindPerspectiveWithLabel(perspectiveAction->text());
+            if (perspective.IsNotNull())
+            {
+              m_PerspectiveActions[perspective->GetId()] = perspectiveAction;
+              perspectiveAction->setChecked(perspective == activePerspective);
+            }
+          }
+          return;
+        }
+      }
+    }
+  }
+
+  Events::Types GetPerspectiveEventTypes() const override
+  {
+    return Events::ACTIVATED | Events::DEACTIVATED | Events::SAVED_AS;
+  }
+
+  void PerspectiveActivated(const berry::IWorkbenchPage::Pointer& /*page*/,
+    const berry::IPerspectiveDescriptor::Pointer& perspective) override
+  {
+    if (QAction* action = m_PerspectiveActions[perspective->GetId()])
+    {
+      action->setChecked(true);
+    }
+  }
+
+  void PerspectiveDeactivated(const berry::IWorkbenchPage::Pointer& /*page*/,
+    const berry::IPerspectiveDescriptor::Pointer& perspective) override
+  {
+    if (QAction* action = m_PerspectiveActions[perspective->GetId()])
+    {
+      action->setChecked(false);
+    }
+  }
+
+  void PerspectiveSavedAs(const berry::IWorkbenchPage::Pointer& /*page*/,
+                          const berry::IPerspectiveDescriptor::Pointer& /*oldPerspective*/,
+                          const berry::IPerspectiveDescriptor::Pointer& newPerspective) override
+  {
+    QAction* firstPerspectiveAction = m_PerspectiveMenu->actions().first();
+    assert(firstPerspectiveAction != nullptr);
+    QActionGroup* perspectiveGroup = firstPerspectiveAction->actionGroup();
+
+    QAction* newPerspectiveAction = new berry::QtOpenPerspectiveAction(m_Window, newPerspective, perspectiveGroup);
+    newPerspectiveAction->setChecked(true);
+    m_PerspectiveActions.insert(newPerspective->GetId(), newPerspectiveAction);
+    bool inserted = false;
+    for (QAction* perspectiveAction: m_PerspectiveMenu->actions())
+    {
+      if (perspectiveAction->text() > newPerspectiveAction->text())
+      {
+        m_PerspectiveMenu->insertAction(perspectiveAction, newPerspectiveAction);
+        inserted = true;
+        break;
+      }
+    }
+    if (!inserted)
+    {
+      m_PerspectiveMenu->addAction(newPerspectiveAction);
+    }
+  }
+
+  void PerspectiveDeleted(const berry::IPerspectiveDescriptor::Pointer& perspective)
+  {
+    if (QAction* action = m_PerspectiveActions[perspective->GetId()])
+    {
+      m_PerspectiveMenu->removeAction(action);
+      m_PerspectiveActions.remove(perspective->GetId());
+    }
+  }
+
+private:
+  berry::IWorkbenchWindow::Pointer m_Window;
+  QMenu* m_PerspectiveMenu;
+  // maps perspective ids to QAction objects
+  QHash<QString, QAction*> m_PerspectiveActions;
+};
+
 
 //-----------------------------------------------------------------------------
 BaseWorkbenchWindowAdvisor::BaseWorkbenchWindowAdvisor(
@@ -85,6 +190,9 @@ void BaseWorkbenchWindowAdvisor::OnDeletePerspective()
   {
     workbenchPage->SetPerspective(defaultPerspective);
     perspectiveRegistry->DeletePerspective(currentPerspective);
+
+    auto perspectiveListener = dynamic_cast<PerspectiveListener*>(m_PerspectiveListener.data());
+    perspectiveListener->PerspectiveDeleted(currentPerspective);
   }
 }
 
@@ -159,12 +267,12 @@ void BaseWorkbenchWindowAdvisor::PostWindowCreate()
         QAction* deletePerspectiveAction = new QAction("&Delete perspective", menu);
         this->connect(deletePerspectiveAction, SIGNAL(triggered(bool)), SLOT(OnDeletePerspective()));
         menu->insertAction(action, deletePerspectiveAction);
-
-        /// TODO
-        /// The Open Perspective menu should be regenerated after saving or deleting a perspective.
       }
     }
   }
+
+  m_PerspectiveListener.reset(new PerspectiveListener(window));
+  window->AddPerspectiveListener(m_PerspectiveListener.data());
 }
 
 

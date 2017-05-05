@@ -70,6 +70,10 @@ protected:
 
   berry::IContributionItem::Pointer m_SavePerspectiveItem;
 
+private:
+
+  QScopedPointer<berry::IPerspectiveListener> m_PerspectiveListener;
+
 };
 
 }
