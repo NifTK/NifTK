@@ -30,24 +30,24 @@
 
 struct niftk::CommandLineArgumentDescription clArgList[] = 
 {
-  {OPT_STRING|OPT_REQ, "i", "fileInputImage", "Input image."},
-  {OPT_STRING|OPT_REQ, "o", "fileOutputPolyData", "Output .stl model."},
-  {OPT_DOUBLE, "t", "threshold", "Threshold value [100.0]."},
-  {OPT_INT, "e", "extractionType", "Extraction type either (0) vtk Marching cubes or (1) corrected marching cubes 33 [0]."},
-  {OPT_DOUBLE, "ir", "samplingRatio", "Input image downsampling ratio [1.0]."},
-  {OPT_INT, "isType", "inputSmoothingType", "Input image smoothing either (0) no smoothing, (1) Gaussian smoothing, or"
-    "(2) Median smoothing [0]."},
-  {OPT_FLOAT, "isRad", "inputSmoothingRadius", "Input image smoothing radius [0.5]."},
-  {OPT_INT, "isIter", "inputSmoothingIterations", "Input image smoothing number of iterations [1]."},
-  {OPT_INT, "d", "decimationType", "surface decimation type either (0) no decimation, (1) Decimate Pro, (2) Quadratic VTK, "
-    "(3) Quadratic, (4) Quadratic Tri, (5) Melax, or (6) Shortest Edge [0]."},
-  {OPT_INT, "ssType", "surfSmoothingType", "output surface smoothing either (0) no smoothing, (1) Taubin smoothing,"
-    "(2) curvature normal smoothing, (3) inverse edge length smoothing, (4) Windowed Sinc smoothing, (5) standard VTK smoothing [0]."},
-  {OPT_FLOAT, "ssRad", "surfSmoothingRadius", "Output surface smoothing radius [0.5]."},
-  {OPT_INT, "ssIter", "surfSmoothingType", "Output surface smoothing number of iterations [1]."},
-  {OPT_FLOAT, "tarRed", "targetReduction", "Polydata reduction ratio [0.1]"},
-  {OPT_SWITCH, "cleanSurfOn", "useSurfClean", "Turn on small object removal."},
-  {OPT_INT, "cleanT", "surfCleanThreshold", "Polygon threshold for small object removal [1000]."},
+  {OPT_STRING|OPT_REQ, "i", "fileName", "Input image."},
+  {OPT_STRING|OPT_REQ, "o", "fileName", "Output .stl model."},
+  {OPT_DOUBLE, "t", "double", "[100.0] Threshold value."},
+  {OPT_INT, "e", "int", "[0] Extraction type either (0) vtk Marching cubes or (1) corrected marching cubes 33."},
+  {OPT_DOUBLE, "ir", "double", "[1.0] Input image downsampling ratio."},
+  {OPT_INT, "isType", "int", "[0] Input image smoothing either (0) no smoothing, (1) Gaussian smoothing, or"
+    "(2) Median smoothing."},
+  {OPT_FLOAT, "isRad", "float", "[0.5] Input image smoothing radius."},
+  {OPT_INT, "isIter", "int", "[1] Input image smoothing number of iterations."},
+  {OPT_INT, "d", "int", "[0] surface decimation type either (0) no decimation, (1) Decimate Pro, (2) Quadratic VTK, "
+    "(3) Quadratic, (4) Quadratic Tri, (5) Melax, or (6) Shortest Edge."},
+  {OPT_INT, "ssType", "int", "[0] output surface smoothing either (0) no smoothing, (1) Taubin smoothing,"
+    "(2) curvature normal smoothing, (3) inverse edge length smoothing, (4) Windowed Sinc smoothing, (5) standard VTK smoothing."},
+  {OPT_FLOAT, "ssRad", "float", "[0.5] Output surface smoothing radius."},
+  {OPT_INT, "ssIter", "int", "[1] Output surface smoothing number of iterations."},
+  {OPT_FLOAT, "tarRed", "float", "[0.1] Polydata reduction ratio."},
+  {OPT_SWITCH, "cleanSurfOn", NULL, "Turn on small object removal."},
+  {OPT_INT, "cleanT", "int", "[1000] Polygon threshold for small object removal."},
   {OPT_DONE, NULL, NULL, 
     "Program to extract a polydata object from an image using corrected marching cubes 33.\n"
   }
