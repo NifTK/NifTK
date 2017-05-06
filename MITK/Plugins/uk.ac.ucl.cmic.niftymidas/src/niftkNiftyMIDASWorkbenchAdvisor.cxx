@@ -25,7 +25,7 @@ namespace niftk
 //-----------------------------------------------------------------------------
 QString NiftyMIDASWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 {
-  return "uk.ac.ucl.cmic.niftymidas.segmentation_perspective";
+  return "uk.ac.ucl.cmic.niftymidas.default_perspective";
 }
 
 
