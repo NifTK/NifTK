@@ -26,4 +26,10 @@
     </perspective>
   </extension>
 
+  <extension point="org.blueberry.ui.preferencePages">
+    <page id="uk.ac.ucl.cmic.common.BaseApplicationPreferencePage" name="Application Preferences" class="niftk::BaseApplicationPreferencePage">
+      <keywordreference id="uk.ac.ucl.cmic.common.BaseApplicationPreferencePageKeywords"></keywordreference>
+    </page>
+  </extension>
+
 </plugin>
