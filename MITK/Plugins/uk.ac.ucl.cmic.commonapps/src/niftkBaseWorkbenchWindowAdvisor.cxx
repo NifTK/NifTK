@@ -22,6 +22,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 
 #include <berryCommandContributionItemParameter.h>
 #include <berryIWorkbenchCommandConstants.h>
@@ -118,20 +119,7 @@ public:
     QAction* newPerspectiveAction = new berry::QtOpenPerspectiveAction(m_Window, newPerspective, perspectiveGroup);
     newPerspectiveAction->setChecked(true);
     m_PerspectiveActions.insert(newPerspective->GetId(), newPerspectiveAction);
-    bool inserted = false;
-    for (QAction* perspectiveAction: m_PerspectiveMenu->actions())
-    {
-      if (perspectiveAction->text() > newPerspectiveAction->text())
-      {
-        m_PerspectiveMenu->insertAction(perspectiveAction, newPerspectiveAction);
-        inserted = true;
-        break;
-      }
-    }
-    if (!inserted)
-    {
-      m_PerspectiveMenu->addAction(newPerspectiveAction);
-    }
+    m_PerspectiveMenu->addAction(newPerspectiveAction);
   }
 
   void PerspectiveDeleted(const berry::IPerspectiveDescriptor::Pointer& perspective)
@@ -184,11 +172,44 @@ void BaseWorkbenchWindowAdvisor::OnDeletePerspective()
   berry::IPerspectiveDescriptor::Pointer defaultPerspective =
       perspectiveRegistry->FindPerspectiveWithId(perspectiveRegistry->GetDefaultPerspective());
 
-  if (currentPerspective.IsNotNull()
-      && defaultPerspective.IsNotNull()
-      && currentPerspective != defaultPerspective)
+  if (currentPerspective.IsNull())
   {
-    workbenchPage->SetPerspective(defaultPerspective);
+    QMessageBox::information(
+          workbenchWindow->GetShell()->GetControl(),
+          "",
+          "No perspective is selected."
+          );
+    return;
+  }
+
+  if (currentPerspective == defaultPerspective)
+  {
+    QMessageBox::information(
+          workbenchWindow->GetShell()->GetControl(),
+          "Delete Perspective",
+          "The default perspective cannot be deleted."
+          );
+    return;
+  }
+
+  auto answer = QMessageBox::question(
+        workbenchWindow->GetShell()->GetControl(),
+        "Delete Perspective",
+        "You are about to delete the current perspective. If it is a pre-defined "
+        "perspective, it will be re-created after restarting the application, "
+        "but if it was created manually by the 'Save Perspective As...' menu "
+        "item, it will be lost.\n"
+        "\n"
+        "Are you sure you want to delete the current perspective?",
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No);
+
+  if (answer == QMessageBox::Yes)
+  {
+    if (defaultPerspective.IsNotNull())
+    {
+      workbenchPage->SetPerspective(defaultPerspective);
+    }
     perspectiveRegistry->DeletePerspective(currentPerspective);
 
     auto perspectiveListener = dynamic_cast<PerspectiveListener*>(m_PerspectiveListener.data());
