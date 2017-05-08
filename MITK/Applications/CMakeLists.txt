@@ -22,6 +22,7 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
 
     add_subdirectory(PointSetStatistics)
     add_subdirectory(CreatePolyDataFromImage)
+    add_subdirectory(ExtractLandmarkFromMITKScene)
 
     if(BUILD_NiftyIGI)
       add_subdirectory(AverageStationaryChessboards)
@@ -94,8 +95,8 @@ endif()
 # GUI applications based on the BlueBerry framework.
 #
 # This section must go after the command line applications, or else when you run
-# the CMake fixup_bundle macro (most important for Mac), the command line apps 
-# are not yet present, and the command line apps end up with unresolved external 
+# the CMake fixup_bundle macro (most important for Mac), the command line apps
+# are not yet present, and the command line apps end up with unresolved external
 # dependencies. Worse still, the packaging will appear to succeed.
 #################################################################################
 
