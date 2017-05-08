@@ -12,9 +12,10 @@
 
 =============================================================================*/
 
-#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
-#include <itkCommandLineHelper.h>
+#include <niftkCommandLineParser.h>
+#include "itkCommandLineHelper.h"
+
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNifTKImageIOFactory.h>
@@ -38,23 +39,33 @@
  * \section niftkCreateMaskFromLabelsCaveat Caveats
  */
 
-void Usage(char *exec)
+struct niftk::CommandLineArgumentDescription clArgList[] = 
 {
-  niftk::LogHelper::PrintCommandLineHeader(std::cout);
-  std::cout << "  " << std::endl;
-  std::cout << "  Given an image and a list of labels, will output a binary mask, where all voxels with" << std::endl;
-  std::cout << "  voxel intensities matching the list are output as foreground, and all other voxels are background." << std::endl;
-  std::cout << "  " << std::endl;
-  std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-  std::cout << "  " << std::endl;
-  std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-  std::cout << "    -i    <filename>        Input image " << std::endl;
-  std::cout << "    -o    <filename>        Output image" << std::endl << std::endl;      
-  std::cout << "*** [options]   ***" << std::endl << std::endl;   
-  std::cout << "    -l 1,2,3,4,5            Comma separated list of voxel intensities (labels in an atlas image for example)." << std::endl;    
-  std::cout << "    -bg <float>             Output background value. Default 0." << std::endl;
-  std::cout << "    -fg <float>             Output foreground value. Default 1." << std::endl;
-}
+  {OPT_STRING|OPT_REQ, "i", "filename", "Input image."},
+  {OPT_STRING|OPT_REQ, "o", "filename", "Output image."},
+
+  {OPT_STRING, "l", "string", "Comma separated list of voxel intensities (labels in an atlas image for example)."},
+  {OPT_FLOAT, "bg", "float", "Output background value. Default 0."},
+  {OPT_FLOAT, "fg", "float", "Output foreground value. Default 1."},
+
+  {OPT_DONE, NULL, NULL, 
+   "Given an image and a list of labels, will output a binary mask, where all voxels with"
+   "voxel intensities matching the list are output as foreground, and all other voxels are background.\n"
+  }
+};
+
+enum
+{
+  O_INPUT_IMAGE, 
+
+  O_OUTPUT_IMAGE, 
+
+  O_LABELS,
+
+  O_BACKGROUND_VALUE,
+
+  O_FOREGROUND_VALUE
+};
 
 struct arguments
 {
@@ -131,7 +142,8 @@ int DoMain(arguments args)
   { 
     std::cerr << "Failed: " << err << std::endl; 
     return EXIT_FAILURE;
-  }                
+  }
+
   return EXIT_SUCCESS;
 }
 
@@ -146,47 +158,19 @@ int main(int argc, char** argv)
   struct arguments args;
   args.backgroundValue = 0;
   args.forgroundValue = 1;
+
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
+
+  CommandLineOptions.GetArgument( O_INPUT_IMAGE, args.inputImage );
+
+  CommandLineOptions.GetArgument( O_OUTPUT_IMAGE, args.outputImage );
   
-
-  // Parse command line args
-  for(int i=1; i < argc; i++){
-    if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
-      Usage(argv[0]);
-      return -1;
-    }
-    else if(strcmp(argv[i], "-i") == 0){
-      args.inputImage=argv[++i];
-      std::cout << "Set -i=" << args.inputImage << std::endl;
-    }
-    else if(strcmp(argv[i], "-o") == 0){
-      args.outputImage=argv[++i];
-      std::cout << "Set -o=" << args.outputImage << std::endl;
-    }
-    else if(strcmp(argv[i], "-bg") == 0){
-      args.backgroundValue=atof(argv[++i]);
-      std::cout << "Set -bg=" << niftk::ConvertToString(args.backgroundValue) << std::endl;
-    }
-    else if(strcmp(argv[i], "-fg") == 0){
-      args.forgroundValue=atof(argv[++i]);
-      std::cout << "Set -fg=" << niftk::ConvertToString(args.forgroundValue) << std::endl;
-    }
-    else if(strcmp(argv[i], "-l") == 0){
-      args.regionNumbers=argv[++i];
-      std::cout << "Set -l=" << args.regionNumbers << std::endl;
-    }        
-    else {
-      std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
-      return -1;
-    }            
-  }
-
-  // Validate command line args
-  if (args.inputImage.length() == 0 || args.outputImage.length() == 0)
-    {
-      Usage(argv[0]);
-      return EXIT_FAILURE;
-    }
-
+  CommandLineOptions.GetArgument( O_LABELS, args.regionNumbers );
+  
+  CommandLineOptions.GetArgument( O_BACKGROUND_VALUE, args.backgroundValue );
+  
+  CommandLineOptions.GetArgument( O_FOREGROUND_VALUE, args.forgroundValue );
+  
   int dims = itk::PeekAtImageDimension(args.inputImage);
   if (dims != 2 && dims != 3)
     {
