@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
+#include <niftkCommandLineParser.h>
 #include <vtkDataObject.h>
 #include <vtkStructuredGrid.h>
 #include <vtkPolyData.h>
@@ -33,112 +33,77 @@
  * \section niftkMarchingCubesSummary Takes an image as a VTK structured grid (or structured points), and performs a marching cubes iso-surface contour extraction.
  */
 
-void Usage(char *exec)
-  {
-    niftk::LogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Takes an image as a VTK structured grid (NOT structured points), and performs a marching cubes iso-surface extraction." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputImage.vtk -o outputPolyData.vtk [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>      Input image as VTK structured grid" << std::endl;
-    std::cout << "    -o    <filename>      Output VTK Poly Data" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl;
-    std::cout << "    -iso  <float> [128]   Threshold value to extract" << std::endl;
-    std::cout << "    -points               Input is structured points [structure grid]" << std::endl;
-    std::cout << "    -withScalars          Computes scalar values for each vertex" << std::endl;
-    std::cout << "    -withNormals          Computes normals at each vertex" << std::endl;
-    std::cout <<"     -withGradient         Computes gradient at each vertex" << std::endl;
-  }
-
-struct arguments
+struct niftk::CommandLineArgumentDescription clArgList[] = 
 {
-  std::string inputImage;
-  std::string outputPolyData;
-
-  float isoSurfaceValue;
-
-  bool isStructuredPoints;
-  bool withScalars;
-  bool withGradients;
-  bool withNormals;
+  {OPT_STRING|OPT_REQ, "i" , "fileName", "Input image as VTK structured grid."},
+  {OPT_STRING|OPT_REQ, "o", "fileName", "Output VTK Poly Data."},
+  {OPT_FLOAT, "iso", "float" , "[128]  Threshold value to extract."},
+  {OPT_SWITCH, "points", NULL, "Input is structured points."},
+  {OPT_SWITCH, "withScalars", NULL, "Computes scalar values for each vertex."},
+  {OPT_SWITCH, "withNormals", NULL, "Computes normals at each vertex."},
+  {OPT_SWITCH, "withGradient", NULL, "Computes gradient at each vertex."},
+  {OPT_DONE, NULL, NULL, 
+    "Takes an image as a VTK structured grid (NOT structured points),"
+    "and performs a marching cubes iso-surface extraction.\n"
+  }
 };
 
+enum 
+{
+  O_INPUT_IMAGE,
+
+  O_OUTPUT_POLYDATA, 
+
+  O_THRESHOLD, 
+
+  O_INPUT_POINTS, 
+
+  O_COMPUTE_SCALARS,
+
+  O_COMPUTE_NORMALS,
+
+  O_COMPUTE_GRADIENT
+};
 /**
  * \brief Runs marching cubes.
  */
 int main(int argc, char** argv)
 {
-  // To pass around command line args
-  struct arguments args;
+  std::string inputImage;
+  std::string outputPolyData;
 
-  args.isoSurfaceValue = 128;
-  args.isStructuredPoints = false;
-  args.withGradients = false;
-  args.withScalars = false;
-  args.withNormals = false;
+  float isoSurfaceValue = 128;
+
+  bool isStructuredPoints;
+  bool withScalars;
+  bool withGradients;
+  bool withNormals;
+
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
   
+  CommandLineOptions.GetArgument(O_INPUT_IMAGE, inputImage);
 
-  // Parse command line args
-  for(int i=1; i < argc; i++){
-    if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
-      Usage(argv[0]);
-      return -1;
-    }
-    else if(strcmp(argv[i], "-i") == 0){
-      args.inputImage=argv[++i];
-      std::cout << "Set -i=" << args.inputImage << std::endl;
-    }
-    else if(strcmp(argv[i], "-o") == 0){
-      args.outputPolyData=argv[++i];
-      std::cout << "Set -o=" << args.outputPolyData << std::endl;
-    }
-    else if(strcmp(argv[i], "-iso") == 0){
-      args.isoSurfaceValue=atof(argv[++i]);
-      std::cout << "Set -iso=" << niftk::ConvertToString(args.isoSurfaceValue) << std::endl;
-    }
-    else if(strcmp(argv[i], "-points") == 0){
-      args.isStructuredPoints=true;
-      std::cout << "Set -points=" << niftk::ConvertToString(args.isStructuredPoints) << std::endl;
-    }
-    else if(strcmp(argv[i], "-withScalars") == 0){
-      args.withScalars=true;
-      std::cout << "Set -withScalars=" << niftk::ConvertToString(args.withScalars) << std::endl;
-    }
-    else if(strcmp(argv[i], "-withGradients") == 0){
-      args.withGradients=true;
-      std::cout << "Set -withGradients=" << niftk::ConvertToString(args.withGradients) << std::endl;
-    }
-    else if(strcmp(argv[i], "-withNormals") == 0){
-      args.withNormals=true;
-      std::cout << "Set -withNormals=" << niftk::ConvertToString(args.withNormals) << std::endl;
-    }
-    else {
-      std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
-      return -1;
-    }            
-  }
+  CommandLineOptions.GetArgument(O_OUTPUT_POLYDATA, outputPolyData);
+
+  CommandLineOptions.GetArgument(O_THRESHOLD, isoSurfaceValue);
+
+  CommandLineOptions.GetArgument(O_INPUT_POINTS, isStructuredPoints);
   
-  // Validate command line args
-  if (args.inputImage.length() == 0 || args.outputPolyData.length() == 0)
-    {
-      Usage(argv[0]);
-      return EXIT_FAILURE;
-    }
+  CommandLineOptions.GetArgument(O_COMPUTE_SCALARS, withScalars);
+  
+  CommandLineOptions.GetArgument(O_COMPUTE_NORMALS, withGradients);
 
-
-
+  CommandLineOptions.GetArgument(O_COMPUTE_GRADIENT, withNormals);
+  
   // Read structured points
   // ~~~~~~~~~~~~~~~~~~~~~~
-  
-  if ( args.isStructuredPoints )
+  if (isStructuredPoints)
   {
 
     vtkSmartPointer<vtkStructuredPointsReader> 
       reader = vtkSmartPointer<vtkStructuredPointsReader>::New();
 
-    reader->SetFileName(args.inputImage.c_str());
+    reader->SetFileName(inputImage.c_str());
 
     reader->Update();
      
@@ -150,11 +115,11 @@ int main(int argc, char** argv)
 
     filter->SetInputConnection( reader->GetOutputPort() );
 
-    filter->SetValue( 0, args.isoSurfaceValue );
+    filter->SetValue( 0, isoSurfaceValue );
 
-    filter->SetComputeScalars( args.withScalars );
-    filter->SetComputeGradients( args.withGradients );
-    filter->SetComputeNormals( args.withNormals );
+    filter->SetComputeScalars( withScalars );
+    filter->SetComputeGradients( withGradients );
+    filter->SetComputeNormals( withNormals );
   
     filter->Update();
 
@@ -165,7 +130,7 @@ int main(int argc, char** argv)
       writer = vtkSmartPointer<vtkPolyDataWriter>::New();
 
     writer->SetInputDataObject( filter->GetOutput() );
-    writer->SetFileName( args.outputPolyData.c_str() );
+    writer->SetFileName( outputPolyData.c_str() );
 
     writer->Update();
   }
@@ -179,7 +144,7 @@ int main(int argc, char** argv)
 
     vtkSmartPointer<vtkStructuredGridReader>
       reader = vtkSmartPointer<vtkStructuredGridReader>::New();
-    reader->SetFileName(args.inputImage.c_str());
+    reader->SetFileName(inputImage.c_str());
 
     reader->Update();
      
@@ -191,11 +156,11 @@ int main(int argc, char** argv)
 
     filter->SetInputDataObject( reader->GetOutput() );
 
-    filter->SetValue( 0, args.isoSurfaceValue );
+    filter->SetValue( 0, isoSurfaceValue );
 
-    filter->SetComputeScalars( args.withScalars );
-    filter->SetComputeGradients( args.withGradients );
-    filter->SetComputeNormals( args.withNormals );
+    filter->SetComputeScalars( withScalars );
+    filter->SetComputeGradients( withGradients );
+    filter->SetComputeNormals( withNormals );
   
     filter->Update();
 
@@ -217,9 +182,8 @@ int main(int argc, char** argv)
       writer = vtkSmartPointer<vtkPolyDataWriter>::New();
 
     writer->SetInputDataObject( normals->GetOutput() );
-    writer->SetFileName( args.outputPolyData.c_str() );
+    writer->SetFileName( outputPolyData.c_str() );
 
     writer->Update();
   }
-
 }
