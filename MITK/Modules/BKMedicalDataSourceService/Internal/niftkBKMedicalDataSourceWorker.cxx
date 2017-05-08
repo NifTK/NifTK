@@ -355,7 +355,7 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
                   && dataSize > imageSize
                   && (    imageSize == m_ImageSize[0]*m_ImageSize[1]
                        || imageSize == m_ImageSize[0]*m_ImageSize[1]*4
-                     ) // image must be grey-scale, RGB or RGBA.
+                     ) // image must be grey-scale or RGBA.
                  )
               {
                 // This means our argument QImage has not been initialised yet.
