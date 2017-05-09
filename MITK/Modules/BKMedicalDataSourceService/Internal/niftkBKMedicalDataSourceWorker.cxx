@@ -353,9 +353,11 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
                   && imageSize > 0
                   && dataSize > 0
                   && dataSize > imageSize
-                  && (    imageSize == m_ImageSize[0]*m_ImageSize[1]
-                       || imageSize == m_ImageSize[0]*m_ImageSize[1]*4
-                     ) // image must be grey-scale or RGBA.
+
+                  // You can't do this, due to the as yet unknown number of escape characters in the image sequence.
+                  // && (    imageSize == m_ImageSize[0]*m_ImageSize[1]
+                  //     || imageSize == m_ImageSize[0]*m_ImageSize[1]*4
+                  //   ) // image must be grey-scale or RGBA.
                  )
               {
                 // This means our argument QImage has not been initialised yet.
