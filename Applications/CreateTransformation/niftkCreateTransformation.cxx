@@ -128,7 +128,7 @@ int main(int argc, char** argv)
   // Parse the command line
   // ~~~~~~~~~~~~~~~~~~~~~~
   
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
 
   CommandLineOptions.GetArgument(O_TRANSFORM_TYPE, transformType);
   CommandLineOptions.GetArgument(O_GRID_SIZE, gridSize);

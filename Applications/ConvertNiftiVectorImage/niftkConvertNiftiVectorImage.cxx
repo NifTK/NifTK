@@ -85,7 +85,7 @@ int main(int argc, char ** argv)
 
 	 /* Parse the command line
 	 */
-	niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+	niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
 
 	CommandLineOptions.GetArgument( O_INPUT_IMAGE,  strInputFileName  );
 	CommandLineOptions.GetArgument( O_OUTPUT_IMAGE, strOutputFileName );

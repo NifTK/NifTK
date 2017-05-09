@@ -285,7 +285,7 @@ int main( int argc, char *argv[] )
   // printed out as they are parsed.
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
 
   CommandLineOptions.GetArgument( O_VERBOSE, flgVerbose );
   CommandLineOptions.GetArgument( O_SMOOTH,  flgSmooth );

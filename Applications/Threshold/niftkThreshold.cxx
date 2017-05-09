@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#include <niftkLogHelper.h>
 #include <niftkConversionUtils.h>
+#include <niftkCommandLineParser.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
 #include <itkNifTKImageIOFactory.h>
@@ -25,23 +25,36 @@
  * \page niftkThreshold
  * \section niftkThresholdSummary Runs the ITK BinaryThresholdImageFilter.
  */
-void Usage(char *exec)
-  {
-    niftk::LogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Runs the ITK BinaryThresholdImageFilter on a 2D or 3D image." << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "  " << exec << " -i inputFileName -o outputFileName [options]" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    -i    <filename>            Input image " << std::endl;
-    std::cout << "    -o    <filename>            Output image" << std::endl << std::endl;      
-    std::cout << "*** [options]   ***" << std::endl << std::endl; 
-    std::cout << "    -u    <int> [data type max] Highest value" << std::endl;
-    std::cout << "    -l    <int> [data type min] Lowest value" << std::endl;
-    std::cout << "    -in   <int> [1]             Inside value" << std::endl;
-    std::cout << "    -out  <int> [0]             Outside value" << std::endl;
+
+struct niftk::CommandLineArgumentDescription clArgList[] = 
+{
+  {OPT_STRING|OPT_REQ, "i", "filename", "Input image."},
+  {OPT_STRING|OPT_REQ, "o", "filename", "Output image."},
+
+  {OPT_FLOAT, "u", "float", "Upper value."},
+  {OPT_FLOAT, "l", "float", "Lower value."},
+  {OPT_FLOAT, "in", "float", "[1] Inside value."},
+  {OPT_FLOAT, "out", "float", "[0] Outside value."},
+
+  {OPT_DONE, NULL, NULL, 
+   "Runs the ITK BinaryThresholdImageFilter on a 2D or 3D image. \n"
   }
+};
+
+enum
+{
+  O_INPUT_IMAGE, 
+
+  O_OUTPUT_IMAGE, 
+
+  O_UPPER_VALUE, 
+
+  O_LOWER_VALUE,
+
+  O_FOREGROUND_VALUE,
+
+  O_BACKGROUND_VALUE
+};
 
 struct arguments
 {
@@ -131,50 +144,20 @@ int main(int argc, char** argv)
   args.inside = 1;
   args.outside = 0;
   
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
+
+  CommandLineOptions.GetArgument( O_INPUT_IMAGE, args.inputImage );
+
+  CommandLineOptions.GetArgument( O_OUTPUT_IMAGE, args.outputImage );
+
+  CommandLineOptions.GetArgument( O_UPPER_VALUE, args.upper );
   
-  // Parse command line args
-  for(int i=1; i < argc; i++){
-    if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 || strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 || strcmp(argv[i], "--h")==0){
-      Usage(argv[0]);
-      return -1;
-    }
-    else if(strcmp(argv[i], "-i") == 0){
-      args.inputImage=argv[++i];
-      std::cout << "Set -i=" << args.inputImage << std::endl;
-    }
-    else if(strcmp(argv[i], "-o") == 0){
-      args.outputImage=argv[++i];
-      std::cout << "Set -o=" << args.outputImage << std::endl;
-    }
-    else if(strcmp(argv[i], "-u") == 0){
-      args.upper=atof(argv[++i]);
-      std::cout << "Set -u=" << niftk::ConvertToString(args.upper) << std::endl;
-    }
-    else if(strcmp(argv[i], "-l") == 0){
-      args.lower=atof(argv[++i]);
-      std::cout << "Set -l=" << niftk::ConvertToString(args.lower) << std::endl;
-    }
-    else if(strcmp(argv[i], "-in") == 0){
-      args.inside=atof(argv[++i]);
-      std::cout << "Set -in=" << niftk::ConvertToString(args.inside) << std::endl;
-    }
-    else if(strcmp(argv[i], "-out") == 0){
-      args.outside=atof(argv[++i]);
-      std::cout << "Set -out=" << niftk::ConvertToString(args.outside) << std::endl;
-    }
-    else {
-      std::cerr << argv[0] << ":\tParameter " << argv[i] << " unknown." << std::endl;
-      return -1;
-    }            
-  }
+  CommandLineOptions.GetArgument( O_LOWER_VALUE, args.lower );
 
-  // Validate command line args
-  if (args.inputImage.length() == 0 || args.outputImage.length() == 0)
-    {
-      Usage(argv[0]);
-      return EXIT_FAILURE;
-    }
-
+  CommandLineOptions.GetArgument( O_FOREGROUND_VALUE, args.inside );
+  
+  CommandLineOptions.GetArgument( O_BACKGROUND_VALUE, args.outside );
+  
   int dims = itk::PeekAtImageDimension(args.inputImage);
   if (dims != 2 && dims != 3)
     {

@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 {
   itk::NifTKImageIOFactory::Initialize();
 
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
   std::string inputFilename1;
   std::string inputFilename2;
   std::string outputFilename; 

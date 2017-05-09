@@ -57,7 +57,7 @@ int main( int argc, char * argv[] )
  
   unsigned int nImages = 0; 
  
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
 
   CommandLineOptions.GetArgument( O_FILE_OUTPUT, fileOutput );
   CommandLineOptions.GetArgument( O_SPACING_Z, spacingZ );

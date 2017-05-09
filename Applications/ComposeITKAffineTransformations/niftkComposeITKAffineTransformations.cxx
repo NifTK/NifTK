@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 {
   struct arguments args;
 
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
   
   CommandLineOptions.GetArgument(O_2D, args.flg2D);
   

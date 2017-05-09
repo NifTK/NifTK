@@ -3,13 +3,15 @@
     <category>Segmentation</category>
     <title>niftkVesselExtractor</title>
     <description>Vesselness filter</description>
-    <version>0.0.1</version>
+    <version>@NIFTK_VERSION_STRING@</version>
     <documentation-url></documentation-url>
-    <license>BSD</license>
+    <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
     <contributor>Maria A. Zuluaga (UCL)</contributor>
+    
     <parameters>
         <label>Images</label>
         <description>Input and output images</description>
+
         <image fileExtensions="nii,nii.gz,mhd">
         <name>inputImageName</name>
         <flag>i</flag>
@@ -18,6 +20,7 @@
         <label>Input Image</label>
         <channel>input</channel>
         </image>
+
         <image fileExtensions="nii,nii.gz,mhd">
         <name>brainImageName</name>
         <flag>b</flag>
@@ -26,6 +29,7 @@
         <label>Brain Mask Image</label>
         <channel>input</channel>
         </image>
+
         <image fileExtensions="nii,nii.gz,mhd">
         <name>outputImageName</name>
         <flag>o</flag>
@@ -36,9 +40,11 @@
         <channel>output</channel>
         </image>
     </parameters>
+
     <parameters>
         <label>Scales</label>
         <description>Vessel sizes</description>
+
         <float>
         <name>max</name>
         <longflag>max</longflag>
@@ -46,6 +52,7 @@
         <label>Maximum vessel size</label>
         <default>3.09375</default>
         </float>
+
         <float>
         <name>min</name>
         <longflag>min</longflag>
@@ -54,9 +61,11 @@
         <default>0.775438</default>
         </float>
     </parameters>
+
     <parameters>
         <label>Filter parameters</label>
         <description>Vesselness filter configuration parameters</description>
+
         <integer-enumeration>
         <name>mode</name>
         <longflag>mod</longflag>
@@ -66,6 +75,7 @@
         <element>0</element>
         <element>1</element>
         </integer-enumeration>
+
         <float>
         <name>alphaone</name>
         <longflag>aone</longflag>
@@ -73,6 +83,7 @@
         <label>Alpha one</label>
         <default>0.5</default>
         </float>
+
         <float>
         <name>alphatwo</name>
         <longflag>atwo</longflag>
@@ -80,6 +91,7 @@
         <label>Alpha two</label>
         <default>2</default>
         </float>
+
         <boolean>
         <name>isCT</name>
         <longflag>ct</longflag>
@@ -87,6 +99,7 @@
         <label>CT input</label>
         <default>false</default>
         </boolean>
+
         <boolean>
         <name>doIntensity</name>
         <longflag>intfil</longflag>
@@ -94,6 +107,7 @@
         <label>Intensity filter</label>
         <default>true</default>
         </boolean>
+
         <boolean>
         <name>isBin</name>
         <longflag>bin</longflag>

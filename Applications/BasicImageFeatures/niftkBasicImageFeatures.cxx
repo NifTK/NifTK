@@ -275,7 +275,7 @@ int main( int argc, char *argv[] )
   // parameter indicates whether the command line options should be
   // printed out as they are parsed.
 
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
 
   CommandLineOptions.GetArgument( O_DEBUG, flgDebug );
   CommandLineOptions.GetArgument( O_VERBOSE, flgVerbose );

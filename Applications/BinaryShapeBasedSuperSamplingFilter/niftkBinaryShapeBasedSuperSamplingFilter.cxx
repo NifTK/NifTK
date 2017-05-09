@@ -280,7 +280,7 @@ int main( int argc, char *argv[] )
 
   arguments args;
 
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
 
   CommandLineOptions.GetArgument( O_DEBUG,   args.flgDebug );
   CommandLineOptions.GetArgument( O_VERBOSE, args.flgVerbose );

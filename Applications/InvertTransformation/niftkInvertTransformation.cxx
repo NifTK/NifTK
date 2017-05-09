@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include <niftkConversionUtils.h>
+#include <niftkCommandLineParser.h>
 #include <itkImage.h>
 #include <itkImageFileReader.h>
 #include <itkImageFileWriter.h>
@@ -34,10 +35,26 @@
  * \page niftkInvertTransformation
  * \section niftkInvertTransformationSummary Program to invert transformation".
  * 
- * Program to invert transformation:. 
+ * Program to invert transformation. 
  * 
  */
 
+struct niftk::CommandLineArgumentDescription clArgList[] = 
+{
+  {OPT_STRING|OPT_REQ, "i", "string", " Input matrix, a plain text file, 4 rows, 4 columns."},
+  {OPT_STRING|OPT_REQ, "o", "string", "Output matrix, in same format as input."},
+
+  {OPT_DONE, NULL, NULL, 
+   "Program to invert transformation.\n"
+  }
+};
+
+enum
+{
+  O_INPUT_TRANSFORM, 
+
+  O_OUTPUT_TRANSFORM
+};
 
 /**
  * \brief 
@@ -50,22 +67,17 @@ int main(int argc, char** argv)
   typedef short PixelType;
   typedef itk::Image< PixelType, Dimension >  InputImageType; 
   
-  if (argc < 3)
-  {
-    niftk::LogHelper::PrintCommandLineHeader(std::cout);
-    std::cout << "  " << std::endl;
-    std::cout << "  Inverts an affine transform" << std::endl;
-    std::cout << "  " << std::endl;
-    std::cout << argv[0] << " inputTransform outputTransform" << std::endl; 
-    std::cout << "  " << std::endl;
-    std::cout << "*** [mandatory] ***" << std::endl << std::endl;
-    std::cout << "    inputTransform       Input transformation." << std::endl;
-    std::cout << "    outputTransform      Output transformation." << std::endl << std::endl;      
-    return -1; 
-  }
-  
-  char* inputTransformName = argv[1]; 
-  char* outputTransformName = argv[2]; 
+  // To pass around command line args
+  std::string inputTransform;
+  std::string outputTransform;    
+
+  // Parse command line acd rgs
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
+
+  CommandLineOptions.GetArgument( O_INPUT_TRANSFORM, inputTransform );
+
+  CommandLineOptions.GetArgument( O_OUTPUT_TRANSFORM, outputTransform );
+
   
   // Setup objects to build registration.
   typedef itk::ImageRegistrationFactory<InputImageType, Dimension, double> FactoryType;
@@ -81,7 +93,7 @@ int main(int argc, char** argv)
   // Compute average transform. 
   try
   {
-    FactoryType::TransformType::Pointer genericTransform = factory->CreateTransform(inputTransformName);
+    FactoryType::TransformType::Pointer genericTransform = factory->CreateTransform(inputTransform);
     FactoryType::FluidDeformableTransformType* fluidTransform = dynamic_cast<FactoryType::FluidDeformableTransformType*>(genericTransform.GetPointer());
     FactoryType::FluidDeformableTransformType* inverseTransform = dynamic_cast<FactoryType::FluidDeformableTransformType*>(genericTransform.GetPointer());
     
@@ -107,7 +119,7 @@ int main(int argc, char** argv)
       transformFileWriter->SetInput(inverseAffineTransform);
     }
       
-    transformFileWriter->SetFileName(outputTransformName); 
+    transformFileWriter->SetFileName(outputTransform); 
     transformFileWriter->Update(); 
   }
   catch (itk::ExceptionObject& exceptionObject)

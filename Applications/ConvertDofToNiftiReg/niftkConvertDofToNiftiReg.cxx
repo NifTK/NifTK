@@ -56,7 +56,7 @@ enum {
 
 int main(int argc, char** argv)
 {
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
   std::string inputFilename;
   std::string inputTargetImageFilename;
   std::string outputFilename;

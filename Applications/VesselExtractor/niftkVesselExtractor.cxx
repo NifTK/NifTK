@@ -51,7 +51,7 @@ See LICENSE.txt in the top level directory for details.
 //    " <category>Segmentation</category>\n"
 //    " <title>niftkVesselExtractor</title>\n"
 //    " <description>Vesselness filter</description>\n"
-//    " <version>0.0.1</version>\n"
+//    " <version>@NIFTK_VERSION_STRING@</version>\n"
 //    " <documentation-url></documentation-url>\n"
 //    " <license>BSD</license>\n"
 //    " <contributor>Maria A. Zuluaga (UCL)</contributor>\n"

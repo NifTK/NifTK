@@ -220,7 +220,7 @@ int main(int argc, char** argv)
 
   struct arguments args;
 
-  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, true);
+  niftk::CommandLineParser CommandLineOptions(argc, argv, clArgList, false);
 
   CommandLineOptions.GetArgument( O_VERBOSE, args.flgVerbose );
   CommandLineOptions.GetArgument( O_DEBUG, args.flgDebug );
