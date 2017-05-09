@@ -1643,27 +1643,6 @@ SupportsDimension(unsigned long dim)
 }
 
 
-namespace
-{
-void Normalize(std::vector<double> &x)
-{
-  double sum = 0;
-  for(unsigned int i = 0; i < x.size(); i++)
-    {
-    sum += (x[i] * x[i]);
-    }
-  if(sum == 0.0)
-    {
-    return;
-    }
-  sum = vcl_sqrt(sum);
-  for(unsigned int i = 0; i < x.size(); i++)
-    {
-    x[i] = x[i] / sum;
-    }
-}
-}
-
 void  
 NiftiImageIO3201::
 SetImageIOOrientationFromNIfTI(unsigned short int dims)
@@ -1711,155 +1690,136 @@ SetImageIOOrientationFromNIfTI(unsigned short int dims)
   // qform or sform
   //
 
-  mat44 theMat;
-  // [Change by Marc next line - Use the sform first and if it's not defined, use the qform then]
-  if(m_NiftiImage->sform_code > 0) //if(m_NiftiImage->qform_code > 0)
-    {
-    theMat = m_NiftiImage->sto_xyz;
-    // MARC - I here update the voxel spacing based on the sform matrix.
-    // Note that this is far from ideal (wrong) but it counter-balances MITK
-    // normalisation behaviour
-    for (unsigned int i=0; i < dims; ++i)
-      {
-      float newSpacing = std::sqrt(theMat.m[0][i] * theMat.m[0][i] + theMat.m[1][i] * theMat.m[1][i] + theMat.m[2][i] * theMat.m[2][i]);
-      if (newSpacing != this->GetSpacing(i))
-        {
-        this->SetSpacing(i, newSpacing);
-        }
-      }
-    }
-  //    else if(m_NiftiImage->sform_code > 0)
+  // Use the sform if defined, otherwise use the qform
+  mat44 headerOrientationeMatrix;
+  if(m_NiftiImage->sform_code > 0)
+  {
+     headerOrientationeMatrix = m_NiftiImage->sto_xyz;
+  }
   else
-    {
-    theMat = m_NiftiImage->qto_xyz;
-    }
+  {
+     headerOrientationeMatrix = m_NiftiImage->qto_xyz;
+  }
 
-  //
+  // Revert the direction due to the nifti vs ITK different convention
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+     for (unsigned int j = 0; j < 2; ++j)
+     {
+        headerOrientationeMatrix.m[j][i] *= -1.f;
+     }
+  }
+
+  // Extract the spacings, set the values and normalise the orientation accordindly
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+     float newSpacing = std::sqrtf(
+           headerOrientationeMatrix.m[0][i] * headerOrientationeMatrix.m[0][i] +
+           headerOrientationeMatrix.m[1][i] * headerOrientationeMatrix.m[1][i] +
+           headerOrientationeMatrix.m[2][i] * headerOrientationeMatrix.m[2][i]
+           );
+     if(newSpacing>0.0)
+     {
+        headerOrientationeMatrix.m[0][i] /= newSpacing;
+        headerOrientationeMatrix.m[1][i] /= newSpacing;
+        headerOrientationeMatrix.m[2][i] /= newSpacing;
+     }
+     if (newSpacing != this->GetSpacing(i))
+     {
+        this->SetSpacing(i, newSpacing);
+     }
+  }
+
   // set origin
-  m_Origin[0] = -theMat.m[0][3];
+  m_Origin[0] = -headerOrientationeMatrix.m[0][3];
   if(dims > 1)
-    {
-    m_Origin[1] = -theMat.m[1][3];
-    }
+  {
+     m_Origin[1] = -headerOrientationeMatrix.m[1][3];
+  }
   if(dims > 2)
-    {
-    m_Origin[2] = theMat.m[2][3];
-    }
+  {
+     m_Origin[2] = headerOrientationeMatrix.m[2][3];
+  }
 
+  // Set the direction
   const int max_defined_orientation_dims=(dims > 3)?3:dims;
-  std::vector<double> xDirection(dims,0);
-  for (int i = 0; i < max_defined_orientation_dims; i++)
-    {
-    xDirection[i] = theMat.m[i][0];
-    if(i < 2)
-      {
-      xDirection[i] *= -1.0;
-      }
-    }
-  Normalize(xDirection);
-  this->SetDirection(0,xDirection);
-
-  if(max_defined_orientation_dims > 1 )
-    {
-    std::vector<double> yDirection(dims,0);
-    for (int i = 0; i < max_defined_orientation_dims; i++)
-      {
-      yDirection[i] = theMat.m[i][1];
-      if(i < 2)
-        {
-        yDirection[i] *= -1.0;
-        }
-      }
-    Normalize(yDirection);
-    this->SetDirection(1,yDirection);
-    }
-
-  if(max_defined_orientation_dims > 2 )
-    {
-    std::vector<double> zDirection(dims,0);
-    for (int i = 0; i < max_defined_orientation_dims; i++)
-      {
-      zDirection[i] = theMat.m[i][2];
-      if(i < 2)
-        {
-        zDirection[i] *= -1.0;
-        }
-      }
-    Normalize(zDirection);
-    this->SetDirection(2,zDirection);
-    }
+  for (int i = 0; i < max_defined_orientation_dims; i++){
+     std::vector<double> direction(dims,0);
+     for (int j = 0; j < max_defined_orientation_dims; j++)
+     {
+        direction[j] = headerOrientationeMatrix.m[j][i];
+     }
+     this->SetDirection(i,direction);
+  }
 }
 
 void 
 NiftiImageIO3201::
 SetNIfTIOrientationFromImageIO(unsigned short int origdims, unsigned short int dims)
 {
-    //
     // use NIFTI method 2
     m_NiftiImage->sform_code = NIFTI_XFORM_SCANNER_ANAT;
     m_NiftiImage->qform_code = NIFTI_XFORM_ALIGNED_ANAT;
 
-    //
-    // set the quarternions, from the direction vectors
-    //Initialize to size 3 with values of 0
-    //
-    //The type here must be float, because that matches the signature
-    //of the nifti_make_orthog_mat44() method below.
-    typedef float DirectionMatrixComponentType;
-    int mindims(dims < 3 ? 3 : dims);
-    std::vector<DirectionMatrixComponentType> dirx(mindims,0);
-    unsigned int i;
-    for(i=0; i < this->GetDirection(0).size(); i++)
-    {
-        dirx[i] = static_cast<DirectionMatrixComponentType>(-this->GetDirection(0)[i]);
-    }
-    if(i < 3)
-    {
-        dirx[2] = 0.0f;
-    }
-    std::vector<DirectionMatrixComponentType> diry(mindims,0);
-    if(origdims > 1)
-    {
-        for(i=0; i < this->GetDirection(1).size(); i++)
-        {
-            diry[i] = static_cast<DirectionMatrixComponentType>(-this->GetDirection(1)[i]);
-        }
-        if(i < 3)
-        {
-            diry[2] = 0.0f;
-        }
-    }
-    std::vector<DirectionMatrixComponentType> dirz(mindims,0);
-    if(origdims > 2)
-    {
-        for(unsigned int ii=0; ii < this->GetDirection(2).size(); ii++)
-        {
-            dirz[ii] = static_cast<DirectionMatrixComponentType>( -this->GetDirection(2)[ii] );
-        }
-        //  Read comments in nifti1.h about interpreting
-        //  "DICOM Image Orientation (Patient)"
-        dirx[2] = - dirx[2];
-        diry[2] = - diry[2];
-        dirz[2] = - dirz[2];
-    }
-    else
-    {
-        dirz[0] = dirz[1] = 0.0f;
-        dirz[2] = 1.0f;
-    }
-    mat44 matrix =
-            nifti_make_orthog_mat44(dirx[0],dirx[1],dirx[2],
-                                    diry[0],diry[1],diry[2],
-                                    dirz[0],dirz[1],dirz[2]);
+    // Extract the matrix as stored in the ITK format
+    mat44 orientationMatrix;
+    orientationMatrix.m[0][0]=orientationMatrix.m[1][1]=1.f;
+    orientationMatrix.m[2][2]=orientationMatrix.m[3][3]=1.f;
+    orientationMatrix.m[0][1]=orientationMatrix.m[0][2]=orientationMatrix.m[0][3]=0.f;
+    orientationMatrix.m[1][0]=orientationMatrix.m[1][2]=orientationMatrix.m[1][3]=0.f;
+    orientationMatrix.m[2][0]=orientationMatrix.m[2][1]=orientationMatrix.m[2][3]=0.f;
+    orientationMatrix.m[3][0]=orientationMatrix.m[3][1]=orientationMatrix.m[3][2]=0.f;
+    const int max_defined_orientation_dims=(dims > 3)?3:dims;
 
-    matrix = mat44_transpose(matrix);
-    // Fill in origin.
-    matrix.m[0][3]=  static_cast<float>(-this->GetOrigin(0));
-    matrix.m[1][3] = (origdims > 1) ? static_cast<float>(-this->GetOrigin(1)) : 0.0f;
-    //NOTE:  The final dimension is not negated!
-    matrix.m[2][3] = (origdims > 2) ? static_cast<float>(this->GetOrigin(2)) : 0.0f;
+    for (int i = 0; i < max_defined_orientation_dims; i++)
+    {
+       std::vector<double> direction = this->GetDirection(i);
+       for (int j = 0; j < max_defined_orientation_dims; j++)
+       {
+          orientationMatrix.m[j][i] = direction[j];
+       }
+    }
 
-    nifti_mat44_to_quatern(matrix,
+    // Revert the direction due to the nifti vs ITK different convention
+    for (unsigned int i = 0; i < 3; ++i)
+    {
+       for (unsigned int j = 0; j < 2; ++j)
+       {
+          orientationMatrix.m[j][i] *= -1.f;
+       }
+    }
+
+    // Restore the spacing in the matrix
+    for (unsigned int i = 0; i < 3; ++i)
+    {
+       float spacing = this->GetSpacing(i);
+       if(spacing>0.0)
+       {
+          orientationMatrix.m[0][i] *= spacing;
+          orientationMatrix.m[1][i] *= spacing;
+          orientationMatrix.m[2][i] *= spacing;
+       }
+    }
+
+    // set origin
+    orientationMatrix.m[0][3] = -m_Origin[0];
+    if(dims > 1)
+    {
+          orientationMatrix.m[1][3] = -m_Origin[1];
+    }
+    if(dims > 2)
+    {
+    orientationMatrix.m[2][3] = m_Origin[2];
+    }
+
+    // Set the sform matrix and its inverse
+    m_NiftiImage->sto_xyz = orientationMatrix;
+    m_NiftiImage->sto_ijk = nifti_mat44_inverse(m_NiftiImage->sto_xyz);
+
+    // Compute the closest orthogonal matrix for the qform
+    // Note that it might be different from the input nifti image
+    // since only one matrix can be stored in the ITK format
+    nifti_mat44_to_quatern(orientationMatrix,
                            &(m_NiftiImage->quatern_b),
                            &(m_NiftiImage->quatern_c),
                            &(m_NiftiImage->quatern_d),
@@ -1870,33 +1830,18 @@ SetNIfTIOrientationFromImageIO(unsigned short int origdims, unsigned short int d
                            0,
                            0,
                            &(m_NiftiImage->qfac));
-    // copy q matrix to s matrix
-    m_NiftiImage->qto_xyz =  matrix;
-    m_NiftiImage->sto_xyz =  matrix;
-    //
-    //
-    unsigned int sto_limit = origdims > 3 ? 3 : origdims;
-    for(unsigned int ii = 0; ii < sto_limit; ii++)
-    {
-        for(unsigned int jj = 0; jj < sto_limit; jj++)
-        {
-            m_NiftiImage->sto_xyz.m[ii][jj] =
-                    static_cast<float>( this->GetSpacing(jj) ) *
-                    m_NiftiImage->sto_xyz.m[ii][jj];
-#if 0 // this is almost certainly wrong and gets overwritten immediately
-            // below...
-            m_NiftiImage->sto_ijk.m[ii][jj] =
-                    m_NiftiImage->sto_xyz.m[ii][jj] / this->GetSpacing(jj);
-#endif
-        }
-    }
-    m_NiftiImage->sto_ijk =
-            nifti_mat44_inverse(m_NiftiImage->sto_xyz);
-    m_NiftiImage->qto_ijk =
-            nifti_mat44_inverse(m_NiftiImage->qto_xyz);
-
     m_NiftiImage->pixdim[0] = m_NiftiImage->qfac;
-    //  m_NiftiImage->sform_code = 0;
+    m_NiftiImage->qto_xyz = nifti_quatern_to_mat44(m_NiftiImage->quatern_b,
+                                                   m_NiftiImage->quatern_c,
+                                                   m_NiftiImage->quatern_d,
+                                                   m_NiftiImage->qoffset_x,
+                                                   m_NiftiImage->qoffset_y,
+                                                   m_NiftiImage->qoffset_z,
+                                                   this->GetSpacing(0),
+                                                   this->GetSpacing(1),
+                                                   this->GetSpacing(2),
+                                                   m_NiftiImage->qfac);
+    m_NiftiImage->qto_ijk = nifti_mat44_inverse(m_NiftiImage->qto_xyz);
 }
 
 /**
