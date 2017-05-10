@@ -1089,7 +1089,24 @@ void GeneralSegmentorController::OnNodeRemoved(const mitk::DataNode* removedNode
 
   if (segmentationNode.GetPointer() == removedNode)
   {
-    this->DiscardSegmentation();
+    QMessageBox::StandardButtons saveSegmentation = QMessageBox::question(
+          this->GetGUI()->GetParent(),
+          "Save segmentation?",
+          "You have moved away the segmentation from its reference image. "
+          "You cannot continue editing the image without a reference image. "
+          "Do you want to save the segmentation or cancel it and discard the "
+          "changes?",
+          QMessageBox::Ok | QMessageBox::Cancel,
+          QMessageBox::Ok);
+
+    if (saveSegmentation == QMessageBox::Ok)
+    {
+      this->OnOKButtonClicked();
+    }
+    else // if (saveSegmentation == QMessageBox::Cancel)
+    {
+      this->OnCancelButtonClicked();
+    }
   }
 }
 
