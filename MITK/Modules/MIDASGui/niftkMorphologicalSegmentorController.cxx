@@ -625,10 +625,15 @@ void MorphologicalSegmentorController::OnNodeRemoved(const mitk::DataNode* remov
     this->OnActiveToolChanged();
     m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
+
+    mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
+    if (axialCutOffPlaneNode.IsNotNull())
+    {
+      this->GetDataStorage()->Remove(axialCutOffPlaneNode);
+    }
     m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
-//    this->GetDataStorage()->Remove(segmentationNode);
     this->GetView()->FireNodeSelected(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
