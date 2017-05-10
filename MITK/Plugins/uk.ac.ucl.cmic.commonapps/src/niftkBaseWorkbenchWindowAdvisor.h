@@ -18,6 +18,7 @@
 #include <uk_ac_ucl_cmic_commonapps_Export.h>
 #include <QmitkExtWorkbenchWindowAdvisor.h>
 
+#include <berryIContributionItem.h>
 
 namespace niftk
 {
@@ -52,6 +53,9 @@ public slots:
   /// \brief Opens the Help About dialog box.
   void OnHelpAbout();
 
+  /// \brief Deletes the current perspective and reverts to the default perspective.
+  void OnDeletePerspective();
+
 protected:
 
   /**
@@ -63,6 +67,13 @@ protected:
    * \brief Checks if the environment variable contains a string value "ON" or "1", and if so tries to open the given editor.
    */
   void OpenEditorIfEnvironmentVariableIsON(const std::string& envVariable, const QString& editorName);
+
+  berry::IContributionItem::Pointer m_SavePerspectiveItem;
+
+private:
+
+  QScopedPointer<berry::IPerspectiveListener> m_PerspectiveListener;
+
 };
 
 }

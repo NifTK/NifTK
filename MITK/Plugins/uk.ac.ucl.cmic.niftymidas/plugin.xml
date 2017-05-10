@@ -10,9 +10,9 @@
 
   <extension point="org.blueberry.ui.perspectives">
     <perspective
-      id="uk.ac.ucl.cmic.niftymidas.segmentation_perspective"
-      name="Segmentation"
-      class="niftk::SegmentationPerspective"
+      id="uk.ac.ucl.cmic.niftymidas.default_perspective"
+      name="Default"
+      class="niftk::QCPerspective"
       icon="resources/icon_ion.xpm">
     </perspective>
   </extension>
@@ -22,6 +22,15 @@
       id="uk.ac.ucl.cmic.niftymidas.qc_perspective"
       name="QC"
       class="niftk::QCPerspective"
+      icon="resources/icon_ion.xpm">
+    </perspective>
+  </extension>
+
+  <extension point="org.blueberry.ui.perspectives">
+    <perspective
+      id="uk.ac.ucl.cmic.niftymidas.segmentation_perspective"
+      name="Segmentation"
+      class="niftk::SegmentationPerspective"
       icon="resources/icon_ion.xpm">
     </perspective>
   </extension>
