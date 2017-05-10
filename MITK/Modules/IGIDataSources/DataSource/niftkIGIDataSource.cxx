@@ -28,7 +28,7 @@ namespace niftk
 IGIDataSource::IGIDataSource(const std::string& name,
                              const std::string& factoryName,
                              mitk::DataStorage::Pointer dataStorage)
-: m_SystemTimeService(NULL)
+: m_TimeStamp(nullptr)
 , m_DataStorage(dataStorage)
 , m_Name(QString::fromStdString(name))
 , m_FactoryName(QString::fromStdString(factoryName))
@@ -57,9 +57,8 @@ IGIDataSource::IGIDataSource(const std::string& name,
     mitkThrow() << "Factory name is empty!";
   }
 
-  // Get system time service for timestamping.
-  // We could retrieve this each time we want to know the time?
-  m_SystemTimeService = new SystemTimeServiceRAII();
+  m_TimeStamp = igtl::TimeStamp::New();
+  m_TimeStamp->GetTime();
 
   // Register as MicroService.
   mitk::UIDGenerator uidGen = mitk::UIDGenerator ("uk.ac.ucl.cmic.IGIDataSource.id_", 16);
@@ -95,11 +94,6 @@ IGIDataSource::~IGIDataSource()
     {
       m_DataStorage->Remove(*iter);
     }
-  }
-
-  if (m_SystemTimeService != NULL)
-  {
-    delete m_SystemTimeService;
   }
 }
 
@@ -254,7 +248,8 @@ void IGIDataSource::StopPlayback()
 //-----------------------------------------------------------------------------
 niftk::IGIDataSourceI::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
 {
-  return m_SystemTimeService->GetSystemTimeInNanoseconds();
+  m_TimeStamp->GetTime();
+  return m_TimeStamp->GetTimeStampInNanoseconds();
 }
 
 

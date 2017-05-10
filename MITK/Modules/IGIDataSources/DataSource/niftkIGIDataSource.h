@@ -17,12 +17,12 @@
 
 #include <niftkIGIDataSourcesExports.h>
 #include <niftkIGIDataSourceI.h>
-#include <niftkSystemTimeServiceI.h>
-#include <niftkSystemTimeServiceRAII.h>
 
 #include <mitkDataStorage.h>
 #include <mitkServiceInterface.h>
 #include <usServiceRegistration.h>
+
+#include <igtlTimeStamp.h>
 
 #include <QDir>
 #include <QString>
@@ -189,7 +189,7 @@ protected:
 
 private:
 
-  niftk::SystemTimeServiceRAII      *m_SystemTimeService;
+  igtl::TimeStamp::Pointer           m_TimeStamp;
   mitk::DataStorage::Pointer         m_DataStorage;
   std::set<mitk::DataNode::Pointer>  m_DataNodes;
   us::ServiceRegistration<Self>      m_MicroServiceRegistration;
