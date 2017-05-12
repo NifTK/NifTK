@@ -1713,7 +1713,7 @@ SetImageIOOrientationFromNIfTI(unsigned short int dims)
   // Extract the spacings, set the values and normalise the orientation accordindly
   for (unsigned int i = 0; i < 3; ++i)
   {
-     float newSpacing = std::sqrtf(
+     float newSpacing = std::sqrt(
            headerOrientationeMatrix.m[0][i] * headerOrientationeMatrix.m[0][i] +
            headerOrientationeMatrix.m[1][i] * headerOrientationeMatrix.m[1][i] +
            headerOrientationeMatrix.m[2][i] * headerOrientationeMatrix.m[2][i]
