@@ -331,8 +331,10 @@ void MultiViewerVisibilityManager::OnPropertyChanged(mitk::DataNode* node, const
   nodes[0] = node;
   for (auto viewer: m_Viewers)
   {
-    bool localVisibility = (viewer == selectedViewer || m_VisibilityBinding) ? globalVisibility : false;
-    viewer->SetVisibility(nodes, localVisibility);
+    if (viewer == selectedViewer || m_VisibilityBinding)
+    {
+      viewer->SetVisibility(nodes, globalVisibility);
+    }
   }
 }
 
