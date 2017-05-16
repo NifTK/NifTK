@@ -115,7 +115,6 @@ private:
   void SaveItem(const std::unique_ptr<niftk::IGIDataType>& item);
 
   static niftk::IGIDataSourceLocker                                       s_Lock;
-  QMutex                                                                  m_Lock;
   int                                                                     m_TrackerNumber;
   int                                                                     m_Lag;
   niftk::IGIDataSourceI::IGIIndexType                                     m_FrameId;

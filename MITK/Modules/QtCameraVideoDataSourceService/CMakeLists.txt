@@ -16,7 +16,7 @@ if(MITK_USE_Qt5)
 
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources niftkQImageConversion
-    PACKAGE_DEPENDS Qt5|Widgets+Multimedia
+    PACKAGE_DEPENDS Qt5|Widgets+Multimedia NiftyLink|OpenIGTLink
     AUTOLOAD_WITH niftkIGIDataSources
   )
 

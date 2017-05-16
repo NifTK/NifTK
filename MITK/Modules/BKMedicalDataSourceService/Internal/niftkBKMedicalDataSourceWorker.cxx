@@ -25,8 +25,7 @@ namespace niftk
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceWorker::BKMedicalDataSourceWorker(const int& timeOut,
                                                      const int& framesPerSecond)
-: m_Lock(QMutex::Recursive)
-, m_Timeout(timeOut)
+: m_Timeout(timeOut)
 , m_FramesPerSecond(framesPerSecond)
 , m_Socket(nullptr)
 , m_RequestStopStreaming(false)
@@ -49,8 +48,6 @@ BKMedicalDataSourceWorker::~BKMedicalDataSourceWorker()
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::DisconnectFromHost()
 {
-  QMutexLocker locker(&m_Lock);
-
   if (m_Socket->state() == QTcpSocket::ConnectedState)
   {
     m_Socket->disconnectFromHost();
@@ -61,8 +58,6 @@ void BKMedicalDataSourceWorker::DisconnectFromHost()
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::RequestStop()
 {
-  QMutexLocker locker(&m_Lock);
-
   m_RequestStopStreaming = true;
 }
 
@@ -70,8 +65,6 @@ void BKMedicalDataSourceWorker::RequestStop()
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::StopStreaming()
 {
-  QMutexLocker locker(&m_Lock);
-
   std::ostringstream message;
   message << "QUERY:GRAB_FRAME \"OFF\"," << m_FramesPerSecond << ";";
   bool sentOK = this->SendCommandMessage(message.str());
@@ -89,8 +82,6 @@ void BKMedicalDataSourceWorker::StopStreaming()
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::StartStreaming()
 {
-  QMutexLocker locker(&m_Lock);
-
   std::ostringstream streamMessage;
   streamMessage << "QUERY:GRAB_FRAME \"ON\"," << m_FramesPerSecond << ";";
   bool sentOK = this->SendCommandMessage(streamMessage.str());
@@ -112,8 +103,6 @@ void BKMedicalDataSourceWorker::StartStreaming()
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ConnectToHost(const QString& address, const int& port)
 {
-  QMutexLocker locker(&m_Lock);
-
   m_Socket->connectToHost(address, port);
   if (!m_Socket->waitForConnected(m_Timeout))
   {
@@ -198,8 +187,6 @@ int BKMedicalDataSourceWorker::FindFirstANotPreceededByB(const int& startingPosi
 //-----------------------------------------------------------------------------
 size_t BKMedicalDataSourceWorker::GenerateCommandMessage(const std::string& message)
 {
-  QMutexLocker locker(&m_Lock);
-
   size_t counter = 0;
   m_OutgoingMessageBuffer[counter++] = 0x01;
   for (int i = 0; i < message.size(); i++)
@@ -214,8 +201,6 @@ size_t BKMedicalDataSourceWorker::GenerateCommandMessage(const std::string& mess
 //-----------------------------------------------------------------------------
 bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
 {
-  QMutexLocker locker(&m_Lock);
-
   size_t messageSize = this->GenerateCommandMessage(message);
   size_t sentSize = m_Socket->write(m_OutgoingMessageBuffer, messageSize);
   bool wasWritten = m_Socket->waitForBytesWritten(m_Timeout);
@@ -242,8 +227,6 @@ bool BKMedicalDataSourceWorker::SendCommandMessage(const std::string& message)
 //-----------------------------------------------------------------------------
 std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expectedSize)
 {
-  QMutexLocker locker(&m_Lock);
-
   std::string result;
   unsigned int counter = 0;
   size_t actualSize = expectedSize + 2; // due to start and end terminator.
@@ -296,9 +279,9 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
 {
-  QMutexLocker locker(&m_Lock);
-
-  unsigned int minimumSize = m_ImageSize[0] * m_ImageSize[1] + 20;
+  // According to spec, reply is:
+  // DATA:GRAB_FRAME #6227332<b><b><b><b> …;
+  unsigned int minimumSize = m_ImageSize[0] * m_ImageSize[1] + 22;
   int preceedingChar = 0;
   int hashChar = 0;
   int sizeOfDataChar = 0;
@@ -335,96 +318,133 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
                                                          0x01,
                                                          0x27);
 
-        hashChar = m_IntermediateBuffer.indexOf('#', preceedingChar);
-
-        sizeOfDataChar = hashChar + 1;
-
-        startImageChar = sizeOfDataChar
-                       + (m_IntermediateBuffer[sizeOfDataChar] - '0') // as we are dealing with ASCII codes.
-                       + 1  // to move onto next char
-                       + 4; // timestamp = 4 bytes.
-
-        terminatingChar = this->FindFirstANotPreceededByB(startImageChar,
-                                                          m_IntermediateBuffer,
-                                                          0x04,
-                                                          0x27);
-
-        endImageChar = terminatingChar - 2;
-        dataSize =  terminatingChar - preceedingChar + 1;
-        imageSize = endImageChar - startImageChar + 1;
-
-        if (   preceedingChar >= 0
-            && startImageChar >= 0
-            && endImageChar >= 0
-            && terminatingChar >= 0
-            && dataSize > 0
-            && imageSize > 0
-            && endImageChar > startImageChar
-            && terminatingChar > preceedingChar
-           )
+        if (preceedingChar >= 0)
         {
-          if (   image.width() != m_ImageSize[0]
-              || image.height() != m_ImageSize[1]
-             )
+          terminatingChar = this->FindFirstANotPreceededByB(preceedingChar,
+                                                            m_IntermediateBuffer,
+                                                            0x04,
+                                                            0x27);
+
+          if (terminatingChar > preceedingChar)
           {
-            // Image should either be grey scale or RGBA/ARGB ??? spec isnt so clear.
-            if (imageSize < (m_ImageSize[0] * m_ImageSize[1] * 4))
-            {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
-              QImage tmpImage(m_ImageSize[0], m_ImageSize[1], QImage::Format_Grayscale8);
-#else
-              QImage tmpImage(m_ImageSize[0], m_ImageSize[1], QImage::Format_Indexed8);
-              tmpImage.setColorTable(m_DefaultLUT);
-#endif
-              image = tmpImage;
-            }
-            else
-            {
-              QImage tmpImage(m_ImageSize[0], m_ImageSize[1], QImage::Format_ARGB32);
-              image = tmpImage;
-            }
-          }
 
-          // Filling QImage with data from socket.
-          // Assumes data is tightly packed.
-          char *startImageData = &(m_IntermediateBuffer.data()[startImageChar]);
-          char *endImageData = &(m_IntermediateBuffer.data()[endImageChar + 1]);
-          char *rp = startImageData;
-          char *wp = reinterpret_cast<char*>(image.bits());
-          unsigned char uc = 0;
-          unsigned char ucp1 = 0;
-          unsigned char uc1 = 1;
-          unsigned char uc4 = 4;
-          unsigned char uc27 = 27;
-          unsigned char ucN1 = ~uc1;
-          unsigned char ucN4 = ~uc4;
-          unsigned char ucN27 = ~uc27;
-
-          while (rp != endImageData)
-          {
-            uc = *(reinterpret_cast<unsigned char*>(rp));
-            ucp1 = *(reinterpret_cast<unsigned char*>(rp) + 1);
-
-            // See page 9 of 142 in BK doc PS12640-44
-            if (   (uc == uc27 && ucp1 == ucN1)
-                || (uc == uc27 && ucp1 == ucN4)
-                || (uc == uc27 && ucp1 == ucN27)
+            int imageMessageIndex = m_IntermediateBuffer.indexOf("DATA:GRAB_FRAME", preceedingChar+1);
+            if (   imageMessageIndex != -1             // i.e. it was found
+                && imageMessageIndex > preceedingChar  // it was after the preceeding char
+                && imageMessageIndex < terminatingChar // and before terminating char (i.e. not in a subsequent message).
                )
             {
-              rp++;         // skip escape char
-              *wp = ~(*rp); // invert data
+              hashChar = m_IntermediateBuffer.indexOf('#', preceedingChar);
+
+              sizeOfDataChar = hashChar + 1;
+
+              startImageChar = sizeOfDataChar
+                             + (m_IntermediateBuffer[sizeOfDataChar] - '0') // as we are dealing with ASCII codes.
+                             + 1  // to move onto next char
+                             + 4; // timestamp = 4 bytes.
+
+
+              endImageChar = terminatingChar - 2;
+              dataSize =  terminatingChar - preceedingChar + 1;
+              imageSize = endImageChar - startImageChar + 1;
+
+              if (   startImageChar >= 0
+                  && endImageChar > startImageChar
+                  && imageSize > 0
+                  && dataSize > 0
+                  && dataSize > imageSize
+
+                  // You can't do this, due to the as yet unknown number of escape characters in the image sequence.
+                  // && (    imageSize == m_ImageSize[0]*m_ImageSize[1]
+                  //     || imageSize == m_ImageSize[0]*m_ImageSize[1]*4
+                  //   ) // image must be grey-scale or RGBA.
+                 )
+              {
+                // This means our argument QImage has not been initialised yet.
+                if (   image.width()  != m_ImageSize[0]
+                    || image.height() != m_ImageSize[1]
+                   )
+                {
+                  // Image should either be grey scale or RGBA/ARGB ??? spec isnt so clear.
+                  if (imageSize < (m_ImageSize[0] * m_ImageSize[1] * 4))
+                  {
+      #if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
+                    QImage tmpImage(m_ImageSize[0], m_ImageSize[1], QImage::Format_Grayscale8);
+      #else
+                    QImage tmpImage(m_ImageSize[0], m_ImageSize[1], QImage::Format_Indexed8);
+                    tmpImage.setColorTable(m_DefaultLUT);
+      #endif
+                    image = tmpImage;
+                  }
+                  else
+                  {
+                    QImage tmpImage(m_ImageSize[0], m_ImageSize[1], QImage::Format_ARGB32);
+                    image = tmpImage;
+                  }
+                }
+
+                // Filling QImage with data from socket.
+                // Assumes data is tightly packed.
+                char *startImageData = &(m_IntermediateBuffer.data()[startImageChar]);
+                char *endImageData = &(m_IntermediateBuffer.data()[endImageChar + 1]);
+                char *rp = startImageData;
+                char *wp = reinterpret_cast<char*>(image.bits());
+                unsigned char uc = 0;
+                unsigned char ucp1 = 0;
+                unsigned char uc1 = 1;
+                unsigned char uc4 = 4;
+                unsigned char uc27 = 27;
+                unsigned char ucN1 = ~uc1;
+                unsigned char ucN4 = ~uc4;
+                unsigned char ucN27 = ~uc27;
+
+                while (rp != endImageData)
+                {
+                  uc = *(reinterpret_cast<unsigned char*>(rp));
+                  ucp1 = *(reinterpret_cast<unsigned char*>(rp) + 1);
+
+                  // See page 9 of 142 in BK doc PS12640-44
+                  if (   (uc == uc27 && ucp1 == ucN1)
+                      || (uc == uc27 && ucp1 == ucN4)
+                      || (uc == uc27 && ucp1 == ucN27)
+                     )
+                  {
+                    rp++;         // skip escape char
+                    *wp = ~(*rp); // invert data
+                  }
+                  else
+                  {
+                    *wp = *rp; // just copy
+                  }
+                  rp++;
+                  wp++;
+                }
+
+                m_IntermediateBuffer.remove(0, terminatingChar+1);
+                return;
+              }
+              else
+              {
+                MITK_WARN << "Received an image message, but it was the wrong size.";
+                m_IntermediateBuffer.remove(0, terminatingChar+1);
+              }
             }
             else
             {
-              *wp = *rp; // just copy
+              MITK_WARN << "Received a non-image message, which I wasn't expecting.";
+              m_IntermediateBuffer.remove(0, terminatingChar+1);
             }
-            rp++;
-            wp++;
           }
-
-          m_IntermediateBuffer.remove(preceedingChar, dataSize);
-          return;
-        } // end extracting image
+          else
+          {
+            MITK_DEBUG << "Failed to find end of message character. This is OK if message is still incoming.";
+          }
+        }
+        else
+        {
+          MITK_WARN << "Failed to find start of message character. This suggests there is junk in the buffer.";
+          m_IntermediateBuffer.clear();
+        }
       }
     }
   }
@@ -441,8 +461,6 @@ void BKMedicalDataSourceWorker::Start()
   while(m_IsStreaming)
   {
     {
-      QMutexLocker locker(&m_Lock);
-
       // If another thread (e.g. GUI) has requested to stop,
       // we send this stop request, which ultimately sets m_IsStreaming
       // to false, thereby ending this loop.

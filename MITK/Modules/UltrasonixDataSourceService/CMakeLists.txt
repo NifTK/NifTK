@@ -16,7 +16,7 @@ if (UltrasonixUlterius_FOUND)
 
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources niftkQImageConversion
-    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets
+    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets  NiftyLink|OpenIGTLink
     AUTOLOAD_WITH niftkIGIDataSources
   )
 

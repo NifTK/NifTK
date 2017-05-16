@@ -18,7 +18,7 @@ if (BlackMagic_FOUND)
 
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources niftkOpenCVImageConversion
-    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets OpenCV
+    PACKAGE_DEPENDS Qt4|QtCore Qt5|Widgets OpenCV  NiftyLink|OpenIGTLink
     AUTOLOAD_WITH niftkIGIDataSources
   )
 

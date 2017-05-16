@@ -143,7 +143,6 @@ private:
 
   void SaveItem(niftk::IGIDataType& item);
 
-  QMutex                                       m_Lock;
   int                                          m_ChannelNumber;
   niftk::IGIDataSourceI::IGIIndexType          m_FrameId;
   std::set<niftk::IGIDataSourceI::IGITimeType> m_PlaybackIndex;
