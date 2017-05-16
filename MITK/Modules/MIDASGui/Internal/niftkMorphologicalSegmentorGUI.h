@@ -87,6 +87,7 @@ protected slots:
   void OnDilationsIterationsChanged();
   void OnRethresholdingSliderChanged();
   void OnRestartButtonClicked();
+  void OnCancelButtonClicked();
 
 private:
 
