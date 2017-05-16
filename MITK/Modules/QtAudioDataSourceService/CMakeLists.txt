@@ -23,7 +23,7 @@ if (${_got_multimedia})
 
   MITK_CREATE_MODULE(
     DEPENDS niftkIGIDataSources
-    PACKAGE_DEPENDS Qt4|QtCore+QtMultimedia Qt5|Widgets+Multimedia
+    PACKAGE_DEPENDS Qt4|QtCore+QtMultimedia Qt5|Widgets+Multimedia  NiftyLink|OpenIGTLink
     AUTOLOAD_WITH niftkIGIDataSources
   )
 
