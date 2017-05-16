@@ -126,17 +126,13 @@ int main(int argc, char** argv)
   
   vtkPolyDataReader *reader = vtkPolyDataReader::New();
   reader->SetFileName(inputPolyDataFile.c_str());
-  reader->Update();
-  
-  std::cout << "Loaded PolyData:" << inputPolyDataFile << std::endl;
-  
+    
   vtkTransformPolyDataFilter *filter = vtkTransformPolyDataFilter::New();
-  filter->SetInputDataObject(reader->GetOutput());
+  filter->SetInputConnection(reader->GetOutputPort());
   filter->SetTransform(vtkTransform);
-  filter->Update();
 
   vtkPolyDataWriter *writer = vtkPolyDataWriter::New();
-  writer->SetInputDataObject(filter->GetOutput());
+  writer->SetInputConnection(filter->GetOutputPort());
   writer->SetFileName(outputPolyDataFile.c_str());
   writer->Update();
 }
