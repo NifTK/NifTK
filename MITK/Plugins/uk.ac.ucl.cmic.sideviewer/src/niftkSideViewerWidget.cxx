@@ -808,7 +808,6 @@ void SideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderWindow
     if (timeGeometry)
     {
       m_Viewer->SetTimeGeometry(timeGeometry);
-      m_VisibilityTracker->SetTrackedRenderer(mainWindow->GetRenderer());
     }
     else
     {
@@ -816,6 +815,11 @@ void SideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderWindow
     }
 
     m_TimeGeometry = timeGeometry;
+  }
+
+  if (timeGeometry)
+  {
+    m_VisibilityTracker->SetTrackedRenderer(mainWindow->GetRenderer());
   }
 
   if (mainWindowOrientation != m_MainWindowOrientation || geometryFirstInitialised)
