@@ -15,11 +15,13 @@
 set(CPP_FILES
   Internal/niftkCaffeSegGUI.cxx
   niftkCaffeSegController.cxx
+  niftkCaffePreferencesWidget.cxx
 )
 
 set(MOC_H_FILES 
   Internal/niftkCaffeSegGUI.h
   niftkCaffeSegController.h
+  niftkCaffePreferencesWidget.h
 )
 
 set(UI_FILES
