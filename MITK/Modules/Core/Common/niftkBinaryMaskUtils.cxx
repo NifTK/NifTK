@@ -80,13 +80,13 @@ void ValidateBinaryMaskInputs(const mitk::Image::Pointer& input1,
   {
     mitkThrow() << "Image output is NULL";
   }
-  if (!niftk::ImagesHaveSameSpatialExtent(input1, input2))
+  if (niftk::GetNumberOfVoxels(input1) != niftk::GetNumberOfVoxels(input2))
   {
-    mitkThrow() << "Input images do not have the same spacial extent.";
+    mitkThrow() << "Input images have different number of voxels";
   }
-  if (!niftk::ImagesHaveSameSpatialExtent(input1, output))
+  if (niftk::GetNumberOfVoxels(input1) != niftk::GetNumberOfVoxels(output))
   {
-    mitkThrow() << "Output images do not have the same spacial extent.";
+    mitkThrow() << "Input and output images have different number of voxels";
   }
   if (!niftk::IsBinaryMask(input1))
   {
@@ -121,10 +121,7 @@ void BinaryMaskAndOperator(const mitk::Image::Pointer& input1,
   mitk::ImageWriteAccessor writeAccess(output);
   unsigned char* op = static_cast<unsigned char*>(const_cast<void*>(writeAccess.GetData()));
 
-  unsigned int numberOfPixels =   input1->GetDimension(0)
-                                * input1->GetDimension(1)
-                                * input1->GetDimension(2)
-                                * input1->GetDimension(3);
+  auto numberOfPixels = niftk::GetNumberOfVoxels(input1);
 
   for (unsigned int i = 0; i <= numberOfPixels; ++i)
   {
@@ -161,10 +158,7 @@ void BinaryMaskOrOperator(const mitk::Image::Pointer& input1,
   mitk::ImageWriteAccessor writeAccess(output);
   unsigned char* op = static_cast<unsigned char*>(const_cast<void*>(writeAccess.GetData()));
 
-  unsigned int numberOfPixels =   input1->GetDimension(0)
-                                * input1->GetDimension(1)
-                                * input1->GetDimension(2)
-                                * input1->GetDimension(3);
+  auto numberOfPixels = niftk::GetNumberOfVoxels(input1);
 
   for (unsigned int i = 0; i <= numberOfPixels; ++i)
   {
@@ -181,6 +175,45 @@ void BinaryMaskOrOperator(const mitk::Image::Pointer& input1,
     ip2++;
     op++;
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void BinaryMaskCopyOperator(const mitk::Image::Pointer& input,
+                            mitk::Image::Pointer& output
+                           )
+{
+
+  if (input.IsNull())
+  {
+    mitkThrow() << "Input image is NULL";
+  }
+  if (output.IsNull())
+  {
+    mitkThrow() << "Output image is NULL";
+  }
+  if (niftk::GetNumberOfVoxels(input) != niftk::GetNumberOfVoxels(output))
+  {
+    mitkThrow() << "Input and output images have different number of voxels";
+  }
+  if (!niftk::IsBinaryMask(input))
+  {
+    mitkThrow() << "Input is not a binary mask.";
+  }
+  if (!niftk::IsBinaryMask(output))
+  {
+    mitkThrow() << "Output is not a binary mask.";
+  }
+
+  mitk::ImageReadAccessor readAccess(input, input->GetVolumeData(0));
+  unsigned char* ip = static_cast<unsigned char*>(const_cast<void*>(readAccess.GetData()));
+
+  mitk::ImageWriteAccessor writeAccess(output);
+  unsigned char* op = static_cast<unsigned char*>(const_cast<void*>(writeAccess.GetData()));
+
+  auto numberOfPixels = niftk::GetNumberOfVoxels(input);
+
+  std::memcpy(op, ip, numberOfPixels);
 }
 
 } // end namespace

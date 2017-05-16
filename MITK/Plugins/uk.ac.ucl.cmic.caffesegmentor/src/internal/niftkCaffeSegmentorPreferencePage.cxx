@@ -28,23 +28,11 @@
 namespace niftk
 {
 
-const QString CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME("network description");
-const QString CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME("network weights");
-const QString CaffeSegmentorPreferencePage::DO_TRANSPOSE_NAME("do transpose");
-const QString CaffeSegmentorPreferencePage::INPUT_LAYER_NAME("input layer");
-const QString CaffeSegmentorPreferencePage::OUTPUT_BLOB_NAME("output blob");
-const QString CaffeSegmentorPreferencePage::GPU_DEVICE_NAME("GPU device");
-
 //-----------------------------------------------------------------------------
 CaffeSegmentorPreferencePage::CaffeSegmentorPreferencePage()
 : m_MainControl(0)
-, m_NetworkDescriptionFileName(nullptr)
-, m_NetworkWeightsFileName(nullptr)
-, m_DoTranspose(nullptr)
-, m_NameMemoryLayer(nullptr)
-, m_NameOutputBlob(nullptr)
-, m_GPUDevice(nullptr)
 , m_Initializing(false)
+, m_CaffeSegPrefs(nullptr)
 {
 
 }
@@ -82,29 +70,8 @@ void CaffeSegmentorPreferencePage::CreateQtControl(QWidget* parent)
 
   m_MainControl = new QWidget(parent);
 
-  QFormLayout *formLayout = new QFormLayout;
-  m_MainControl->setLayout(formLayout);
-
-  m_NetworkDescriptionFileName = new ctkPathLineEdit();
-  formLayout->addRow("network description file name", m_NetworkDescriptionFileName);
-
-  m_NetworkWeightsFileName = new ctkPathLineEdit();
-  formLayout->addRow("network weights file name", m_NetworkWeightsFileName);
-
-  m_DoTranspose = new QCheckBox();
-  formLayout->addRow("transpose input/output data", m_DoTranspose);
-
-  m_NameMemoryLayer = new QLineEdit();
-  formLayout->addRow("input layer name", m_NameMemoryLayer);
-
-  m_NameOutputBlob = new QLineEdit();
-  formLayout->addRow("output blob name", m_NameOutputBlob);
-
-  m_GPUDevice = new QSpinBox();
-  m_GPUDevice->setMinimum(-1);
-  m_GPUDevice->setMaximum(10);
-  m_GPUDevice->setSingleStep(1);
-  formLayout->addRow("GPU device", m_GPUDevice);
+  m_CaffeSegPrefs = new CaffePreferencesWidget();
+  m_MainControl->setLayout(m_CaffeSegPrefs->GetUILayout());
 
   this->Update();
 
@@ -122,12 +89,13 @@ QWidget* CaffeSegmentorPreferencePage::GetQtControl() const
 //-----------------------------------------------------------------------------
 bool CaffeSegmentorPreferencePage::PerformOk()
 {
-  m_CaffeSegmentorPreferencesNode->Put(CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME, m_NetworkDescriptionFileName->currentPath());
-  m_CaffeSegmentorPreferencesNode->Put(CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME, m_NetworkWeightsFileName->currentPath());
-  m_CaffeSegmentorPreferencesNode->PutBool(CaffeSegmentorPreferencePage::DO_TRANSPOSE_NAME, m_DoTranspose->isChecked());
-  m_CaffeSegmentorPreferencesNode->Put(CaffeSegmentorPreferencePage::INPUT_LAYER_NAME, m_NameMemoryLayer->text());
-  m_CaffeSegmentorPreferencesNode->Put(CaffeSegmentorPreferencePage::OUTPUT_BLOB_NAME, m_NameOutputBlob->text());
-  m_CaffeSegmentorPreferencesNode->PutInt(CaffeSegmentorPreferencePage::GPU_DEVICE_NAME, m_GPUDevice->value());
+  m_CaffeSegmentorPreferencesNode->Put(CaffePreferencesWidget::NETWORK_DESCRIPTION_FILE_NAME, m_CaffeSegPrefs->GetNetworkDescriptionFileName());
+  m_CaffeSegmentorPreferencesNode->Put(CaffePreferencesWidget::NETWORK_WEIGHTS_FILE_NAME, m_CaffeSegPrefs->GetNetworkWeightsFileName());
+  m_CaffeSegmentorPreferencesNode->PutBool(CaffePreferencesWidget::DO_TRANSPOSE_NAME, m_CaffeSegPrefs->GetDoTranspose());
+  m_CaffeSegmentorPreferencesNode->Put(CaffePreferencesWidget::INPUT_LAYER_NAME, m_CaffeSegPrefs->GetMemoryLayerName());
+  m_CaffeSegmentorPreferencesNode->Put(CaffePreferencesWidget::OUTPUT_BLOB_NAME, m_CaffeSegPrefs->GetOutputBlobName());
+  m_CaffeSegmentorPreferencesNode->PutInt(CaffePreferencesWidget::GPU_DEVICE_NAME, m_CaffeSegPrefs->GetGPUDevice());
+
   return true;
 }
 
@@ -141,12 +109,18 @@ void CaffeSegmentorPreferencePage::PerformCancel()
 //-----------------------------------------------------------------------------
 void CaffeSegmentorPreferencePage::Update()
 {
-  m_NetworkDescriptionFileName->setCurrentPath(m_CaffeSegmentorPreferencesNode->Get(CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME, ""));
-  m_NetworkWeightsFileName->setCurrentPath(m_CaffeSegmentorPreferencesNode->Get(CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME, ""));
-  m_DoTranspose->setChecked(m_CaffeSegmentorPreferencesNode->GetBool(CaffeSegmentorPreferencePage::DO_TRANSPOSE_NAME, true));
-  m_NameMemoryLayer->setText(m_CaffeSegmentorPreferencesNode->Get(CaffeSegmentorPreferencePage::INPUT_LAYER_NAME, "data"));
-  m_NameOutputBlob->setText(m_CaffeSegmentorPreferencesNode->Get(CaffeSegmentorPreferencePage::OUTPUT_BLOB_NAME, "prediction"));
-  m_GPUDevice->setValue(m_CaffeSegmentorPreferencesNode->GetInt(CaffeSegmentorPreferencePage::GPU_DEVICE_NAME, -1));
+  m_CaffeSegPrefs->SetNetworkDescriptionFileName(m_CaffeSegmentorPreferencesNode->Get(CaffePreferencesWidget::NETWORK_DESCRIPTION_FILE_NAME,
+                                                                                      CaffePreferencesWidget::DEFAULT_NETWORK_DESCRIPTION_FILE));
+  m_CaffeSegPrefs->SetNetworkWeightsFileName(m_CaffeSegmentorPreferencesNode->Get(CaffePreferencesWidget::NETWORK_WEIGHTS_FILE_NAME,
+                                                                                  CaffePreferencesWidget::DEFAULT_NETWORK_WEIGHTS_FILE));
+  m_CaffeSegPrefs->SetDoTranspose(m_CaffeSegmentorPreferencesNode->GetBool(CaffePreferencesWidget::DO_TRANSPOSE_NAME,
+                                                                           CaffePreferencesWidget::DEFAULT_DO_TRANSPOSE));
+  m_CaffeSegPrefs->SetMemoryLayerName(m_CaffeSegmentorPreferencesNode->Get(CaffePreferencesWidget::INPUT_LAYER_NAME,
+                                                                           CaffePreferencesWidget::DEFAULT_INPUT_LAYER));
+  m_CaffeSegPrefs->SetOutputBlobName(m_CaffeSegmentorPreferencesNode->Get(CaffePreferencesWidget::OUTPUT_BLOB_NAME,
+                                                                          CaffePreferencesWidget::DEFAULT_OUTPUT_BLOB));
+  m_CaffeSegPrefs->SetGPUDevice(m_CaffeSegmentorPreferencesNode->GetInt(CaffePreferencesWidget::GPU_DEVICE_NAME,
+                                                                        CaffePreferencesWidget::DEFAULT_GPU_DEVICE));
 }
 
 } // end namespace

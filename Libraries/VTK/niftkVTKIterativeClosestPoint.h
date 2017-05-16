@@ -114,8 +114,7 @@ private:
   vtkSmartPointer<vtkMatrix4x4> InternalRunICP(vtkPolyData *source,
                                                vtkPolyData *target,
                                                unsigned int landmarks,
-                                               unsigned int iterations,
-                                               bool inverted
+                                               unsigned int iterations
                                               ) const;
 
   double InternalGetRMSResidual(vtkPolyData &source,

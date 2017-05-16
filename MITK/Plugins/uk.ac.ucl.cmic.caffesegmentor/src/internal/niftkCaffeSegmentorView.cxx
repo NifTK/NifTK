@@ -16,7 +16,7 @@
 #include "niftkCaffeSegmentorPreferencePage.h"
 #include "niftkCaffeSegmentorActivator.h"
 #include <niftkCaffeSegController.h>
-
+#include <niftkCaffePreferencesWidget.h>
 #include <berryPlatform.h>
 #include <berryIBerryPreferences.h>
 #include <berryIPreferences.h>
@@ -101,22 +101,22 @@ void CaffeSegmentorView::RetrievePreferenceValues()
         .Cast<berry::IBerryPreferences>();
   assert( prefs );
 
-  QString networkDescription = prefs->Get(CaffeSegmentorPreferencePage::NETWORK_DESCRIPTION_FILE_NAME, "");
+  QString networkDescription = prefs->Get(CaffePreferencesWidget::NETWORK_DESCRIPTION_FILE_NAME, "");
   m_CaffeSegController->SetNetworkDescriptionFileName(networkDescription);
 
-  QString networkWeights = prefs->Get(CaffeSegmentorPreferencePage::NETWORK_WEIGHTS_FILE_NAME, "");
+  QString networkWeights = prefs->Get(CaffePreferencesWidget::NETWORK_WEIGHTS_FILE_NAME, "");
   m_CaffeSegController->SetNetworkWeightsFileName(networkWeights);
 
-  bool doTranspose = prefs->GetBool(CaffeSegmentorPreferencePage::DO_TRANSPOSE_NAME, true);
+  bool doTranspose = prefs->GetBool(CaffePreferencesWidget::DO_TRANSPOSE_NAME, true);
   m_CaffeSegController->SetDoTranspose(doTranspose);
 
-  QString inputLayerName = prefs->Get(CaffeSegmentorPreferencePage::INPUT_LAYER_NAME, "data");
+  QString inputLayerName = prefs->Get(CaffePreferencesWidget::INPUT_LAYER_NAME, "data");
   m_CaffeSegController->SetInputLayerName(inputLayerName);
 
-  QString outputBlobName = prefs->Get(CaffeSegmentorPreferencePage::OUTPUT_BLOB_NAME, "prediction");
+  QString outputBlobName = prefs->Get(CaffePreferencesWidget::OUTPUT_BLOB_NAME, "prediction");
   m_CaffeSegController->SetOutputBlobName(outputBlobName);
 
-  int gpuDeviceNumber = prefs->GetInt(CaffeSegmentorPreferencePage::GPU_DEVICE_NAME, -1);
+  int gpuDeviceNumber = prefs->GetInt(CaffePreferencesWidget::GPU_DEVICE_NAME, -1);
   m_CaffeSegController->SetGPUDevice(gpuDeviceNumber);
 }
 

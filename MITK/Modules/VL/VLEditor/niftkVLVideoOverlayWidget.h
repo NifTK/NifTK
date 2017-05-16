@@ -55,6 +55,15 @@ public:
   void SetBackgroundColour(unsigned int aabbggrr);
   void SetEyeHandFileName(const std::string& fileName);
   void SetDataStorage(mitk::DataStorage* storage);
+  void SetControlWidgetsVisible(bool visible);
+  void SetLeftViewerVisible(bool visible);
+  void SetRightViewerVisible(bool visible);
+  void Set3DViewerVisible(bool visible);
+  void SetTrackingViewerVisible(bool visible);
+  void SetOpacity(int betweenZeroAnd100);
+  void SetLeftImage(const mitk::DataNode* node);
+  void SetRightImage(const mitk::DataNode* node);
+  void SetTransform(const mitk::DataNode* node);
 
 private slots:
 
@@ -86,10 +95,10 @@ private:
 
   QHBoxLayout* m_HorizontalLayout;
   QWidget*     m_OverlayViewers;
-  VLWidget*  m_LeftOverlayViewer;
-  VLWidget*  m_RightOverlayViewer;
-  VLWidget*  m_TrackedViewer;
-  VLWidget*  m_3DViewer;
+  VLWidget*    m_LeftOverlayViewer;
+  VLWidget*    m_RightOverlayViewer;
+  VLWidget*    m_TrackedViewer;
+  VLWidget*    m_3DViewer;
 };
 
 } // end namespace

@@ -115,6 +115,7 @@ vtkSmartPointer<vtkMatrix4x4> VTKIterativeClosestPoint::GetTransform() const
 {
   vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
   result->DeepCopy(m_TransformMatrix);
+
   return result;
 }
 
@@ -158,8 +159,8 @@ int VTKIterativeClosestPoint::GetStepSize(vtkPolyData *source) const
 vtkSmartPointer<vtkMatrix4x4> VTKIterativeClosestPoint::InternalRunICP(vtkPolyData *source,
                                                                        vtkPolyData* target,
                                                                        unsigned int landmarks,
-                                                                       unsigned int iterations,
-                                                                       bool inverted) const
+                                                                       unsigned int iterations
+                                                                      ) const
 {
   if (source == NULL)
   {
@@ -195,10 +196,6 @@ vtkSmartPointer<vtkMatrix4x4> VTKIterativeClosestPoint::InternalRunICP(vtkPolyDa
   vtkSmartPointer<vtkMatrix4x4> result = vtkSmartPointer<vtkMatrix4x4>::New();
   result->DeepCopy(icp->GetMatrix());
 
-  if (inverted)
-  {
-    result->Invert();
-  }
   return result;
 }
 
@@ -227,7 +224,7 @@ double VTKIterativeClosestPoint::Run()
   if (m_TLSIterations == 0)
   {
     // Normal ICP, no TLS.
-    result = this->InternalRunICP(source, target, m_ICPMaxLandmarks, m_ICPMaxIterations, inverted);
+    result = this->InternalRunICP(source, target, m_ICPMaxLandmarks, m_ICPMaxIterations);
 
     std::cout << "Run InternalICP using no TLS with " << source->GetNumberOfPoints() << " points." << std::endl;
   }
@@ -268,7 +265,7 @@ double VTKIterativeClosestPoint::Run()
     // Do a certain number of iterations of TLS based ICP.
     for (int i = 0; i < m_TLSIterations; i++)
     {
-      result = this->InternalRunICP(polies[current], target, points[current]->GetNumberOfPoints(), m_ICPMaxIterations, inverted);
+      result = this->InternalRunICP(polies[current], target, points[current]->GetNumberOfPoints(), m_ICPMaxIterations);
 
       std::cout << "Run InternalICP using TLS with " << points[current]->GetNumberOfPoints() << " points." << std::endl;
 
@@ -287,11 +284,13 @@ double VTKIterativeClosestPoint::Run()
         sourcePoint[3] = 1;                                   // but we need the w (homogeneous coords) for matrix multiply.
 
         result->MultiplyPoint(sourcePoint, transformedSourcePoint);
+
         m_Locator->FindClosestPoint(transformedSourcePoint,
                                     closestTargetPoint,
                                     cellId,
                                     subId,
                                     distance);
+
         std::pair<double, vtkIdType> pair(distance, pointCounter);
         map.insert(pair);
       }
@@ -326,9 +325,13 @@ double VTKIterativeClosestPoint::Run()
 
   }
 
-  // Finish, set the member variable.
+  double residual = this->InternalGetRMSResidual(*source, *m_Locator, *result);
+  if (inverted)
+  {
+    result->Invert();
+  }
+
   m_TransformMatrix->DeepCopy(result);
-  double residual = this->InternalGetRMSResidual(*source, *m_Locator, *m_TransformMatrix);
   return residual;
 }
 
@@ -372,27 +375,15 @@ double VTKIterativeClosestPoint::InternalGetRMSResidual(vtkPolyData& source,
     numberOfPointsUsed++;
 
     residual += (distance*distance);
-/*
-    std::cerr << "Matt, c=" << pointCounter
-              << ", sp=" << sourcePoint[0]
-              << ", " << sourcePoint[1]
-              << ", " << sourcePoint[2]
-              << ", tr=" << transformedSourcePoint[0]
-              << ", " << transformedSourcePoint[1]
-              << ", " << transformedSourcePoint[2]
-              << ", tp" << closestTargetPoint[0]
-              << ", " << closestTargetPoint[1]
-              << ", " << closestTargetPoint[2]
-              << ", dist=" << distance
-              << ", resi=" << residual
-              << std::endl;
-*/
   }
   if (numberOfPointsUsed > 0)
   {
     residual /= static_cast<double>(numberOfPointsUsed);
   }
   residual = sqrt(residual);
+
+  std::cout << "Calculated residual=" << residual << ", from " << numberOfPointsUsed << " points." << std::endl;
+
   return residual;
 }
 

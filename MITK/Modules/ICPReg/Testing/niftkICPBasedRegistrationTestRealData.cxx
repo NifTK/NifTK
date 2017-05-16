@@ -95,12 +95,10 @@ int niftkICPBasedRegistrationTestRealData(int argc, char* argv[])
   std::cerr << *resultMatrix;
   MITK_TEST_CONDITION_REQUIRED(MatrixOK(resultMatrix), ".. Testing result matrix is a number");
 
-  // Test doubling up number of points.
+  // Test TLS.
   std::vector<mitk::DataNode::Pointer> movingNodes;
   movingNodes.push_back(movingnode);
-  movingNodes.push_back(movingnode);
   std::vector<mitk::DataNode::Pointer> fixedNodes;
-  fixedNodes.push_back(fixednode);
   fixedNodes.push_back(fixednode);
   registerer->SetTLSIterations(2);
   registerer->SetTLSPercentage(50);

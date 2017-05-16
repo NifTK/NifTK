@@ -36,7 +36,7 @@ NIFTKCORE_EXPORT bool IsBinaryMask(const mitk::DataNode::Pointer& input);
 * \brief Performs logical AND of two unsigned char, greyscale, 8 bit images.
 *
 * Anything non-zero counts as positive, and output is [0|255].
-* Throws mitk::Exception if not a binary mask, and not the same size image.
+* Throws mitk::Exception if not a binary mask, and not the same number of pixels.
 */
 NIFTKCORE_EXPORT void BinaryMaskAndOperator(const mitk::Image::Pointer& input1,
                                             const mitk::Image::Pointer& input2,
@@ -47,12 +47,22 @@ NIFTKCORE_EXPORT void BinaryMaskAndOperator(const mitk::Image::Pointer& input1,
 * \brief Performs logical OR of two unsigned char, greyscale, 8 bit images.
 *
 * Anything non-zero counts as positive, and output is [0|255].
-* Throws mitk::Exception if not a binary mask, and not the same size image.
+* Throws mitk::Exception if not a binary mask, and not the same number of pixels.
 */
 NIFTKCORE_EXPORT void BinaryMaskOrOperator(const mitk::Image::Pointer& input1,
                                            const mitk::Image::Pointer& input2,
                                            mitk::Image::Pointer& output
                                           );
+
+/**
+* \brief Performs logical AND of two unsigned char, greyscale, 8 bit images.
+*
+* Anything non-zero counts as positive, and output is [0|255].
+* Throws mitk::Exception if not a binary mask, and not the same number of pixels.
+*/
+NIFTKCORE_EXPORT void BinaryMaskCopyOperator(const mitk::Image::Pointer& input,
+                                             mitk::Image::Pointer& output
+                                            );
 
 } // end namespace
 
