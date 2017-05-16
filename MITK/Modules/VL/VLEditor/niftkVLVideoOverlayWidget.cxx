@@ -95,6 +95,94 @@ VLVideoOverlayWidget::~VLVideoOverlayWidget()
 
 
 //-----------------------------------------------------------------------------
+void VLVideoOverlayWidget::SetControlWidgetsVisible(bool visible)
+{
+  m_LeftImageCheckBox->setVisible(visible);
+  m_LeftImageCombo->setVisible(visible);
+  m_RightImageCheckBox->setVisible(visible);
+  m_RightImageCombo->setVisible(visible);
+  m_TrackingLabel->setVisible(visible);
+  m_TrackingCombo->setVisible(visible);
+  m_OpacityLabel->setVisible(visible);
+  m_OpacitySlider->setVisible(visible);
+  m_TrackedViewCheckBox->setVisible(visible);
+  m_3DViewCheckBox->setVisible(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLVideoOverlayWidget::SetLeftViewerVisible(bool visible)
+{
+  this->OnLeftOverlayCheckBoxChecked(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLVideoOverlayWidget::SetRightViewerVisible(bool visible)
+{
+  this->OnRightOverlayCheckBoxChecked(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLVideoOverlayWidget::Set3DViewerVisible(bool visible)
+{
+  this->On3DViewerCheckBoxChecked(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLVideoOverlayWidget::SetTrackingViewerVisible(bool visible)
+{
+  this->OnTrackedViewerCheckBoxChecked(visible);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLVideoOverlayWidget::SetOpacity(int value)
+{
+  m_OpacitySlider->setValue(value);
+  this->OnOpacitySliderMoved(value);
+}
+
+
+//-----------------------------------------------------------------------------
+void VLVideoOverlayWidget::SetLeftImage(const mitk::DataNode* node)
+{
+  int i = m_LeftImageCombo->Find(node);
+  if (i >= 0)
+  {
+    m_LeftImageCombo->setCurrentIndex(i);
+    this->OnLeftImageSelected(node);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void VLVideoOverlayWidget::SetRightImage(const mitk::DataNode* node)
+{
+  int i = m_RightImageCombo->Find(node);
+  if (i >= 0)
+  {
+    m_RightImageCombo->setCurrentIndex(i);
+    this->OnRightImageSelected(node);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void VLVideoOverlayWidget::SetTransform(const mitk::DataNode* node)
+{
+  int i = m_TrackingCombo->Find(node);
+  if (i >= 0)
+  {
+    m_TrackingCombo->setCurrentIndex(i);
+    this->OnTransformSelected(node);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 void VLVideoOverlayWidget::SetBackgroundColour(unsigned int aabbggrr)
 {
   float   r = (aabbggrr & 0xFF) / 255.0f;
@@ -169,8 +257,8 @@ void VLVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
 {
   if (node != nullptr)
   {
-    m_LeftOverlayViewer->vlSceneView()->setBackgroundNode(node);
-    m_TrackedViewer->vlSceneView()->setBackgroundNode(node);
+    m_LeftOverlayViewer->vlSceneView()->setBackgroundNode(node, true);
+    m_TrackedViewer->vlSceneView()->setBackgroundNode(node, false);
   }
 }
 
@@ -180,7 +268,7 @@ void VLVideoOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
 {
   if (node != nullptr)
   {
-    m_RightOverlayViewer->vlSceneView()->setBackgroundNode(node);
+    m_RightOverlayViewer->vlSceneView()->setBackgroundNode(node, true);
   }
 }
 

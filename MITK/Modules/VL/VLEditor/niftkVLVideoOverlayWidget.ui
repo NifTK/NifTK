@@ -45,7 +45,7 @@
         <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_RightImageCombo"/>
        </item>
        <item>
-        <spacer name="horizontalSpacer">
+        <spacer name="m_HorizontalSpacer1">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -68,7 +68,7 @@
         <widget class="QmitkDataStorageComboBoxWithSelectNone" name="m_TrackingCombo"/>
        </item>
        <item>
-        <spacer name="horizontalSpacer_2">
+        <spacer name="m_HorizontalSpacer2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>

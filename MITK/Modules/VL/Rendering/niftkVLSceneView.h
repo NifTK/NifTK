@@ -99,7 +99,7 @@ public:
   /**
    * Sets a node containing an mitk::Image or niftk::CUDAImage to be used as background. Passing NULL will disable the background image.
    */
-  bool setBackgroundNode(const mitk::DataNode* node);
+  bool setBackgroundNode(const mitk::DataNode* node, bool useImage);
 
   /**
    * The rendering mode, mainly for debugging purposes.
@@ -240,7 +240,8 @@ protected:
   mitk::DataNode::ConstPointer           m_CameraNode;
 
   mitk::DataNode::ConstPointer m_BackgroundNode;
-  mitk::Image::ConstPointer m_BackgroundImage;
+  mitk::Image::ConstPointer    m_BackgroundImage;
+  bool                         m_UseBackgroundImage;
   vl::mat4 m_EyeHandMatrix;
 
   bool m_ScheduleTrackballAdjustView;

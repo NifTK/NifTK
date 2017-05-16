@@ -519,7 +519,7 @@ void VLMapperCoordinateAxes::update()
 VLMapperPoints::VLMapperPoints( const mitk::DataNode* node, VLSceneView* sv )
   : VLMapper( node, sv )
 {
-  m_3DSphereMode = true;
+  m_3DSphereMode = false;
   m_Point2DFX = vl::VividRendering::makeVividEffect();
   m_PositionArray = new vl::ArrayFloat3;
   m_ColorArray = new vl::ArrayFloat4;
@@ -541,7 +541,7 @@ void VLMapperPoints::initPointSetProps()
 
   VL_Point_Mode_Property::Pointer point_set_mode = VL_Point_Mode_Property::New();
   const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Mode", point_set_mode);
-  point_set_mode->SetValue( 0 );
+  point_set_mode->SetValue( 1 ); // 2D is default.
 
   mitk::FloatProperty::Pointer point_size_2d = mitk::FloatProperty::New();
   const_cast<mitk::DataNode*>(m_DataNode)->SetProperty("VL.Point.Size2D", point_size_2d);

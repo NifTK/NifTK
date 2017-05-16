@@ -285,7 +285,8 @@ VLSceneView::VLSceneView( VLWidget* vlwidget ) :
   m_ScheduleTrackballAdjustView( true ),
   m_ScheduleInitScene ( true ),
   m_RenderingInProgressGuard ( false ),
-  m_VLWidget( vlwidget )
+  m_VLWidget( vlwidget ),
+  m_UseBackgroundImage(true)
 {
 #ifdef _USE_CUDA
   m_CudaTest = new CudaTest;
@@ -578,7 +579,7 @@ void VLSceneView::removeDataNode(const mitk::DataNode* node)
   niftk::ScopedOGLContext glctx( const_cast<QGLContext*>(m_VLWidget->context()) );
 
   if ( node == m_BackgroundNode ) {
-    setBackgroundNode( NULL );
+    setBackgroundNode( NULL, m_UseBackgroundImage);
   }
 
   // dont leave a dangling update behind.
@@ -841,6 +842,7 @@ void VLSceneView::clearScene()
   m_CameraNode = 0;
   m_BackgroundNode = 0;
   m_VividRendering->setBackgroundImageEnabled( false );
+  m_UseBackgroundImage = false;
 
   m_ScheduleInitScene = true;
   m_ScheduleTrackballAdjustView = true;
@@ -979,63 +981,75 @@ void VLSceneView::globalReInit(const vec3& dir, const vec3& up, float bias) {
 
 //-----------------------------------------------------------------------------
 
-bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
+bool VLSceneView::setBackgroundNode(const mitk::DataNode* node, bool useImage)
 {
   VIVID_CHECK( m_VividRendering );
+
   m_BackgroundNode = node;
-  m_BackgroundImage = NULL;
+  m_UseBackgroundImage = useImage;
+
 #ifdef _USE_CUDA
   m_BackgroundCUDAImage = NULL;
 #endif
 
-  if ( ! node ) {
-    m_VividRendering->setBackgroundImageEnabled( false );
-    updateCameraParameters();
-    return true;
-  } else {
-    updateCameraParameters();
-  }
+  m_VividRendering->setBackgroundImageEnabled(useImage);
+  updateCameraParameters();
 
-  Texture* tex = NULL;
-  mitk::Vector3D img_spacing;
-  int width  = 0;
-  int height = 0;
+  if (useImage)
+  {
+    Texture* tex = NULL;
 
-  // Wire up background texture
+    // Wire up background texture
 #ifdef _USE_CUDA
-  VLMapperCUDAImage* imgCu_mapper = dynamic_cast<VLMapperCUDAImage*>( getVLMapper( node ) );
+    VLMapperCUDAImage* imgCu_mapper = dynamic_cast<VLMapperCUDAImage*>(getVLMapper(node));
 #endif
 
-  VLMapper2DImage* img2d_mapper = dynamic_cast<VLMapper2DImage*>( getVLMapper( node ) );
-  if ( img2d_mapper )
+    VLMapper2DImage* img2d_mapper = dynamic_cast<VLMapper2DImage*>(getVLMapper(node));
+    if (img2d_mapper)
+    {
+      // assign texture
+      tex = img2d_mapper->texture();
+    }
+#ifdef _USE_CUDA
+    else if (imgCu_mapper)
+    {
+      // assign texture
+      tex = imgCu_mapper->texture();
+    }
+#endif
+    else
+    {
+      return false;
+    }
+    // set background texture
+    m_VividRendering->backgroundTexSampler()->setTexture(tex);
+  }
+
+  mitk::Vector3D img_spacing;
+  int width = 0;
+  int height = 0;
+
+  // image size and pixel aspect ratio
+  m_BackgroundImage = dynamic_cast<mitk::Image*>(node->GetData());
+  if (m_BackgroundImage.IsNotNull())
   {
-    // assign texture
-    tex = img2d_mapper->texture();
-    // image size and pixel aspect ratio
-    m_BackgroundImage = dynamic_cast<mitk::Image*>( node->GetData() );
     img_spacing = m_BackgroundImage->GetGeometry()->GetSpacing();
     width = m_BackgroundImage->GetDimension(0);
     height = m_BackgroundImage->GetDimension(1);
   }
+
 #ifdef _USE_CUDA
-  else if ( imgCu_mapper )
+  // image size and pixel aspect ratio
+  m_BackgroundCUDAImage = dynamic_cast<niftk::CUDAImage*>(node->GetData());
+  if (m_BackgroundCUDAImage.IsNotNull())
   {
-    // assign texture
-    tex = imgCu_mapper->texture();
-    // image size and pixel aspect ratio
-    m_BackgroundCUDAImage = dynamic_cast<niftk::CUDAImage*>( node->GetData() ); VIVID_CHECK(m_BackgroundCUDAImage);
     img_spacing = m_BackgroundCUDAImage->GetGeometry()->GetSpacing();
     niftk::LightweightCUDAImage lwci = m_BackgroundCUDAImage->GetLightweightCUDAImage();
     width = lwci.GetWidth();
     height = lwci.GetHeight();
   }
 #endif
-  else
-  {
-    return false;
-  }
-  // set background texture
-  m_VividRendering->backgroundTexSampler()->setTexture( tex );
+
   // set background aspect ratio
   VIVID_CHECK(img_spacing[0]);
   VIVID_CHECK(img_spacing[1]);
@@ -1047,7 +1061,7 @@ bool VLSceneView::setBackgroundNode(const mitk::DataNode* node)
   VLUtils::setBoolProp( const_cast<mitk::DataNode*>(node), "visible", false );
 
   // Enable background rendering
-  m_VividRendering->setBackgroundImageEnabled( true );
+  m_VividRendering->setBackgroundImageEnabled( useImage );
 
   openglContext()->update();
 
@@ -1117,7 +1131,7 @@ void VLSceneView::updateCameraParameters()
 
   // update camera viewport and projecton
 
-  if ( m_VividRendering->backgroundImageEnabled() )
+  if (m_BackgroundNode.IsNotNull())
   {
     // Calibration parameters come from the background node.
     VIVID_CHECK( m_BackgroundNode );
