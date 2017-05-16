@@ -281,6 +281,27 @@ mitk::DataNode::Pointer FindParentGreyScaleImage(const mitk::DataStorage* storag
 
 
 //-----------------------------------------------------------------------------
+mitk::DataStorage::SetOfObjects::Pointer FindNodesStartingWith(const mitk::DataStorage* dataStorage, const std::string prefix)
+{
+  mitk::DataStorage::SetOfObjects::Pointer results = mitk::DataStorage::SetOfObjects::New();
+
+  unsigned int counter = 0;
+  mitk::DataStorage::SetOfObjects::ConstPointer all = dataStorage->GetAll();
+  for (unsigned int i = 0; i < all->size(); i++)
+  {
+    mitk::DataNode* possibleNode = (*all)[i];
+    if (possibleNode->GetName().compare(0, prefix.length(), prefix) == 0)
+    {
+      results->InsertElement(counter, possibleNode);
+      counter++;
+    }
+  }
+
+  return results;
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::TimeGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, const int& nodeIndex)
 {
   mitk::TimeGeometry::Pointer geometry = NULL;
@@ -386,7 +407,6 @@ void LoadMatrixOrCreateDefault(
     node->SetIntProperty("size", 10);
     node->SetVisibility(false); // by default we don't need to see it.
     node->SetBoolProperty("helper object", helperObject);
-    dataStorage->Add(node);
   }
 
   std::string propertyName = "niftk.transform";
@@ -406,6 +426,10 @@ void LoadMatrixOrCreateDefault(
   }
   coordinateAxes->SetVtkMatrix(*matrix);
 
+  if (!dataStorage->Exists(node))
+  {
+    dataStorage->Add(node);
+  }
   node->Modified();
 }
 
