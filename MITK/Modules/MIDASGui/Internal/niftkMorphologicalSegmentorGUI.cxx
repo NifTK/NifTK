@@ -131,6 +131,7 @@ MorphologicalSegmentorGUI::MorphologicalSegmentorGUI(QWidget* parent)
   this->connect(m_DilationsIterationsSlider, SIGNAL(valueChanged(double)), SLOT(OnDilationsIterationsChanged()));
   this->connect(m_RethresholdingBoxSizeSlider, SIGNAL(valueChanged(double)), SLOT(OnRethresholdingSliderChanged()));
   this->connect(m_RestartButton, SIGNAL(clicked()), SLOT(OnRestartButtonClicked()));
+  this->connect(m_CancelButton, SIGNAL(clicked()), SLOT(OnCancelButtonClicked()));
 }
 
 
@@ -153,7 +154,7 @@ void MorphologicalSegmentorGUI::SetEnabled(bool enabled)
   m_BackButton->setEnabled(tabIndex > 0);
   m_NextButton->setText(tabIndex < 3 ? "Next >" : "Finish");
   m_NextButton->setEnabled(tabIndex >= 0);
-//  m_CancelButton->setEnabled(tabIndex >= 0);
+  m_CancelButton->setEnabled(tabIndex >= 0);
   m_RestartButton->setEnabled(tabIndex > 0);
 }
 
@@ -456,6 +457,41 @@ void MorphologicalSegmentorGUI::OnRestartButtonClicked()
   this->SetEnabled(true);
 
   emit RestartButtonClicked();
+}
+
+
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorGUI::OnCancelButtonClicked()
+{
+  bool wasBlocked;
+
+  wasBlocked = m_TabWidget->blockSignals(true);
+  m_TabWidget->setCurrentIndex(0);
+  m_TabWidget->blockSignals(wasBlocked);
+
+  wasBlocked = m_ThresholdingLowerThresholdSlider->blockSignals(true);
+  m_ThresholdingLowerThresholdSlider->setMinimum(0.0);
+  m_ThresholdingLowerThresholdSlider->setMaximum(0.0);
+  m_ThresholdingLowerThresholdSlider->setValue(0);
+  m_ThresholdingLowerThresholdSlider->blockSignals(wasBlocked);
+
+  wasBlocked = m_ThresholdingUpperThresholdSlider->blockSignals(true);
+  m_ThresholdingUpperThresholdSlider->setMinimum(0.0);
+  m_ThresholdingUpperThresholdSlider->setMaximum(0.0);
+  m_ThresholdingUpperThresholdSlider->setValue(0);
+  m_ThresholdingAxialCutOffSlider->blockSignals(wasBlocked);
+
+  wasBlocked = m_ThresholdingAxialCutOffSlider->blockSignals(true);
+  m_ThresholdingAxialCutOffSlider->setMinimum(0.0);
+  m_ThresholdingAxialCutOffSlider->setMaximum(100.0);
+  m_ThresholdingAxialCutOffSlider->setInvertedAppearance(false);
+  m_ThresholdingAxialCutOffSlider->setInvertedControls(false);
+  m_ThresholdingAxialCutOffSlider->setValue(0);
+  m_ThresholdingUpperThresholdSlider->blockSignals(wasBlocked);
+
+  this->SetEnabled(false);
+
+  emit CancelButtonClicked();
 }
 
 }
