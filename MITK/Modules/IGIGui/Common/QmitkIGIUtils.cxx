@@ -34,9 +34,12 @@
 #include <vtkSmartPointer.h>
 
 #include <mitkSTLFileReader.h>
+#include <mitkIOUtil.h>
 
 #include <niftkDataStorageUtils.h>
 #include <niftkFileIOUtils.h>
+
+#include <cctype>
 
 //-----------------------------------------------------------------------------
 mitk::Surface::Pointer LoadSurfaceFromSTLFile(const QString& surfaceFilename)
@@ -352,5 +355,61 @@ std::string FormatDateTimeAsStdString(const qint64& timeInMillis)
 {
   QString formattedTime = FormatDateTime(timeInMillis);
   return formattedTime.toStdString();
+}
+
+
+//-----------------------------------------------------------------------------
+QString ExtractTempFile(const QString& resourcePrefix, const QString& name)
+{
+  std::string outputPath = mitk::IOUtil::GetTempPath()
+                         + mitk::IOUtil::GetDirectorySeparator()
+                         + name.toStdString();
+
+  QString outputName = QString::fromStdString(outputPath);
+
+  QFile::copy(resourcePrefix + name, outputName);
+  return outputName;
+}
+
+
+//-----------------------------------------------------------------------------
+std::string IncrementNodeName(const std::string& name)
+{
+  // note: we do not trim white-space!
+  // this is intentional: it allows the user to add a second dimension of numbers to it.
+  // for example:
+  //   name="hello world"    --> "hello world 1"
+  //   name="hello world 1"  --> "hello world 2"
+  //   name "hello world 1 " --> "hello world 1 1"
+
+
+  // scan from the back of the name until we find a character that is not a number.
+  int    numberstartindex = name.length();
+  for (; numberstartindex > 0; --numberstartindex)
+  {
+    if (!std::isdigit(name[numberstartindex - 1]))
+      break;
+  }
+  assert(numberstartindex >= 0);
+
+  // no number in the name
+  if (numberstartindex >= name.length())
+  {
+    return name + "1";
+  }
+
+  std::string   numbersubstring = name.substr(numberstartindex);
+  // if we get here we expect there to be a number!
+  assert(!numbersubstring.empty());
+  int           number = atoi(numbersubstring.c_str());
+
+  // might be empty if there is nothing but number.
+  std::string   basename = name.substr(0, numberstartindex);
+
+  std::ostringstream  newname;
+  // we preserved white-space so we dont need to add more.
+  newname << basename << (number + 1);
+
+  return newname.str();
 }
 

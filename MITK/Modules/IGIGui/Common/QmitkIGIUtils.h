@@ -103,4 +103,22 @@ NIFTKIGIGUI_EXPORT QString FormatDateTime(const qint64& timeInMillis);
 
 NIFTKIGIGUI_EXPORT std::string FormatDateTimeAsStdString(const qint64& timeInMillis);
 
+/**
+* \brief Extracts a file from Qt resource file to a temporary file on file system.
+* \return Full extracted file name.
+*/
+NIFTKIGIGUI_EXPORT QString ExtractTempFile(const QString& resourcePrefix, const QString& name);
+
+/**
+* \brief Increments a number on the end of a given string.
+*
+* note: we do not trim white-space!
+* this is intentional: it allows the user to add a second dimension of numbers to it.
+* for example:
+* name="hello world"    --> "hello world 1"
+* name="hello world 1"  --> "hello world 2"
+* name "hello world 1 " --> "hello world 1 1"
+*/
+NIFTKIGIGUI_EXPORT std::string IncrementNodeName(const std::string& name);
+
 #endif
