@@ -1147,12 +1147,12 @@ void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int slic
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
 
-  mitk::Image::ConstPointer workingImage = this->GetWorkingImage(Tool::SEGMENTATION);
-  assert(workingImage);
+  mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+  assert(segmentationImage);
 
   try
   {
-    AccessFixedDimensionByItk_n(workingImage,
+    AccessFixedDimensionByItk_n(segmentationImage,
         ITKInitialiseSeedsForSlice, 3,
         (seeds,
          sliceAxis,
@@ -1232,8 +1232,8 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
   int sliceIndex = this->GetReferenceImageSliceIndex();
   int sliceAxis = this->GetReferenceImageSliceAxis();
 
-  mitk::Image::ConstPointer workingImage = this->GetWorkingImage(Tool::SEGMENTATION);
-  assert(workingImage);
+  mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+  assert(segmentationImage);
 
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
@@ -1250,7 +1250,7 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
   {
     if (sliceIndex >= 0 && sliceAxis >= 0)
     {
-      GenerateOutlineFromBinaryImage(workingImage, sliceAxis, sliceIndex, sliceIndex, contourSet);
+      GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex, sliceIndex, contourSet);
 
       if (contourSet->GetSize() > 0)
       {
