@@ -60,6 +60,7 @@ if(BUILD_NiftyIGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     SerialPort
+    Atracsys
     NDICAPI 
     OpenCVUtils
     OpenCVImageConversion
