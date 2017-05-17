@@ -983,9 +983,6 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
 
     long long int minTimeDifference = std::numeric_limits<long long int>::max();
     long long int firstFileTime = std::stoll(firstFileTimeStamp);
-
-    std::string matchTime; // Only used for debugging
-
     long long int closestTime = 0;
 
     for (int j = matchNumber; j < fileList2.size(); j++)
@@ -1000,7 +997,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
       if (timeDifference == 0) // Time matched exactly!
       {
         matchNumber = j;
-        matchTime = fileList2[matchNumber].substr(found + 1, 19); // For debugging
+        MITK_DEBUG << "matchNumber=" << matchNumber << ", time=" << fileList2[matchNumber].substr(found + 1, 19);
         closestTime  = timeDifference;
         break;
       }
@@ -1016,7 +1013,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
         else
         {
           matchNumber = j;
-          matchTime = fileList2[matchNumber].substr(found + 1, 19); // For debugging
+          MITK_DEBUG << "matchNumber=" << matchNumber << ", time=" << fileList2[matchNumber].substr(found + 1, 19);
           closestTime  = minTimeDifference;
           break;
         }
@@ -1024,7 +1021,7 @@ std::vector<std::pair<std::string, std::string>> PairTimeStampedDataFiles(const 
       else
       {
         matchNumber = j - 1;
-        matchTime = fileList2[matchNumber].substr(found + 1, 19); // For debugging
+        MITK_DEBUG << "matchNumber=" << matchNumber << ", time=" << fileList2[matchNumber].substr(found + 1, 19);
         closestTime  = minTimeDifference;
         break;
       }
