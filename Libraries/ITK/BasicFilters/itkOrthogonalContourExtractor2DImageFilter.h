@@ -122,10 +122,10 @@ public:
   typedef SmartPointer<const Self>                          ConstPointer;
 
   /** Method for creation through the object factory. */
-  itkNewMacro(Self);
+  itkNewMacro(Self)
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(OrthogonalContourExtractor2DImageFilter, ImageToPathFilter);
+  itkTypeMacro(OrthogonalContourExtractor2DImageFilter, ImageToPathFilter)
 
   /** Image and path typedef support. */
   typedef typename InputImageType::Pointer                  InputImagePointer;
@@ -144,9 +144,9 @@ public:
                                                        VertexListConstPointer;
    /** Control the orientation of the contours with reference to the image
   * gradient. (See class documentation.) */
-  itkSetMacro(ReverseContourOrientation, bool);
-  itkGetConstReferenceMacro(ReverseContourOrientation, bool);
-  itkBooleanMacro(ReverseContourOrientation);
+  itkSetMacro(ReverseContourOrientation, bool)
+  itkGetConstReferenceMacro(ReverseContourOrientation, bool)
+  itkBooleanMacro(ReverseContourOrientation)
 
   /** Control whether high- or low-valued pixels are vertex-connected.
     * Default is for low-valued pixels to be vertex-connected.
@@ -158,13 +158,13 @@ public:
   /** Control whether the largest possible input region is used, or if a
     * custom requested region is to be used. */
   void SetRequestedRegion(const InputRegionType region);
-  itkGetConstReferenceMacro(RequestedRegion, InputRegionType);
+  itkGetConstReferenceMacro(RequestedRegion, InputRegionType)
   void ClearRequestedRegion();
 
   /** Set/Get the image intensity value that the contours should follow.
    *  This is the equivalent of an iso-value in Marching Squares. */
-  itkSetMacro(ContourValue,InputRealType);
-  itkGetConstReferenceMacro(ContourValue, InputRealType);
+  itkSetMacro(ContourValue,InputRealType)
+  itkGetConstReferenceMacro(ContourValue, InputRealType)
 
 
 #ifdef ITK_USE_CONCEPT_CHECKING

@@ -20,7 +20,7 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-void GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
+void GenerateOutlineFromBinaryImage(mitk::Image::ConstPointer image,
     int sliceAxis,
     int sliceIndex,
     int projectedSliceIndex,

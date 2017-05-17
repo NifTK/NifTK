@@ -29,7 +29,8 @@ namespace itk
  * which means it copies from a given slice in the source image, to a given slice in the destination image.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT MIDASRetainMarksNoThresholdingProcessor : public Object {
+class ITK_EXPORT MIDASRetainMarksNoThresholdingProcessor : public Object
+{
 
 public:
 
@@ -40,10 +41,10 @@ public:
   typedef SmartPointer<const Self>                ConstPointer;
 
   /** Method for creation through the object factory. */
-  itkNewMacro(Self);
+  itkNewMacro(Self)
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(MIDASRetainMarksNoThresholdingProcessor, Object);
+  itkTypeMacro(MIDASRetainMarksNoThresholdingProcessor, Object)
 
   /** Additional typedefs */
   typedef TPixel PixelType;
@@ -59,8 +60,8 @@ public:
   void Redo() { m_Processor->Redo(); }
 
   /** Set/Get the source image, which is passed to the contained processor. */
-  void SetSourceImage(ImageType* image) { m_Processor->SetSourceImage(image); this->Modified(); }
-  ImageType* GetSourceImage() const { return m_Processor->GetSourceImage(); }
+  void SetSourceImage(const ImageType* image) { m_Processor->SetSourceImage(image); this->Modified(); }
+  const ImageType* GetSourceImage() const { return m_Processor->GetSourceImage(); }
 
   /** Set/Get the destination image, which is passed to the contained processor. */
   void SetDestinationImage(ImageType* image) { m_Processor->SetDestinationImage(image); this->Modified(); }

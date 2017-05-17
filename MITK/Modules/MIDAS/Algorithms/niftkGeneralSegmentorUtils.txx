@@ -774,7 +774,7 @@ void ITKPropagateUpOrDown(
 template <typename TGreyScalePixel, unsigned int VImageDimension>
 void ITKPropagateToSegmentationImage(
     const itk::Image<TGreyScalePixel, VImageDimension>* itkImage,
-    mitk::Image* segmentedImage,
+    const mitk::Image* segmentedImage,
     mitk::Image* regionGrowingImage,
     OpPropagate* op)
 {
@@ -905,6 +905,7 @@ void ITKGenerateOutlineFromBinaryImage(
 
   // Extract 2D slice, and the contours, using ITK pipelines.
   typename ExtractSliceFilterType::Pointer extractSliceFilter = ExtractSliceFilterType::New();
+  extractSliceFilter->SetNumberOfThreads(1);
   extractSliceFilter->SetDirectionCollapseToIdentity();
   extractSliceFilter->SetInput(itkImage);
   extractSliceFilter->SetExtractionRegion(region);

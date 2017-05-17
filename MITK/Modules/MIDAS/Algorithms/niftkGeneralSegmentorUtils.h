@@ -38,7 +38,7 @@ class OpWipe;
 /// \brief Used to generate a contour outline round a binary segmentation image, and refreshes the outputSurface.
 ///
 /// Called for generating the "See Prior", "See Next" and also the outline contour of the current segmentation.
-void NIFTKMIDAS_EXPORT GenerateOutlineFromBinaryImage(mitk::Image::Pointer image,
+void NIFTKMIDAS_EXPORT GenerateOutlineFromBinaryImage(mitk::Image::ConstPointer image,
     int sliceAxis,
     int sliceIndex,
     int projectedSliceNumber,
@@ -269,7 +269,7 @@ void ITKPropagateUpOrDown(
 template <typename TGreyScalePixel, unsigned int VImageDimension>
 void ITKPropagateToSegmentationImage(
     const itk::Image<TGreyScalePixel, VImageDimension>* itkImage,
-    mitk::Image* segmentedImage,
+    const mitk::Image* segmentedImage,
     mitk::Image* regionGrowingImage,
     OpPropagate* op);
 
