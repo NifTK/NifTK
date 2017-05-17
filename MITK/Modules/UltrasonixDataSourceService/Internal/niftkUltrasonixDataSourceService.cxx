@@ -225,8 +225,8 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
     mitk::DataStorage::Pointer dataStorage)
 : QImageDataSourceService(QString("Ultrasonix-"),
                           factoryName,
-                          40, // expected frames per second (ignored, as SDK uses a callback).
-                          80, // ring buffer size
+                          25, // expected frames per second (ignored, as SDK uses a callback).
+                          50, // ring buffer size
                           properties,
                           dataStorage
                          )

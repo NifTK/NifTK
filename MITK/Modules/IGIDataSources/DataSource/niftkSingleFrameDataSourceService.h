@@ -130,7 +130,7 @@ protected:
   virtual std::unique_ptr<niftk::IGIDataType> LoadImage(const std::string& filename) = 0;
 
   int GetChannelNumber() const                              { return m_ChannelNumber;}
-  int GetApproximateIntervalInMilliseconds() const          { return m_ApproxIntervalInMilliseconds; } // default 40ms.
+  int GetApproximateIntervalInMilliseconds() const          { return m_ApproxIntervalInMilliseconds; }
   void SetApproximateIntervalInMilliseconds(const int& ms);
 
   static niftk::IGIDataSourceLocker                         s_Lock;

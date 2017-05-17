@@ -77,8 +77,8 @@ void SingleFrameDataSourceService::SetApproximateIntervalInMilliseconds(const in
   m_ApproxIntervalInMilliseconds = ms;
 
   // multiply by 1000000 to get nanoseconds
-  // multiply by 2 so we start warning if timestamps suggest we are more than 2 frame intervals late.
-  this->SetTimeStampTolerance(m_ApproxIntervalInMilliseconds*1000000*2);
+  // multiply by 5 so we start warning if timestamps suggest we are more than 5 frame intervals late.
+  this->SetTimeStampTolerance(m_ApproxIntervalInMilliseconds*1000000*5);
 }
 
 

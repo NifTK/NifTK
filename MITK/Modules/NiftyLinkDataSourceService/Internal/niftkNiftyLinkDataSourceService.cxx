@@ -61,9 +61,9 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
   // Lets assume for now:
   //   Vicra = 20 fps, Spectra, Aurora = faster.
   //   Ultrasonix = 20 fps, or faster.
-  // So, 10 fps = 100 ms.
-  // Warn if 2 frames late.
-  this->SetTimeStampTolerance(2*100*1000000);
+  // So, 20 fps = 50 ms.
+  // Warn if 5 frames late.
+  this->SetTimeStampTolerance(5*50*1000000);
   this->SetProperties(properties);
   this->SetShouldUpdate(true);
 
