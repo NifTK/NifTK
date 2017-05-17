@@ -3188,7 +3188,8 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
 
         targetImageToItk = nullptr;
 
-        mitk::Image::Pointer outputImage = mitk::ImportItkImage( processor->GetDestinationImage());
+        mitk::Image::Pointer outputImage;
+        mitk::CastToMitkImage(processor->GetDestinationImage(), outputImage);
 
         processor->SetSourceImage(nullptr);
         processor->SetDestinationImage(nullptr);
