@@ -59,6 +59,11 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
     mitkThrow() << "No tracker tools available";
   }
 
+  // For polaris at least, the expected number of frames per second depends on number of tools.
+  // For Aurora, Im not sure. But this is only used for the late/not-late indicator really.
+  m_PreferredFramesPerSecond = m_PreferredFramesPerSecond / m_NavigationToolStorage->GetToolCount();
+  MITK_INFO << "Setting tracker to expect " << m_PreferredFramesPerSecond << " frames per second.";
+
   // Make sure we DONT display surfaces that MITK uses. We just want tracker matrix.
   for (int i = 0; i < m_NavigationToolStorage->GetToolCount(); i++)
   {
@@ -86,6 +91,9 @@ NDITracker::NDITracker(mitk::DataStorage::Pointer dataStorage,
 
   mitk::Color red;
   red.SetRed(1);
+  red.SetBlue(0);
+  red.SetGreen(0);
+
   m_TrackingVolumeNode->SetColor(red);
   m_TrackingVolumeNode->SetOpacity(0.25);
   this->SetVisibilityOfTrackingVolume(true);
