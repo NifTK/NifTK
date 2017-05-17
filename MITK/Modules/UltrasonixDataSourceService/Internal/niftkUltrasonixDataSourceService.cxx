@@ -225,7 +225,7 @@ UltrasonixDataSourceService::UltrasonixDataSourceService(
     mitk::DataStorage::Pointer dataStorage)
 : QImageDataSourceService(QString("Ultrasonix-"),
                           factoryName,
-                          25, // expected frames per second (ignored, as SDK uses a callback).
+                          10, // expected frames per second. Lap probe gives 20+ fps, other probes can be 10 fps
                           50, // ring buffer size
                           properties,
                           dataStorage
