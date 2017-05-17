@@ -752,10 +752,6 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
       if (!d->m_IsUpdating
           && !d->m_IsChangingSlice)
       {
-        mitk::Image* referenceImage = this->GetReferenceImage();
-        mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
-        assert(referenceImage && segmentationImage);
-
         bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
 
         mitk::Operation* doOp;
@@ -782,6 +778,10 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 
         try
         {
+          const mitk::Image* referenceImage = this->GetReferenceImage();
+          const mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+          assert(referenceImage && segmentationImage);
+
           AccessFixedDimensionByItk_n(segmentationImage,
               ITKSliceIsEmpty, 3,
               (sliceAxis,
@@ -1147,7 +1147,7 @@ void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int slic
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
 
-  mitk::Image::Pointer workingImage = this->GetWorkingImage(Tool::SEGMENTATION);
+  mitk::Image::ConstPointer workingImage = this->GetWorkingImage(Tool::SEGMENTATION);
   assert(workingImage);
 
   try
@@ -1232,7 +1232,7 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
   int sliceIndex = this->GetReferenceImageSliceIndex();
   int sliceAxis = this->GetReferenceImageSliceAxis();
 
-  mitk::Image::Pointer workingImage = this->GetWorkingImage(Tool::SEGMENTATION);
+  mitk::Image::ConstPointer workingImage = this->GetWorkingImage(Tool::SEGMENTATION);
   assert(workingImage);
 
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
@@ -1392,7 +1392,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(
   if (referenceImage)
   {
     mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
-    mitk::Image::Pointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+    mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
@@ -1503,7 +1503,7 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
   int sliceAxis = this->GetReferenceImageSliceAxis();
 
   std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
-  mitk::Image::Pointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+  mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (d->m_GUI->IsSeePriorCheckBoxChecked())
   {
@@ -1561,8 +1561,8 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
     return sliceDoesHaveUnenclosedSeeds;
   }
 
-  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
-  mitk::Image::Pointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+  mitk::Image::ConstPointer referenceImage = this->GetReferenceImage();
+  mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -2268,9 +2268,8 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
   mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
-
     mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
-    mitk::Image::Pointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+    mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
@@ -2638,7 +2637,7 @@ bool GeneralSegmentorController::DoThresholdApply(
     int sliceIndex = this->GetReferenceImageSliceIndex();
 
     mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
-    mitk::Image::Pointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+    mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
@@ -3094,13 +3093,13 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
     return;
   }
 
-  mitk::Image::Pointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+  const mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
   assert(segmentationImage);
 
   mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
   assert(segmentationNode);
 
-  mitk::Image* referenceImage = this->GetReferenceImage();
+  const mitk::Image* referenceImage = this->GetReferenceImage();
   assert(referenceImage);
 
   mitk::Image* regionGrowingImage = this->GetWorkingImage(Tool::REGION_GROWING);
@@ -3263,7 +3262,6 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
 
         segmentationImage->Modified();
         segmentationNode->Modified();
-
       }
       catch(const itk::ExceptionObject& e)
       {
@@ -3280,7 +3278,8 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
 
       try
       {
-        AccessFixedTypeByItk_n(segmentationImage,
+        mitk::Image* nonConstSegmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+        AccessFixedTypeByItk_n(nonConstSegmentationImage,
             ITKDoWipe,
             (unsigned char),
             (3),
@@ -3292,7 +3291,6 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
 
         segmentationImage->Modified();
         segmentationNode->Modified();
-
       }
       catch(const mitk::AccessByItkException& e)
       {

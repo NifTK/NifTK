@@ -27,7 +27,8 @@ namespace itk
  * \brief Provides methods to do Undo/Redo within a specific Region.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT MIDASImageUpdateRegionProcessor : public MIDASImageUpdateProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT MIDASImageUpdateRegionProcessor : public MIDASImageUpdateProcessor<TPixel, VImageDimension>
+{
 
 public:
 
@@ -38,7 +39,7 @@ public:
   typedef SmartPointer<const Self>                           ConstPointer;
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(MIDASImageUpdateRegionProcessor, MIDASImageUpdateProcessor);
+  itkTypeMacro(MIDASImageUpdateRegionProcessor, MIDASImageUpdateProcessor)
 
   /** Additional typedefs */
   typedef TPixel PixelType;
@@ -53,8 +54,8 @@ public:
   typedef typename PasteImageFilterType::Pointer        PasteImageFilterPointer;
 
   /** Set the destination region of interest, which controls the region that is copied into m_BeforeImage and m_After image for Undo/Redo purposes. */
-  itkSetMacro(DestinationRegionOfInterest, RegionType);
-  itkGetMacro(DestinationRegionOfInterest, RegionType);
+  itkSetMacro(DestinationRegionOfInterest, RegionType)
+  itkGetMacro(DestinationRegionOfInterest, RegionType)
 
   /** Overloaded method to provide simple acess via a std::vector, where we assume the length is 6 corresponding to the first 3 numbers indicating the starting index, and the next 3 numbers indicating the region size. */
   void SetDestinationRegionOfInterest(std::vector<int> &region);
@@ -71,8 +72,8 @@ protected:
   virtual ~MIDASImageUpdateRegionProcessor() {}
 
   /** Returns the after image, so derived classes can apply an update. */
-  itkGetObjectMacro(AfterImage, ImageType);
-  itkSetObjectMacro(AfterImage, ImageType);
+  itkGetObjectMacro(AfterImage, ImageType)
+  itkSetObjectMacro(AfterImage, ImageType)
 
   /** Derived classes calculate whatever update they like, but can only affect the m_AfterImage, which must be within the destination region of interest. */
   virtual void ApplyUpdateToAfterImage() = 0;

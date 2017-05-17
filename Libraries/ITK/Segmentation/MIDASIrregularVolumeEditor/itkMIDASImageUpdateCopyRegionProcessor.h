@@ -26,7 +26,8 @@ namespace itk
  * \brief Class to support undo/redo of a copy operation, within a given region.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT MIDASImageUpdateCopyRegionProcessor : public MIDASImageUpdateRegionProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT MIDASImageUpdateCopyRegionProcessor : public MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
+{
 
 public:
 
@@ -37,15 +38,16 @@ public:
   typedef SmartPointer<const Self>                                 ConstPointer;
 
   /** Method for creation through the object factory. */
-  itkNewMacro(Self);
+  itkNewMacro(Self)
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(MIDASImageUpdateCopyRegionProcessor, MIDASImageUpdateRegionProcessor);
+  itkTypeMacro(MIDASImageUpdateCopyRegionProcessor, MIDASImageUpdateRegionProcessor)
 
   /** Additional typedefs */
   typedef TPixel PixelType;
   typedef Image<TPixel, VImageDimension>  ImageType;
   typedef typename ImageType::Pointer     ImagePointer;
+  typedef typename ImageType::ConstPointer ImageConstPointer;
   typedef typename ImageType::IndexType   IndexType;
   typedef typename ImageType::SizeType    SizeType;
   typedef typename ImageType::RegionType  RegionType;
@@ -53,12 +55,12 @@ public:
   typedef typename PasteImageFilterType::Pointer PasteImagePointerType;
 
   /** Set the source image. Data is copied from here to destination image. */
-  itkSetObjectMacro(SourceImage, ImageType);
-  itkGetObjectMacro(SourceImage, ImageType);
+  itkSetConstObjectMacro(SourceImage, ImageType)
+  itkGetConstObjectMacro(SourceImage, ImageType)
 
   /** Set the source region of interest. */
-  itkSetMacro(SourceRegionOfInterest, RegionType);
-  itkGetMacro(SourceRegionOfInterest, RegionType);
+  itkSetMacro(SourceRegionOfInterest, RegionType)
+  itkGetMacro(SourceRegionOfInterest, RegionType)
 
   /** Overloaded method to provide simple acess via a std::vector, where we assume the length is 6 corresponding to the first 3 numbers indicating the starting index, and the next 3 numbers indicating the region size. */
   void SetSourceRegionOfInterest(std::vector<int> &region);
@@ -75,7 +77,7 @@ private:
   MIDASImageUpdateCopyRegionProcessor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  ImagePointer m_SourceImage;
+  ImageConstPointer m_SourceImage;
   RegionType   m_SourceRegionOfInterest;
 };
 
