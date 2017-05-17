@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     if (ballSize == 0) // Point calibration
     {
       // Match and load all point and tracking data - must throw exceptions on failure.
-      niftk::TrackedPointData trackedPoints = niftk::MatchPointAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
+      niftk::QuaternionTrackedPointData trackedPoints = niftk::LoadPointAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
 
       // Run calibration - must throw exceptions on failure.
       niftk::DoUltrasoundPointCalibration(trackedPoints,  // input data
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     else // Ball calibration
     {
       // Load all image and tracking data - must throw exceptions on failure.
-      niftk::TrackedImageData trackedImages = niftk::LoadImageAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
+      niftk::MatrixTrackedImageData trackedImages = niftk::LoadImageAndTrackingDataFromDirectories(imageDirectory, matrixDirectory);
 
       // Run calibration - must throw exceptions on failure.
       niftk::DoUltrasoundBallCalibration(ballSize,      // command line arg

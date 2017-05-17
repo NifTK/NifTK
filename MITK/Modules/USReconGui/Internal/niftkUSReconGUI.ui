@@ -19,7 +19,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="m_ImageLabel">
        <property name="text">
-        <string>ultrasound image:</string>
+        <string>ultrasound source:</string>
        </property>
       </widget>
      </item>
@@ -29,7 +29,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="m_TrackingLabel">
        <property name="text">
-        <string>tracking:</string>
+        <string>tracking source:</string>
        </property>
       </widget>
      </item>

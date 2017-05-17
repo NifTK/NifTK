@@ -53,7 +53,7 @@ public:
   QMutex                            m_Lock;
   QFuture<void>                     m_BackgroundProcess;
   QFutureWatcher<void>              m_BackgroundProcessWatcher;
-  niftk::TrackedImageData           m_TrackedImages;
+  niftk::MatrixTrackedImageData     m_TrackedImages;
 };
 
 
@@ -187,13 +187,7 @@ void USReconController::CaptureImages()
     vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
     transform->GetVtkMatrix(*vtkMat);
 
-    mitk::Point4D rotationQuaternion;
-    mitk::Vector3D translationVector;
-    niftk::ConvertMatrixToRotationAndTranslation(*vtkMat, rotationQuaternion, translationVector);
-
-    RotationTranslation rotationTranslation(rotationQuaternion, translationVector);
-
-    d->m_TrackedImages.push_back(TrackedImage(clonedImage, rotationTranslation));
+    d->m_TrackedImages.push_back(MatrixTrackedImage(clonedImage, vtkMat));
     d->m_GUI->SetNumberOfFramesLabel(d->m_TrackedImages.size());
   }
 }
@@ -279,13 +273,8 @@ void USReconController::OnSaveDataPressed()
 
       mitk::IOUtil::Save(d->m_TrackedImages[i].first, imageFileName.str());
 
-      vtkSmartPointer<vtkMatrix4x4> vtkMat = vtkSmartPointer<vtkMatrix4x4>::New();
-      niftk::ConvertRotationAndTranslationToMatrix(d->m_TrackedImages[i].second.first,
-                                                   d->m_TrackedImages[i].second.second,
-                                                   *vtkMat);
-
       niftk::CoordinateAxesData::Pointer transform = niftk::CoordinateAxesData::New();
-      transform->SetVtkMatrix(*vtkMat);
+      transform->SetVtkMatrix(*(d->m_TrackedImages[i].second));
 
       std::ostringstream trackingFileName;
       trackingFileName << dirName.toStdString()
@@ -381,9 +370,8 @@ void USReconController::DoReconstructionInBackground()
   scaleFactors[1] = scalingMatrix->GetElement(1, 1);
 
   vtkSmartPointer<vtkMatrix4x4> rigidMatrix = d->m_GUI->GetRigidMatrix();
-
-
   niftk::RotationTranslation imageToSensorTransform;
+
   ConvertMatrixToRotationAndTranslation(*rigidMatrix,
                                         imageToSensorTransform.first,
                                         imageToSensorTransform.second

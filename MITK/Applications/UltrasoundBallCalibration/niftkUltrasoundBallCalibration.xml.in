@@ -49,15 +49,15 @@
   <parameters>
     <label>Optional Parameters</label>
     <description><![CDATA[Additional parameters]]></description>
-    <float>
+    <integer>
       <name>ballSize</name>
       <flag>b</flag>
       <longflag>ballSize</longflag>
       <description>Size of ball in pixels.</description>
       <label>Ball Size (pix)</label>
-      <default>300</default>
+      <default>315</default>
       <channel>input</channel>
-    </float>
+    </integer>
   </parameters>
 
 </executable>

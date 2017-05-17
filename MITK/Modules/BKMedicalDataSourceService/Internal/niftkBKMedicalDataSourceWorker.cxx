@@ -279,8 +279,6 @@ std::string BKMedicalDataSourceWorker::ReceiveResponseMessage(const size_t& expe
 //-----------------------------------------------------------------------------
 void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
 {
-  // According to spec, reply is:
-  // DATA:GRAB_FRAME #6227332<b><b><b><b> …;
   unsigned int minimumSize = m_ImageSize[0] * m_ImageSize[1] + 22;
   int preceedingChar = 0;
   int hashChar = 0;
@@ -331,7 +329,7 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
             int imageMessageIndex = m_IntermediateBuffer.indexOf("DATA:GRAB_FRAME", preceedingChar+1);
             if (   imageMessageIndex != -1             // i.e. it was found
                 && imageMessageIndex > preceedingChar  // it was after the preceeding char
-                && imageMessageIndex < terminatingChar // and before terminating char (i.e. not in a subsequent message).
+                && imageMessageIndex < terminatingChar // and before terminating char.
                )
             {
               hashChar = m_IntermediateBuffer.indexOf('#', preceedingChar);
@@ -361,7 +359,7 @@ void BKMedicalDataSourceWorker::ReceiveImage(QImage& image)
                  )
               {
                 // This means our argument QImage has not been initialised yet.
-                if (   image.width()  != m_ImageSize[0]
+                if (image.width() != m_ImageSize[0]
                     || image.height() != m_ImageSize[1]
                    )
                 {
