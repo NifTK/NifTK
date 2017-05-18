@@ -99,6 +99,7 @@ if(BUILD_NiftyIGI)
     QtCameraVideoDataSourceService
     BKMedicalDataSourceService
     BlackMagicDataSourceService
+    AtracsysDataSourceService
   )
 
   if(BUILD_CAFFE)
