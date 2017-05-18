@@ -217,7 +217,7 @@ Continuous docs:
     - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/docs/
     - "# Extract the tarball and replace the old files"
     - ssh cmiclab "cd /cs/research/medic/cmiclab/deploy/CMIC/NifTK/docs ;
-          rm niftk-master-docs.tar.bz2 master ;
+          rm -rf niftk-master-docs.tar.bz2 master ;
           tar xfj niftk-${version}-docs.tar.bz2 ;
           mv niftk-${version}-docs master ;
           mv niftk-${version}-docs.tar.bz2 niftk-master-docs.tar.bz2"
