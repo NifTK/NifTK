@@ -79,7 +79,8 @@ void AtracsysDataSourceService::StopPlayback()
 //-----------------------------------------------------------------------------
 std::vector<IGIDataItemInfo> AtracsysDataSourceService::Update(const niftk::IGIDataSourceI::IGITimeType& time)
 {
-
+  std::vector<IGIDataItemInfo> infos;
+  return infos;
 }
 
 
@@ -87,7 +88,7 @@ std::vector<IGIDataItemInfo> AtracsysDataSourceService::Update(const niftk::IGID
 bool AtracsysDataSourceService::ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
                                                   niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
-
+  return true;
 }
 
 

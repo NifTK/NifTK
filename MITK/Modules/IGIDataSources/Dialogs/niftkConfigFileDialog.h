@@ -15,14 +15,15 @@
 #ifndef niftkConfigFileDialog_h
 #define niftkConfigFileDialog_h
 
+#include <niftkIGIDataSourcesExports.h>
 #include "niftkIGIInitialisationDialog.h"
 #include <ui_niftkConfigFileDialog.h>
 
 namespace niftk
 {
 
-class ConfigFileDialog : public IGIInitialisationDialog,
-                         public Ui_niftkConfigFileDialog
+class NIFTKIGIDATASOURCES_EXPORT ConfigFileDialog : public IGIInitialisationDialog,
+                                                    public Ui_niftkConfigFileDialog
 
 {
   Q_OBJECT
