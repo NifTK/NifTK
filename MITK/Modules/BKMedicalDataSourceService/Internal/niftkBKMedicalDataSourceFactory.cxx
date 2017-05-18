@@ -22,7 +22,7 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 BKMedicalDataSourceFactory::BKMedicalDataSourceFactory()
-: IGIDataSourceFactoryServiceI("BKMedical (Local)",
+: IGIDataSourceFactoryServiceI("BKMedical",
                                true,  // configure host, extension at startup
                                true   // can configure lag while running
                                )
