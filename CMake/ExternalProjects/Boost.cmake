@@ -37,11 +37,6 @@ if(MITK_USE_Boost)
   set(proj_DEPENDENCIES )
   set(Boost_DEPENDS ${proj})
 
-  if(MITK_USE_Python AND MITK_USE_Caffe)
-    list(APPEND MITK_USE_Boost_LIBRARIES "python")
-    list(APPEND proj_DEPENDENCIES Python)
-  endif()
-
   if(NOT DEFINED BOOST_ROOT AND NOT MITK_USE_SYSTEM_Boost)
 
     set(_boost_version 1_56)
