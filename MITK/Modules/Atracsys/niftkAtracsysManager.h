@@ -22,6 +22,8 @@
 namespace niftk
 {
 
+class AtracsysManagerPrivate;
+
 /**
  * \class AtracsysManager
  * \brief Interface to Atracsys tracker that can be used
@@ -36,6 +38,11 @@ public:
 
   AtracsysManager();
   virtual ~AtracsysManager();
+
+private:
+
+  QScopedPointer<AtracsysManagerPrivate> d_ptr;
+  Q_DECLARE_PRIVATE(AtracsysManager)
 
 }; // end class
 

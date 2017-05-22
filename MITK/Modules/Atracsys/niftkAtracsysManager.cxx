@@ -19,7 +19,35 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
+class AtracsysManagerPrivate
+{
+  Q_DECLARE_PUBLIC(AtracsysManager)
+  AtracsysManager* const q_ptr;
+
+public:
+
+  AtracsysManagerPrivate(AtracsysManager* q);
+  ~AtracsysManagerPrivate();
+};
+
+
+//-----------------------------------------------------------------------------
+AtracsysManagerPrivate::AtracsysManagerPrivate(AtracsysManager* q)
+: q_ptr(q)
+{
+}
+
+
+//-----------------------------------------------------------------------------
+AtracsysManagerPrivate::~AtracsysManagerPrivate()
+{
+  Q_Q(AtracsysManager);
+}
+
+
+//-----------------------------------------------------------------------------
 AtracsysManager::AtracsysManager()
+: d_ptr(new AtracsysManagerPrivate(this))
 {
   MITK_INFO << "Creating AtracsysManager";
 }
@@ -28,7 +56,6 @@ AtracsysManager::AtracsysManager()
 //-----------------------------------------------------------------------------
 AtracsysManager::~AtracsysManager()
 {
-
 }
 
 } // end namespace
