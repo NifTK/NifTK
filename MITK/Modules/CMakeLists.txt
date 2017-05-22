@@ -72,6 +72,7 @@ if(BUILD_NiftyIGI)
     NDITrackers
     IGI
     IGIOverlayEditor
+    IGITrackers
     IGIGui
     IGIServices
     IGIDataSources
