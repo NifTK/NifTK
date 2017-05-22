@@ -609,7 +609,7 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalStopRecording()
 //----------------------------------------------------------------------------
 NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
 {
-  m_TrackerMatrices.clear();
+  m_TrackerQuaternions.clear();
 
   if (!this->IsDeviceTracking)
   {
@@ -677,15 +677,15 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
     }
     else
     {
-      double transformMatrix[16] = {1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1};
-      ndiTransformToMatrixd(ndiTransform,transformMatrix);
-
-      std::vector<double> transformMatrixAsSTLVector(16);
-      for (int i = 0; i < 16; i++)
-      {
-        transformMatrixAsSTLVector[i] = transformMatrix[i];
-      }
-      m_TrackerMatrices.insert(std::pair<std::string, std::vector<double> >(ndiToolDescriptorIt->first, transformMatrixAsSTLVector));
+      std::vector<double> transformAsSTLVector(7);
+      transformAsSTLVector[0] = ndiTransform[0];
+      transformAsSTLVector[1] = ndiTransform[1];
+      transformAsSTLVector[2] = ndiTransform[2];
+      transformAsSTLVector[3] = ndiTransform[3];
+      transformAsSTLVector[4] = ndiTransform[4];
+      transformAsSTLVector[5] = ndiTransform[5];
+      transformAsSTLVector[6] = ndiTransform[6];
+      m_TrackerQuaternions.insert(std::pair<std::string, std::vector<double> >(ndiToolDescriptorIt->first, transformAsSTLVector));
     }
   }
 
@@ -774,9 +774,9 @@ NDICAPITracker::PlusStatus NDICAPITracker::InternalUpdate()
 
 
 //----------------------------------------------------------------------------
-std::map<std::string, std::vector<double> > NDICAPITracker::GetTrackerMatrices()
+std::map<std::string, std::vector<double> > NDICAPITracker::GetTrackerQuaternions()
 {
-  return m_TrackerMatrices;
+  return m_TrackerQuaternions;
 }
 
 

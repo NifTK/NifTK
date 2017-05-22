@@ -13,7 +13,7 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  DEPENDS MitkIGT niftkNDICAPI niftkSerialPort
+  DEPENDS niftkIGITrackers niftkNDICAPI niftkSerialPort
   PACKAGE_DEPENDS Qt4|QtCore Qt5|Core
 )
 

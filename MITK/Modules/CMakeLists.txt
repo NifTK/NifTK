@@ -60,6 +60,7 @@ if(BUILD_NiftyIGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     SerialPort
+    IGITrackers
     Atracsys
     NDICAPI 
     OpenCVUtils
@@ -72,7 +73,6 @@ if(BUILD_NiftyIGI)
     NDITrackers
     IGI
     IGIOverlayEditor
-    IGITrackers
     IGIGui
     IGIServices
     IGIDataSources

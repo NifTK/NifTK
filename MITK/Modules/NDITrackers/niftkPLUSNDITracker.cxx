@@ -116,9 +116,9 @@ PLUSNDITracker::~PLUSNDITracker()
 
 
 //-----------------------------------------------------------------------------
-std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > PLUSNDITracker::GetTrackingData()
+std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > PLUSNDITracker::GetTrackingData()
 {
-  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result;
+  std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > result;
 
   if (m_Tracker.InternalUpdate() != niftk::NDICAPITracker::PLUS_SUCCESS)
   {
@@ -134,23 +134,21 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > PLUSNDITracker::GetTrackin
     return result;
   }
   m_UpdateErrorRepeatCounter = 0;
-  std::map<std::string, std::vector<double> > tmpMatrices = m_Tracker.GetTrackerMatrices(); // an empty result is not an error.
-
-  // Convert the standard STL vector to a VTK matrix.
+  mitk::Point4D rotationQuaternion;
+  mitk::Vector3D translation;
+  std::map<std::string, std::vector<double> > tmpQuaternions = m_Tracker.GetTrackerQuaternions();
   std::map<std::string, std::vector<double> >::const_iterator iter;
-  for (iter = tmpMatrices.begin(); iter != tmpMatrices.end(); ++iter)
+  for (iter = tmpQuaternions.begin(); iter != tmpQuaternions.end(); ++iter)
   {
-    vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
-    for (int r = 0; r < 4; r++)
-    {
-      for (int c = 0; c < 4; c++)
-      {
-        matrix->SetElement(r, c, (*iter).second[r*4 + c]);
-      }
-    }
-    matrix->Transpose(); // Matrix comes out with bottom row containing the translation!
-
-    result.insert(std::pair<std::string, vtkSmartPointer<vtkMatrix4x4> >((*iter).first, matrix));
+    rotationQuaternion[0] = (*iter).second[0];
+    rotationQuaternion[1] = (*iter).second[1];
+    rotationQuaternion[2] = (*iter).second[2];
+    rotationQuaternion[3] = (*iter).second[3];
+    translation[0] = (*iter).second[4];
+    translation[1] = (*iter).second[5];
+    translation[2] = (*iter).second[6];
+    std::pair<mitk::Point4D, mitk::Vector3D> transformAsQuaternion(rotationQuaternion, translation);
+    result.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >((*iter).first, transformAsQuaternion));
   }
 
   return result;

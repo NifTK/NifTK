@@ -255,7 +255,7 @@ void MITKTrackerDataSourceService::GrabData()
 
   niftk::IGIDataSourceI::IGITimeType timeCreated = this->GetTimeStampInNanoseconds();
 
-  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result = m_Tracker->GetTrackingData();
+  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result = m_Tracker->GetTrackingDataAsMatrices();
   if (!result.empty())
   {
     std::map<std::string, vtkSmartPointer<vtkMatrix4x4> >::iterator iter;

@@ -34,7 +34,7 @@ public:
   /**
   * \brief Retrives the current tracking data.
   */
-  virtual std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData() override;
+  virtual std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > GetTrackingData() override;
 
 protected:
 
@@ -59,10 +59,11 @@ protected:
   std::string ConvertPortNameToPortIndexPlusOne(const std::string& name) const;
 
 private:
+
   niftk::NDICAPITracker m_Tracker;
 
-  unsigned int m_SuppressUpateErrorsAfterNRepeats;  //to stop repeated calls to internal update flooding the console
-  unsigned int m_UpdateErrorRepeatCounter;          //to stop repeated calls to internal update flooding the console
+  unsigned int m_SuppressUpateErrorsAfterNRepeats;  // To stop repeated calls to internal update flooding the console.
+  unsigned int m_UpdateErrorRepeatCounter;          // To stop repeated calls to internal update flooding the console.
 
 }; // end class
 

@@ -64,7 +64,7 @@ public:
   * \brief Retrives the current tracking data as matrix.
   * \return map of tool-name and tracking matrix.
   */
-  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingDataAsMatrix();
+  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingDataAsMatrices();
 
   /**
   * \brief Set the tracking volume visible or invisible.
