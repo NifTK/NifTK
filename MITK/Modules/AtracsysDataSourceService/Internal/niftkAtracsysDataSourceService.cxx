@@ -13,13 +13,13 @@
 =============================================================================*/
 
 #include "niftkAtracsysDataSourceService.h"
+#include <niftkAtracsysManager.h>
 #include <mitkExceptionMacro.h>
 
 namespace niftk
 {
 
 const int AtracsysDataSourceService::ATRACSYS_FRAMES_PER_SECOND(330);
-const int AtracsysDataSourceService::ATRACSYS_TIMEOUT(1000); // ms
 
 //-----------------------------------------------------------------------------
 niftk::IGIDataSourceLocker AtracsysDataSourceService::s_Lock;
@@ -42,6 +42,9 @@ AtracsysDataSourceService::AtracsysDataSourceService(
   QString fileName = (properties.value("file")).toString();
 
   this->SetStatus("Initialising");
+
+  // This should trigger the first connect.
+  m_Manager.reset(new AtracsysManager());
 
   this->SetStatus("Initialised");
   this->Modified();

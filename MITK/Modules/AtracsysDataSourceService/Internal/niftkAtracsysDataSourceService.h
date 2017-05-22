@@ -22,6 +22,8 @@
 namespace niftk
 {
 
+class AtracsysManager;
+
 /**
 * \class AtracsysDataSourceService
 * \brief Provides an interface to an Atracsys Fusion Track 500,
@@ -100,7 +102,6 @@ protected:
   virtual ~AtracsysDataSourceService();
 
   static const int ATRACSYS_FRAMES_PER_SECOND;
-  static const int ATRACSYS_TIMEOUT;
 
 private slots:
 
@@ -109,8 +110,9 @@ private:
   AtracsysDataSourceService(const AtracsysDataSourceService&); // deliberately not implemented
   AtracsysDataSourceService& operator=(const AtracsysDataSourceService&); // deliberately not implemented
 
-  static niftk::IGIDataSourceLocker s_Lock;
-  int                               m_Lag;
+  static niftk::IGIDataSourceLocker      s_Lock;
+  QScopedPointer<niftk::AtracsysManager> m_Manager;
+  int                                    m_Lag;
 
 }; // end class
 

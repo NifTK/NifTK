@@ -19,8 +19,14 @@ if(Atracsys_FOUND)
     DEPENDS MitkCore
     NO_INIT      # Not an MITK MicroServices module
   )
+
   include_directories(${Atracsys_INCLUDE_DIR})
   target_link_libraries(niftkAtracsys PRIVATE ${Atracsys_LIBRARY})
+
+  # Atracsys comes with helper functions in the samples directory.
+  # Add that directory, but only if we are building this data source.
+  get_filename_component(_samples_dir "${Atracsys_INCLUDE_DIR}/../samples" ABSOLUTE)
+  include_directories(${_samples_dir})
 
   if (NIFTK_USE_COTIRE AND COMMAND cotire)
     cotire(niftkAtracsys)

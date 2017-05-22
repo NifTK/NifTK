@@ -16,6 +16,7 @@
 #include <mitkLogMacros.h>
 #include <mitkExceptionMacro.h>
 #include <ftkInterface.h>
+#include <helpers.hpp>
 
 namespace niftk
 {
@@ -31,8 +32,11 @@ public:
   AtracsysManagerPrivate(AtracsysManager* q);
   ~AtracsysManagerPrivate();
 
-  ftkLibrary m_Lib;
+private:
 
+  void CheckError(ftkLibrary lib);
+
+  ftkLibrary m_Lib;
 };
 
 
@@ -47,6 +51,23 @@ AtracsysManagerPrivate::AtracsysManagerPrivate(AtracsysManager* q)
   {
     mitkThrow() << "Cannot initialize Atracsys driver.";
   }
+
+  DeviceData device;
+  device.SerialNumber = 0uLL;
+
+  ftkError err = ftkEnumerateDevices( m_Lib, fusionTrackEnumerator, &device );
+  if ( err != FTK_OK )
+  {
+    this->CheckError(m_Lib);
+  }
+
+  if ( device.SerialNumber == 0uLL )
+  {
+    mitkThrow() << "No Atracsys device connected.";
+  }
+
+  uint64 sn( device.SerialNumber );
+  MITK_INFO << "Connected to Atracsys SN:" << sn;
 }
 
 
@@ -58,6 +79,34 @@ AtracsysManagerPrivate::~AtracsysManagerPrivate()
   if (m_Lib != nullptr)
   {
     ftkClose( &m_Lib );
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void AtracsysManagerPrivate::CheckError(ftkLibrary lib)
+{
+  ftkErrorExt ext;
+  ftkError err = ftkGetLastError( lib, &ext );
+  if ( err == FTK_OK ) // means we successfully retrieved the error message.
+  {
+    std::string message;
+    if ( ext.isError() )
+    {
+      ext.errorString( message );
+      MITK_ERROR << "AtracsysManagerPrivate:" << message;
+      mitkThrow() << message;
+    }
+    if ( ext.isWarning() )
+    {
+      ext.warningString( message );
+      MITK_WARN << "AtracsysManagerPrivate:" << message;
+    }
+    ext.messageStack( message );
+    if ( message.size() > 0u )
+    {
+      MITK_INFO << "AtracsysManagerPrivate:Stack:\n" << message;
+    }
   }
 }
 
