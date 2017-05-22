@@ -24,11 +24,11 @@ namespace niftk
 //-----------------------------------------------------------------------------
 IGITracker::IGITracker(mitk::DataStorage::Pointer dataStorage,
                        std::string toolConfigFileName,
-                       int preferredFramesPerSecond
+                       int defaultFramesPerSecond
                        )
 : m_DataStorage(dataStorage)
 , m_ToolConfigFileName(toolConfigFileName)
-, m_PreferredFramesPerSecond(preferredFramesPerSecond)
+, m_DefaultFramesPerSecond(defaultFramesPerSecond)
 , m_TrackingVolumeNode(nullptr)
 {
   if (m_DataStorage.IsNull())
@@ -53,10 +53,8 @@ IGITracker::IGITracker(mitk::DataStorage::Pointer dataStorage,
     mitkThrow() << "No tracker tools available";
   }
 
-  // For polaris at least, the expected number of frames per second depends on number of tools.
-  // For Aurora, Im not sure. But this is only used for the late/not-late indicator really.
-  m_PreferredFramesPerSecond = m_PreferredFramesPerSecond / m_NavigationToolStorage->GetToolCount();
-  MITK_INFO << "Setting tracker to expect " << m_PreferredFramesPerSecond << " frames per second.";
+  m_ExpectedFramesPerSecond = m_DefaultFramesPerSecond / m_NavigationToolStorage->GetToolCount();
+  MITK_INFO << "Setting tracker to expect " << m_ExpectedFramesPerSecond << " frames per second.";
 
   // Make sure we DONT display the surfaces that MITK uses for each tool.
   // We just want tracker matrix to be updated.

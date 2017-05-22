@@ -54,17 +54,12 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
   QString deviceName = this->GetName();
   m_TrackerNumber = (deviceName.remove(0, name.length() + 1)).toInt();
 
-  // Set the interval based on desired number of frames per second.
-  // eg. 25 fps = 40 milliseconds.
-  int defaultFramesPerSecond = m_Tracker->GetPreferredFramesPerSecond();
-  int intervalInMilliseconds = 1000 / defaultFramesPerSecond;
-
-  this->SetTimeStampTolerance(intervalInMilliseconds*1000000*5);
+  this->SetTimeStampTolerance(m_Tracker->GetExpectedFramesPerSecond()*1000000*5);
   this->SetProperties(properties);
   this->SetShouldUpdate(true);
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
-  m_DataGrabbingThread->SetInterval(intervalInMilliseconds);
+  m_DataGrabbingThread->SetInterval(1000 / m_Tracker->GetDefaultFramesPerSecond());
   m_DataGrabbingThread->start();
   if (!m_DataGrabbingThread->isRunning())
   {
@@ -187,7 +182,7 @@ void MITKTrackerDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeTy
       if (m_Buffers.find(bufferNameAsStdString) == m_Buffers.end())
       {
         std::unique_ptr<niftk::IGIDataSourceRingBuffer> newBuffer(
-              new niftk::IGIDataSourceRingBuffer(m_Tracker->GetPreferredFramesPerSecond() * 2));
+              new niftk::IGIDataSourceRingBuffer(m_Tracker->GetDefaultFramesPerSecond() * 2));
         newBuffer->SetLagInMilliseconds(m_Lag);
         m_Buffers.insert(std::make_pair(bufferNameAsStdString, std::move(newBuffer)));
       }
@@ -276,7 +271,7 @@ void MITKTrackerDataSourceService::GrabData()
       if (m_Buffers.find(toolName) == m_Buffers.end())
       {
         std::unique_ptr<niftk::IGIDataSourceRingBuffer> newBuffer(
-              new niftk::IGIDataSourceRingBuffer(m_Tracker->GetPreferredFramesPerSecond() * 2));
+              new niftk::IGIDataSourceRingBuffer(m_Tracker->GetDefaultFramesPerSecond() * 2));
         newBuffer->SetLagInMilliseconds(m_Lag);
         m_Buffers.insert(std::make_pair(toolName, std::move(newBuffer)));
       }

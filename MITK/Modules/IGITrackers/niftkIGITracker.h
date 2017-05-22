@@ -52,7 +52,8 @@ class NIFTKIGITRACKERS_EXPORT IGITracker : public itk::Object
 public:
 
   mitkClassMacroItkParent(IGITracker, itk::Object)
-  itkGetMacro(PreferredFramesPerSecond, int);
+  itkGetMacro(DefaultFramesPerSecond, int);
+  itkGetMacro(ExpectedFramesPerSecond, int);
 
   /**
   * \brief Returns the current tracking data as a translation vector and quaternion.
@@ -82,7 +83,7 @@ protected:
 
   IGITracker(mitk::DataStorage::Pointer dataStorage,
              std::string toolConfigFileName,
-             int preferredFramesPerSecond); // Purposefully hidden.
+             int defaultFramesPerSecond); // Purposefully hidden.
 
   virtual ~IGITracker(); // Purposefully hidden.
 
@@ -92,7 +93,8 @@ protected:
   // Passed in to constructor.
   mitk::DataStorage::Pointer             m_DataStorage;
   std::string                            m_ToolConfigFileName;
-  int                                    m_PreferredFramesPerSecond;
+  int                                    m_DefaultFramesPerSecond;
+  int                                    m_ExpectedFramesPerSecond;
 
   // Created during constructor.
   mitk::NavigationToolStorage::Pointer   m_NavigationToolStorage;
