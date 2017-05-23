@@ -24,11 +24,11 @@ namespace niftk
 //-----------------------------------------------------------------------------
 IGITracker::IGITracker(mitk::DataStorage::Pointer dataStorage,
                        std::string toolConfigFileName,
-                       int defaultFramesPerSecond
+                       int expectedFramesPerSecond
                        )
 : m_DataStorage(dataStorage)
 , m_ToolConfigFileName(toolConfigFileName)
-, m_DefaultFramesPerSecond(defaultFramesPerSecond)
+, m_ExpectedFramesPerSecond(expectedFramesPerSecond)
 , m_TrackingVolumeNode(nullptr)
 {
   if (m_DataStorage.IsNull())
@@ -52,9 +52,7 @@ IGITracker::IGITracker(mitk::DataStorage::Pointer dataStorage,
   {
     mitkThrow() << "No tracker tools available";
   }
-
-  m_ExpectedFramesPerSecond = m_DefaultFramesPerSecond / m_NavigationToolStorage->GetToolCount();
-  MITK_INFO << "Setting tracker to expect " << m_ExpectedFramesPerSecond << " frames per second.";
+  m_ExpectedNumberOfTools = m_NavigationToolStorage->GetToolCount();
 
   // Make sure we DONT display the surfaces that MITK uses for each tool.
   // We just want tracker matrix to be updated.
