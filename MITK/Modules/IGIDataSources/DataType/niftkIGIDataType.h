@@ -62,6 +62,9 @@ public:
 
   virtual void Clone(const IGIDataType&);
 
+  bool IsLate(const niftk::IGIDataSourceI::IGITimeType& time);
+  int GetLagInMilliseconds(const niftk::IGIDataSourceI::IGITimeType& time);
+
 private:
 
   niftk::IGIDataSourceI::IGITimeType  m_TimeStamp;

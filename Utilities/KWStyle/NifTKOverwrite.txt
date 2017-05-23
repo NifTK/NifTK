@@ -15,3 +15,7 @@ niftkSharedOGLContext\.h InternalVariables Disable
 niftkNiftyCalVideoCalibrationManager\.h InternalVariables Disable
 niftkSingleFrameDataSourceService\.h InternalVariables Disable
 niftkBKMedicalDataSourceService\.h InternalVariables Disable
+niftkAtracsysManager\.h InternalVariables Disable
+niftkAtracsysManager\.cxx InternalVariables Disable
+niftkAtracsysDataSourceService\.h InternalVariables Disable
+niftkBlackMagicDataSourceService\.h InternalVariables Disable

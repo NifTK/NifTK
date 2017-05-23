@@ -112,7 +112,6 @@ private:
 
   static niftk::IGIDataSourceLocker      s_Lock;
   QScopedPointer<niftk::AtracsysManager> m_Manager;
-  int                                    m_Lag;
 
 }; // end class
 

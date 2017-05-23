@@ -13,22 +13,110 @@
 =============================================================================*/
 
 #include "niftkIGITrackerBackend.h"
+#include <niftkCoordinateAxesData.h>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IGITrackerBackend::IGITrackerBackend(mitk::DataStorage::Pointer dataStorage)
-: m_DataStorage(dataStorage)
+IGITrackerBackend::IGITrackerBackend(QString name,
+                                     mitk::DataStorage::Pointer dataStorage)
+: m_Name(name)
+, m_DataStorage(dataStorage)
+, m_FrameId(0)
+, m_Lag(0)
+, m_ExpectedFramesPerSecond(0)
 {
-
 }
 
 
 //-----------------------------------------------------------------------------
 IGITrackerBackend::~IGITrackerBackend()
 {
+  if (m_DataStorage.IsNotNull())
+  {
+    std::set<mitk::DataNode::Pointer>::iterator iter;
+    for (iter = m_DataNodes.begin(); iter != m_DataNodes.end(); ++iter)
+    {
+      m_DataStorage->Remove(*iter);
+    }
+  }
+}
 
+
+//-----------------------------------------------------------------------------
+void IGITrackerBackend::SetProperties(const IGIDataSourceProperties& properties)
+{
+  if (properties.contains("lag"))
+  {
+    int milliseconds = (properties.value("lag")).toInt();
+    m_Lag = milliseconds;
+
+    MITK_INFO << "IGITrackerBackend(" << m_Name.toStdString()
+              << "): set lag to " << milliseconds << " ms.";
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+IGIDataSourceProperties IGITrackerBackend::GetProperties() const
+{
+  IGIDataSourceProperties props;
+  props.insert("lag", m_Lag);
+
+  MITK_INFO << "IGITrackerBackend:(" << m_Name.toStdString()
+            << "): Retrieved current value of lag as " << m_Lag << " ms.";
+
+  return props;
+}
+
+
+//-----------------------------------------------------------------------------
+void IGITrackerBackend::WriteToDataStorage(const std::string& name,
+                                           const niftk::IGITrackerDataType& transform)
+{
+  if (m_DataStorage.IsNull())
+  {
+    mitkThrow() << "DataStorage is NULL!";
+  }
+
+  if (name.empty())
+  {
+    mitkThrow() << "Empty name.";
+  }
+
+  mitk::DataNode::Pointer node = m_DataStorage->GetNamedNode(name);
+  if (node.IsNull())
+  {
+    node = mitk::DataNode::New();
+    node->SetVisibility(true);
+    node->SetOpacity(1);
+    node->SetName(name);
+    m_DataStorage->Add(node);
+    m_DataNodes.insert(node);
+  }
+
+  CoordinateAxesData::Pointer coords = dynamic_cast<CoordinateAxesData*>(node->GetData());
+  if (coords.IsNull())
+  {
+    coords = CoordinateAxesData::New();
+
+    // We remove and add to trigger the NodeAdded event,
+    // which is not emmitted if the node was added with no data.
+    m_DataStorage->Remove(node);
+    node->SetData(coords);
+    m_DataStorage->Add(node);
+  }
+
+  vtkSmartPointer<vtkMatrix4x4> matrix = transform.GetTrackingMatrix();
+  coords->SetVtkMatrix(*matrix);
+
+  // We tell the node that it is modified so the next rendering event
+  // will redraw it. Triggering this does not in itself guarantee a re-rendering.
+  coords->Modified();
+  node->Modified();
 }
 
 } // end namespace

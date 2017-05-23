@@ -36,6 +36,8 @@
 @CMAKE_SOURCE_DIR@/MITK/Modules/CUDA/Image/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/CUDA/CameraCalibration/niftk*.h
 @CMAKE_SOURCE_DIR@/MITK/Modules/CUDA/CameraCalibration/niftk*.cxx
+@CMAKE_SOURCE_DIR@/MITK/Modules/Atracsys/niftk*.h
+@CMAKE_SOURCE_DIR@/MITK/Modules/Atracsys/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/IGIDataSources/Conversion/niftk*.h
 @CMAKE_SOURCE_DIR@/MITK/Modules/IGIDataSources/Conversion/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/IGIDataSources/DataSource/niftk*.h
@@ -54,6 +56,8 @@
 @CMAKE_SOURCE_DIR@/MITK/Modules/IGIDataSourcesManager/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/IGIOverlayEditor/niftk*.h
 @CMAKE_SOURCE_DIR@/MITK/Modules/IGIOverlayEditor/niftk*.cxx
+@CMAKE_SOURCE_DIR@/MITK/Modules/IGITrackers/niftk*.h
+@CMAKE_SOURCE_DIR@/MITK/Modules/IGITrackers/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/NiftyCal/niftk*.h
 @CMAKE_SOURCE_DIR@/MITK/Modules/NiftyCal/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/USRecon/niftk*.h
@@ -75,4 +79,7 @@
 @CMAKE_SOURCE_DIR@/MITK/Modules/QtAudioDataSourceService/internal/niftk*.cxx
 @CMAKE_SOURCE_DIR@/MITK/Modules/QtCameraVideoDataSourceService/internal/niftk*.h
 @CMAKE_SOURCE_DIR@/MITK/Modules/QtCameraVideoDataSourceService/internal/niftk*.cxx
-
+@CMAKE_SOURCE_DIR@/MITK/Modules/BlackMagicDataSourceService/internal/niftk*.h
+@CMAKE_SOURCE_DIR@/MITK/Modules/BlackMagicDataSourceService/internal/niftk*.cxx
+@CMAKE_SOURCE_DIR@/MITK/Modules/AtracsysDataSourceService/internal/niftk*.h
+@CMAKE_SOURCE_DIR@/MITK/Modules/AtracsysDataSourceService/internal/niftk*.cxx

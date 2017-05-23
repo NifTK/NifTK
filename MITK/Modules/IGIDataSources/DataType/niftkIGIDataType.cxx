@@ -91,4 +91,21 @@ void IGIDataType::Clone(const IGIDataType& other)
   m_FileName = other.m_FileName;
 }
 
+
+//-----------------------------------------------------------------------------
+bool IGIDataType::IsLate(const niftk::IGIDataSourceI::IGITimeType& time)
+{
+  return (time - this->GetTimeStampInNanoSeconds()) > this->GetDuration();
+}
+
+//-----------------------------------------------------------------------------
+int IGIDataType::GetLagInMilliseconds(const niftk::IGIDataSourceI::IGITimeType& time)
+{
+  if (this->GetTimeStampInNanoSeconds() > time)
+  {
+    mitkThrow() << "Data is ahead of requested time stamp, which should never happen.";
+  }
+  return (time - this->GetTimeStampInNanoSeconds())/1000000;
+}
+
 } // end namespace

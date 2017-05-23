@@ -16,16 +16,12 @@
 
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
-#include <niftkIGIDataSourceRingBuffer.h>
 #include <niftkIGILocalDataSourceI.h>
 #include <niftkIGIDataSourceGrabbingThread.h>
-#include <niftkIGITrackerDataType.h>
-
+#include <niftkIGITrackerBackend.h>
 #include <niftkNDITracker.h>
 
 #include <QObject>
-#include <QSet>
-#include <QMutex>
 #include <QString>
 
 namespace niftk
@@ -35,7 +31,7 @@ namespace niftk
 * \class MITKTrackerDataSourceService
 * \brief Provides a local MITK implementation of a tracker interface,
 * as an IGIDataSourceServiceI. The other class niftk::NDITracker provides
-* the main tracking mechanism, utilising MITK to speak to the serial port
+* the main tracking mechanism, utilising PLUS/Atami to speak to the serial port
 * and grab data etc. This class therefore is to coordinate threads, buffers, etc.
 * and to function as a MicroService.
 *
@@ -62,7 +58,7 @@ public:
   /**
   * \see IGIDataSourceI::PlaybackData()
   */
-  void PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp) override;
+  virtual void PlaybackData(niftk::IGIDataSourceI::IGITimeType requestedTimeStamp) override;
 
   /**
   * \see IGIDataSourceI::StopPlayback()
@@ -110,23 +106,11 @@ private:
   MITKTrackerDataSourceService(const MITKTrackerDataSourceService&); // deliberately not implemented
   MITKTrackerDataSourceService& operator=(const MITKTrackerDataSourceService&); // deliberately not implemented
 
-  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> > GetPlaybackIndex(QString directory);
-
-  void SaveItem(const std::unique_ptr<niftk::IGIDataType>& item);
-
-  static niftk::IGIDataSourceLocker                                       s_Lock;
-  int                                                                     m_TrackerNumber;
-  int                                                                     m_Lag;
-  niftk::IGIDataSourceI::IGIIndexType                                     m_FrameId;
-  niftk::IGIDataSourceGrabbingThread*                                     m_DataGrabbingThread;
-  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >            m_PlaybackIndex;
-
-  // The main tracker.
-  niftk::NDITracker::Pointer                                              m_Tracker;
-
-  // In contrast say to the OpenCV source, we store multiple buffers, keyed by tool name.
-  std::map<std::string, std::unique_ptr<niftk::IGIDataSourceRingBuffer> > m_Buffers;
-  niftk::IGITrackerDataType                                               m_CachedDataType;
+  static niftk::IGIDataSourceLocker   s_Lock;
+  int                                 m_TrackerNumber;
+  niftk::IGIDataSourceGrabbingThread* m_DataGrabbingThread;
+  niftk::NDITracker::Pointer          m_Tracker;
+  niftk::IGITrackerBackend::Pointer   m_BackEnd;
 
 }; // end class
 

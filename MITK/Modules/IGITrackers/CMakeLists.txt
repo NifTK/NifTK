@@ -13,7 +13,8 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  DEPENDS MitkIGT niftkCore
+  DEPENDS MitkIGT niftkIGIDataSources
+  PACKAGE_DEPENDS Qt4|QtGui Qt5|Widgets
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)

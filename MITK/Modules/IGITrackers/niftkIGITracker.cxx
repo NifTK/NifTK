@@ -41,11 +41,15 @@ IGITracker::IGITracker(mitk::DataStorage::Pointer dataStorage,
   }
 
   // Load configuration for tracker tools (e.g. pointer, laparoscope etc) from external file.
-  mitk::NavigationToolStorageDeserializer::Pointer deserializer = mitk::NavigationToolStorageDeserializer::New(m_DataStorage);
+  mitk::NavigationToolStorageDeserializer::Pointer deserializer
+      = mitk::NavigationToolStorageDeserializer::New(m_DataStorage);
+
   m_NavigationToolStorage = deserializer->Deserialize(m_ToolConfigFileName);
   if(m_NavigationToolStorage->isEmpty())
   {
-    std::string errorMessage = std::string("Failed to load tracker tool configuration:") + deserializer->GetErrorMessage();
+    std::string errorMessage = std::string("Failed to load tracker tool configuration:")
+                               + deserializer->GetErrorMessage();
+
     mitkThrow() << errorMessage;
   }
   if (m_NavigationToolStorage->GetToolCount() < 1)
@@ -109,16 +113,12 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > IGITracker::GetTrackingDat
 {
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result;
   std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > data = this->GetTrackingData();
-  if (data.size() > 0)
+  std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >::const_iterator iter;
+  for (iter = data.begin(); iter != data.end(); ++iter)
   {
-
-    std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >::const_iterator iter;
-    for (iter = data.begin(); iter != data.end(); iter++)
-    {
-      vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
-      niftk::ConvertRotationAndTranslationToMatrix((*iter).second.first, (*iter).second.second, *mat);
-      result.insert(std::pair<std::string, vtkSmartPointer<vtkMatrix4x4> >((*iter).first, mat));
-    }
+    vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
+    niftk::ConvertRotationAndTranslationToMatrix((*iter).second.first, (*iter).second.second, *mat);
+    result.insert(std::pair<std::string, vtkSmartPointer<vtkMatrix4x4> >((*iter).first, mat));
   }
   return result;
 }
