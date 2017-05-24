@@ -101,8 +101,6 @@ protected:
 
   virtual ~AtracsysDataSourceService();
 
-  static const int ATRACSYS_FRAMES_PER_SECOND;
-
 private slots:
 
 private:

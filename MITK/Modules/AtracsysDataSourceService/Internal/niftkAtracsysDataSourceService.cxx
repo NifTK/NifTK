@@ -21,8 +21,6 @@
 namespace niftk
 {
 
-const int AtracsysDataSourceService::ATRACSYS_FRAMES_PER_SECOND(330);
-
 //-----------------------------------------------------------------------------
 niftk::IGIDataSourceLocker AtracsysDataSourceService::s_Lock;
 
