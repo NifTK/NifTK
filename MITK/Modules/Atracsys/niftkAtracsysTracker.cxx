@@ -27,8 +27,8 @@ class AtracsysTrackerPrivate
 
 public:
 
-  AtracsysTrackerPrivate(AtracsysTracker* q,
-                         std::string toolConfigFileName);
+  AtracsysTrackerPrivate(const AtracsysTracker* q,
+                         const std::vector<std::string>& toolGeometryFileNames);
   ~AtracsysTrackerPrivate();
 
   std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > GetTrackingData();
@@ -37,16 +37,19 @@ private:
 
   void CheckError(ftkLibrary lib);
 
-  ftkLibrary       m_Lib;
-  AtracsysTracker *m_Container;
+  const AtracsysTracker          *m_Container;
+  const std::vector<std::string>  m_GeometryFiles;
+  ftkLibrary                      m_Lib;
+
 };
 
 
 //-----------------------------------------------------------------------------
-AtracsysTrackerPrivate::AtracsysTrackerPrivate(AtracsysTracker* t,
-                                               std::string toolConfigFileName
-                                               )
+AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
+                                               const std::vector<std::string>& toolGeometryFileNames
+                                              )
 : m_Container(t)
+, m_GeometryFiles(toolGeometryFileNames)
 , m_Lib(nullptr)
 {
 
@@ -125,9 +128,18 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
 AtracsysTracker::AtracsysTracker(mitk::DataStorage::Pointer dataStorage,
                                  std::string toolConfigFileName)
 : niftk::IGITracker(dataStorage, toolConfigFileName, 330)
-, m_Tracker(new AtracsysTrackerPrivate(this))
+, m_Tracker(nullptr)
 {
   MITK_INFO << "Creating AtracsysTracker";
+
+  std::vector<std::string> fileNames;
+  for (int i = 0; i < m_NavigationToolStorage->GetToolCount(); i++)
+  {
+    mitk::NavigationTool::Pointer tool = m_NavigationToolStorage->GetTool(i);
+    fileNames.push_back(tool->GetCalibrationFile());
+  }
+
+  m_Tracker.reset(new AtracsysTrackerPrivate(this, fileNames));
 }
 
 

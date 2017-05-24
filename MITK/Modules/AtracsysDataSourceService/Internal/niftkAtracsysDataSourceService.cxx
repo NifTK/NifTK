@@ -13,7 +13,9 @@
 =============================================================================*/
 
 #include "niftkAtracsysDataSourceService.h"
-#include <niftkAtracsysManager.h>
+#include <niftkAtracsysTracker.h>
+#include <niftkIGIMatrixPerFileBackend.h>
+
 #include <mitkExceptionMacro.h>
 
 namespace niftk
@@ -43,8 +45,9 @@ AtracsysDataSourceService::AtracsysDataSourceService(
 
   this->SetStatus("Initialising");
 
-  // This should trigger the first connect.
-  m_Manager.reset(new AtracsysManager());
+  m_Tracker = niftk::AtracsysTracker::New(dataStorage, fileName.toStdString());
+  m_BackEnd = niftk::IGIMatrixPerFileBackend::New(this->GetName(), this->GetDataStorage());
+  m_BackEnd->SetExpectedFramesPerSecond(m_Tracker->GetExpectedFramesPerSecond());
 
   this->SetStatus("Initialised");
   this->Modified();
@@ -112,32 +115,14 @@ void AtracsysDataSourceService::StopRecording()
 //-----------------------------------------------------------------------------
 void AtracsysDataSourceService::SetProperties(const IGIDataSourceProperties& properties)
 {
-  // In contrast say, to the OpenCV source, we don't set the lag
-  // directly on the buffer because, there may be no buffers present
-  // at the time this method is called. For example, you could
-  // have created a tracker, and no tracked objects are placed within
-  // the field of view, thereby no tracking matrices would have been generated.
-  if (properties.contains("lag"))
-  {
-    int milliseconds = (properties.value("lag")).toInt();
-    m_Lag = milliseconds;
-
-    MITK_INFO << "AtracsysDataSourceService(" << this->GetName().toStdString()
-              << "): set lag to " << milliseconds << " ms.";
-  }
+  m_BackEnd->SetProperties(properties);
 }
 
 
 //-----------------------------------------------------------------------------
 IGIDataSourceProperties AtracsysDataSourceService::GetProperties() const
 {
-  IGIDataSourceProperties props;
-  props.insert("lag", m_Lag);
-
-  MITK_INFO << "AtracsysDataSourceService:(" << this->GetName().toStdString()
-            << "): Retrieved current value of lag as " << m_Lag << " ms.";
-
-  return props;
+  return m_BackEnd->GetProperties();
 }
 
 } // end namespace

@@ -16,13 +16,13 @@
 
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
+#include <niftkAtracsysTracker.h>
+#include <niftkIGITrackerBackend.h>
 
 #include <QObject>
 
 namespace niftk
 {
-
-class AtracsysManager;
 
 /**
 * \class AtracsysDataSourceService
@@ -111,7 +111,8 @@ private:
   AtracsysDataSourceService& operator=(const AtracsysDataSourceService&); // deliberately not implemented
 
   static niftk::IGIDataSourceLocker      s_Lock;
-  QScopedPointer<niftk::AtracsysManager> m_Manager;
+  niftk::AtracsysTracker::Pointer        m_Tracker;
+  niftk::IGITrackerBackend::Pointer      m_BackEnd;
 
 }; // end class
 

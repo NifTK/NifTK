@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     }
 
     mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
-    niftk::AtracsysTracker tracker(dataStorage, toolStorage);
+    niftk::AtracsysTracker::Pointer tracker = niftk::AtracsysTracker::New(dataStorage.GetPointer(), toolStorage);
 
     returnStatus = EXIT_SUCCESS;
   }
