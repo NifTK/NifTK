@@ -14,8 +14,7 @@
 
 #include "niftkIGITrackerBackend.h"
 #include <niftkCoordinateAxesData.h>
-#include <vtkSmartPointer.h>
-#include <vtkMatrix4x4.h>
+#include <niftkMITKMathsUtils.h>
 
 namespace niftk
 {
@@ -29,6 +28,8 @@ IGITrackerBackend::IGITrackerBackend(QString name,
 , m_Lag(0)
 , m_ExpectedFramesPerSecond(0)
 {
+  m_CachedTransform = vtkSmartPointer<vtkMatrix4x4>::New();
+  m_CachedTransform->Identity();
 }
 
 
@@ -110,8 +111,11 @@ void IGITrackerBackend::WriteToDataStorage(const std::string& name,
     m_DataStorage->Add(node);
   }
 
-  vtkSmartPointer<vtkMatrix4x4> matrix = transform.GetTrackingMatrix();
-  coords->SetVtkMatrix(*matrix);
+  mitk::Point4D rotation;
+  mitk::Vector3D translation;
+  transform.GetTransform(rotation, translation);
+  niftk::ConvertRotationAndTranslationToMatrix(rotation, translation, *m_CachedTransform);
+  coords->SetVtkMatrix(*m_CachedTransform);
 
   // We tell the node that it is modified so the next rendering event
   // will redraw it. Triggering this does not in itself guarantee a re-rendering.

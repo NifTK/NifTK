@@ -22,6 +22,8 @@
 #include <itkObjectFactory.h>
 #include <mitkDataStorage.h>
 #include <QString>
+#include <vtkSmartPointer.h>
+#include <vtkMatrix4x4.h>
 
 namespace niftk
 {
@@ -110,6 +112,7 @@ protected:
   int                                m_Lag;
   unsigned int                       m_ExpectedFramesPerSecond;
   std::set<mitk::DataNode::Pointer>  m_DataNodes;
+  vtkSmartPointer<vtkMatrix4x4>      m_CachedTransform;
 };
 
 } // end namespace

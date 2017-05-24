@@ -64,6 +64,8 @@ public:
   /**
   * \brief Retrives the current tracking data as matrix.
   * \return map of tool-name and tracking matrix.
+  *
+  * Not recommended. Try using GetData();
   */
   std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingDataAsMatrices();
 

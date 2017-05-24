@@ -125,9 +125,13 @@ void IGIMatrixPerFileBackend::PlaybackData(const QString& directoryName,
             }
           }
 
+          mitk::Point4D rotation;
+          mitk::Vector3D translation;
+          niftk::ConvertMatrixToRotationAndTranslation(*matrix, rotation, translation);
+
           niftk::IGITrackerDataType *trackerData = new niftk::IGITrackerDataType();
           trackerData->SetTimeStampInNanoSeconds(*i);
-          trackerData->SetTrackingMatrix(matrix);
+          trackerData->SetTransform(rotation, translation);
           trackerData->SetFrameId(m_FrameId++);
           trackerData->SetDuration(duration);
           trackerData->SetShouldBeSaved(false);
@@ -164,15 +168,9 @@ void IGIMatrixPerFileBackend::AddData(const QString& directoryName,
   {
     std::string toolName = (*iter).first;
 
-    vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
-    niftk::ConvertRotationAndTranslationToMatrix((*iter).second.first,
-                                                 (*iter).second.second,
-                                                 *mat
-                                                 );
-
     niftk::IGITrackerDataType *trackerData = new niftk::IGITrackerDataType();
     trackerData->SetToolName(toolName);
-    trackerData->SetTrackingMatrix(mat);
+    trackerData->SetTransform((*iter).second.first, (*iter).second.second);
     trackerData->SetTimeStampInNanoSeconds(timeStamp);
     trackerData->SetFrameId(m_FrameId++);
     trackerData->SetDuration(duration); // nanoseconds
@@ -223,7 +221,12 @@ void IGIMatrixPerFileBackend::SaveItem(const QString& directoryName,
   }
 
   QString fileName =  toolPath + QDir::separator() + QObject::tr("%1.txt").arg(data->GetTimeStampInNanoSeconds());
-  bool success = SaveVtkMatrix4x4ToFile(fileName.toStdString(), *(data->GetTrackingMatrix()));
+
+  mitk::Point4D rotation;
+  mitk::Vector3D translation;
+  data->GetTransform(rotation, translation);
+  niftk::ConvertRotationAndTranslationToMatrix(rotation, translation, *m_CachedTransform);
+  bool success = SaveVtkMatrix4x4ToFile(fileName.toStdString(), *m_CachedTransform);
 
   if (!success)
   {
@@ -276,6 +279,7 @@ std::vector<IGIDataItemInfo> IGIMatrixPerFileBackend::Update(const niftk::IGIDat
     info.m_LagInMilliseconds = m_CachedDataType.GetLagInMilliseconds(time);
     infos.push_back(info);
   }
+  return infos;
 }
 
 } // end namespace
