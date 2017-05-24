@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkAtracsysManager.h"
+#include "niftkAtracsysTracker.h"
 #include <mitkLogMacros.h>
 #include <mitkExceptionMacro.h>
 #include <ftkInterface.h>
@@ -22,27 +22,31 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-class AtracsysManagerPrivate
+class AtracsysTrackerPrivate
 {
-  Q_DECLARE_PUBLIC(AtracsysManager)
-  AtracsysManager* const q_ptr;
 
 public:
 
-  AtracsysManagerPrivate(AtracsysManager* q);
-  ~AtracsysManagerPrivate();
+  AtracsysTrackerPrivate(AtracsysTracker* q,
+                         std::string toolConfigFileName);
+  ~AtracsysTrackerPrivate();
+
+  std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > GetTrackingData();
 
 private:
 
   void CheckError(ftkLibrary lib);
 
-  ftkLibrary m_Lib;
+  ftkLibrary       m_Lib;
+  AtracsysTracker *m_Container;
 };
 
 
 //-----------------------------------------------------------------------------
-AtracsysManagerPrivate::AtracsysManagerPrivate(AtracsysManager* q)
-: q_ptr(q)
+AtracsysTrackerPrivate::AtracsysTrackerPrivate(AtracsysTracker* t,
+                                               std::string toolConfigFileName
+                                               )
+: m_Container(t)
 , m_Lib(nullptr)
 {
 
@@ -72,10 +76,8 @@ AtracsysManagerPrivate::AtracsysManagerPrivate(AtracsysManager* q)
 
 
 //-----------------------------------------------------------------------------
-AtracsysManagerPrivate::~AtracsysManagerPrivate()
+AtracsysTrackerPrivate::~AtracsysTrackerPrivate()
 {
-  Q_Q(AtracsysManager);
-
   if (m_Lib != nullptr)
   {
     ftkClose( &m_Lib );
@@ -84,7 +86,7 @@ AtracsysManagerPrivate::~AtracsysManagerPrivate()
 
 
 //-----------------------------------------------------------------------------
-void AtracsysManagerPrivate::CheckError(ftkLibrary lib)
+void AtracsysTrackerPrivate::CheckError(ftkLibrary lib)
 {
   ftkErrorExt ext;
   ftkError err = ftkGetLastError( lib, &ext );
@@ -94,34 +96,52 @@ void AtracsysManagerPrivate::CheckError(ftkLibrary lib)
     if ( ext.isError() )
     {
       ext.errorString( message );
-      MITK_ERROR << "AtracsysManagerPrivate:" << message;
+      MITK_ERROR << "AtracsysTrackerPrivate:" << message;
       mitkThrow() << message;
     }
     if ( ext.isWarning() )
     {
       ext.warningString( message );
-      MITK_WARN << "AtracsysManagerPrivate:" << message;
+      MITK_WARN << "AtracsysTrackerPrivate:" << message;
     }
     ext.messageStack( message );
     if ( message.size() > 0u )
     {
-      MITK_INFO << "AtracsysManagerPrivate:Stack:\n" << message;
+      MITK_INFO << "AtracsysTrackerPrivate:Stack:\n" << message;
     }
   }
 }
 
 
 //-----------------------------------------------------------------------------
-AtracsysManager::AtracsysManager()
-: d_ptr(new AtracsysManagerPrivate(this))
+std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTrackerPrivate::GetTrackingData()
 {
-  MITK_INFO << "Creating AtracsysManager";
+  std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > results;
+  return results;
 }
 
 
 //-----------------------------------------------------------------------------
-AtracsysManager::~AtracsysManager()
+AtracsysTracker::AtracsysTracker(mitk::DataStorage::Pointer dataStorage,
+                                 std::string toolConfigFileName)
+: niftk::IGITracker(dataStorage, toolConfigFileName, 330)
+, m_Tracker(new AtracsysTrackerPrivate(this))
 {
+  MITK_INFO << "Creating AtracsysTracker";
+}
+
+
+//-----------------------------------------------------------------------------
+AtracsysTracker::~AtracsysTracker()
+{
+  MITK_INFO << "Destroying AtracsysTracker";
+}
+
+
+//-----------------------------------------------------------------------------
+std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker::GetTrackingData()
+{
+  return m_Tracker->GetTrackingData();
 }
 
 } // end namespace

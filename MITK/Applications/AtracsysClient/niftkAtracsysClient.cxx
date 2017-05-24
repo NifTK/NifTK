@@ -13,9 +13,10 @@
 =============================================================================*/
 
 #include <niftkAtracsysClientCLP.h>
-#include <niftkAtracsysManager.h>
+#include <niftkAtracsysTracker.h>
 #include <niftkFileIOUtils.h>
 #include <niftkFileHelper.h>
+#include <mitkStandaloneDataStorage.h>
 #include <mitkException.h>
 
 int main(int argc, char* argv[])
@@ -31,7 +32,8 @@ int main(int argc, char* argv[])
       return returnStatus + 1;
     }
 
-    niftk::AtracsysManager manager;
+    mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
+    niftk::AtracsysTracker tracker(dataStorage, toolStorage);
 
     returnStatus = EXIT_SUCCESS;
   }

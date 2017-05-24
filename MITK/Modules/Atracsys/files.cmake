@@ -13,11 +13,10 @@
 #============================================================================*/
 
 set(CPP_FILES
-  niftkAtracsysManager.cxx
+  niftkAtracsysTracker.cxx
 )
 
 set(MOC_H_FILES
-  niftkAtracsysManager.h
 )
 
 set(UI_FILES
