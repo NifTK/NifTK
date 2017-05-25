@@ -215,9 +215,33 @@ void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
     return;
   }
 
-  bool globalVisibility = node->IsVisible(nullptr);
+  /// When a new node is added, the local visibility has to be set explicitely
+  /// for each viewer, even if it is the same as the global visibility.
+  ///
+  /// The policy is the following:
+  ///
+  ///   - If the global visibility is 'true' but the node has *not* been dropped onto
+  ///     the selected viewer (neither itself nor any of its sources), we change the
+  ///     global visibility to 'false'. This switches off the visibility check box of
+  ///     the top level data node in the Data Manager, e.g. after File/Open.
+  ///
+  ///   - Exceptions from the rule above are only "helper" nodes. We do not force the
+  ///     global visibility of helper nodes to be off even if they are 'foreign' nodes.
+  ///
+  ///   - The local visibility in the selected viewer is set to the same as the global
+  ///     visibility. Note that the global visibility may have been cleared at the
+  ///     first point.
+  ///
+  ///   - If the visibility is bound across the viewers, the local visibility in the
+  ///     other viewers is set to the same as in the selected viewer.
+  ///
+  ///   - If the visibility is *not* bound across the viewers, the local visibility
+  ///     in the other viewers is set to false.
 
-  // So as each new node is added (i.e. surfaces, point sets, images) we set default visibility to false.
+  bool isHelperObject = false;
+  node->GetBoolProperty("helper object", isHelperObject);
+
+  bool globalVisibility = node->IsVisible(nullptr);
 
   SingleViewerWidget* selectedViewer = nullptr;
   for (auto viewer: m_Viewers)
@@ -229,7 +253,7 @@ void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
     }
   }
 
-  if (globalVisibility && this->IsForeignNode(node, selectedViewer))
+  if (!isHelperObject && globalVisibility && this->IsForeignNode(node, selectedViewer))
   {
     globalVisibility = false;
     bool wasBlocked = this->SetBlocked(true);
@@ -241,11 +265,6 @@ void MultiViewerVisibilityManager::OnNodeAdded(mitk::DataNode* node)
   nodes[0] = node;
   for (auto viewer: m_Viewers)
   {
-    /// We set the local visibility to the same as the global visibility in the selected viewer.
-    /// In the other viewers we set the local visibility to either the same or to false, depending
-    /// on whether the visibility is bound across the viewers.
-    /// It is important to set a local visibility for each viewer explicitly, even if it is
-    /// the same as the global visibility.
     bool localVisibility = (viewer == selectedViewer || m_VisibilityBinding) ? globalVisibility : false;
     viewer->SetVisibility(nodes, localVisibility);
   }
