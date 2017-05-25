@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Smart Liver.Points</category>
+  <title>Extract Point Set from MITK Scene</title>
+  <description><![CDATA[Extract Point Set from an MITK Scene.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Marc Modat, Rachel Sparks</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <file fileExtensions=".mitk">
+      <name>input</name>
+      <flag>i</flag>
+      <longflag>input</longflag>
+      <description>The file name of the MITK Scene file to process.</description>
+      <label>MITK Scene file</label>
+    </file>
+
+    <file>
+      <name>output</name>
+      <flag>o</flag>
+      <longflag>output</longflag>
+      <description>Prefix of the files containing the point set(s).</description>
+      <label>Output file prefix for point set(s)</label>
+      <channel>output</channel>
+    </file>
+  </parameters>
+</executable>
