@@ -12,21 +12,6 @@
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
-    
-    <file fileExtensions=".IGTToolStorage">
-      <name>toolStorage</name>
-      <flag>t</flag>
-      <longflag>toolStorage</longflag>
-      <description>MITK Tool Storage file</description>
-      <label>Tool Storage</label>
-      <channel>input</channel>
-    </file>
-
-  </parameters>
-
-  <parameters>
-    <label>Optional Parameters</label>
-    <description><![CDATA[Optional Parameters]]></description>
 
     <directory>
       <name>outputDir</name>
@@ -36,6 +21,21 @@
       <label>Output Directory</label>
       <channel>input</channel>
     </directory>
+    
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Optional Parameters]]></description>
+
+    <file fileExtensions=".IGTToolStorage">
+      <name>toolStorage</name>
+      <flag>t</flag>
+      <longflag>toolStorage</longflag>
+      <description>MITK Tool Storage file</description>
+      <label>Tool Storage</label>
+      <channel>input</channel>
+    </file>
 
     <integer>
       <name>duration</name>
@@ -46,6 +46,15 @@
       <default>-1</default>
     </integer>
 
+    <integer>
+      <name>number</name>
+      <flag>n</flag>
+      <longflag>number</longflag>
+      <description>Number of samples to grab</description>
+      <label>Number of Samples</label>
+      <default>-1</default>
+    </integer>
+    
   </parameters>
 
 </executable>

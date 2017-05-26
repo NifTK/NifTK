@@ -26,14 +26,45 @@ int main(int argc, char* argv[])
 
   try
   {
-    if (toolStorage.empty() || outputDir.empty())
+    if (outputDir.size() == 0)
     {
       commandLine.getOutput()->usage(commandLine);
-      return returnStatus + 1;
+      return returnStatus;
     }
 
     mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
     niftk::AtracsysTracker::Pointer tracker = niftk::AtracsysTracker::New(dataStorage.GetPointer(), toolStorage);
+
+    if (toolStorage.empty())
+    {
+      for (int c = 0; c < 1000; c++)
+      {
+        std::vector<mitk::Point3D> points = tracker->GetBallPositions();
+        for (int i = 0; i < points.size(); i++)
+        {
+          MITK_INFO << "niftkAtracsysClient: c=" << c << ", i=" << i << ", p=" 
+            << points[i][0] << " "
+            << points[i][1] << " "
+            << points[i][2] << " "
+            << std::endl;
+        }
+      }
+    }
+    else
+    {
+      for (int c = 0; c < 1000; c++)
+      {
+        std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > markers = tracker->GetTrackingData();
+        std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >::const_iterator iter;
+        for (iter = markers.begin(); iter != markers.end(); ++iter)
+        {
+          MITK_INFO << "niftkAtracsysClient: c=" << c << ", p=" << (*iter).first
+            << (*iter).second.first << " "
+            << (*iter).second.second << " "
+            << std::endl;
+        }
+      }
+    }
 
     returnStatus = EXIT_SUCCESS;
   }

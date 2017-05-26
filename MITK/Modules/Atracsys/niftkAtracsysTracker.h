@@ -47,6 +47,11 @@ public:
   */
   virtual std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > GetTrackingData();
 
+  /**
+  * \brief Experimental research interface, returns each ball position. 
+  */
+  std::vector<mitk::Point3D> GetBallPositions();
+
 protected:
 
   AtracsysTracker(mitk::DataStorage::Pointer dataStorage,
