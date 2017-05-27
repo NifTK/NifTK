@@ -35,27 +35,29 @@ IGITracker::IGITracker(mitk::DataStorage::Pointer dataStorage,
   {
     mitkThrow() << "DataStorage is NULL";
   }
-  if (m_ToolConfigFileName.size() == 0)
+
+  m_NavigationToolStorage = mitk::NavigationToolStorage::New();
+
+  if (!toolConfigFileName.empty())
   {
-    mitkThrow() << "Empty file name for tracker tool configuration";
+    // Load configuration for tracker tools (e.g. pointer, laparoscope etc) from external file.
+    mitk::NavigationToolStorageDeserializer::Pointer deserializer
+        = mitk::NavigationToolStorageDeserializer::New(m_DataStorage);
+
+    m_NavigationToolStorage = deserializer->Deserialize(m_ToolConfigFileName);
+    if(m_NavigationToolStorage->isEmpty())
+    {
+      std::string errorMessage = std::string("Failed to load tracker tool configuration:")
+                                 + deserializer->GetErrorMessage();
+
+      mitkThrow() << errorMessage;
+    }
+    if (m_NavigationToolStorage->GetToolCount() < 1)
+    {
+      mitkThrow() << "No tracker tools available";
+    }
   }
 
-  // Load configuration for tracker tools (e.g. pointer, laparoscope etc) from external file.
-  mitk::NavigationToolStorageDeserializer::Pointer deserializer
-      = mitk::NavigationToolStorageDeserializer::New(m_DataStorage);
-
-  m_NavigationToolStorage = deserializer->Deserialize(m_ToolConfigFileName);
-  if(m_NavigationToolStorage->isEmpty())
-  {
-    std::string errorMessage = std::string("Failed to load tracker tool configuration:")
-                               + deserializer->GetErrorMessage();
-
-    mitkThrow() << errorMessage;
-  }
-  if (m_NavigationToolStorage->GetToolCount() < 1)
-  {
-    mitkThrow() << "No tracker tools available";
-  }
   m_ExpectedNumberOfTools = m_NavigationToolStorage->GetToolCount();
 
   // Make sure we DONT display the surfaces that MITK uses for each tool.

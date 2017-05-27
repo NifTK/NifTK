@@ -81,7 +81,7 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
 
   m_SerialNumber = device.SerialNumber ;
   MITK_INFO << "Connected to Atracsys SN:" << m_SerialNumber;
-
+  
   // load all geometries if any.
   for (int i = 0; i < m_GeometryFiles.size(); i++)
   {
@@ -96,7 +96,7 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
       this->CheckError(m_Lib);
     }
   }
-
+  
   m_Frame = ftkCreateFrame();
   if ( m_Frame == nullptr )
   {
@@ -105,8 +105,8 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
   }
 
 
-  err = ftkSetFrameOptions( false, false, 128u, 128u, 
-                            4u * FTK_MAX_FIDUCIALS, 4u, m_Frame );
+  err = ftkSetFrameOptions( false, false, 0u, 0u, 
+                            100u, 16u, m_Frame );
   if ( err != FTK_OK )
   {
     ftkDeleteFrame( m_Frame );
@@ -160,76 +160,81 @@ void AtracsysTrackerPrivate::CheckError(ftkLibrary lib)
 std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTrackerPrivate::GetTrackingData()
 {
   std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > results;
-
-  while ( ftkGetLastFrame( m_Lib, m_SerialNumber, m_Frame, 0  ) != FTK_OK )
-  {
-    MITK_INFO << "AtracsysTrackerPrivate:GetBallPositions() blocking.";
-    continue;
-  }
-
+  std::string message;
+  bool isError(true);
   mitk::Point4D rotationQuaternion;
   rotationQuaternion.Fill(0);
-
   mitk::Vector3D translation;
   translation.Fill(0);
   double rotation[3][3];
   double q[4];
 
+  ftkGetLastFrame( m_Lib, m_SerialNumber, m_Frame, 0 );
+  
   ftkErrorExt extError;
   ftkGetLastError( m_Lib, &extError );
 
   if ( extError.isOk() || extError.isWarning( FTK_WAR_TEMP_HIGH ) ||
        extError.isWarning( FTK_WAR_TEMP_LOW ) )
   {
-    std::string message;
-
     switch ( m_Frame->markersStat )
     {
       case QS_WAR_SKIPPED:
         message = "AtracsysTrackerPrivate:marker fields in the frame are not set correctly";
-        MITK_ERROR << message;
-        this->CheckError(m_Lib);
-        mitkThrow() << message;
+        break;
 
       case QS_ERR_INVALID_RESERVED_SIZE:
         message = "AtracsysTrackerPrivate:frame -> markersVersionSize is invalid";
-        MITK_ERROR << message;
-        this->CheckError(m_Lib);
-        mitkThrow() << message;
+        break;
+
+      case QS_REPROCESS:
+        message = "AtracsysTrackerPrivate:Frame needs reprocessing.";
+        break;
+        
+      case QS_OK:
+        isError = false;
+        break;
 
       default:
-        message = "AtracsysTrackerPrivate:invalid status";
-        MITK_ERROR << message;
-        this->CheckError(m_Lib);
-        mitkThrow() << message;
-
-      case QS_OK:
+        MITK_WARN << "AtracsysTrackerPrivate::GetBallPositions() = Invalid status.";
+        isError = false;
         break;
+
     } // end switch
     
-    for (int i = 0u; i < m_Frame->markersCount; ++i )
+    if (isError)
     {
-      translation[0] = m_Frame->markers[i].translationMM[0];
-      translation[1] = m_Frame->markers[i].translationMM[1];
-      translation[2] = m_Frame->markers[i].translationMM[2];
+      MITK_ERROR << message;
+      this->CheckError(m_Lib);
+      mitkThrow() << message;      
+    }
 
-      for (int r = 0; r < 3; r++)
+    if (m_Frame->markersStat == QS_OK)
+    {
+      for (int i = 0u; i < m_Frame->markersCount; ++i )
       {
-        for (int c = 0; c < 3; c++)
+        translation[0] = m_Frame->markers[i].translationMM[0];
+        translation[1] = m_Frame->markers[i].translationMM[1];
+        translation[2] = m_Frame->markers[i].translationMM[2];
+
+        for (int r = 0; r < 3; r++)
         {
-          rotation[r][c] = m_Frame->markers[i].rotation[r][c];
+          for (int c = 0; c < 3; c++)
+          {
+            rotation[r][c] = m_Frame->markers[i].rotation[r][c];
+          }
         }
+
+        vtkMath::Matrix3x3ToQuaternion(rotation, q);
+
+        rotationQuaternion[0] = q[0];
+        rotationQuaternion[1] = q[1];
+        rotationQuaternion[2] = q[2];
+        rotationQuaternion[3] = q[3];
+
+        std::pair<mitk::Point4D, mitk::Vector3D> transform(rotationQuaternion, translation);
+        results.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >( std::to_string(m_Frame->markers[i].id), transform));
       }
-
-      vtkMath::Matrix3x3ToQuaternion(rotation, q);
-
-      rotationQuaternion[0] = q[0];
-      rotationQuaternion[1] = q[1];
-      rotationQuaternion[2] = q[2];
-      rotationQuaternion[3] = q[3];
-
-      std::pair<mitk::Point4D, mitk::Vector3D> transform(rotationQuaternion, translation);
-      results.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >( std::to_string(m_Frame->markers[i].id), transform));
     }
   }
   return results;
@@ -241,12 +246,10 @@ std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
 {
   std::vector<mitk::Point3D> results;
   mitk::Point3D point;
+  std::string message;
+  bool isError(true);
 
-  while ( ftkGetLastFrame( m_Lib, m_SerialNumber, m_Frame, 0  ) != FTK_OK )
-  {
-    MITK_INFO << "AtracsysTrackerPrivate::GetBallPositions() blocking.";
-    continue;
-  }
+  ftkGetLastFrame( m_Lib, m_SerialNumber, m_Frame, 0  );
 
   ftkErrorExt extError;
   ftkGetLastError( m_Lib, &extError );
@@ -254,38 +257,51 @@ std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
   if ( extError.isOk() || extError.isWarning( FTK_WAR_TEMP_HIGH ) ||
        extError.isWarning( FTK_WAR_TEMP_LOW ) )
   {
-    std::string message;
-
     switch ( m_Frame->threeDFiducialsStat )
     {
       case QS_WAR_SKIPPED:
-        message = "AtracsysTrackerPrivate:3D status fields in the frame is not set correctly";
-        MITK_ERROR << message;
-        this->CheckError(m_Lib);
-        mitkThrow() << message;
+        message = "AtracsysTrackerPrivate:3D status fields in the frame is not set correctly.";
+        break;
 
       case QS_ERR_INVALID_RESERVED_SIZE:
-        message = "AtracsysTrackerPrivate:frame -> threeDFiducialsVersionSize is invalid";
-        MITK_ERROR << message;
-        this->CheckError(m_Lib);
-        mitkThrow() << message;
+        message = "AtracsysTrackerPrivate:frame -> threeDFiducialsVersionSize is invalid.";
+        break;
+
+      case QS_ERR_OVERFLOW:
+        message = "AtracsysTrackerPrivate:Buffer size too small.";
+        break;
+
+      case QS_REPROCESS:
+        message = "AtracsysTrackerPrivate:Frame needs reprocessing.";
+        break;
+        
+      case QS_OK:
+        isError = false;
+        break;
 
       default:
-        message = "AtracsysTrackerPrivate:invalid status";
-        MITK_ERROR << message;
-        this->CheckError(m_Lib);
-        mitkThrow() << message;
-
-      case QS_OK:
+        MITK_WARN << "AtracsysTrackerPrivate::GetBallPositions() = Invalid status.";
+        isError = false;
         break;
+
     } // end switch
 
-    for ( uint32 m = 0; m < m_Frame->threeDFiducialsCount; m++ )
+    if (isError)
     {
-      point[0] = m_Frame->threeDFiducials[ m ].positionMM.x;
-      point[1] = m_Frame->threeDFiducials[ m ].positionMM.y;
-      point[2] = m_Frame->threeDFiducials[ m ].positionMM.z;
-      results.push_back(point);
+      MITK_ERROR << message;
+      this->CheckError(m_Lib);
+      mitkThrow() << message;      
+    }
+
+    if (m_Frame->threeDFiducialsStat == QS_OK)
+    {
+      for ( uint32 m = 0; m < m_Frame->threeDFiducialsCount; m++ )
+      {
+        point[0] = m_Frame->threeDFiducials[ m ].positionMM.x;
+        point[1] = m_Frame->threeDFiducials[ m ].positionMM.y;
+        point[2] = m_Frame->threeDFiducials[ m ].positionMM.z;
+        results.push_back(point);
+      }
     }
   }
   return results;

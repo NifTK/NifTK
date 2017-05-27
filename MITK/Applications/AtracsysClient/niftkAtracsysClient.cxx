@@ -18,55 +18,87 @@
 #include <niftkFileHelper.h>
 #include <mitkStandaloneDataStorage.h>
 #include <mitkException.h>
+#include <igtlTimeStamp.h>
+#include <iostream>
 
 int main(int argc, char* argv[])
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
+  // Early exit if main outpt file not specified.
+  if (outputFile.size() == 0)
+  {
+    commandLine.getOutput()->usage(commandLine);
+    return returnStatus;
+  }
+
   try
   {
-    if (outputDir.size() == 0)
+    std::ofstream opf;
+    opf.open(outputFile);
+    if (opf.is_open())
     {
-      commandLine.getOutput()->usage(commandLine);
-      return returnStatus;
-    }
+      mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
+      niftk::AtracsysTracker::Pointer tracker = niftk::AtracsysTracker::New(dataStorage.GetPointer(), toolStorage);
+      unsigned long int counter = 0;
+      igtl::TimeStamp::Pointer t = igtl::TimeStamp::New();
 
-    mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
-    niftk::AtracsysTracker::Pointer tracker = niftk::AtracsysTracker::New(dataStorage.GetPointer(), toolStorage);
-
-    if (toolStorage.empty())
-    {
-      for (int c = 0; c < 1000; c++)
+      if (toolStorage.empty())
       {
-        std::vector<mitk::Point3D> points = tracker->GetBallPositions();
-        for (int i = 0; i < points.size(); i++)
+        do
         {
-          MITK_INFO << "niftkAtracsysClient: c=" << c << ", i=" << i << ", p=" 
-            << points[i][0] << " "
-            << points[i][1] << " "
-            << points[i][2] << " "
-            << std::endl;
-        }
+          t->GetTime();
+          std::vector<mitk::Point3D> points = tracker->GetBallPositions();
+
+          for (int i = 0; i < points.size(); i++)
+          {
+            opf << t->GetTimeStampInNanoseconds() << " "
+                << i << " " 
+                << points[i][0] << " "
+                << points[i][1] << " "
+                << points[i][2] << " "
+                << std::endl;
+          }
+          counter++;
+
+        } while (counter < numberSamples);
       }
+      else
+      {
+        do
+        {
+          t->GetTime();
+          std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > markers = tracker->GetTrackingData();
+
+          std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >::const_iterator iter;
+          for (iter = markers.begin(); iter != markers.end(); ++iter)
+          {
+            opf <<  t->GetTimeStampInNanoseconds() << " "
+                << (*iter).first << " "
+                << (*iter).second.first[0] << " "
+                << (*iter).second.first[1] << " "
+                << (*iter).second.first[2] << " "
+                << (*iter).second.first[3] << " "
+                << (*iter).second.second[0] << " "
+                << (*iter).second.second[1] << " "
+                << (*iter).second.second[2] << " "
+                << std::endl;
+          }
+          counter++;
+
+        } while (counter < numberSamples);
+      }
+
+      returnStatus = EXIT_SUCCESS;
+
+      opf.close();
     }
     else
     {
-      for (int c = 0; c < 1000; c++)
-      {
-        std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > markers = tracker->GetTrackingData();
-        std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >::const_iterator iter;
-        for (iter = markers.begin(); iter != markers.end(); ++iter)
-        {
-          MITK_INFO << "niftkAtracsysClient: c=" << c << ", p=" << (*iter).first
-            << (*iter).second.first << " "
-            << (*iter).second.second << " "
-            << std::endl;
-        }
-      }
+      std::cerr << "Failed to open file:" << outputFile << std::endl;
+      returnStatus = EXIT_SUCCESS + 1;
     }
-
-    returnStatus = EXIT_SUCCESS;
   }
   catch (mitk::Exception& e)
   {

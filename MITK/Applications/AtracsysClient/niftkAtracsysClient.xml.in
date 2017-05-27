@@ -13,14 +13,14 @@
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
 
-    <directory>
-      <name>outputDir</name>
+    <file>
+      <name>outputFile</name>
       <flag>o</flag>
-      <longflag>outputDir</longflag>
-      <description>A directory to write data to.</description>
-      <label>Output Directory</label>
-      <channel>input</channel>
-    </directory>
+      <longflag>outputFile</longflag>
+      <description>A file to write data to.</description>
+      <label>Output File</label>
+      <channel>output</channel>
+    </file>
     
   </parameters>
 
@@ -38,18 +38,9 @@
     </file>
 
     <integer>
-      <name>duration</name>
-      <flag>d</flag>
-      <longflag>duration</longflag>
-      <description>Number of seconds to sample</description>
-      <label>Duration</label>
-      <default>-1</default>
-    </integer>
-
-    <integer>
-      <name>number</name>
+      <name>numberSamples</name>
       <flag>n</flag>
-      <longflag>number</longflag>
+      <longflag>numberSamples</longflag>
       <description>Number of samples to grab</description>
       <label>Number of Samples</label>
       <default>-1</default>
