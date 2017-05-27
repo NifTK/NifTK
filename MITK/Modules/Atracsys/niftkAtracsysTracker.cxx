@@ -79,7 +79,7 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
     mitkThrow() << "No Atracsys device connected.";
   }
 
-  m_SerialNumber = device.SerialNumber ;
+  m_SerialNumber = device.SerialNumber;
   MITK_INFO << "Connected to Atracsys SN:" << m_SerialNumber;
   
   // load all geometries if any.
@@ -105,7 +105,7 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
   }
 
 
-  err = ftkSetFrameOptions( false, false, 0u, 0u, 
+  err = ftkSetFrameOptions( false, false, 0u, 0u,
                             100u, 16u, m_Frame );
   if ( err != FTK_OK )
   {
@@ -161,12 +161,10 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
 {
   std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > results;
   std::string message;
-  bool isError(true);
   mitk::Point4D rotationQuaternion;
   rotationQuaternion.Fill(0);
   mitk::Vector3D translation;
   translation.Fill(0);
-  double rotation[3][3];
   double q[4];
 
   ftkGetLastFrame( m_Lib, m_SerialNumber, m_Frame, 0 );
@@ -177,6 +175,8 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
   if ( extError.isOk() || extError.isWarning( FTK_WAR_TEMP_HIGH ) ||
        extError.isWarning( FTK_WAR_TEMP_LOW ) )
   {
+    bool isError(true);
+
     switch ( m_Frame->markersStat )
     {
       case QS_WAR_SKIPPED:
@@ -206,13 +206,15 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
     {
       MITK_ERROR << message;
       this->CheckError(m_Lib);
-      mitkThrow() << message;      
+      mitkThrow() << message;
     }
 
     if (m_Frame->markersStat == QS_OK)
     {
       for (int i = 0u; i < m_Frame->markersCount; ++i )
       {
+        double rotation[3][3];
+
         translation[0] = m_Frame->markers[i].translationMM[0];
         translation[1] = m_Frame->markers[i].translationMM[1];
         translation[2] = m_Frame->markers[i].translationMM[2];
@@ -233,7 +235,8 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
         rotationQuaternion[3] = q[3];
 
         std::pair<mitk::Point4D, mitk::Vector3D> transform(rotationQuaternion, translation);
-        results.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >( std::to_string(m_Frame->markers[i].id), transform));
+        results.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >(
+                       std::to_string(m_Frame->markers[i].id), transform));
       }
     }
   }
@@ -247,7 +250,6 @@ std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
   std::vector<mitk::Point3D> results;
   mitk::Point3D point;
   std::string message;
-  bool isError(true);
 
   ftkGetLastFrame( m_Lib, m_SerialNumber, m_Frame, 0  );
 
@@ -257,6 +259,8 @@ std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
   if ( extError.isOk() || extError.isWarning( FTK_WAR_TEMP_HIGH ) ||
        extError.isWarning( FTK_WAR_TEMP_LOW ) )
   {
+    bool isError(true);
+
     switch ( m_Frame->threeDFiducialsStat )
     {
       case QS_WAR_SKIPPED:
@@ -290,7 +294,7 @@ std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
     {
       MITK_ERROR << message;
       this->CheckError(m_Lib);
-      mitkThrow() << message;      
+      mitkThrow() << message;
     }
 
     if (m_Frame->threeDFiducialsStat == QS_OK)
