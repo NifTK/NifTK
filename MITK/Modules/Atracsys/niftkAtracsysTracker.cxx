@@ -306,7 +306,7 @@ std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
     {
       for ( uint32 m = 0; m < m_Frame->threeDFiducialsCount; m++ )
       {
-        if (   m_Frame->threeDFiducials[ m ].epipolarErrorPixels < 1 
+        if (   m_Frame->threeDFiducials[ m ].epipolarErrorPixels < 1
             && m_Frame->threeDFiducials[ m ].triangulationErrorMM < 0.2
             && m_Frame->threeDFiducials[ m ].probability > 0.8
             && m_Frame->threeDFiducials[ m ].positionMM.z > 700   // minimum range
