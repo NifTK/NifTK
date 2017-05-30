@@ -88,8 +88,10 @@ int main(int argc, char* argv[])
                 << (*iter).second.second[2] << " "
                 << std::endl;
           }
-          counter++;
-
+          if (markers.size() > 0)
+          {
+            counter++;
+          }
         } while (counter < numberSamples);
       }
 
