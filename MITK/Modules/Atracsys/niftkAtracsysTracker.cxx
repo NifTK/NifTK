@@ -347,23 +347,25 @@ AtracsysTracker::AtracsysTracker(mitk::DataStorage::Pointer dataStorage,
 
   // Manually construct a tracking volume.
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  points->InsertNextPoint(-113.5, -171.5, 700);
-  points->InsertNextPoint( 113.5, -171.5, 700);
-  points->InsertNextPoint( 113.5,  171.5, 700);
-  points->InsertNextPoint(-113.5,  171.5, 700);
-  points->InsertNextPoint(-663.5, -488.0, 2000);
-  points->InsertNextPoint( 663.5, -488.0, 2000);
-  points->InsertNextPoint( 663.5,  488.0, 2000);
-  points->InsertNextPoint(-663.5,  488.0, 2000);
-  points->InsertNextPoint(-928.5, -683.0, 2800);
-  points->InsertNextPoint( 928.5, -683.0, 2800);
-  points->InsertNextPoint( 928.5,  683.0, 2800);
-  points->InsertNextPoint(-928.5,  683.0, 2800);
+  points->Allocate(12);
+  points->SetPoint(0,  -113.5, -171.5, 700);
+  points->SetPoint(1,   113.5, -171.5, 700);
+  points->SetPoint(2,   113.5,  171.5, 700);
+  points->SetPoint(3,  -113.5,  171.5, 700);
+  points->SetPoint(4,  -663.5, -488.0, 2000);
+  points->SetPoint(5,   663.5, -488.0, 2000);
+  points->SetPoint(6,   663.5,  488.0, 2000);
+  points->SetPoint(7,  -663.5,  488.0, 2000);
+  points->SetPoint(8,  -928.5, -683.0, 2800);
+  points->SetPoint(9,   928.5, -683.0, 2800);
+  points->SetPoint(10,  928.5,  683.0, 2800);
+  points->SetPoint(11, -928.5,  683.0, 2800);
 
   vtkIdType id;
   vtkIdType ids[4];
 
   vtkSmartPointer<vtkCellArray> polys = vtkSmartPointer<vtkCellArray>::New();
+
   id = 0;
   ids[0] = 0;
   ids[1] = 1;
@@ -441,7 +443,7 @@ AtracsysTracker::AtracsysTracker(mitk::DataStorage::Pointer dataStorage,
   ids[3] = 11;
   polys->InsertNextCell(id, ids);
 
-  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+  vtkPolyData *polyData = vtkPolyData::New();
   polyData->SetPoints(points);
   polyData->SetPolys(polys);
   
