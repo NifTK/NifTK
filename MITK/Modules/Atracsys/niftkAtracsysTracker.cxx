@@ -80,7 +80,7 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
   }
 
   m_SerialNumber = device.SerialNumber;
-  MITK_INFO << "Connected to Atracsys SN:" << m_SerialNumber;
+  MITK_INFO << "Connected to Atracsys SN:" << std::hex << m_SerialNumber;
   
   // load all geometries if any.
   for (int i = 0; i < m_GeometryFiles.size(); i++)
@@ -301,10 +301,18 @@ std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
     {
       for ( uint32 m = 0; m < m_Frame->threeDFiducialsCount; m++ )
       {
-        point[0] = m_Frame->threeDFiducials[ m ].positionMM.x;
-        point[1] = m_Frame->threeDFiducials[ m ].positionMM.y;
-        point[2] = m_Frame->threeDFiducials[ m ].positionMM.z;
-        results.push_back(point);
+        if (   m_Frame->threeDFiducials[ m ].epipolarErrorPixels < 1 
+            && m_Frame->threeDFiducials[ m ].triangulationErrorMM < 0.2
+            && m_Frame->threeDFiducials[ m ].probability > 0.8
+            && m_Frame->threeDFiducials[ m ].positionMM.z > 700   // minimum range
+            && m_Frame->threeDFiducials[ m ].positionMM.z < 2400  // maximum range for 0.11mm accuracy.
+           )
+        {
+          point[0] = m_Frame->threeDFiducials[ m ].positionMM.x;
+          point[1] = m_Frame->threeDFiducials[ m ].positionMM.y;
+          point[2] = m_Frame->threeDFiducials[ m ].positionMM.z;
+          results.push_back(point);
+        }
       }
     }
   }

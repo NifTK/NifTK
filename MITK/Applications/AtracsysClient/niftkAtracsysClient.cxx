@@ -41,6 +41,7 @@ int main(int argc, char* argv[])
     {
       mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
       niftk::AtracsysTracker::Pointer tracker = niftk::AtracsysTracker::New(dataStorage.GetPointer(), toolStorage);
+
       unsigned long int counter = 0;
       igtl::TimeStamp::Pointer t = igtl::TimeStamp::New();
 
@@ -60,8 +61,10 @@ int main(int argc, char* argv[])
                 << points[i][2] << " "
                 << std::endl;
           }
-          counter++;
-
+          if (points.size() > 0)
+          {
+            counter++;
+          }
         } while (counter < numberSamples);
       }
       else
