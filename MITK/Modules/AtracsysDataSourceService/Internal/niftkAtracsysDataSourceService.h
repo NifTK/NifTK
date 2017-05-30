@@ -16,8 +16,10 @@
 
 #include <niftkIGIDataSource.h>
 #include <niftkIGIDataSourceLocker.h>
-#include <niftkAtracsysTracker.h>
+#include <niftkIGILocalDataSourceI.h>
+#include <niftkIGIDataSourceGrabbingThread.h>
 #include <niftkIGITrackerBackend.h>
+#include <niftkAtracsysTracker.h>
 
 #include <QObject>
 
@@ -33,6 +35,7 @@ namespace niftk
 */
 class AtracsysDataSourceService : public QObject
                                 , public IGIDataSource
+                                , public IGILocalDataSourceI
 {
 
   Q_OBJECT
@@ -67,20 +70,15 @@ public:
   virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time) override;
 
   /**
+  * \see niftk::IGILocalDataSourceI::GrabData()
+  */
+  virtual void GrabData() override;
+
+  /**
   * \see IGIDataSourceI::ProbeRecordedData()
   */
   bool ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
                          niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore) override;
-
-  /**
-  * \see IGIDataSourceI::StartRecording()
-  */
-  virtual void StartRecording() override;
-
-  /**
-  * \see IGIDataSourceI::StopRecording()
-  */
-  virtual void StopRecording() override;
 
   /**
   * \brief IGIDataSourceI::SetProperties()
@@ -109,6 +107,8 @@ private:
   AtracsysDataSourceService& operator=(const AtracsysDataSourceService&); // deliberately not implemented
 
   static niftk::IGIDataSourceLocker      s_Lock;
+  int                                    m_TrackerNumber;
+  niftk::IGIDataSourceGrabbingThread*    m_DataGrabbingThread;
   niftk::AtracsysTracker::Pointer        m_Tracker;
   niftk::IGITrackerBackend::Pointer      m_BackEnd;
 
