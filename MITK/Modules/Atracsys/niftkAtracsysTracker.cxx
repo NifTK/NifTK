@@ -15,7 +15,12 @@
 #include "niftkAtracsysTracker.h"
 #include <mitkLogMacros.h>
 #include <mitkExceptionMacro.h>
+#include <mitkSurface.h>
 #include <vtkMath.h>
+#include <vtkSmartPointer.h>
+#include <vtkPoints.h>
+#include <vtkPolyData.h>
+#include <vtkCellArray.h>
 #include <ftkInterface.h>
 #include <helpers.hpp>
 #include <geometryHelper.hpp>
@@ -236,7 +241,7 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
 
         std::pair<mitk::Point4D, mitk::Vector3D> transform(rotationQuaternion, translation);
         results.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >(
-                       std::to_string(m_Frame->markers[i].id), transform));
+                       std::to_string(m_Frame->markers[i].geometryId), transform));
       }
     }
   }
@@ -339,6 +344,124 @@ AtracsysTracker::AtracsysTracker(mitk::DataStorage::Pointer dataStorage,
   }
 
   m_Tracker.reset(new AtracsysTrackerPrivate(this, fileNames));
+
+  // Manually construct a tracking volume.
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  points->InsertNextPoint(-113.5, -171.5, 700);
+  points->InsertNextPoint( 113.5, -171.5, 700);
+  points->InsertNextPoint( 113.5,  171.5, 700);
+  points->InsertNextPoint(-113.5,  171.5, 700);
+  points->InsertNextPoint(-663.5, -488.0, 2000);
+  points->InsertNextPoint( 663.5, -488.0, 2000);
+  points->InsertNextPoint( 663.5,  488.0, 2000);
+  points->InsertNextPoint(-663.5,  488.0, 2000);
+  points->InsertNextPoint(-928.5, -683.0, 2800);
+  points->InsertNextPoint( 928.5, -683.0, 2800);
+  points->InsertNextPoint( 928.5,  683.0, 2800);
+  points->InsertNextPoint(-928.5,  683.0, 2800);
+
+  vtkIdType id;
+  vtkIdType ids[4];
+
+  vtkSmartPointer<vtkCellArray> polys = vtkSmartPointer<vtkCellArray>::New();
+  id = 0;
+  ids[0] = 0;
+  ids[1] = 1;
+  ids[2] = 2;
+  ids[3] = 3;
+  polys->InsertNextCell(id, ids);
+
+  id = 1;
+  ids[0] = 4;
+  ids[1] = 5;
+  ids[2] = 6;
+  ids[3] = 7;
+  polys->InsertNextCell(id, ids);
+
+  id = 2;
+  ids[0] = 8;
+  ids[1] = 9;
+  ids[2] = 10;
+  ids[3] = 11;
+  polys->InsertNextCell(id, ids);
+
+  id = 3;
+  ids[0] = 0;
+  ids[1] = 4;
+  ids[2] = 5;
+  ids[3] = 1;
+  polys->InsertNextCell(id, ids);
+
+  id = 4;
+  ids[0] = 1;
+  ids[1] = 5;
+  ids[2] = 6;
+  ids[3] = 2;
+  polys->InsertNextCell(id, ids);
+
+  id = 5;
+  ids[0] = 2;
+  ids[1] = 6;
+  ids[2] = 7;
+  ids[3] = 3;
+  polys->InsertNextCell(id, ids);
+
+  id = 6;
+  ids[0] = 4;
+  ids[1] = 0;
+  ids[2] = 3;
+  ids[3] = 7;
+  polys->InsertNextCell(id, ids);
+
+  id = 7;
+  ids[0] = 8;
+  ids[1] = 9;
+  ids[2] = 5;
+  ids[3] = 4;
+  polys->InsertNextCell(id, ids);
+
+  id = 8;
+  ids[0] = 5;
+  ids[1] = 9;
+  ids[2] = 10;
+  ids[3] = 6;
+  polys->InsertNextCell(id, ids);
+
+  id = 9;
+  ids[0] = 6;
+  ids[1] = 10;
+  ids[2] = 11;
+  ids[3] = 7;
+  polys->InsertNextCell(id, ids);
+
+  id = 10;
+  ids[0] = 8;
+  ids[1] = 4;
+  ids[2] = 7;
+  ids[3] = 11;
+  polys->InsertNextCell(id, ids);
+
+  vtkSmartPointer<vtkPolyData> polyData = vtkSmartPointer<vtkPolyData>::New();
+  polyData->SetPoints(points);
+  polyData->SetPolys(polys);
+  
+  mitk::Surface::Pointer surface = mitk::Surface::New();
+  surface->SetVtkPolyData(polyData);
+
+  mitk::Color red;
+  red.SetRed(1);
+  red.SetBlue(0);
+  red.SetGreen(0);
+
+  mitk::DataNode::Pointer node = mitk::DataNode::New();
+  node->SetData(surface);
+  node->SetColor(red);
+  node->SetOpacity(0.25);
+  
+  m_TrackingVolumeNode = node;
+
+  this->SetVisibilityOfTrackingVolume(true);
+  m_DataStorage->Add(m_TrackingVolumeNode);
 }
 
 
