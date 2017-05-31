@@ -35,6 +35,7 @@ class AtracsysTrackerPrivate
 public:
 
   AtracsysTrackerPrivate(const AtracsysTracker* q,
+                         const std::vector<std::string>& toolNames,
                          const std::vector<std::string>& toolGeometryFileNames);
   ~AtracsysTrackerPrivate();
 
@@ -46,7 +47,9 @@ private:
   void CheckError(ftkLibrary lib);
 
   const AtracsysTracker                      *m_Container;
+  const std::vector<std::string>              m_ToolNames;
   const std::vector<std::string>              m_GeometryFiles;
+  std::map<int, std::string>                  m_IdToName;
   uint64                                      m_SerialNumber;
   ftkLibrary                                  m_Lib;
   ftkFrameQuery                              *m_Frame;
@@ -55,9 +58,11 @@ private:
 
 //-----------------------------------------------------------------------------
 AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
+                                               const std::vector<std::string>& toolNames,
                                                const std::vector<std::string>& toolGeometryFileNames
                                               )
 : m_Container(t)
+, m_ToolNames(toolNames)
 , m_GeometryFiles(toolGeometryFileNames)
 , m_SerialNumber(0)
 , m_Lib(nullptr)
@@ -99,6 +104,10 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
     if ( err != FTK_OK )
     {
       this->CheckError(m_Lib);
+    }
+    else
+    {
+      m_IdToName.insert(std::pair<int, std::string>(geom.geometryId, m_ToolNames[i]));
     }
   }
   
@@ -218,11 +227,11 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
     {
       for (int i = 0u; i < m_Frame->markersCount; ++i )
       {
-        double rotation[3][3];
-
         translation[0] = m_Frame->markers[i].translationMM[0];
         translation[1] = m_Frame->markers[i].translationMM[1];
         translation[2] = m_Frame->markers[i].translationMM[2];
+
+        double rotation[3][3];
 
         for (int r = 0; r < 3; r++)
         {
@@ -239,9 +248,16 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
         rotationQuaternion[2] = q[2];
         rotationQuaternion[3] = q[3];
 
-        std::pair<mitk::Point4D, mitk::Vector3D> transform(rotationQuaternion, translation);
-        results.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >(
-                       std::to_string(m_Frame->markers[i].geometryId), transform));
+        if (m_IdToName.find(m_Frame->markers[i].geometryId) != m_IdToName.end())
+        {
+          std::pair<mitk::Point4D, mitk::Vector3D> transform(rotationQuaternion, translation);
+          results.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >(
+            (*m_IdToName.find(m_Frame->markers[i].geometryId)).second, transform));
+        }
+        else
+        {
+          MITK_WARN << "Couldn't find name for geometry id:" << m_Frame->markers[i].geometryId;
+        }
       }
     }
   }
@@ -337,13 +353,15 @@ AtracsysTracker::AtracsysTracker(mitk::DataStorage::Pointer dataStorage,
   // We just need the filenames to send to the Atracsys API.
 
   std::vector<std::string> fileNames;
+  std::vector<std::string> toolNames;
   for (int i = 0; i < m_NavigationToolStorage->GetToolCount(); i++)
   {
     mitk::NavigationTool::Pointer tool = m_NavigationToolStorage->GetTool(i);
     fileNames.push_back(tool->GetCalibrationFile());
+    toolNames.push_back(tool->GetToolName());
   }
 
-  m_Tracker.reset(new AtracsysTrackerPrivate(this, fileNames));
+  m_Tracker.reset(new AtracsysTrackerPrivate(this, toolNames, fileNames));
 
   // Manually construct a tracking volume.
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
