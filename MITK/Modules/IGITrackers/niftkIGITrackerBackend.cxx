@@ -123,4 +123,51 @@ void IGITrackerBackend::WriteToDataStorage(const std::string& name,
   node->Modified();
 }
 
+
+//-----------------------------------------------------------------------------
+std::vector<IGIDataItemInfo> IGITrackerBackend::Update(const niftk::IGIDataSourceI::IGITimeType& time)
+{
+  std::vector<IGIDataItemInfo> infos;
+
+  if (m_Buffers.empty())
+  {
+    return infos;
+  }
+
+  std::map<std::string, std::unique_ptr<niftk::IGIDataSourceRingBuffer> >::iterator iter;
+  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
+  {
+    std::string bufferName = iter->first;
+
+    if (m_Buffers[bufferName]->GetBufferSize() == 0)
+    {
+      continue;
+    }
+
+    if(m_Buffers[bufferName]->GetFirstTimeStamp() > time)
+    {
+      continue;
+    }
+
+    m_Buffers[bufferName]->UpdateFrameRate();
+
+    bool gotFromBuffer = m_Buffers[bufferName]->CopyOutItem(time, m_CachedDataType);
+    if (!gotFromBuffer)
+    {
+      MITK_INFO << "MITKTrackerDataSourceService: Failed to find data for time:" << time;
+      return infos;
+    }
+
+    this->WriteToDataStorage(bufferName, m_CachedDataType);
+
+    IGIDataItemInfo info;
+    info.m_Name = m_Name;
+    info.m_FramesPerSecond = m_Buffers[bufferName]->GetFrameRate();
+    info.m_IsLate = m_CachedDataType.IsLate(time);
+    info.m_LagInMilliseconds = m_CachedDataType.GetLagInMilliseconds(time);
+    infos.push_back(info);
+  }
+  return infos;
+}
+
 } // end namespace

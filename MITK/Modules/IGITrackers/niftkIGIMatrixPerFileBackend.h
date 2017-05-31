@@ -17,11 +17,14 @@
 
 #include <niftkIGITrackersExports.h>
 #include "niftkIGITrackerBackend.h"
-#include <niftkIGIDataSourceRingBuffer.h>
 #include <QSet>
 
 namespace niftk
 {
+/**
+ * \class IGIMatrixPerFileBackend
+ * \brief Tracker backend that saves each transformation as a 4x4 matrix, each in a separate file.
+ */
 class NIFTKIGITRACKERS_EXPORT IGIMatrixPerFileBackend : public niftk::IGITrackerBackend
 {
 public:
@@ -37,11 +40,6 @@ public:
                const niftk::IGIDataSourceI::IGITimeType& duration,
                const niftk::IGIDataSourceI::IGITimeType& timeStamp,
                const std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >& data);
-
-  /**
-  * \brief Loads one frame of data into mitk::DataStorage corresponding to the given time.
-  */
-  std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time);
 
   /**
   * \see  IGIDataSourceI::StartPlayback()
@@ -89,9 +87,7 @@ private:
   void SaveItem(const QString& directoryName,
                 const std::unique_ptr<niftk::IGIDataType>& item);
 
-  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >            m_PlaybackIndex;
-  std::map<std::string, std::unique_ptr<niftk::IGIDataSourceRingBuffer> > m_Buffers;
-  niftk::IGITrackerDataType                                               m_CachedDataType;
+  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> > m_PlaybackIndex;
 
 };
 

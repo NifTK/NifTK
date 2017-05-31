@@ -18,6 +18,7 @@
 #include <niftkIGITrackersExports.h>
 #include <niftkIGIDataSourceI.h>
 #include <niftkIGITrackerDataType.h>
+#include <niftkIGIDataSourceRingBuffer.h>
 #include <itkObject.h>
 #include <itkObjectFactory.h>
 #include <mitkDataStorage.h>
@@ -52,11 +53,6 @@ public:
                        const niftk::IGIDataSourceI::IGITimeType& duration,
                        const niftk::IGIDataSourceI::IGITimeType& timeStamp,
                        const std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >&) = 0;
-
-  /**
-  * \brief Loads one frame of data into mitk::DataStorage corresponding to the given time.
-  */
-  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time) = 0;
 
   /**
   * \see  IGIDataSourceI::StartPlayback()
@@ -94,6 +90,11 @@ public:
   */
   virtual IGIDataSourceProperties GetProperties() const;
 
+  /**
+  * \brief Loads one frame of data into mitk::DataStorage corresponding to the given time.
+  */
+  virtual std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time);
+
 protected:
 
   IGITrackerBackend(QString name,
@@ -113,6 +114,11 @@ protected:
   unsigned int                       m_ExpectedFramesPerSecond;
   std::set<mitk::DataNode::Pointer>  m_DataNodes;
   vtkSmartPointer<vtkMatrix4x4>      m_CachedTransform;
+  niftk::IGITrackerDataType          m_CachedDataType;
+  std::map<std::string,
+           std::unique_ptr<
+             niftk::IGIDataSourceRingBuffer>
+          >                          m_Buffers;
 };
 
 } // end namespace

@@ -36,23 +36,42 @@ IGIMatrixPerFileBackend::~IGIMatrixPerFileBackend()
 
 
 //-----------------------------------------------------------------------------
-QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >
-IGIMatrixPerFileBackend::GetPlaybackIndex(const QString& directoryName)
+void IGIMatrixPerFileBackend::AddData(const QString& directoryName,
+                                      const bool& isRecording,
+                                      const niftk::IGIDataSourceI::IGITimeType& duration,
+                                      const niftk::IGIDataSourceI::IGITimeType& timeStamp,
+                                      const std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >& data)
 {
-  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> > bufferToTimeStamp;
-  QMap<QString, QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> > bufferToTimeStampToFileNames;
+  std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >::const_iterator iter;
+  for (iter = data.begin(); iter != data.end(); ++iter)
+  {
+    std::string toolName = (*iter).first;
 
-  niftk::GetPlaybackIndex(directoryName, QString(".txt"), bufferToTimeStamp, bufferToTimeStampToFileNames);
-  return bufferToTimeStamp;
-}
+    niftk::IGITrackerDataType *trackerData = new niftk::IGITrackerDataType();
+    trackerData->SetToolName(toolName);
+    trackerData->SetTransform((*iter).second.first, (*iter).second.second);
+    trackerData->SetTimeStampInNanoSeconds(timeStamp);
+    trackerData->SetFrameId(m_FrameId++);
+    trackerData->SetDuration(duration); // nanoseconds
+    trackerData->SetShouldBeSaved(isRecording);
 
+    std::unique_ptr<niftk::IGIDataType> wrapper(trackerData);
 
-//-----------------------------------------------------------------------------
-bool IGIMatrixPerFileBackend::ProbeRecordedData(const QString& directoryName,
-                                                niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
-                                                niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
-{
-  return niftk::ProbeRecordedData(directoryName, QString(".txt"), firstTimeStampInStore, lastTimeStampInStore);
+    if (m_Buffers.find(toolName) == m_Buffers.end())
+    {
+      std::unique_ptr<niftk::IGIDataSourceRingBuffer> newBuffer(
+            new niftk::IGIDataSourceRingBuffer(this->GetExpectedFramesPerSecond() * 2));
+      newBuffer->SetLagInMilliseconds(m_Lag);
+      m_Buffers.insert(std::make_pair(toolName, std::move(newBuffer)));
+    }
+
+    if (isRecording)
+    {
+      this->SaveItem(directoryName, wrapper);
+    }
+
+    m_Buffers[toolName]->AddToBuffer(wrapper);
+  }
 }
 
 
@@ -157,42 +176,23 @@ void IGIMatrixPerFileBackend::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-void IGIMatrixPerFileBackend::AddData(const QString& directoryName,
-                                      const bool& isRecording,
-                                      const niftk::IGIDataSourceI::IGITimeType& duration,
-                                      const niftk::IGIDataSourceI::IGITimeType& timeStamp,
-                                      const std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >& data)
+bool IGIMatrixPerFileBackend::ProbeRecordedData(const QString& directoryName,
+                                                niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
+                                                niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
-  std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >::const_iterator iter;
-  for (iter = data.begin(); iter != data.end(); ++iter)
-  {
-    std::string toolName = (*iter).first;
+  return niftk::ProbeRecordedData(directoryName, QString(".txt"), firstTimeStampInStore, lastTimeStampInStore);
+}
 
-    niftk::IGITrackerDataType *trackerData = new niftk::IGITrackerDataType();
-    trackerData->SetToolName(toolName);
-    trackerData->SetTransform((*iter).second.first, (*iter).second.second);
-    trackerData->SetTimeStampInNanoSeconds(timeStamp);
-    trackerData->SetFrameId(m_FrameId++);
-    trackerData->SetDuration(duration); // nanoseconds
-    trackerData->SetShouldBeSaved(isRecording);
 
-    std::unique_ptr<niftk::IGIDataType> wrapper(trackerData);
+//-----------------------------------------------------------------------------
+QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >
+IGIMatrixPerFileBackend::GetPlaybackIndex(const QString& directoryName)
+{
+  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> > bufferToTimeStamp;
+  QMap<QString, QHash<niftk::IGIDataSourceI::IGITimeType, QStringList> > bufferToTimeStampToFileNames;
 
-    if (m_Buffers.find(toolName) == m_Buffers.end())
-    {
-      std::unique_ptr<niftk::IGIDataSourceRingBuffer> newBuffer(
-            new niftk::IGIDataSourceRingBuffer(this->GetExpectedFramesPerSecond() * 2));
-      newBuffer->SetLagInMilliseconds(m_Lag);
-      m_Buffers.insert(std::make_pair(toolName, std::move(newBuffer)));
-    }
-
-    if (isRecording)
-    {
-      this->SaveItem(directoryName, wrapper);
-    }
-
-    m_Buffers[toolName]->AddToBuffer(wrapper);
-  }
+  niftk::GetPlaybackIndex(directoryName, QString(".txt"), bufferToTimeStamp, bufferToTimeStampToFileNames);
+  return bufferToTimeStamp;
 }
 
 
@@ -233,53 +233,6 @@ void IGIMatrixPerFileBackend::SaveItem(const QString& directoryName,
     mitkThrow() << "Failed to save IGITrackerDataType to " << fileName.toStdString();
   }
   data->SetIsSaved(true);
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<IGIDataItemInfo> IGIMatrixPerFileBackend::Update(const niftk::IGIDataSourceI::IGITimeType& time)
-{
-  std::vector<IGIDataItemInfo> infos;
-
-  if (m_Buffers.empty())
-  {
-    return infos;
-  }
-
-  std::map<std::string, std::unique_ptr<niftk::IGIDataSourceRingBuffer> >::iterator iter;
-  for (iter = m_Buffers.begin(); iter != m_Buffers.end(); ++iter)
-  {
-    std::string bufferName = iter->first;
-
-    if (m_Buffers[bufferName]->GetBufferSize() == 0)
-    {
-      continue;
-    }
-
-    if(m_Buffers[bufferName]->GetFirstTimeStamp() > time)
-    {
-      continue;
-    }
-
-    m_Buffers[bufferName]->UpdateFrameRate();
-
-    bool gotFromBuffer = m_Buffers[bufferName]->CopyOutItem(time, m_CachedDataType);
-    if (!gotFromBuffer)
-    {
-      MITK_INFO << "MITKTrackerDataSourceService: Failed to find data for time:" << time;
-      return infos;
-    }
-
-    this->WriteToDataStorage(bufferName, m_CachedDataType);
-
-    IGIDataItemInfo info;
-    info.m_Name = m_Name;
-    info.m_FramesPerSecond = m_Buffers[bufferName]->GetFrameRate();
-    info.m_IsLate = m_CachedDataType.IsLate(time);
-    info.m_LagInMilliseconds = m_CachedDataType.GetLagInMilliseconds(time);
-    infos.push_back(info);
-  }
-  return infos;
 }
 
 } // end namespace

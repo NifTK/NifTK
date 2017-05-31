@@ -22,6 +22,15 @@
 
 namespace niftk
 {
+/**
+ * \class IGISingleFileBackend
+ * \brief Tracker backend that saves all transforms for a single tool
+ * inside the same file, using the format:
+ * <verbatim>
+ * timestamp q1 q2 q3 q4 t1 t2 t3 t4
+ * </verbatim>
+ * and each tool goes in a separate folder, just like in niftk::IGIMatrixPerFileBackend.
+ */
 class NIFTKIGITRACKERS_EXPORT IGISingleFileBackend : public niftk::IGITrackerBackend
 {
 public:
@@ -37,11 +46,6 @@ public:
                const niftk::IGIDataSourceI::IGITimeType& duration,
                const niftk::IGIDataSourceI::IGITimeType& timeStamp,
                const std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >& data);
-
-  /**
-  * \brief Loads one frame of data into mitk::DataStorage corresponding to the given time.
-  */
-  std::vector<IGIDataItemInfo> Update(const niftk::IGIDataSourceI::IGITimeType& time);
 
   /**
   * \see  IGIDataSourceI::StartPlayback()
@@ -83,15 +87,19 @@ protected:
 
 private:
 
-  // This loads all the timestamps and filenames into memory!
-  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> > GetPlaybackIndex(const QString& directory);
+  typedef std::map<niftk::IGIDataSourceI::IGITimeType,
+                   std::pair<mitk::Point4D, mitk::Vector3D> // quaternion, translation
+                  > PlaybackTransformType;
+  typedef std::map<std::string, PlaybackTransformType> PlaybackIndexType;
+
+  // This loads all the timestamps and transformations into memory!
+  PlaybackIndexType GetPlaybackIndex(const QString& directory);
 
   void SaveItem(const QString& directoryName,
                 const std::unique_ptr<niftk::IGIDataType>& item);
 
-  QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> >            m_PlaybackIndex;
-  std::map<std::string, std::unique_ptr<niftk::IGIDataSourceRingBuffer> > m_Buffers;
-  niftk::IGITrackerDataType                                               m_CachedDataType;
+  PlaybackIndexType                                m_PlaybackIndex;
+  std::map<std::string, std::unique_ptr<ostream> > m_OpenFiles;
 
 };
 
