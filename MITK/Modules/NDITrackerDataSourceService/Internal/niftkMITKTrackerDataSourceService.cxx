@@ -19,7 +19,6 @@
 namespace niftk
 {
 
-
 //-----------------------------------------------------------------------------
 MITKTrackerDataSourceService::MITKTrackerDataSourceService(
   QString name,
@@ -36,7 +35,7 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
     mitkThrow() << "Tracker is NULL!";
   }
 
-  // In base class
+  // First assign to base class (protected) pointers.
   m_Tracker = tracker;
   m_BackEnd = niftk::IGIMatrixPerFileBackend::New(this->GetName(), this->GetDataStorage());
   m_BackEnd->SetExpectedFramesPerSecond(m_Tracker->GetExpectedFramesPerSecond());
@@ -59,7 +58,7 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
     mitkThrow() << "Failed to start data grabbing thread";
   }
 
-  this->SetDescription("MITK Tracker:" + this->GetName());
+  this->SetDescription(this->GetName());
   this->SetStatus("Initialised");
   this->Modified();
 }
