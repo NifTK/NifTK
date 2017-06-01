@@ -13,7 +13,7 @@
 =============================================================================*/
 
 #include "niftkAtracsysDataSourceService.h"
-#include <niftkIGIMatrixPerFileBackend.h>
+#include <niftkIGISingleFileBackend.h>
 #include <niftkAtracsysTracker.h>
 #include <mitkExceptionMacro.h>
 
@@ -36,7 +36,7 @@ AtracsysDataSourceService::AtracsysDataSourceService(
 
   // First assign to base class (protected) pointers.
   m_Tracker = niftk::AtracsysTracker::New(dataStorage, fileName.toStdString());
-  m_BackEnd = niftk::IGIMatrixPerFileBackend::New(this->GetName(), this->GetDataStorage());
+  m_BackEnd = niftk::IGISingleFileBackend::New(this->GetName(), this->GetDataStorage());
   m_BackEnd->SetExpectedFramesPerSecond(m_Tracker->GetExpectedFramesPerSecond());
 
   this->SetTimeStampTolerance((m_Tracker->GetExpectedFramesPerSecond()
