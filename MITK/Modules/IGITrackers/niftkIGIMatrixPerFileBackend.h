@@ -53,8 +53,7 @@ public:
   * \see IGIDataSourceI::PlaybackData()
   * \brief Basically, loads the closest (in time) data into the buffers.
   */
-  virtual void PlaybackData(const QString& directoryName,
-                            const niftk::IGIDataSourceI::IGITimeType& duration,
+  virtual void PlaybackData(const niftk::IGIDataSourceI::IGITimeType& duration,
                             const niftk::IGIDataSourceI::IGITimeType& requestedTimeStamp) override;
 
   /**

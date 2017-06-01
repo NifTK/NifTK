@@ -17,6 +17,8 @@ MITK_CREATE_MODULE(
   PACKAGE_DEPENDS Qt4|QtGui Qt5|Widgets
 )
 
+target_link_libraries(niftkIGITrackers PRIVATE niftkcommon)
+
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkIGITrackers)
 endif()

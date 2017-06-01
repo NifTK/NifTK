@@ -59,8 +59,7 @@ public:
   * \see IGIDataSourceI::PlaybackData()
   * \brief Basically, loads the closest (in time) data into the buffers.
   */
-  virtual void PlaybackData(const QString& directoryName,
-                            const niftk::IGIDataSourceI::IGITimeType& duration,
+  virtual void PlaybackData(const niftk::IGIDataSourceI::IGITimeType& duration,
                             const niftk::IGIDataSourceI::IGITimeType& requestedTimeStamp) override;
 
   /**
@@ -95,13 +94,14 @@ private:
   typedef std::map<std::string, PlaybackTransformType> PlaybackIndexType;
 
   // This loads all the timestamps and transformations into memory!
-  PlaybackIndexType GetPlaybackIndex(const QString& directory);
+  PlaybackIndexType&& GetPlaybackIndex(const QString& directory);
+  PlaybackTransformType&& ParseFile(const QString& fileName);
 
   void SaveItem(const QString& directoryName,
                 const std::unique_ptr<niftk::IGIDataType>& item);
 
-  PlaybackIndexType                 m_PlaybackIndex;
-  std::map<std::string, ofstream >  m_OpenFiles;
+  PlaybackIndexType                                  m_PlaybackIndex;
+  std::map<std::string, std::unique_ptr<ofstream> >  m_OpenFiles;
 
 };
 

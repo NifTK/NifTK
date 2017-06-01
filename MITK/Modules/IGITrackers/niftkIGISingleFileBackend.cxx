@@ -14,10 +14,8 @@
 
 #include "niftkIGISingleFileBackend.h"
 #include <niftkIGIDataSourceUtils.h>
-#include <niftkFileIOUtils.h>
 #include <niftkMITKMathsUtils.h>
-
-#include <cassert>
+#include <niftkFileHelper.h>
 
 namespace niftk
 {
@@ -52,7 +50,7 @@ void IGISingleFileBackend::AddData(const QString& directoryName,
     trackerData->SetTransform((*iter).second.first, (*iter).second.second);
     trackerData->SetTimeStampInNanoSeconds(timeStamp);
     trackerData->SetFrameId(m_FrameId++);
-    trackerData->SetDuration(duration); // nanoseconds
+    trackerData->SetDuration(duration);
     trackerData->SetShouldBeSaved(isRecording);
 
     std::unique_ptr<niftk::IGIDataType> wrapper(trackerData);
@@ -86,14 +84,16 @@ void IGISingleFileBackend::StartPlayback(const QString& directoryName,
 
 
 //-----------------------------------------------------------------------------
-void IGISingleFileBackend::PlaybackData(const QString& directoryName,
-                                        const niftk::IGIDataSourceI::IGITimeType& duration,
+void IGISingleFileBackend::PlaybackData(const niftk::IGIDataSourceI::IGITimeType& duration,
                                         const niftk::IGIDataSourceI::IGITimeType& requestedTimeStamp)
 {
-  assert(m_PlaybackIndex.size() > 0); // Should have failed probing if no data.
+  if (m_PlaybackIndex.empty())
+  {
+    mitkThrow() << "Empty m_PlaybackIndex, which must be a programming bug!";
+  }
 
-  // This will find us the timestamp right before the requested one.
   // Remember we have multiple buffers!
+  // This will find us the timestamp right before the requested one, in each buffer.
   PlaybackIndexType::iterator playbackIter;
   for(playbackIter = m_PlaybackIndex.begin(); playbackIter != m_PlaybackIndex.end(); ++playbackIter)
   {
@@ -118,11 +118,11 @@ void IGISingleFileBackend::PlaybackData(const QString& directoryName,
 
       if (m_Buffers.find(bufferName) != m_Buffers.end())
       {
-          mitk::Point4D rotation;
-          mitk::Vector3D translation;
+          mitk::Point4D rotation = (*i).second.first;
+          mitk::Vector3D translation = (*i).second.second;
 
           niftk::IGITrackerDataType *trackerData = new niftk::IGITrackerDataType();
-          //trackerData->SetTimeStampInNanoSeconds(*i);
+          trackerData->SetTimeStampInNanoSeconds((*i).first);
           trackerData->SetTransform(rotation, translation);
           trackerData->SetFrameId(m_FrameId++);
           trackerData->SetDuration(duration);
@@ -148,11 +148,96 @@ void IGISingleFileBackend::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
+IGISingleFileBackend::PlaybackTransformType&&
+IGISingleFileBackend::ParseFile(const QString& fileName)
+{
+  PlaybackTransformType result;
+  std::ifstream ifs(fileName.toStdString(), std::ios::binary | std::ios::in);
+  if (ifs.is_open())
+  {
+    niftk::IGIDataSourceI::IGITimeType time;
+    std::pair<mitk::Point4D, mitk::Vector3D> transform;
+    while (ifs.good())
+    {
+      ifs >> time;
+      ifs >> transform.first[0];
+      ifs >> transform.first[1];
+      ifs >> transform.first[2];
+      ifs >> transform.first[3];
+      ifs >> transform.second[0];
+      ifs >> transform.second[1];
+      ifs >> transform.second[2];
+      if (ifs.good())
+      {
+        result.insert(std::move(std::make_pair(time, transform)));
+      }
+    }
+  }
+  return std::move(result);
+}
+
+
+//-----------------------------------------------------------------------------
 bool IGISingleFileBackend::ProbeRecordedData(const QString& directoryName,
                                              niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
                                              niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {
-  return false;
+  niftk::IGIDataSourceI::IGITimeType  firstTimeStampFound
+    = std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::max();
+
+  niftk::IGIDataSourceI::IGITimeType  lastTimeStampFound
+    = std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::min();
+
+  // Get all transform files.
+  std::vector<std::string> files = niftk::FindFilesWithGivenExtension(directoryName.toStdString(), ".tqrt");
+  if (files.empty())
+  {
+    return false;
+  }
+  for (int i = 0; i < files.size(); i++)
+  {
+    std::string fileName = files[i];
+    PlaybackTransformType map = this->ParseFile(QString::fromStdString(fileName));
+    if (!map.empty())
+    {
+      niftk::IGIDataSourceI::IGITimeType firstTimeStamp = (*map.begin()).first;
+      if (firstTimeStamp < firstTimeStampFound)
+      {
+        firstTimeStampFound = firstTimeStamp;
+      }
+      niftk::IGIDataSourceI::IGITimeType lastTimeStamp;
+      if (map.size() > 1)
+      {
+        lastTimeStamp = (*(map.end() --)).first;
+      }
+      else
+      {
+        lastTimeStamp = (*map.begin()).first;
+      }
+      if (lastTimeStamp > lastTimeStampFound)
+      {
+        lastTimeStampFound = lastTimeStamp;
+      }
+
+      MITK_INFO << "IGISingleFileBackend: Parsed:" << fileName
+                << ", min=" << firstTimeStamp
+                << ", max=" << lastTimeStamp;
+    }
+    MITK_INFO << "IGISingleFileBackend: Probed:" << directoryName.toStdString()
+              << ", min=" << firstTimeStampFound
+              << ", max=" << lastTimeStampFound;
+  }
+
+  if (firstTimeStampInStore)
+  {
+    *firstTimeStampInStore = firstTimeStampFound;
+  }
+  if (lastTimeStampInStore)
+  {
+    *lastTimeStampInStore = lastTimeStampFound;
+  }
+
+  return firstTimeStampFound != std::numeric_limits<niftk::IGIDataSourceI::IGITimeType>::max();
 }
 
 
@@ -189,19 +274,19 @@ void IGISingleFileBackend::SaveItem(const QString& directoryName,
     }
   }
 
-  QString fileName =  toolPath + QDir::separator() + QString::fromStdString(toolName);
+  QString fileName =  toolPath + QDir::separator() + QString::fromStdString(toolName) + QString(".tqrt");
   std::string fileNameAsString = fileName.toStdString();
 
   // Open file if its not in our map.
   if (m_OpenFiles.find(toolName) == m_OpenFiles.end())
   {
-    std::ofstream ofs;
-    ofs.open(fileNameAsString);
-    if (!ofs.is_open())
+    std::unique_ptr<ofstream> ofs(new ofstream());
+    ofs->open(fileNameAsString, std::ios::binary | std::ios::out);
+    if (!ofs->is_open())
     {
       mitkThrow() << "Failed to open file:" << fileNameAsString << " for saving data.";
     }
-    m_OpenFiles.insert(std::make_pair(toolName, std::move(ofs)));
+    m_OpenFiles.insert(std::move(std::make_pair(toolName, std::move(ofs))));
   }
 
   // Write data to file.
@@ -209,26 +294,56 @@ void IGISingleFileBackend::SaveItem(const QString& directoryName,
   mitk::Vector3D translation;
   data->GetTransform(rotation, translation);
 
-  m_OpenFiles[toolName] << data->GetTimeStampInNanoSeconds() << " "
-                        << rotation[0] << " "
-                        << rotation[1] << " "
-                        << rotation[2] << " "
-                        << rotation[3] << " "
-                        << translation[0] << " "
-                        << translation[1] << " "
-                        << translation[2]
-                        << std::endl;
+  (*m_OpenFiles[toolName]) << data->GetTimeStampInNanoSeconds()
+                           << rotation[0]
+                           << rotation[1]
+                           << rotation[2]
+                           << rotation[3]
+                           << translation[0]
+                           << translation[1]
+                           << translation[2];
 
   data->SetIsSaved(true);
 }
 
 
 //-----------------------------------------------------------------------------
-IGISingleFileBackend::PlaybackIndexType
+IGISingleFileBackend::PlaybackIndexType&&
 IGISingleFileBackend::GetPlaybackIndex(const QString& directoryName)
 {
   PlaybackIndexType playbackIndex;
-  return playbackIndex;
+
+  std::vector<std::string> files = niftk::FindFilesWithGivenExtension(directoryName.toStdString(), ".tqrt");
+  if (files.empty())
+  {
+    return std::move(playbackIndex);
+  }
+  for (int i = 0; i < files.size(); i++)
+  {
+    std::string fileName = files[i];
+    QString base = QString::fromStdString(niftk::Basename(fileName));
+
+    // Chop off .tqrt which is 5 characters, to get tool name.
+    if (base.size() > 5)
+    {
+      base = base.left(base.size() - 5);
+    }
+
+    PlaybackTransformType map = this->ParseFile(QString::fromStdString(fileName));
+    if (map.size() > 0)
+    {
+      MITK_INFO << "IGISingleFileBackend: Loaded " << fileName << ", with " << map.size() << " transforms";
+      playbackIndex.insert(std::move(std::make_pair(base.toStdString(),
+                                                    std::move(map)
+                                                   )
+                                     )
+                           );
+    }
+  }
+
+  MITK_INFO << "IGISingleFileBackend: Stored " << playbackIndex.size() << " buffers.";
+
+  return std::move(playbackIndex);
 }
 
 

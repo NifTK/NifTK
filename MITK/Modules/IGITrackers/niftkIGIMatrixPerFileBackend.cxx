@@ -17,8 +17,6 @@
 #include <niftkFileIOUtils.h>
 #include <niftkMITKMathsUtils.h>
 
-#include <cassert>
-
 namespace niftk
 {
 
@@ -86,12 +84,13 @@ void IGIMatrixPerFileBackend::StartPlayback(const QString& directoryName,
 
 
 //-----------------------------------------------------------------------------
-void IGIMatrixPerFileBackend::PlaybackData(const QString& directoryName,
-                                           const niftk::IGIDataSourceI::IGITimeType& duration,
+void IGIMatrixPerFileBackend::PlaybackData(const niftk::IGIDataSourceI::IGITimeType& duration,
                                            const niftk::IGIDataSourceI::IGITimeType& requestedTimeStamp)
 {
-  assert(m_PlaybackIndex.size() > 0); // Should have failed probing if no data.
-
+  if (m_PlaybackIndex.empty())
+  {
+    mitkThrow() << "Empty m_PlaybackIndex, which must be a programming bug!";
+  }
 
   // This will find us the timestamp right after the requested one.
   // Remember we have multiple buffers!
@@ -121,7 +120,7 @@ void IGIMatrixPerFileBackend::PlaybackData(const QString& directoryName,
       if (m_Buffers.find(bufferNameAsStdString) != m_Buffers.end())
       {
         std::ostringstream  filename;
-        filename << directoryName.toStdString()
+        filename << m_PlaybackDirectory.toStdString()
                  << niftk::GetPreferredSlash().toStdString()
                  << bufferName.toStdString()
                  << niftk::GetPreferredSlash().toStdString()

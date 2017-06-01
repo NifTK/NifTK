@@ -85,8 +85,7 @@ void IGITrackerDataSourceService::PlaybackData(niftk::IGIDataSourceI::IGITimeTyp
     mitkThrow() << "Backend is null. This should not happen! It's a programming bug.";
   }
 
-  m_BackEnd->PlaybackData(this->GetPlaybackDirectory(),
-                          this->GetTimeStampTolerance(),
+  m_BackEnd->PlaybackData(this->GetTimeStampTolerance(),
                           requestedTimeStamp);
 
   this->SetStatus("Playing back");

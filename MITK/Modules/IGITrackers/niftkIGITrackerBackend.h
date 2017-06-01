@@ -64,8 +64,7 @@ public:
   /**
   * \see IGIDataSourceI::PlaybackData()
   */
-  virtual void PlaybackData(const QString& directoryName,
-                            const niftk::IGIDataSourceI::IGITimeType& duration,
+  virtual void PlaybackData(const niftk::IGIDataSourceI::IGITimeType& duration,
                             const niftk::IGIDataSourceI::IGITimeType& requestedTimeStamp) = 0;
 
   /**
@@ -124,6 +123,7 @@ protected:
            std::unique_ptr<
              niftk::IGIDataSourceRingBuffer>
           >                          m_Buffers;
+  QString                            m_PlaybackDirectory;
 };
 
 } // end namespace
