@@ -25,8 +25,8 @@ namespace niftk
 * \class MITKTrackerDataSourceService
 * \brief Provides a local MITK implementation of a tracker interface,
 * as an IGIDataSourceServiceI. This class coordinates between
-* niftk::NDITracker subclasses, a niftk::IGITrackerBackend and
-* a niftk::IGIDataSourceGrabbingThread and enables this class to
+* niftk::NDITracker subclasses, niftk::IGITrackerBackend subclasses and
+* an niftk::IGIDataSourceGrabbingThread and also enables this class to
 * be registered as an MITK MicroService.
 *
 * Note: All errors should thrown as mitk::Exception or sub-classes thereof.
