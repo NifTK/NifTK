@@ -29,4 +29,19 @@
       <channel>output</channel>
     </file>
   </parameters>
+
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control type of data to extract]]></description>
+
+    <string>
+      <name>datatype</name>
+      <flag>d</flag>
+      <longflag>datatype</longflag>
+      <description>Type of data to extract. Options are 'image' and 'pointset'</description>
+      <label>Type of data to extract</label>
+      <default>image</default>
+    </string>
+  </parameters>
+
 </executable>

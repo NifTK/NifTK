@@ -22,7 +22,7 @@ if(BUILD_COMMAND_LINE_PROGRAMS)
 
     add_subdirectory(PointSetStatistics)
     add_subdirectory(CreatePolyDataFromImage)
-    add_subdirectory(ExtractLandmarkFromMITKScene)
+    add_subdirectory(ExtractDataFromMITKScene)
 
     if(BUILD_NiftyIGI)
       add_subdirectory(AtracsysClient)
