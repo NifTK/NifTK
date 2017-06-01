@@ -81,6 +81,11 @@ public:
                                  niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore) = 0;
 
   /**
+  * \see IGIDataSourceI::StopRecording()
+  */
+  virtual void StopRecording() {} // deliberately empty.
+
+  /**
   * \brief IGIDataSourceI::SetProperties()
   */
   virtual void SetProperties(const IGIDataSourceProperties& properties);

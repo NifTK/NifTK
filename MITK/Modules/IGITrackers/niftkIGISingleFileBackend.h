@@ -18,7 +18,7 @@
 #include <niftkIGITrackersExports.h>
 #include "niftkIGITrackerBackend.h"
 #include <niftkIGIDataSourceRingBuffer.h>
-#include <QSet>
+#include <iostream>
 
 namespace niftk
 {
@@ -77,6 +77,8 @@ public:
                                  niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
                                  niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore) override;
 
+  virtual void StopRecording();
+
 protected:
 
   IGISingleFileBackend(QString name, mitk::DataStorage::Pointer dataStorage); // Purposefully hidden.
@@ -98,8 +100,8 @@ private:
   void SaveItem(const QString& directoryName,
                 const std::unique_ptr<niftk::IGIDataType>& item);
 
-  PlaybackIndexType                                m_PlaybackIndex;
-  std::map<std::string, std::unique_ptr<ostream> > m_OpenFiles;
+  PlaybackIndexType                 m_PlaybackIndex;
+  std::map<std::string, ofstream >  m_OpenFiles;
 
 };
 

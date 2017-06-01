@@ -78,14 +78,19 @@ public:
                          niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore) override;
 
   /**
-  * \brief IGIDataSourceI::SetProperties()
+  * \see IGIDataSourceI::SetProperties()
   */
   virtual void SetProperties(const IGIDataSourceProperties& properties) override;
 
   /**
-  * \brief IGIDataSourceI::GetProperties()
+  * \see IGIDataSourceI::GetProperties()
   */
   virtual IGIDataSourceProperties GetProperties() const override;
+
+  /**
+  * \see IGIDataSourceI::StopRecording()
+  */
+  virtual void StopRecording() override;
 
 protected:
 

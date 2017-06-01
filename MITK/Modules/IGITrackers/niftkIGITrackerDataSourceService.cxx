@@ -157,4 +157,12 @@ IGIDataSourceProperties IGITrackerDataSourceService::GetProperties() const
   return m_BackEnd->GetProperties();
 }
 
+
+//-----------------------------------------------------------------------------
+void IGITrackerDataSourceService::StopRecording()
+{
+  IGIDataSource::StopRecording();
+  m_BackEnd->StopRecording();
+}
+
 } // end namespace

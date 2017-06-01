@@ -37,10 +37,10 @@ IGISingleFileBackend::~IGISingleFileBackend()
 
 //-----------------------------------------------------------------------------
 void IGISingleFileBackend::AddData(const QString& directoryName,
-                                      const bool& isRecording,
-                                      const niftk::IGIDataSourceI::IGITimeType& duration,
-                                      const niftk::IGIDataSourceI::IGITimeType& timeStamp,
-                                      const std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >& data)
+                                   const bool& isRecording,
+                                   const niftk::IGIDataSourceI::IGITimeType& duration,
+                                   const niftk::IGIDataSourceI::IGITimeType& timeStamp,
+                                   const std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >& data)
 {
   std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >::const_iterator iter;
   for (iter = data.begin(); iter != data.end(); ++iter)
@@ -157,6 +157,13 @@ bool IGISingleFileBackend::ProbeRecordedData(const QString& directoryName,
 
 
 //-----------------------------------------------------------------------------
+void IGISingleFileBackend::StopRecording()
+{
+  m_OpenFiles.clear();
+}
+
+
+//-----------------------------------------------------------------------------
 void IGISingleFileBackend::SaveItem(const QString& directoryName,
                                     const std::unique_ptr<niftk::IGIDataType>& item)
 {
@@ -165,6 +172,52 @@ void IGISingleFileBackend::SaveItem(const QString& directoryName,
   {
     mitkThrow() << "Failed to save IGITrackerDataType as the data received was the wrong type!";
   }
+
+  std::string toolName = data->GetToolName();
+
+  QString toolPath = directoryName
+      + niftk::GetPreferredSlash()
+      + QString::fromStdString(toolName)
+      + niftk::GetPreferredSlash();
+
+  QDir directory(toolPath);
+  if (!directory.exists())
+  {
+    if (!directory.mkpath(toolPath))
+    {
+      mitkThrow() << "Failed to save IGITrackerDataType as could not create " << toolPath.toStdString();
+    }
+  }
+
+  QString fileName =  toolPath + QDir::separator() + QString::fromStdString(toolName);
+  std::string fileNameAsString = fileName.toStdString();
+
+  // Open file if its not in our map.
+  if (m_OpenFiles.find(toolName) == m_OpenFiles.end())
+  {
+    std::ofstream ofs;
+    ofs.open(fileNameAsString);
+    if (!ofs.is_open())
+    {
+      mitkThrow() << "Failed to open file:" << fileNameAsString << " for saving data.";
+    }
+    m_OpenFiles.insert(std::make_pair(toolName, std::move(ofs)));
+  }
+
+  // Write data to file.
+  mitk::Point4D rotation;
+  mitk::Vector3D translation;
+  data->GetTransform(rotation, translation);
+
+  m_OpenFiles[toolName] << data->GetTimeStampInNanoSeconds() << " "
+                        << rotation[0] << " "
+                        << rotation[1] << " "
+                        << rotation[2] << " "
+                        << rotation[3] << " "
+                        << translation[0] << " "
+                        << translation[1] << " "
+                        << translation[2]
+                        << std::endl;
 
   data->SetIsSaved(true);
 }
