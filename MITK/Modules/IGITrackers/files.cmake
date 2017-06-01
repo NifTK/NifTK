@@ -17,4 +17,5 @@ set(CPP_FILES
   niftkIGITrackerBackend.cxx
   niftkIGIMatrixPerFileBackend.cxx
   niftkIGISingleFileBackend.cxx
+  niftkIGITrackerDataSourceService.cxx
 )
