@@ -58,10 +58,10 @@ int main(int argc, char** argv)
     if (!outputFile.empty())
     {
       ofs.open(outputFile, std::ios::out);
-    }
-    if (!ofs.is_open())
-    {
-      mitkThrow() << "Failed to open output file:" << outputFile;
+      if (!ofs.is_open())
+      {
+        mitkThrow() << "Failed to open output file:" << outputFile;
+      }
     }
 
     unsigned long int counter = 0;
@@ -71,14 +71,16 @@ int main(int argc, char** argv)
     {
       niftk::IGIDataSourceI::IGITimeType time;
       std::pair<mitk::Point4D, mitk::Vector3D> transform;
-      ifs >> time;
-      ifs >> transform.first[0];
-      ifs >> transform.first[1];
-      ifs >> transform.first[2];
-      ifs >> transform.first[3];
-      ifs >> transform.second[0];
-      ifs >> transform.second[1];
-      ifs >> transform.second[2];
+
+      ifs.read(reinterpret_cast<char*>(&time), sizeof(niftk::IGIDataSourceI::IGITimeType));
+      ifs.read(reinterpret_cast<char*>(&transform.first[0]), sizeof(transform.first[0]));
+      ifs.read(reinterpret_cast<char*>(&transform.first[1]), sizeof(transform.first[1]));
+      ifs.read(reinterpret_cast<char*>(&transform.first[2]), sizeof(transform.first[2]));
+      ifs.read(reinterpret_cast<char*>(&transform.first[3]), sizeof(transform.first[3]));
+      ifs.read(reinterpret_cast<char*>(&transform.second[0]), sizeof(transform.second[0]));
+      ifs.read(reinterpret_cast<char*>(&transform.second[1]), sizeof(transform.second[1]));
+      ifs.read(reinterpret_cast<char*>(&transform.second[2]), sizeof(transform.second[2]));
+
       if (ifs.good() && counter % modulo == 0)
       {
         if (!outputDirectory.empty())
@@ -104,10 +106,6 @@ int main(int argc, char** argv)
           ofs << transform.second[2] << " ";
           ofs << std::endl;
         }
-      }
-      else
-      {
-        mitkThrow() << "Failed to parse entry:" << counter;
       }
     }
     returnStatus = EXIT_SUCCESS;

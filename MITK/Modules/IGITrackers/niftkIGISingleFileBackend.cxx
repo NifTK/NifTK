@@ -148,7 +148,7 @@ void IGISingleFileBackend::StopPlayback()
 
 
 //-----------------------------------------------------------------------------
-IGISingleFileBackend::PlaybackTransformType&&
+IGISingleFileBackend::PlaybackTransformType
 IGISingleFileBackend::ParseFile(const QString& fileName)
 {
   PlaybackTransformType result;
@@ -159,14 +159,14 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
     std::pair<mitk::Point4D, mitk::Vector3D> transform;
     while (ifs.good())
     {
-      ifs >> time;
-      ifs >> transform.first[0];
-      ifs >> transform.first[1];
-      ifs >> transform.first[2];
-      ifs >> transform.first[3];
-      ifs >> transform.second[0];
-      ifs >> transform.second[1];
-      ifs >> transform.second[2];
+      ifs.read(reinterpret_cast<char*>(&time), sizeof(niftk::IGIDataSourceI::IGITimeType));
+      ifs.read(reinterpret_cast<char*>(&transform.first[0]), sizeof(transform.first[0]));
+      ifs.read(reinterpret_cast<char*>(&transform.first[1]), sizeof(transform.first[1]));
+      ifs.read(reinterpret_cast<char*>(&transform.first[2]), sizeof(transform.first[2]));
+      ifs.read(reinterpret_cast<char*>(&transform.first[3]), sizeof(transform.first[3]));
+      ifs.read(reinterpret_cast<char*>(&transform.second[0]), sizeof(transform.second[0]));
+      ifs.read(reinterpret_cast<char*>(&transform.second[1]), sizeof(transform.second[1]));
+      ifs.read(reinterpret_cast<char*>(&transform.second[2]), sizeof(transform.second[2]));
       if (ifs.good())
       {
         result.insert(std::move(std::make_pair(time, transform)));
@@ -208,7 +208,7 @@ bool IGISingleFileBackend::ProbeRecordedData(const QString& directoryName,
       niftk::IGIDataSourceI::IGITimeType lastTimeStamp;
       if (map.size() > 1)
       {
-        lastTimeStamp = (*(map.end() --)).first;
+        lastTimeStamp = (*map.rbegin()).first;
       }
       else
       {
@@ -294,21 +294,23 @@ void IGISingleFileBackend::SaveItem(const QString& directoryName,
   mitk::Vector3D translation;
   data->GetTransform(rotation, translation);
 
-  (*m_OpenFiles[toolName]) << data->GetTimeStampInNanoSeconds()
-                           << rotation[0]
-                           << rotation[1]
-                           << rotation[2]
-                           << rotation[3]
-                           << translation[0]
-                           << translation[1]
-                           << translation[2];
+  niftk::IGIDataSourceI::IGITimeType time = data->GetTimeStampInNanoSeconds();
+
+  (*m_OpenFiles[toolName]).write(reinterpret_cast<char*>(&time), sizeof(niftk::IGIDataSourceI::IGITimeType));
+  (*m_OpenFiles[toolName]).write(reinterpret_cast<char*>(&rotation[0]), sizeof(rotation[0]));
+  (*m_OpenFiles[toolName]).write(reinterpret_cast<char*>(&rotation[1]), sizeof(rotation[1]));
+  (*m_OpenFiles[toolName]).write(reinterpret_cast<char*>(&rotation[2]), sizeof(rotation[2]));
+  (*m_OpenFiles[toolName]).write(reinterpret_cast<char*>(&rotation[3]), sizeof(rotation[3]));
+  (*m_OpenFiles[toolName]).write(reinterpret_cast<char*>(&translation[0]), sizeof(translation[0]));
+  (*m_OpenFiles[toolName]).write(reinterpret_cast<char*>(&translation[1]), sizeof(translation[1]));
+  (*m_OpenFiles[toolName]).write(reinterpret_cast<char*>(&translation[2]), sizeof(translation[2]));
 
   data->SetIsSaved(true);
 }
 
 
 //-----------------------------------------------------------------------------
-IGISingleFileBackend::PlaybackIndexType&&
+IGISingleFileBackend::PlaybackIndexType
 IGISingleFileBackend::GetPlaybackIndex(const QString& directoryName)
 {
   PlaybackIndexType playbackIndex;

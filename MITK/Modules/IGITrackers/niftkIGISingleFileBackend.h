@@ -94,8 +94,8 @@ private:
   typedef std::map<std::string, PlaybackTransformType> PlaybackIndexType;
 
   // This loads all the timestamps and transformations into memory!
-  PlaybackIndexType&& GetPlaybackIndex(const QString& directory);
-  PlaybackTransformType&& ParseFile(const QString& fileName);
+  PlaybackIndexType GetPlaybackIndex(const QString& directory);
+  PlaybackTransformType ParseFile(const QString& fileName);
 
   void SaveItem(const QString& directoryName,
                 const std::unique_ptr<niftk::IGIDataType>& item);
