@@ -25,7 +25,7 @@ AtracsysDataSourceService::AtracsysDataSourceService(
   QString factoryName,
   const IGIDataSourceProperties& properties,
   mitk::DataStorage::Pointer dataStorage)
-: IGITrackerDataSourceService("Atracsys-", factoryName, dataStorage)
+: IGITrackerDataSourceService("Atracsys", factoryName, dataStorage)
 , m_DataGrabbingThread(nullptr)
 {
   if(!properties.contains("file"))
