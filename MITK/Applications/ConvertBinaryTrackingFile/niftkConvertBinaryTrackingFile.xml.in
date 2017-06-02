@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Smart Liver.Tracking</category>
+  <title>Convert Binary Tracking File</title>
+  <description><![CDATA[Splits binary tracking file into matrices.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+  
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+    
+    <file fileExtensions=".tqrt">
+      <name>inputFile</name>
+      <flag>i</flag>
+      <longflag>inputFile</longflag>
+      <description>The input file.</description>
+      <label>Input file</label>
+      <channel>input</channel>
+    </file>
+   
+    <directory>
+      <name>outputDirectory</name>
+      <flag>o</flag>
+      <longflag>outputDirectory</longflag>
+      <description>The output directory.</description>
+      <label>Output Directory</label>
+      <channel>output</channel>
+    </directory>
+
+  </parameters>
+  
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Additional optional parameters]]></description>
+   
+    <integer>
+      <name>skip</name>
+      <flag>s</flag>
+      <longflag>skip</longflag>
+      <description>Skip n frames.</description>
+      <label>If greater than zero, will skip frames.</label>
+      <default>0</default>
+    </integer>
+
+    <file fileExtensions=".tqrt">
+      <name>outputFile</name>
+      <flag>f</flag>
+      <longflag>outputFile</longflag>
+      <description>The output file.</description>
+      <label>Output file</label>
+      <channel>output</channel>
+    </file>
+
+  </parameters>
+  
+</executable>
