@@ -80,6 +80,7 @@ void IGIMatrixPerFileBackend::StartPlayback(const QString& directoryName,
 {
   m_Buffers.clear();
   m_PlaybackIndex = this->GetPlaybackIndex(directoryName);
+  m_PlaybackDirectory = directoryName;
 }
 
 
