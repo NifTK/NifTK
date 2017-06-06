@@ -80,6 +80,7 @@ void IGISingleFileBackend::StartPlayback(const QString& directoryName,
 {
   m_Buffers.clear();
   m_PlaybackIndex = this->GetPlaybackIndex(directoryName);
+  m_PlaybackDirectory = directoryName;
 }
 
 
@@ -323,19 +324,13 @@ IGISingleFileBackend::GetPlaybackIndex(const QString& directoryName)
   for (int i = 0; i < files.size(); i++)
   {
     std::string fileName = files[i];
-    QString base = QString::fromStdString(niftk::Basename(fileName));
-
-    // Chop off .tqrt which is 5 characters, to get tool name.
-    if (base.size() > 5)
-    {
-      base = base.left(base.size() - 5);
-    }
+    std::string base = niftk::Basename(fileName);
 
     PlaybackTransformType map = this->ParseFile(QString::fromStdString(fileName));
     if (map.size() > 0)
     {
       MITK_INFO << "IGISingleFileBackend: Loaded " << fileName << ", with " << map.size() << " transforms";
-      playbackIndex.insert(std::move(std::make_pair(base.toStdString(),
+      playbackIndex.insert(std::move(std::make_pair(base,
                                                     std::move(map)
                                                    )
                                      )
