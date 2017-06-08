@@ -287,6 +287,8 @@ signals:
 
   void BindingOptionsChanged(int bindingOptions);
 
+  void WindowSelected();
+
 protected slots:
 
   /// \brief Called when the selected slice has been changed through the control panel.
