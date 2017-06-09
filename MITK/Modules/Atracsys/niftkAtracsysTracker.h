@@ -52,6 +52,13 @@ public:
   */
   std::vector<mitk::Point3D> GetBallPositions();
 
+  /**
+  * \brief Even more experimental, returns markers and any spare balls from the same frame.
+  */
+  void GetMarkersAndBalls(std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >&,
+                          std::vector<mitk::Point3D>&
+                         );
+
 protected:
 
   AtracsysTracker(mitk::DataStorage::Pointer dataStorage,

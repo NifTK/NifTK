@@ -41,15 +41,21 @@ public:
 
   std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > GetTrackingData();
   std::vector<mitk::Point3D> GetBallPositions();
+  void GetMarkersAndBalls(std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >&,
+                          std::vector<mitk::Point3D>&
+                         );
 
 private:
 
   void CheckError(ftkLibrary lib);
+  void GetData(std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >&,
+               std::vector<mitk::Point3D>&);
 
   const AtracsysTracker                      *m_Container;
   const std::vector<std::string>              m_ToolNames;
   const std::vector<std::string>              m_GeometryFiles;
   std::map<int, std::string>                  m_IdToName;
+  std::map<int, int>                          m_IdToCount;
   uint64                                      m_SerialNumber;
   ftkLibrary                                  m_Lib;
   ftkFrameQuery                              *m_Frame;
@@ -108,6 +114,7 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
     else
     {
       m_IdToName.insert(std::pair<int, std::string>(geom.geometryId, m_ToolNames[i]));
+      m_IdToCount.insert(std::pair<int, int>(geom.geometryId, geom.pointsCount));
     }
   }
   
@@ -173,13 +180,51 @@ void AtracsysTrackerPrivate::CheckError(ftkLibrary lib)
 //-----------------------------------------------------------------------------
 std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTrackerPrivate::GetTrackingData()
 {
-  std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > results;
+  std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > markers;
+  std::vector<mitk::Point3D> balls;
+
+  this->GetData(markers, balls);
+  return markers;
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
+{
+  std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > markers;
+  std::vector<mitk::Point3D> balls;
+
+  this->GetData(markers, balls);
+  return balls;
+}
+
+
+//-----------------------------------------------------------------------------
+void AtracsysTrackerPrivate::GetMarkersAndBalls(std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >& markers,
+                                                std::vector<mitk::Point3D>& balls
+                                               )
+{
+  this->GetData(markers, balls);
+}
+
+
+//-----------------------------------------------------------------------------
+void AtracsysTrackerPrivate::GetData(std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >& markers,
+                                     std::vector<mitk::Point3D>& balls)
+{
   std::string message;
   mitk::Point4D rotationQuaternion;
   rotationQuaternion.Fill(0);
   mitk::Vector3D translation;
   translation.Fill(0);
+  mitk::Point3D point;
+  point.Fill(0);
   double q[4];
+
+  std::set<int> foundFiducials;
+
+  markers.clear();
+  balls.clear();
 
   ftkGetLastFrame( m_Lib, m_SerialNumber, m_Frame, 0 );
   
@@ -220,7 +265,6 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
     {
       MITK_ERROR << message;
       this->CheckError(m_Lib);
-      mitkThrow() << message;
     }
 
     if (m_Frame->markersStat == QS_OK)
@@ -251,8 +295,17 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
         if (m_IdToName.find(m_Frame->markers[i].geometryId) != m_IdToName.end())
         {
           std::pair<mitk::Point4D, mitk::Vector3D> transform(rotationQuaternion, translation);
-          results.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >(
+          markers.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >(
             (*m_IdToName.find(m_Frame->markers[i].geometryId)).second, transform));
+
+          ftkMarker thisMarker = m_Frame->markers[i];
+          int count = m_IdToCount[m_Frame->markers[i].geometryId];
+
+          for (int j = 0; j <count; j++)
+          {
+            uint32 fidIndx(thisMarker.fiducialCorresp[j]);
+            foundFiducials.insert(fidIndx);
+          }
         }
         else
         {
@@ -260,27 +313,8 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
         }
       }
     }
-  }
-  return results;
-}
 
-
-//-----------------------------------------------------------------------------
-std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
-{
-  std::vector<mitk::Point3D> results;
-  mitk::Point3D point;
-  std::string message;
-
-  ftkGetLastFrame( m_Lib, m_SerialNumber, m_Frame, 0  );
-
-  ftkErrorExt extError;
-  ftkGetLastError( m_Lib, &extError );
-
-  if ( extError.isOk() || extError.isWarning( FTK_WAR_TEMP_HIGH ) ||
-       extError.isWarning( FTK_WAR_TEMP_LOW ) )
-  {
-    bool isError(true);
+    isError = true;
 
     switch ( m_Frame->threeDFiducialsStat )
     {
@@ -315,14 +349,14 @@ std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
     {
       MITK_ERROR << message;
       this->CheckError(m_Lib);
-      mitkThrow() << message;
     }
 
     if (m_Frame->threeDFiducialsStat == QS_OK)
     {
       for ( uint32 m = 0; m < m_Frame->threeDFiducialsCount; m++ )
       {
-        if (   m_Frame->threeDFiducials[ m ].epipolarErrorPixels < 1
+        if (foundFiducials.find(m) == foundFiducials.end() // i.e. its NOT in a marker.
+            && m_Frame->threeDFiducials[ m ].epipolarErrorPixels < 1
             && m_Frame->threeDFiducials[ m ].triangulationErrorMM < 0.2
             && m_Frame->threeDFiducials[ m ].probability > 0.8
             && m_Frame->threeDFiducials[ m ].positionMM.z > 700   // minimum range
@@ -332,12 +366,15 @@ std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
           point[0] = m_Frame->threeDFiducials[ m ].positionMM.x;
           point[1] = m_Frame->threeDFiducials[ m ].positionMM.y;
           point[2] = m_Frame->threeDFiducials[ m ].positionMM.z;
-          results.push_back(point);
+          balls.push_back(point);
         }
       }
     }
   }
-  return results;
+  else
+  {
+    this->CheckError(m_Lib);
+  }
 }
 
 
@@ -495,6 +532,15 @@ std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > AtracsysTracker
 std::vector<mitk::Point3D> AtracsysTracker::GetBallPositions()
 {
   return m_Tracker->GetBallPositions();
+}
+
+
+//-----------------------------------------------------------------------------
+void AtracsysTracker::GetMarkersAndBalls(std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >& markers,
+                                         std::vector<mitk::Point3D>& balls
+                                        )
+{
+  m_Tracker->GetMarkersAndBalls(markers, balls);
 }
 
 } // end namespace
