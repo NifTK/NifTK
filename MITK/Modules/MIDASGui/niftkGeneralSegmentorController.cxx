@@ -570,8 +570,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 
   if (!isRestarting)
   {
-    this->GetReferenceNode()->SetSelected(false);
-    newSegmentation->SetSelected(true);
+    this->GetView()->SetDataManagerSelection(newSegmentation);
   } 
 }
 
@@ -1924,7 +1923,7 @@ void GeneralSegmentorController::DiscardSegmentation()
     this->GetDataStorage()->Remove(segmentationNode);
   }
   d->m_GUI->EnableSegmentationWidgets(false);
-  this->GetReferenceNode()->SetSelected(true);
+  this->GetView()->SetDataManagerSelection(this->GetReferenceNode());
   this->RequestRenderWindowUpdate();
   mitk::UndoController::GetCurrentUndoModel()->Clear();
 }

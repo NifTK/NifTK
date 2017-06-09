@@ -600,8 +600,7 @@ void SurfaceExtractorView::CreateSurfaceNode()
   GetDataStorage()->Add(d->m_SurfaceNode, d->m_ReferenceNode);
   d->m_SurfaceNodes = findSurfaceNodesOf(d->m_ReferenceNode);
 
-  d->m_ReferenceNode->SetSelected(false);
-  d->m_SurfaceNode->SetSelected(true);
+  this->SetDataManagerSelection(d->m_SurfaceNode);
 }
 
 void SurfaceExtractorView::UpdateSurfaceNode()

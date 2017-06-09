@@ -60,16 +60,24 @@ public:
   ///                    will be requested.
   virtual void RequestRenderWindowUpdate(mitk::RenderingManager::RequestType requestType = mitk::RenderingManager::REQUEST_UPDATE_ALL) = 0;
 
-  /// \brief Gets the list of nodes selected in the data manager.
-  /// \return The current selection made in the datamanager bundle or an empty list
-  /// if there is no selection or if it is empty.
+  /// \brief Gets the current selection made in the Data Manager view.
+  /// Returns an empty list if the view is not available or there is no
+  /// selection or the selection is empty.
   virtual QList<mitk::DataNode::Pointer> GetDataManagerSelection() const = 0;
 
-  /// \brief Informs other parts of the workbench that node is selected via the blueberry selection service.
-  ///
-  /// \note This method should not be used if you have set your own selection provider via
-  /// SetSelectionProvider() or your own QItemSelectionModel via GetDataNodeSelectionModel().
-  virtual void FireNodeSelected(mitk::DataNode::Pointer node) = 0;
+  /// \brief Sets the current selection of the Data Manager view.
+  /// It also sets the selection to the current view part and notifies the other workbench
+  /// parts about the selection change. This is necessary because only the active parts can
+  /// notify other parts about the selection change.
+  /// \param selectedNodes The list of data nodes to be selected in the Data Manager view.
+  virtual void SetDataManagerSelection(const QList<mitk::DataNode::Pointer>& selectedNodes) const = 0;
+
+  /// \brief Sets the current selection of the Data Manager view.
+  /// It also sets the selection to the current view part and notifies the other workbench
+  /// parts about the selection change. This is necessary because only the active parts can
+  /// notify other parts about the selection change.
+  /// \param selectedNode The data node to be selected in the Data Manager view.
+  virtual void SetDataManagerSelection(mitk::DataNode::Pointer selectedNode) const = 0;
 
   /// \brief Retrieve the current slice navigation controller from the currently focused render window.
   /// \return mitk::SliceNavigationController* The slice navigation controller for the currenty focused render window,

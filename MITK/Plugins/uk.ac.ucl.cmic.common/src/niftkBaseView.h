@@ -110,16 +110,24 @@ public:
   ///                    will be requested.
   virtual void RequestRenderWindowUpdate(mitk::RenderingManager::RequestType requestType = mitk::RenderingManager::REQUEST_UPDATE_ALL) override;
 
-  /// \brief Gets the list of nodes selected in the data manager.
-  /// \return The current selection made in the datamanager bundle or an empty list
-  /// if there is no selection or if it is empty.
-  QList<mitk::DataNode::Pointer> GetDataManagerSelection() const override;
+  /// \brief Gets the current selection made in the Data Manager view.
+  /// Returns an empty list if the view is not available or there is no
+  /// selection or the selection is empty.
+  virtual QList<mitk::DataNode::Pointer> GetDataManagerSelection() const override;
 
-  /// \brief Informs other parts of the workbench that node is selected via the blueberry selection service.
-  ///
-  /// \note This method should not be used if you have set your own selection provider via
-  /// SetSelectionProvider() or your own QItemSelectionModel via GetDataNodeSelectionModel().
-  virtual void FireNodeSelected(mitk::DataNode::Pointer node) override;
+  /// \brief Sets the current selection of the Data Manager view.
+  /// It also sets the selection to the current view part and notifies the other workbench
+  /// parts about the selection change. This is necessary because only the active parts can
+  /// notify other parts about the selection change.
+  /// \param selection The list of data nodes to be selected in the Data Manager view.
+  virtual void SetDataManagerSelection(const QList<mitk::DataNode::Pointer>& selectedNodes) const override;
+
+  /// \brief Sets the current selection of the Data Manager view.
+  /// It also sets the selection to the current view part and notifies the other workbench
+  /// parts about the selection change. This is necessary because only the active parts can
+  /// notify other parts about the selection change.
+  /// \param selectedNode The data node to be selected in the Data Manager view.
+  virtual void SetDataManagerSelection(mitk::DataNode::Pointer selectedNode) const override;
 
   /// \brief Retrieve the current slice navigation controller from the currently focused render window.
   /// \return mitk::SliceNavigationController* The slice navigation controller for the currenty focused render window, or <code>NULL</code> if it can't be determined.
@@ -176,12 +184,20 @@ protected:
    */
   void SetViewToCoordinate(const mitk::Point3D &coordinate);
 
+  /// \brief Gets the current selection made in this view part.
+  QList<mitk::DataNode::Pointer> GetSelectedNodes() const;
+
+  /// \brief Sets the current selection of this view part.
+  /// Additionally, it notifies other parts of the workbench about the selection change.
+  /// \param selection The list of data nodes to be selected in this view.
+  void SetSelectedNodes(const QList<mitk::DataNode::Pointer>& selectedNodes);
+
 private:
 
   QScopedPointer<BaseViewPrivate> d_ptr;
 
-  Q_DECLARE_PRIVATE(BaseView);
-  Q_DISABLE_COPY(BaseView);
+  Q_DECLARE_PRIVATE(BaseView)
+  Q_DISABLE_COPY(BaseView)
 };
 
 }
