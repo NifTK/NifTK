@@ -18,18 +18,24 @@
 #include <berryIWorkbenchPage.h>
 #include <berryIPreferencesService.h>
 #include <berryPlatform.h>
+#include <berryQtSelectionProvider.h>
 
 #include <QApplication>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QGridLayout>
 #include <QMimeData>
+#include <QStandardItemModel>
 #include <QWidget>
 
+#include <mitkDataNodeSelection.h>
 #include <mitkIDataStorageService.h>
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
 #include <QmitkMimeTypes.h>
+#include <QmitkDataNodeSelectionProvider.h>
+#include <QmitkEnums.h>
+#include <QmitkCustomVariants.h>
 
 #include <niftkMultiViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
@@ -64,11 +70,30 @@ public:
 
   void DropNodes(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& nodes);
 
+  QList<mitk::DataNode::Pointer> DataNodeSelectionToQList(mitk::DataNodeSelection::ConstPointer currentSelection) const;
+
+  mitk::DataNodeSelection::ConstPointer QListToDataNodeSelection(const QList<mitk::DataNode::Pointer>& currentSelection) const;
+
   MultiViewerWidget* m_MultiViewer;
   MultiViewerVisibilityManager::Pointer m_MultiViewerVisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
   QScopedPointer<berry::IPartListener> m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
+
+  SingleViewerWidget* m_SelectedViewer;
+  QHash<SingleViewerWidget*, QList<mitk::DataNode::Pointer>> m_SelectedNodes;
+
+  /// Holds the current selection, made by this editor. This is not always
+  /// equal to the selection in the Data Manager view. The current selection is
+  /// set when the selected viewer has changed, only so that we can notify other
+  /// workbench parts about the selection change.
+  QmitkDataNodeSelectionProvider::Pointer m_SelectionProvider;
+
+  /// Holds a helper model for firing selection events.
+  QStandardItemModel* m_DataNodeItemModel;
+
+  /// The selection model for m_DataNodeItemModel;
+  QItemSelectionModel* m_DataNodeSelectionModel;
 
   MultiViewerEditor* q_ptr;
 };
@@ -155,6 +180,8 @@ MultiViewerEditorPrivate::MultiViewerEditorPrivate(MultiViewerEditor* q)
 , m_RenderingManager(0)
 , m_PartListener(new MultiViewerEditorPartListener(this))
 , m_RenderingManagerInterface(0)
+, m_DataNodeItemModel(new QStandardItemModel(q))
+, m_DataNodeSelectionModel(new QItemSelectionModel(m_DataNodeItemModel))
 {
   /// Note:
   /// The DnD Display should use its own rendering manager, not the global one
@@ -183,6 +210,9 @@ MultiViewerEditorPrivate::~MultiViewerEditorPrivate()
   {
     delete m_RenderingManagerInterface;
   }
+
+  delete m_DataNodeSelectionModel;
+  delete m_DataNodeItemModel;
 }
 
 
@@ -856,7 +886,6 @@ void MultiViewerEditorPrivate::ProcessDisplayConventionOption()
 
     m_MultiViewer->SetDisplayConvention(displayConvention);
   }
-
 }
 
 
@@ -901,6 +930,26 @@ void MultiViewerEditorPrivate::DropNodes(QmitkRenderWindow* renderWindow, const 
 
 
 //-----------------------------------------------------------------------------
+QList<mitk::DataNode::Pointer> MultiViewerEditorPrivate::DataNodeSelectionToQList(mitk::DataNodeSelection::ConstPointer selection) const
+{
+  if (selection.IsNull())
+  {
+    return QList<mitk::DataNode::Pointer>();
+  }
+  return QList<mitk::DataNode::Pointer>::fromStdList(selection->GetSelectedDataNodes());
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNodeSelection::ConstPointer MultiViewerEditorPrivate::QListToDataNodeSelection(const QList<mitk::DataNode::Pointer>& selectionList) const
+{
+  std::vector<mitk::DataNode::Pointer> selectionVector{selectionList.begin(), selectionList.end()};
+  mitk::DataNodeSelection::ConstPointer selection(new mitk::DataNodeSelection(selectionVector));
+  return selection;
+}
+
+
+//-----------------------------------------------------------------------------
 MultiViewerEditor::MultiViewerEditor()
 : d(new MultiViewerEditorPrivate(this))
 {
@@ -910,6 +959,7 @@ MultiViewerEditor::MultiViewerEditor()
 //-----------------------------------------------------------------------------
 MultiViewerEditor::~MultiViewerEditor()
 {
+  this->GetSite()->SetSelectionProvider(berry::ISelectionProvider::Pointer(nullptr));
   this->GetSite()->GetPage()->RemovePartListener(d->m_PartListener.data());
 }
 
@@ -992,8 +1042,15 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     gridLayout->setContentsMargins(0, 0, 0, 0);
     gridLayout->setSpacing(0);
 
+    d->m_SelectionProvider = QmitkDataNodeSelectionProvider::Pointer(new QmitkDataNodeSelectionProvider);
+    d->m_SelectionProvider->SetItemSelectionModel(d->m_DataNodeSelectionModel);
+    this->GetSite()->SetSelectionProvider(berry::ISelectionProvider::Pointer(d->m_SelectionProvider));
+
     prefs->OnChanged.AddListener( berry::MessageDelegate1<MultiViewerEditor, const berry::IBerryPreferences*>( this, &MultiViewerEditor::OnPreferencesChanged ) );
     this->OnPreferencesChanged(prefs.GetPointer());
+
+    d->m_SelectedViewer = d->m_MultiViewer->GetSelectedViewer();
+    this->connect(d->m_MultiViewer, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
   }
 
   /// The command line arguments should be processed after the widget has been created
@@ -1185,6 +1242,140 @@ void MultiViewerEditor::EnableLinkedNavigation(bool enable)
 bool MultiViewerEditor::IsLinkedNavigationEnabled() const
 {
   return d->m_MultiViewer->IsLinkedNavigationEnabled();
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerEditor::OnWindowSelected()
+{
+  SingleViewerWidget* selectedViewer = d->m_MultiViewer->GetSelectedViewer();
+  if (selectedViewer != d->m_SelectedViewer)
+  {
+    QList<mitk::DataNode::Pointer> currentSelection = this->GetDataManagerSelection();
+    QList<mitk::DataNode::Pointer> lastSelectionInNewViewer = d->m_SelectedNodes[selectedViewer];
+
+    /// Saving data manager selection for the current viewer. To avoid memory leak,
+    /// the selection has to be removed from the map when the viewer is destroyed.
+    if (!d->m_SelectedNodes.contains(d->m_SelectedViewer))
+    {
+      this->connect(d->m_SelectedViewer, SIGNAL(destroyed(QObject*)), SLOT(OnViewerDestroyed(QObject*)));
+    }
+
+    d->m_SelectedNodes[d->m_SelectedViewer] = currentSelection;
+
+    d->m_SelectedViewer = selectedViewer;
+
+    /// Restore the data manager selection for the new viewer. This is an empty
+    /// selection if the viewer has not been selected before. Other workbench
+    /// parts are not informed about this change because the data manager is
+    /// not active at the moment.
+    this->SetDataManagerSelection(lastSelectionInNewViewer);
+
+    /// The same selection is set for the current editor part, so that other
+    /// workbench parts are informed about the change and can update their status.
+    this->SetSelectedNodes(lastSelectionInNewViewer);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerEditor::OnViewerDestroyed(QObject* object)
+{
+  SingleViewerWidget* destroyedViewer = qobject_cast<SingleViewerWidget*>(object);
+  d->m_SelectedNodes.remove(destroyedViewer);
+}
+
+
+//-----------------------------------------------------------------------------
+QList<mitk::DataNode::Pointer> MultiViewerEditor::GetDataManagerSelection() const
+{
+  berry::IViewPart::Pointer datamanagerView = this->GetSite()->GetWorkbenchWindow()->GetActivePage()->FindView("org.mitk.views.datamanager");
+  if (datamanagerView.IsNull())
+  {
+    return QList<mitk::DataNode::Pointer>();
+  }
+
+  berry::QtSelectionProvider::Pointer selectionProvider = datamanagerView->GetSite()->GetSelectionProvider().Cast<berry::QtSelectionProvider>();
+
+  mitk::DataNodeSelection::ConstPointer selection = selectionProvider->GetSelection().Cast<const mitk::DataNodeSelection>();
+  return d->DataNodeSelectionToQList(selection);
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerEditor::SetDataManagerSelection(const QList<mitk::DataNode::Pointer>& dataManagerSelection) const
+{
+  berry::IViewPart::Pointer datamanagerView = this->GetSite()->GetWorkbenchWindow()->GetActivePage()->FindView("org.mitk.views.datamanager");
+  if (datamanagerView.IsNull())
+  {
+    return;
+  }
+
+  berry::QtSelectionProvider::Pointer selectionProvider = datamanagerView->GetSite()->GetSelectionProvider().Cast<berry::QtSelectionProvider>();
+
+  mitk::DataNodeSelection::ConstPointer selection = d->QListToDataNodeSelection(dataManagerSelection);
+  selectionProvider->SetSelection(selection);
+}
+
+
+//-----------------------------------------------------------------------------
+QList<mitk::DataNode::Pointer> MultiViewerEditor::GetSelectedNodes() const
+{
+  berry::QtSelectionProvider::Pointer selectionProvider = this->GetSite()->GetSelectionProvider().Cast<berry::QtSelectionProvider>();
+  mitk::DataNodeSelection::ConstPointer selection = selectionProvider->GetSelection().Cast<const mitk::DataNodeSelection>();
+  return d->DataNodeSelectionToQList(selection);
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerEditor::SetSelectedNodes(const QList<mitk::DataNode::Pointer>& selectedNodes)
+{
+  mitk::DataNodeSelection::ConstPointer selection = d->QListToDataNodeSelection(selectedNodes);
+  this->GetSite()->GetSelectionProvider()->SetSelection(selection);
+  this->FireNodesSelected(selectedNodes);
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerEditor::FireNodesSelected(const QList<mitk::DataNode::Pointer>& nodes)
+{
+  // if this is the first call to FireNodesSelected and the selection provider has no QItemSelectiomMode
+  // yet, set our helper model
+  if (d->m_SelectionProvider->GetItemSelectionModel() == nullptr)
+  {
+    d->m_SelectionProvider->SetItemSelectionModel(d->m_DataNodeSelectionModel);
+  }
+  else if (d->m_SelectionProvider->GetItemSelectionModel() != d->m_DataNodeSelectionModel)
+  {
+    MITK_WARN << "A custom data node selection model has been set. Ignoring call to FireNodesSelected().";
+    return;
+  }
+
+  if (nodes.empty())
+  {
+    d->m_DataNodeSelectionModel->clearSelection();
+    d->m_DataNodeItemModel->clear();
+  }
+  else
+  {
+    // The helper data node model is just used for sending selection events.
+    // We add all the nodes to be selected and set the selection range to everything.
+
+    d->m_DataNodeItemModel->clear();
+    QList<QStandardItem*> items;
+    for (mitk::DataNode::Pointer node: nodes)
+    {
+      auto item = new QStandardItem();
+      item->setData(QVariant::fromValue<mitk::DataNode::Pointer>(node), QmitkDataNodeRole);
+      items << item;
+    }
+    d->m_DataNodeItemModel->appendRow(items);
+
+    d->m_DataNodeSelectionModel->select(
+          QItemSelection(d->m_DataNodeItemModel->index(0,0),
+                         d->m_DataNodeItemModel->index(nodes.size() - 1, 0)),
+          QItemSelectionModel::ClearAndSelect);
+  }
 }
 
 }
