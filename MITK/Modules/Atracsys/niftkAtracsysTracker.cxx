@@ -115,6 +115,7 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
     {
       m_IdToName.insert(std::pair<int, std::string>(geom.geometryId, m_ToolNames[i]));
       m_IdToCount.insert(std::pair<int, int>(geom.geometryId, geom.pointsCount));
+      MITK_INFO << "AtracsysTrackerPrivate: Geometry id=" << geom.geometryId << ", name=" << m_ToolNames[i] << ", count=" << geom.pointsCount;
     }
   }
   
@@ -370,10 +371,6 @@ void AtracsysTrackerPrivate::GetData(std::map<std::string, std::pair<mitk::Point
         }
       }
     }
-  }
-  else
-  {
-    this->CheckError(m_Lib);
   }
 }
 
