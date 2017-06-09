@@ -45,55 +45,43 @@ int main(int argc, char* argv[])
       unsigned long int counter = 0;
       igtl::TimeStamp::Pointer t = igtl::TimeStamp::New();
 
-      if (toolStorage.empty())
-      {
-        do
-        {
-          t->GetTime();
-          std::vector<mitk::Point3D> points = tracker->GetBallPositions();
+      std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > markers;
+      std::vector<mitk::Point3D> balls;
 
-          for (int i = 0; i < points.size(); i++)
-          {
-            opf << t->GetTimeStampInNanoseconds() << " "
-                << i << " " 
-                << points[i][0] << " "
-                << points[i][1] << " "
-                << points[i][2] << " "
-                << std::endl;
-          }
-          if (points.size() > 0)
-          {
-            counter++;
-          }
-        } while (counter < numberSamples);
-      }
-      else
+      do
       {
-        do
-        {
-          t->GetTime();
-          std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > markers = tracker->GetTrackingData();
+        t->GetTime();
+        tracker->GetMarkersAndBalls(markers, balls);
 
-          std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >::const_iterator iter;
-          for (iter = markers.begin(); iter != markers.end(); ++iter)
-          {
-            opf <<  t->GetTimeStampInNanoseconds() << " "
-                << (*iter).first << " "
-                << (*iter).second.first[0] << " "
-                << (*iter).second.first[1] << " "
-                << (*iter).second.first[2] << " "
-                << (*iter).second.first[3] << " "
-                << (*iter).second.second[0] << " "
-                << (*iter).second.second[1] << " "
-                << (*iter).second.second[2] << " "
-                << std::endl;
-          }
-          if (markers.size() > 0)
-          {
-            counter++;
-          }
-        } while (counter < numberSamples);
-      }
+        std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >::const_iterator iter;
+        for (iter = markers.begin(); iter != markers.end(); ++iter)
+        {
+          opf <<  t->GetTimeStampInNanoseconds() << " "
+              << (*iter).first << " "
+              << (*iter).second.first[0] << " "
+              << (*iter).second.first[1] << " "
+              << (*iter).second.first[2] << " "
+              << (*iter).second.first[3] << " "
+              << (*iter).second.second[0] << " "
+              << (*iter).second.second[1] << " "
+              << (*iter).second.second[2] << " "
+              << std::endl;
+        }
+
+        for (int i = 0; i < balls.size(); i++)
+        {
+          opf << t->GetTimeStampInNanoseconds() << " "
+              << i << " " 
+              << balls[i][0] << " "
+              << balls[i][1] << " "
+              << balls[i][2] << " "
+              << std::endl;
+        }
+        if (balls.size() > 0 || markers.size() > 0)
+        {
+          counter++;
+        }
+      } while (counter < numberSamples);
 
       returnStatus = EXIT_SUCCESS;
 
