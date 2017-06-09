@@ -19,5 +19,4 @@ set(CPP_FILES
 )
 
 set(MOC_H_FILES
-  Internal/niftkAtracsysDataSourceService.h
 )
