@@ -243,6 +243,7 @@ SingleViewerWidget* MultiViewerWidget::CreateViewer(const QString& name)
   viewer->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
   this->connect(viewer, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
+  this->connect(viewer, SIGNAL(WindowSelected()), SIGNAL(WindowSelected()));
   this->connect(viewer, SIGNAL(SelectPreviousViewer()), SLOT(OnSelectPreviousViewer()));
   this->connect(viewer, SIGNAL(SelectNextViewer()), SLOT(OnSelectNextViewer()));
   this->connect(viewer, SIGNAL(SelectViewer(int)), SLOT(OnSelectViewer(int)));

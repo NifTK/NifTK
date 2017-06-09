@@ -175,7 +175,34 @@ private slots:
 
   void ProcessOptions();
 
+  void OnWindowSelected();
+
+  void OnViewerDestroyed(QObject* object);
+
 private:
+
+  /// \brief Gets the current selection made in the Data Manager view.
+  /// Returns an empty list if the view is not available or there is no
+  /// selection or the selection is empty.
+  QList<mitk::DataNode::Pointer> GetDataManagerSelection() const;
+
+  /// \brief Sets the current selection of the Data Manager view.
+  /// \param selection The list of data nodes to be selected in the Data Manager view.
+  void SetDataManagerSelection(const QList<mitk::DataNode::Pointer>& dataManagerSelection) const;
+
+  /// \brief Gets the current selection made in this editor part.
+  QList<mitk::DataNode::Pointer> GetSelectedNodes() const;
+
+  /// \brief Sets the current selection of this editor part.
+  /// Additionally, it notifies other parts of the workbench about the selection change.
+  /// \param selection The list of data nodes to be selected in this editor.
+  void SetSelectedNodes(const QList<mitk::DataNode::Pointer>& selectedNodes);
+
+  /// Informs other parts of the workbench that the nodes are selected via the blueberry selection service.
+  ///
+  /// \note This method should not be used if you have set your own selection provider via
+  /// SetSelectionProvider() or your own QItemSelectionModel via GetDataNodeSelectionModel().
+  virtual void FireNodesSelected(const QList<mitk::DataNode::Pointer>& nodes);
 
   const QScopedPointer<MultiViewerEditorPrivate> d;
 

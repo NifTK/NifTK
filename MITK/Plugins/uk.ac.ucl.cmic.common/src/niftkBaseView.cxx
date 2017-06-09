@@ -16,6 +16,10 @@
 
 #include <itkCommand.h>
 
+#include <berryIWorkbenchPage.h>
+#include <berryIWorkbenchWindow.h>
+#include <berryQtSelectionProvider.h>
+
 #include <mitkFocusManager.h>
 #include <mitkGlobalInteraction.h>
 #include <mitkNodePredicateAnd.h>
@@ -40,6 +44,10 @@ public:
   {
     m_Focused2DRenderer = 0;
   }
+
+  QList<mitk::DataNode::Pointer> DataNodeSelectionToQList(mitk::DataNodeSelection::ConstPointer currentSelection) const;
+
+  mitk::DataNodeSelection::ConstPointer QListToDataNodeSelection(const QList<mitk::DataNode::Pointer>& currentSelection) const;
 
   /// \brief Used to store the parent of this view, and should normally be set from within CreateQtPartControl().
   QWidget *m_Parent;
@@ -80,6 +88,26 @@ BaseViewPrivate::~BaseViewPrivate()
 
 
 //-----------------------------------------------------------------------------
+QList<mitk::DataNode::Pointer> BaseViewPrivate::DataNodeSelectionToQList(mitk::DataNodeSelection::ConstPointer selection) const
+{
+  if (selection.IsNull())
+  {
+    return QList<mitk::DataNode::Pointer>();
+  }
+  return QList<mitk::DataNode::Pointer>::fromStdList(selection->GetSelectedDataNodes());
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNodeSelection::ConstPointer BaseViewPrivate::QListToDataNodeSelection(const QList<mitk::DataNode::Pointer>& selectionList) const
+{
+  std::vector<mitk::DataNode::Pointer> selectionVector{selectionList.begin(), selectionList.end()};
+  mitk::DataNodeSelection::ConstPointer selection(new mitk::DataNodeSelection(selectionVector));
+  return selection;
+}
+
+
+//-----------------------------------------------------------------------------
 BaseView::BaseView()
 : QmitkAbstractView(),
   d_ptr(new BaseViewPrivate)
@@ -99,7 +127,8 @@ BaseView::BaseView()
 
 
 //-----------------------------------------------------------------------------
-BaseView::~BaseView() {
+BaseView::~BaseView()
+{
   Q_D(BaseView);
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
@@ -237,14 +266,90 @@ mitk::DataStorage::Pointer BaseView::GetDataStorage() const
 //-----------------------------------------------------------------------------
 QList<mitk::DataNode::Pointer> BaseView::GetDataManagerSelection() const
 {
-  return SuperClass::GetDataManagerSelection();
+  Q_D(const BaseView);
+
+  berry::IWorkbenchPage::Pointer activePage = this->GetSite()->GetWorkbenchWindow()->GetActivePage();
+  if (activePage.IsNull())
+  {
+    return QList<mitk::DataNode::Pointer>();
+  }
+
+  berry::IViewPart::Pointer dataManagerView = activePage->FindView("org.mitk.views.datamanager");
+  if (dataManagerView.IsNull())
+  {
+    return QList<mitk::DataNode::Pointer>();
+  }
+
+  berry::QtSelectionProvider::Pointer selectionProvider = dataManagerView->GetSite()->GetSelectionProvider().Cast<berry::QtSelectionProvider>();
+
+  mitk::DataNodeSelection::ConstPointer selection = selectionProvider->GetSelection().Cast<const mitk::DataNodeSelection>();
+  return d->DataNodeSelectionToQList(selection);
 }
 
 
 //-----------------------------------------------------------------------------
-void BaseView::FireNodeSelected(mitk::DataNode::Pointer node)
+void BaseView::SetDataManagerSelection(const QList<mitk::DataNode::Pointer>& selectedNodes) const
 {
-  SuperClass::FireNodeSelected(node);
+  Q_D(const BaseView);
+
+  berry::IWorkbenchPage::Pointer activePage = this->GetSite()->GetWorkbenchWindow()->GetActivePage();
+  if (activePage.IsNull())
+  {
+    return;
+  }
+
+  berry::IViewPart::Pointer dataManagerView = activePage->FindView("org.mitk.views.datamanager");
+  if (dataManagerView.IsNull())
+  {
+    return;
+  }
+
+  berry::QtSelectionProvider::Pointer selectionProvider = dataManagerView->GetSite()->GetSelectionProvider().Cast<berry::QtSelectionProvider>();
+
+  mitk::DataNodeSelection::ConstPointer selection = d->QListToDataNodeSelection(selectedNodes);
+  selectionProvider->SetSelection(selection);
+
+  /// We also set the same selection to the current view, so that it can notify
+  /// other workbench parts about the selection change. This is necessary because
+  /// the parts notify other parts about their selection change only if they
+  /// (themselves) are active. Therefore, with the call above this function will
+  /// not be called:
+  ///
+  ///     QmitkAbstractView::OnSelectionChanged(berry::IWorkbenchPart::Pointer source,
+  ///         const QList<mitk::DataNode::Pointer>& selectedNodes)
+  ///
+  (const_cast<BaseView*>(this))->SetSelectedNodes(selectedNodes);
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseView::SetDataManagerSelection(mitk::DataNode::Pointer selectedNode) const
+{
+  QList<mitk::DataNode::Pointer> selectedNodes;
+  selectedNodes << selectedNode;
+  this->SetDataManagerSelection(selectedNodes);
+}
+
+
+//-----------------------------------------------------------------------------
+QList<mitk::DataNode::Pointer> BaseView::GetSelectedNodes() const
+{
+  Q_D(const BaseView);
+
+  berry::QtSelectionProvider::Pointer selectionProvider = this->GetSite()->GetSelectionProvider().Cast<berry::QtSelectionProvider>();
+  mitk::DataNodeSelection::ConstPointer selection = selectionProvider->GetSelection().Cast<const mitk::DataNodeSelection>();
+  return d->DataNodeSelectionToQList(selection);
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseView::SetSelectedNodes(const QList<mitk::DataNode::Pointer>& selectedNodes)
+{
+  Q_D(BaseView);
+
+  mitk::DataNodeSelection::ConstPointer selection = d->QListToDataNodeSelection(selectedNodes);
+  this->GetSite()->GetSelectionProvider()->SetSelection(selection);
+  this->FireNodesSelected(selectedNodes);
 }
 
 

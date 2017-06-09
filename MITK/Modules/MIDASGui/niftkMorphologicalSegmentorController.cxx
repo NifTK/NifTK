@@ -348,8 +348,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
 
   if (!isRestarting)
   {
-    this->GetReferenceNode()->SetSelected(false);
-    newSegmentation->SetSelected(true);
+    this->GetView()->SetDataManagerSelection(newSegmentation);
   } 
 }
 
@@ -517,7 +516,7 @@ void MorphologicalSegmentorController::OnOKButtonClicked()
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
     this->GetDataStorage()->Remove(axialCutOffPlaneNode);
 
-    this->GetView()->FireNodeSelected(this->GetReferenceNode());
+    this->GetView()->SetDataManagerSelection(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
@@ -556,7 +555,7 @@ void MorphologicalSegmentorController::OnRestartButtonClicked()
       axialCutOffPlane->SetOrigin(planeCentre);
     }
 
-    this->GetView()->FireNodeSelected(segmentationNode);
+    this->GetView()->SetDataManagerSelection(segmentationNode);
     this->RequestRenderWindowUpdate();
   }
 }
@@ -577,7 +576,7 @@ void MorphologicalSegmentorController::OnCancelButtonClicked()
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
     this->GetDataStorage()->Remove(axialCutOffPlaneNode);
     this->GetDataStorage()->Remove(segmentationNode);
-    this->GetView()->FireNodeSelected(this->GetReferenceNode());
+    this->GetView()->SetDataManagerSelection(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
@@ -634,7 +633,7 @@ void MorphologicalSegmentorController::OnNodeRemoved(const mitk::DataNode* remov
     m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
-    this->GetView()->FireNodeSelected(this->GetReferenceNode());
+    this->GetView()->SetDataManagerSelection(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
