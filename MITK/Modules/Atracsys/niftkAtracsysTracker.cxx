@@ -115,7 +115,9 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
     {
       m_IdToName.insert(std::pair<int, std::string>(geom.geometryId, m_ToolNames[i]));
       m_IdToCount.insert(std::pair<int, int>(geom.geometryId, geom.pointsCount));
-      MITK_INFO << "AtracsysTrackerPrivate: Geometry id=" << geom.geometryId << ", name=" << m_ToolNames[i] << ", count=" << geom.pointsCount;
+      MITK_INFO << "AtracsysTrackerPrivate: Geometry id=" << geom.geometryId
+                << ", name=" << m_ToolNames[i]
+                << ", count=" << geom.pointsCount;
     }
   }
   
@@ -201,7 +203,8 @@ std::vector<mitk::Point3D> AtracsysTrackerPrivate::GetBallPositions()
 
 
 //-----------------------------------------------------------------------------
-void AtracsysTrackerPrivate::GetMarkersAndBalls(std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >& markers,
+void AtracsysTrackerPrivate::GetMarkersAndBalls(std::map<std::string,
+                                                         std::pair<mitk::Point4D, mitk::Vector3D> >& markers,
                                                 std::vector<mitk::Point3D>& balls
                                                )
 {

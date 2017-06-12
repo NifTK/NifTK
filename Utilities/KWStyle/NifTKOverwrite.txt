@@ -20,3 +20,4 @@ niftkAtracsysManager\.cxx InternalVariables Disable
 niftkAtracsysDataSourceService\.h InternalVariables Disable
 niftkBlackMagicDataSourceService\.h InternalVariables Disable
 niftkIGITrackerDataSourceService\.h InternalVariables Disable
+niftkAtracsysTracker\.cxx MemberFunctions Disable
