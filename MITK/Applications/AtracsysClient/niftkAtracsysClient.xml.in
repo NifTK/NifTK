@@ -46,6 +46,16 @@
       <default>-1</default>
     </integer>
     
+    <boolean>
+      <name>average</name>
+      <flag>a</flag>
+      <longflag>average</longflag>
+      <description>Average over multiple samples.</description>
+      <label>Average</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+
   </parameters>
 
 </executable>

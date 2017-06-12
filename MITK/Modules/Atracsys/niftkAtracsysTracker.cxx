@@ -55,7 +55,7 @@ private:
   const std::vector<std::string>              m_ToolNames;
   const std::vector<std::string>              m_GeometryFiles;
   std::map<int, std::string>                  m_IdToName;
-  std::map<int, int>                          m_IdToCount;
+  std::map<int, uint32>                       m_IdToCount;
   uint64                                      m_SerialNumber;
   ftkLibrary                                  m_Lib;
   ftkFrameQuery                              *m_Frame;
@@ -114,10 +114,10 @@ AtracsysTrackerPrivate::AtracsysTrackerPrivate(const AtracsysTracker* t,
     else
     {
       m_IdToName.insert(std::pair<int, std::string>(geom.geometryId, m_ToolNames[i]));
-      m_IdToCount.insert(std::pair<int, int>(geom.geometryId, geom.pointsCount));
+      m_IdToCount.insert(std::pair<int, uint32>(geom.geometryId, static_cast<uint32>(geom.pointsCount)));
       MITK_INFO << "AtracsysTrackerPrivate: Geometry id=" << geom.geometryId
                 << ", name=" << m_ToolNames[i]
-                << ", count=" << geom.pointsCount;
+                << ", count=" << static_cast<uint32>(geom.pointsCount);
     }
   }
   
@@ -225,7 +225,7 @@ void AtracsysTrackerPrivate::GetData(std::map<std::string, std::pair<mitk::Point
   point.Fill(0);
   double q[4];
 
-  std::set<int> foundFiducials;
+  std::set<uint32> foundFiducials;
 
   markers.clear();
   balls.clear();
@@ -303,9 +303,9 @@ void AtracsysTrackerPrivate::GetData(std::map<std::string, std::pair<mitk::Point
             (*m_IdToName.find(m_Frame->markers[i].geometryId)).second, transform));
 
           ftkMarker thisMarker = m_Frame->markers[i];
-          int count = m_IdToCount[m_Frame->markers[i].geometryId];
+          uint32 count = m_IdToCount[m_Frame->markers[i].geometryId];
 
-          for (int j = 0; j <count; j++)
+          for (uint32 j = 0; j <count; j++)
           {
             uint32 fidIndx(thisMarker.fiducialCorresp[j]);
             foundFiducials.insert(fidIndx);

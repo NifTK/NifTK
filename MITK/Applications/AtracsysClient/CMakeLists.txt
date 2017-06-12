@@ -21,6 +21,7 @@ if(Atracsys_FOUND)
     TARGET_LIBRARIES
     niftkCore
     niftkAtracsys
+    niftkOpenCVUtils
     ${Atracsys_LIBRARY}
   )
 endif()
