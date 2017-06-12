@@ -132,6 +132,7 @@ int main(int argc, char* argv[])
           for (int r = 0; r < 4; r++)
           {
             std::cout << "  "
+                      << std::setprecision(10)
                       << ave.at<double>(r, 0) << " "
                       << ave.at<double>(r, 1) << " "
                       << ave.at<double>(r, 2) << " "
@@ -154,8 +155,7 @@ int main(int argc, char* argv[])
           ave[0] /= static_cast<double>(num);
           ave[1] /= static_cast<double>(num);
           ave[2] /= static_cast<double>(num);
-          std::cout << "Average of point:" << (*pIter).first << std::endl;
-          std::cout << "  " << ave[0] << " " << ave[1] << " " << ave[2] << std::endl;
+          std::cout << "Average of point:" << (*pIter).first << "  " <<  std::setprecision(10) << ave[0] << " " << ave[1] << " " << ave[2] << std::endl;
         }
       }
     }
