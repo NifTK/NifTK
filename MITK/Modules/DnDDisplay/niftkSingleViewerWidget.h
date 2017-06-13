@@ -446,15 +446,6 @@ protected:
 
 protected slots:
 
-  /// \brief Called when a window gets selected.
-  virtual void OnWindowSelected();
-
-  /// \brief Called when the window layout has changed.
-  virtual void OnWindowLayoutChanged(WindowLayout windowLayout);
-
-  /// \brief Called when the selected position has changed.
-  virtual void OnSelectedPositionChanged(const mitk::Point3D& selectedPosition);
-
   /// \brief Called when the cursor position has changed.
   virtual void OnCursorPositionChanged(int orientation, const mitk::Vector2D& cursorPosition);
 
@@ -473,13 +464,6 @@ private:
   {
     return (index << 1) + m_IsBoundTimeGeometryActive;
   }
-
-  /// \brief Resets the last few remembered selected and cursor positions.
-  /// These positions are remembered so that if you double click to toggle between single and
-  /// multiple window layout, the position changing side-effect of the double clicking can be
-  /// un-done, and the positions can be restored from the time before the double clicking.
-  /// This function clears the previous remembered positions and remembers the actual positions.
-  void ResetLastPositions();
 
   /// \brief Gets the position of the centre of the displayed region, relative to the render window.
   mitk::Vector2D GetCentrePosition(int windowIndex);
@@ -531,36 +515,6 @@ private:
 
   /// \brief Stores whether the layout has been initialised. Two for each window layout. Unbound, then bound, alternatingly.
   bool m_WindowLayoutInitialised[WINDOW_LAYOUT_NUMBER * 2];
-
-  /// \brief Stores the last three selected positions.
-  ///
-  /// The aim with storing these positions is that if the window layout is switched
-  /// between single and multi by double clicking, we can can discard the position changes
-  /// because of the double clicking itself, and remember the previously selected position,
-  /// so that we can restore it next time when the user returns to the window layout.
-  std::deque<mitk::Point3D> m_LastSelectedPositions;
-
-  /// \brief Stores the time of the last position selection events in milliseconds.
-  ///
-  /// This is used to distinguish between simple position selection events by a single click
-  /// and single/multiple window layout switch by double click. If latter happens, we have to
-  /// save the position from before the double clicking.
-  std::deque<QTime> m_LastSelectedPositionTimes;
-
-  /// \brief Stores the position of the cursor in the 2D render windows a the last seven times.
-  ///
-  /// The aim with storing these positions is that if the window layout is switched
-  /// between single and multi by double clicking, we can can discard the position changes
-  /// because of the double clicking itself, and remember the previously selected position,
-  /// so that we can restore it next time when the user returns to the window layout.
-  std::deque<std::vector<mitk::Vector2D> > m_LastCursorPositions;
-
-  /// \brief Stores the time of the last events in milliseconds when the position of the cursor has changed in the 2D windows.
-  ///
-  /// This is used to distinguish between simple position selection events by a single click
-  /// and single/multiple window layout switch by double click. If latter happens, we have to
-  /// save the position from before the double clicking.
-  std::deque<QTime> m_LastCursorPositionTimes;
 
   bool m_RememberSettingsPerWindowLayout;
 

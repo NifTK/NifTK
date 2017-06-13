@@ -83,9 +83,9 @@ SingleViewerWidget::SingleViewerWidget(QWidget* parent, mitk::RenderingManager* 
   this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
   this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(m_MultiWidget, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
-  this->connect(m_MultiWidget, SIGNAL(WindowLayoutChanged(WindowLayout)), SLOT(OnWindowLayoutChanged(WindowLayout)));
-  this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SLOT(OnSelectedPositionChanged(const mitk::Point3D&)));
+  this->connect(m_MultiWidget, SIGNAL(WindowSelected()), SIGNAL(OnWindowSelected()));
+  this->connect(m_MultiWidget, SIGNAL(WindowLayoutChanged(WindowLayout)), SIGNAL(OnWindowLayoutChanged(WindowLayout)));
+  this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SIGNAL(SelectedPositionChanged(const mitk::Point3D&)));
   this->connect(m_MultiWidget, SIGNAL(TimeStepChanged(int)), SIGNAL(TimeStepChanged(int)));
   this->connect(m_MultiWidget, SIGNAL(CursorPositionChanged(int, const mitk::Vector2D&)), SLOT(OnCursorPositionChanged(int, const mitk::Vector2D&)));
   this->connect(m_MultiWidget, SIGNAL(ScaleFactorChanged(int, double)), SLOT(OnScaleFactorChanged(int, double)));
@@ -130,52 +130,8 @@ void SingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::ve
 
 
 //-----------------------------------------------------------------------------
-void SingleViewerWidget::OnWindowSelected()
-{
-  emit WindowSelected();
-}
-
-
-//-----------------------------------------------------------------------------
-void SingleViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
-{
-  emit WindowLayoutChanged(windowLayout);
-}
-
-
-//-----------------------------------------------------------------------------
-void SingleViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedPosition)
-{
-  /// A double click can result in 0 or 1 SelectedPositionChanged event, depending on if you
-  /// double click exactly where the cursor is or not.
-  /// Therefore, we need to keep the last two selected positions, including the current one.
-  if (m_LastSelectedPositions.size() == 2)
-  {
-    m_LastSelectedPositions.pop_front();
-    m_LastSelectedPositionTimes.pop_front();
-  }
-  m_LastSelectedPositions.push_back(selectedPosition);
-  m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-
-  emit SelectedPositionChanged(selectedPosition);
-}
-
-
-//-----------------------------------------------------------------------------
 void SingleViewerWidget::OnCursorPositionChanged(int windowIndex, const mitk::Vector2D& cursorPosition)
 {
-  /// A double click can result in up to three CursorPositionChanged events, depending on
-  /// how many coordinates of the selected position have changed, if any.
-  /// A SelectedPositionChanged event can cause two or three CursorPositionChanged events.
-  /// Therefore, we need to keep the last four cursor positions, including the current one.
-  if (m_LastCursorPositions.size() == 4)
-  {
-    m_LastCursorPositions.pop_front();
-    m_LastCursorPositionTimes.pop_front();
-  }
-  m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
-  m_LastCursorPositionTimes.push_back(QTime::currentTime());
-
   emit CursorPositionChanged(WindowOrientation(windowIndex), cursorPosition);
 }
 
@@ -569,21 +525,6 @@ void SingleViewerWidget::RequestUpdate()
 
 
 //-----------------------------------------------------------------------------
-void SingleViewerWidget::ResetLastPositions()
-{
-  m_LastSelectedPositions.clear();
-  m_LastSelectedPositionTimes.clear();
-  m_LastCursorPositions.clear();
-  m_LastCursorPositionTimes.clear();
-
-  m_LastSelectedPositions.push_back(m_MultiWidget->GetSelectedPosition());
-  m_LastSelectedPositionTimes.push_back(QTime::currentTime());
-  m_LastCursorPositions.push_back(m_MultiWidget->GetCursorPositions());
-  m_LastCursorPositionTimes.push_back(QTime::currentTime());
-}
-
-
-//-----------------------------------------------------------------------------
 const mitk::TimeGeometry* SingleViewerWidget::GetTimeGeometry() const
 {
   return m_TimeGeometry;
@@ -616,7 +557,6 @@ void SingleViewerWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
-      this->ResetLastPositions();
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
 
@@ -653,7 +593,6 @@ void SingleViewerWidget::SetBoundTimeGeometry(const mitk::TimeGeometry* timeGeom
 
     if (m_WindowLayout != WINDOW_LAYOUT_UNKNOWN)
     {
-      this->ResetLastPositions();
       m_WindowLayoutInitialised[Index(m_WindowLayout)] = true;
     }
 
@@ -925,8 +864,6 @@ void SingleViewerWidget::SetWindowLayout(WindowLayout windowLayout)
       m_WindowLayoutInitialised[Index(windowLayout)] = true;
     }
 
-    this->ResetLastPositions();
-
     m_MultiWidget->BlockUpdate(updateWasBlocked);
   }
 }
@@ -1110,30 +1047,7 @@ void SingleViewerWidget::ToggleMultiWindowLayout()
       }
     }
 
-    /// We have to discard the selected position changes during the double clicking.
-    QTime currentTime = QTime::currentTime();
-    int doubleClickInterval = QApplication::doubleClickInterval();
-    QTime doubleClickTime = currentTime;
-
-    while (m_LastSelectedPositions.size() > 1 && m_LastSelectedPositionTimes.back().msecsTo(currentTime) < doubleClickInterval)
-    {
-      doubleClickTime = m_LastSelectedPositionTimes.back();
-      m_LastSelectedPositions.pop_back();
-      m_LastSelectedPositionTimes.pop_back();
-    }
-
-    /// We also discard the cursor position changes since the double click.
-    while (m_LastCursorPositions.size() > 1 && m_LastCursorPositionTimes.back() >= doubleClickTime)
-    {
-      m_LastCursorPositions.pop_back();
-      m_LastCursorPositionTimes.pop_back();
-    }
-
     bool updateWasBlocked = m_MultiWidget->BlockUpdate(true);
-
-    /// Restore the selected position and cursor positions from before the double clicking.
-    m_MultiWidget->SetSelectedPosition(m_LastSelectedPositions.back());
-    m_MultiWidget->SetCursorPositions(m_LastCursorPositions.back());
 
     this->SetWindowLayout(nextWindowLayout);
 

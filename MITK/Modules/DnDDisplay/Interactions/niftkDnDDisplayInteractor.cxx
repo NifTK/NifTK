@@ -122,7 +122,6 @@ void DnDDisplayInteractor::ConnectActionsAndFunctions()
   CONNECT_FUNCTION("setWindowLayoutToCoronal", SetWindowLayoutToCoronal);
   CONNECT_FUNCTION("setWindowLayoutTo3D", SetWindowLayoutTo3D);
   CONNECT_FUNCTION("setWindowLayoutToMulti", SetWindowLayoutToMulti);
-//  CONNECT_FUNCTION("toggleMultiWindowLayout", ToggleMultiWindowLayout);
   CONNECT_FUNCTION("selectPreviousWindow", SelectPreviousWindow);
   CONNECT_FUNCTION("selectNextWindow", SelectNextWindow);
   CONNECT_FUNCTION("selectAxialWindow", SelectAxialWindow);
@@ -395,14 +394,6 @@ bool DnDDisplayInteractor::SetWindowLayoutTo3D(mitk::StateMachineAction* action,
 
 //-----------------------------------------------------------------------------
 bool DnDDisplayInteractor::SetWindowLayoutToMulti(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
-{
-  m_Viewer->ToggleMultiWindowLayout();
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
-bool DnDDisplayInteractor::ToggleMultiWindowLayout(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent)
 {
   m_Viewer->ToggleMultiWindowLayout();
   return true;

@@ -115,9 +115,6 @@ protected:
   /// \brief Switches to multi window layout.
   virtual bool SetWindowLayoutToMulti(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
-  /// \brief Toggles between single and multi window layout.
-  virtual bool ToggleMultiWindowLayout(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
-
   /// \brief Selects the previous window of the current window layout.
   virtual bool SelectPreviousWindow(mitk::StateMachineAction* action, mitk::InteractionEvent* interactionEvent);
 
