@@ -3268,6 +3268,8 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
               )
             );
 
+        this->UpdateRegionGrowing();
+
         segmentationImage->Modified();
         segmentationNode->Modified();
       }
