@@ -358,12 +358,12 @@ private:
 
   /// \brief Does wipe, where if direction=0, wipes current slice, if direction=1, wipes anterior,
   /// and if direction=-1, wipes posterior.
-  bool DoWipe(int direction);
+  void DoWipe(int direction);
 
   /// \brief Method that actually does the threshold apply, so we can call it from the
   /// threshold apply button and not change slice, or when we change slice.
   /// It applies the threshold on the current slice.
-  bool DoThresholdApply(bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
+  void DoThresholdApply(bool optimiseSeeds, bool newSliceEmpty, bool newCheckboxStatus);
 
   /// \brief Used to toggle tools on/off.
   void ToggleTool(int toolId);
