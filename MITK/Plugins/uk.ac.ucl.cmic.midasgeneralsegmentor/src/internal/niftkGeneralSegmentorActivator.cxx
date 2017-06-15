@@ -27,8 +27,6 @@ void GeneralSegmentorActivator::start(ctkPluginContext* context)
 {
   BERRY_REGISTER_EXTENSION_CLASS(GeneralSegmentorView, context);
   BERRY_REGISTER_EXTENSION_CLASS(GeneralSegmentorPreferencePage, context);
-
-  Tool::LoadBehaviourStrings();
 }
 
 //-----------------------------------------------------------------------------

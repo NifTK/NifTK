@@ -17,8 +17,7 @@
 
 #include "niftkMIDASExports.h"
 
-//#include "niftkPointSetDataInteractor.h"
-#include "niftkPointSetInteractor.h"
+#include "niftkPointSetDataInteractor.h"
 #include "niftkTool.h"
 
 namespace niftk
@@ -80,8 +79,7 @@ protected:
 
 private:
 
-  PointSetInteractor::Pointer m_PointSetInteractor;
-//  PointSetDataInteractor::Pointer m_PointSetInteractor;
+  PointSetDataInteractor::Pointer m_PointSetDataInteractor;
 
 };
 

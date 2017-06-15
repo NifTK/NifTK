@@ -43,10 +43,6 @@ const std::string Tool::INITIAL_SEGMENTATION_NAME = "MIDAS_INITIAL_SEGMENTATION_
 const std::string Tool::INITIAL_SEEDS_NAME = "MIDAS_INITIAL_SEEDS";
 
 //-----------------------------------------------------------------------------
-bool Tool::s_BehaviourStringsLoaded = false;
-
-
-//-----------------------------------------------------------------------------
 Tool::Tool()
 : mitk::FeedbackContourTool("")
 , m_AddToPointSetInteractor(NULL)
@@ -61,52 +57,6 @@ Tool::Tool()
 //-----------------------------------------------------------------------------
 Tool::~Tool()
 {
-}
-
-
-//-----------------------------------------------------------------------------
-void Tool::LoadBehaviourStrings()
-{
-  if (!s_BehaviourStringsLoaded)
-  {
-    us::Module* thisModule = us::GetModuleContext()->GetModule();
-
-    if (Self::LoadBehaviour("niftkToolPointSetInteractor.xml", thisModule)
-        && Self::LoadBehaviour("niftkSeedToolPointSetInteractor.xml", thisModule))
-    {
-      s_BehaviourStringsLoaded = true;
-    }
-    else
-    {
-      MITK_ERROR << "State machine factory is not initialised. Use QmitkRegisterClasses().";
-    }
-  }
-}
-
-
-bool Tool::LoadBehaviour(const std::string& fileName, us::Module* module)
-{
-  mitk::GlobalInteraction* globalInteraction =  mitk::GlobalInteraction::GetInstance();
-  mitk::StateMachineFactory* stateMachineFactory = globalInteraction->GetStateMachineFactory();
-  if (stateMachineFactory)
-  {
-    us::ModuleResource resource =  module->GetResource("Interactions/" + fileName);
-    if (!resource.IsValid())
-    {
-      mitkThrow() << ("Resource not valid. State machine pattern not found:" + fileName);
-    }
-    us::ModuleResourceStream stream(resource);
-
-    std::istreambuf_iterator<char> eos;
-    std::string behaviourString(std::istreambuf_iterator<char>(stream), eos);
-
-    return stateMachineFactory->LoadBehaviorString(behaviourString);
-  }
-  else
-  {
-    MITK_ERROR << "State machine factory is not initialised. Use QmitkRegisterClasses().";
-    return false;
-  }
 }
 
 
@@ -192,11 +142,9 @@ void Tool::Activated()
 
     if (m_AddToPointSetInteractor.IsNull())
     {
-      m_AddToPointSetInteractor = PointSetInteractor::New("ToolPointSetInteractor", pointSetNode);
-
-//      m_AddToPointSetInteractor = PointSetDataInteractor::New();
-//      m_AddToPointSetInteractor->LoadStateMachine("niftkToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
-//      m_AddToPointSetInteractor->SetEventConfig("niftkToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
+      m_AddToPointSetInteractor = PointSetDataInteractor::New();
+      m_AddToPointSetInteractor->LoadStateMachine("niftkToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
+      m_AddToPointSetInteractor->SetEventConfig("niftkToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
       std::vector<StateMachineEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<StateMachineEventFilter*>::const_iterator it = eventFilters.begin();
@@ -206,9 +154,7 @@ void Tool::Activated()
         m_AddToPointSetInteractor->InstallEventFilter(*it);
       }
 
-//      m_AddToPointSetInteractor->SetDataNode(m_PointSetNode);
-
-      mitk::GlobalInteraction::GetInstance()->AddInteractor( m_AddToPointSetInteractor );
+      m_AddToPointSetInteractor->SetDataNode(m_PointSetNode);
     }
 
     m_LastSeenNumberOfSeeds = m_PointSet->GetSize();
@@ -278,14 +224,12 @@ void Tool::Deactivated()
 
     if (m_AddToPointSetInteractor.IsNotNull())
     {
-      mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_AddToPointSetInteractor);
-
       /// Note:
       /// The interactor is disabled after it is destructed, therefore we have to make sure
       /// that we remove every reference to it. The data node also has a reference to it,
       /// therefore we have to decouple them here.
       /// If we do not do this, the interactor stays active and will keep processing the events.
-//      m_AddToPointSetInteractor->SetDataNode(0);
+      m_AddToPointSetInteractor->SetDataNode(nullptr);
 
       std::vector<StateMachineEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<StateMachineEventFilter*>::const_iterator it = eventFilters.begin();
