@@ -85,21 +85,6 @@ void BaseSegmentorController::SetDefaultSegmentationColour(const QColor& default
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::EventFilter(const mitk::StateEvent* stateEvent) const
-{
-  if (QmitkRenderWindow* renderWindow = this->GetView()->GetSelectedRenderWindow())
-  {
-    if (renderWindow->GetRenderer() == stateEvent->GetEvent()->GetSender())
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-
-//-----------------------------------------------------------------------------
 bool BaseSegmentorController::EventFilter(mitk::InteractionEvent* event) const
 {
   if (QmitkRenderWindow* renderWindow = this->GetView()->GetSelectedRenderWindow())

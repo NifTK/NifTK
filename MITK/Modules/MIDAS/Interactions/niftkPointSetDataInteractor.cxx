@@ -123,6 +123,11 @@ bool PointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* action, mit
 
     /// TODO Disabled during the MITK upgrade.
 //    positionEvent->SetDisplayPosition(point2DInPx);
+
+    mitk::InteractionPositionEvent::Pointer positionEvent2 =
+        mitk::InteractionPositionEvent::New(renderer, point2DInPx, point3DInMm);
+
+    return Superclass::ExecuteAction(action, positionEvent2.GetPointer());
   }
 
   return Superclass::ExecuteAction(action, event);

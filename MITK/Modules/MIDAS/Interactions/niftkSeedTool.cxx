@@ -40,7 +40,7 @@ SeedTool::~SeedTool()
 //-----------------------------------------------------------------------------
 SeedTool::SeedTool()
 : Tool()
-, m_PointSetInteractor(NULL)
+, m_PointSetDataInteractor(NULL)
 {
 }
 
@@ -79,9 +79,9 @@ const char** SeedTool::GetXPM() const
 void SeedTool::InstallEventFilter(StateMachineEventFilter* eventFilter)
 {
   Superclass::InstallEventFilter(eventFilter);
-  if (m_PointSetInteractor.IsNotNull())
+  if (m_PointSetDataInteractor.IsNotNull())
   {
-    m_PointSetInteractor->InstallEventFilter(eventFilter);
+    m_PointSetDataInteractor->InstallEventFilter(eventFilter);
   }
 }
 
@@ -89,9 +89,9 @@ void SeedTool::InstallEventFilter(StateMachineEventFilter* eventFilter)
 //-----------------------------------------------------------------------------
 void SeedTool::RemoveEventFilter(StateMachineEventFilter* eventFilter)
 {
-  if (m_PointSetInteractor.IsNotNull())
+  if (m_PointSetDataInteractor.IsNotNull())
   {
-    m_PointSetInteractor->RemoveEventFilter(eventFilter);
+    m_PointSetDataInteractor->RemoveEventFilter(eventFilter);
   }
   Superclass::RemoveEventFilter(eventFilter);
 }
@@ -106,25 +106,21 @@ void SeedTool::Activated()
 
   if (pointSetNode)
   {
-    if (m_PointSetInteractor.IsNull())
+    if (m_PointSetDataInteractor.IsNull())
     {
-      m_PointSetInteractor = PointSetInteractor::New("SeedToolPointSetInteractor", pointSetNode);
-
-//      m_PointSetInteractor = PointSetDataInteractor::New();
-//      m_PointSetInteractor->LoadStateMachine("niftkSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
-//      m_PointSetInteractor->SetEventConfig("niftkSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
+      m_PointSetDataInteractor = PointSetDataInteractor::New();
+      m_PointSetDataInteractor->LoadStateMachine("niftkSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
+      m_PointSetDataInteractor->SetEventConfig("niftkSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
       std::vector<StateMachineEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<StateMachineEventFilter*>::const_iterator it = eventFilters.begin();
       std::vector<StateMachineEventFilter*>::const_iterator itEnd = eventFilters.end();
       for ( ; it != itEnd; ++it)
       {
-        m_PointSetInteractor->InstallEventFilter(*it);
+        m_PointSetDataInteractor->InstallEventFilter(*it);
       }
 
-//      m_PointSetInteractor->SetDataNode(pointSetNode);
-
-      mitk::GlobalInteraction::GetInstance()->AddInteractor(m_PointSetInteractor);
+      m_PointSetDataInteractor->SetDataNode(pointSetNode);
     }
   }
 }
@@ -133,26 +129,24 @@ void SeedTool::Activated()
 //-----------------------------------------------------------------------------
 void SeedTool::Deactivated()
 {
-  if (m_PointSetInteractor.IsNotNull())
+  if (m_PointSetDataInteractor.IsNotNull())
   {
-    mitk::GlobalInteraction::GetInstance()->RemoveInteractor(m_PointSetInteractor);
-
     /// Note:
     /// The interactor is disabled after it is destructed, therefore we have to make sure
     /// that we remove every reference to it. The data node also has a reference to it,
     /// therefore we have to decouple them here.
     /// If we do not do this, the interactor stays active and will keep processing the events.
-//    m_PointSetInteractor->SetDataNode(0);
+    m_PointSetDataInteractor->SetDataNode(nullptr);
 
     std::vector<StateMachineEventFilter*> eventFilters = this->GetEventFilters();
     std::vector<StateMachineEventFilter*>::const_iterator it = eventFilters.begin();
     std::vector<StateMachineEventFilter*>::const_iterator itEnd = eventFilters.end();
     for ( ; it != itEnd; ++it)
     {
-      m_PointSetInteractor->RemoveEventFilter(*it);
+      m_PointSetDataInteractor->RemoveEventFilter(*it);
     }
 
-    m_PointSetInteractor = NULL;
+    m_PointSetDataInteractor = nullptr;
   }
 
   Superclass::Deactivated();
