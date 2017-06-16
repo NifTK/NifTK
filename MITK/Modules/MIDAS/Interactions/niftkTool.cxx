@@ -142,9 +142,11 @@ void Tool::Activated()
 
     if (m_AddToPointSetInteractor.IsNull())
     {
+      /// This is a limited point set interactor that only allows adding points to the point set.
+      /// The 'full featured' point set interactor is allowed only with the seed tool.
       m_AddToPointSetInteractor = PointSetDataInteractor::New();
       m_AddToPointSetInteractor->LoadStateMachine("niftkToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
-      m_AddToPointSetInteractor->SetEventConfig("niftkToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
+      m_AddToPointSetInteractor->SetEventConfig("niftkPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
       std::vector<StateMachineEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<StateMachineEventFilter*>::const_iterator it = eventFilters.begin();

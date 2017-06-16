@@ -76,7 +76,7 @@ public:
 
 protected:
 
-  virtual bool CanHandle(mitk::InteractionEvent* event)
+  virtual bool CanHandle(mitk::InteractionEvent* /*event*/)
   {
     return true;
   }
