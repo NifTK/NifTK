@@ -59,15 +59,14 @@ set(RESOURCE_FILES
   Interactions/niftkDnDDisplayConfig_niftkPaintbrushTool.xml
   Interactions/niftkDrawTool.xml
   Interactions/niftkDrawToolConfig.xml
-  Interactions/niftkPolyTool.xml
-  Interactions/niftkPolyToolConfig.xml
   Interactions/niftkPaintbrushTool.xml
   Interactions/niftkPaintbrushToolConfig.xml
-  Interactions/niftkToolPointSetDataInteractor.xml
-  Interactions/niftkToolPointSetDataInteractorConfig.xml
+  Interactions/niftkPointSetDataInteractor.xml
+  Interactions/niftkPointSetDataInteractorConfig.xml
+  Interactions/niftkPolyTool.xml
+  Interactions/niftkPolyToolConfig.xml
   Interactions/niftkSeedTool.xml
-  Interactions/niftkSeedToolPointSetDataInteractor.xml
-  Interactions/niftkSeedToolPointSetDataInteractorConfig.xml
   Interactions/niftkToolKeyPressStateMachine.xml
   Interactions/niftkToolKeyPressStateMachineConfig.xml
+  Interactions/niftkToolPointSetDataInteractor.xml
 )
