@@ -38,7 +38,14 @@ ToolSelectorWidget::ToolSelectorWidget(QWidget *parent)
   /// but this might be different on other platforms.
   m_ManualToolGUIContainer->setMinimumHeight(24);
 
-  m_ManualToolSelectionBox->SetGenerateAccelerators(true);
+  /// Note:
+  /// The tool button shortcut keys *has to be* disabled. Otherwise, during
+  /// quick manual segmentation it can happen that you press the shortcut key
+  /// during a mouse interaction (e.g. panning the image) and this interrupts
+  /// that interaction. When this happens, the interaction observer mutex is
+  /// not unlocked, and the key interactions stop working. See #4675 and #5106.
+  m_ManualToolSelectionBox->SetGenerateAccelerators(false);
+
   m_ManualToolSelectionBox->SetLayoutColumns(3);
   m_ManualToolSelectionBox->SetToolGUIArea(m_ManualToolGUIContainer);
   m_ManualToolSelectionBox->SetEnabledMode(QmitkToolSelectionBox::EnabledWithWorkingData);
