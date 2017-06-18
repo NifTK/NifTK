@@ -852,6 +852,14 @@ void ITKGenerateOutlineFromBinaryImage(
   Index3DType regionIndex = region.GetIndex();
   Index3DType projectedRegionIndex = region.GetIndex();
 
+  if (sliceAxis < 0 || sliceAxis >= regionSize.GetSizeDimension()
+      || sliceIndex < 0 || sliceIndex >= regionSize[sliceAxis])
+  {
+    /// The slice index can be out of range if you want to get the prior
+    /// contour for the first slice or the next contour for the last slice.
+    return;
+  }
+
   // Collapse this 3D region down to 2D. So along the specified axis, the size=0.
   regionSize[sliceAxis] = 0;
   regionIndex[sliceAxis] = sliceIndex;
