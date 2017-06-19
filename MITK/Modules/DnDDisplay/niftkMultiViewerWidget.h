@@ -26,7 +26,6 @@
 #include <mitkRenderingManager.h>
 
 #include "niftkDnDDisplayEnums.h"
-#include "niftkSingleViewerWidget.h"
 #include "niftkMultiViewerVisibilityManager.h"
 
 class QSpinBox;
@@ -50,6 +49,7 @@ namespace niftk
 {
 
 class MultiViewerControls;
+class SingleViewerWidget;
 
 /**
  * \class MultiViewerWidget
@@ -86,10 +86,7 @@ public:
   /// \brief Constructor which builds up the controls and layout, and sets the selected viewer to the first (0th),
   /// the default drop type to DNDDISPLAY_DROP_SINGLE, and sets the number of rows and columns to those
   /// specified in the constructor parameter list.
-  MultiViewerWidget(
-      MultiViewerVisibilityManager* visibilityManager,
-      mitk::RenderingManager* renderingManager,
-      QWidget* parent = 0, Qt::WindowFlags f = 0);
+  MultiViewerWidget(mitk::RenderingManager* renderingManager, QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
 
   /// \brief Destructor, where we assume that all Qt widgets will be destroyed automatically.
   /// Note that we don't create or own the MultiViewerVisibilityManager.
@@ -453,8 +450,9 @@ private:
 
   // Dependencies, injected via constructor.
   // We don't own them, so don't try to delete them.
-  MultiViewerVisibilityManager* m_VisibilityManager;
   mitk::RenderingManager* m_RenderingManager;
+
+  MultiViewerVisibilityManager::Pointer m_VisibilityManager;
 
   // Member variables for control purposes.
   int m_SelectedViewerIndex;

@@ -32,14 +32,16 @@
 #include <mitkIDataStorageService.h>
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
-#include <QmitkMimeTypes.h>
+#include <QmitkCustomVariants.h>
 #include <QmitkDataNodeSelectionProvider.h>
 #include <QmitkEnums.h>
-#include <QmitkCustomVariants.h>
+#include <QmitkMimeTypes.h>
 #include <QmitkNodeDescriptorManager.h>
 
 #include <niftkMultiViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
+#include <niftkSingleViewerWidget.h>
+
 #include "internal/niftkPluginActivator.h"
 #include "niftkDnDDisplayPreferencePage.h"
 
@@ -80,7 +82,6 @@ public:
   void DisallowReinit();
 
   MultiViewerWidget* m_MultiViewer;
-  MultiViewerVisibilityManager::Pointer m_MultiViewerVisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
   QScopedPointer<berry::IPartListener> m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
@@ -1064,22 +1065,16 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     bool magnificationTracking = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true);
     bool timeStepTracking = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true);
 
-    d->m_MultiViewerVisibilityManager = MultiViewerVisibilityManager::New(dataStorage);
-    d->m_MultiViewerVisibilityManager->SetInterpolationType(defaultInterpolationType);
-    d->m_MultiViewerVisibilityManager->SetDefaultWindowLayout(defaultLayout);
-    d->m_MultiViewerVisibilityManager->SetDropType(defaultDropType);
-
     d->m_RenderingManager->SetDataStorage(dataStorage);
 
     // Create the MultiViewerWidget
-    d->m_MultiViewer = new MultiViewerWidget(
-        d->m_MultiViewerVisibilityManager,
-        d->m_RenderingManager,
-        parent);
+    d->m_MultiViewer = new MultiViewerWidget(d->m_RenderingManager, parent);
 
     d->m_MultiViewer->SetViewerNumber(defaultNumberOfRows, defaultNumberOfColumns);
 
     // Setup GUI a bit more.
+    d->m_MultiViewer->SetInterpolationType(defaultInterpolationType);
+    d->m_MultiViewer->SetDefaultWindowLayout(defaultLayout);
     d->m_MultiViewer->SetDropType(defaultDropType);
     d->m_MultiViewer->SetShowOptionsVisible(showShowingOptions);
     d->m_MultiViewer->SetWindowLayoutControlsVisible(showWindowLayoutControls);
