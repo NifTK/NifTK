@@ -17,6 +17,11 @@
 
 #include <ctkPluginActivator.h>
 
+#include <ctkServiceTracker.h>
+
+#include <mitkDataStorage.h>
+#include <mitkIDataStorageReference.h>
+
 #include <vector>
 
 class QmitkRenderWindow;
@@ -24,7 +29,7 @@ class QmitkRenderWindow;
 namespace mitk
 {
 class DataNode;
-class DataStorage;
+class IDataStorageService;
 }
 
 
@@ -56,11 +61,19 @@ public:
 
   ctkPluginContext* GetContext();
 
+  /// Returns a reference to the currently active data storage.
+  mitk::IDataStorageReference::Pointer GetDataStorageReference() const;
+
+  /// Returns the currently active data storage.
+  mitk::DataStorage::Pointer GetDataStorage() const;
+
 private:
 
   static PluginActivator* s_Instance;
 
   ctkPluginContext* m_Context;
+
+  ctkServiceTracker<mitk::IDataStorageService*>* m_DataStorageServiceTracker;
 
 };
 
