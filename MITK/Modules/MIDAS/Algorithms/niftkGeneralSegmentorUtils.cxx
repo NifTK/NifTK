@@ -45,7 +45,7 @@ void GenerateOutlineFromBinaryImage(mitk::Image::ConstPointer image,
     MITK_ERROR << "Failed in ITKGenerateOutlineFromBinaryImage due to:" << e.what();
     outputContourSet->Clear();
   }
-  catch(const itk::ItkExceptionObject& e)
+  catch(const itk::ExceptionObject& e)
   {
     MITK_ERROR << "Failed in ITKGenerateOutlineFromBinaryImage due to:" << e.what();
     outputContourSet->Clear();
