@@ -41,7 +41,7 @@
 #include <mitkITKImageImport.h>
 
 #include <niftkConversionUtils.h>
-
+#include <niftkVTKFunctions.h>
 #include "niftkDataStorageUtils.h"
 
 //-----------------------------------------------------------------------------
@@ -664,30 +664,7 @@ void AffineTransformer::OnLoadTransform(std::string fileName)
   else
   {
     // format take from reg_tool_ReadAffineFile
-    transformFromFile = vtkSmartPointer<vtkMatrix4x4>::New();
-    std::ifstream affineFile;
-    affineFile.open(fileName);
-
-    if (affineFile.is_open())
-    {
-      int i = 0;
-      float value0, value1, value2, value3;
-
-      while (!affineFile.eof())
-      {
-        affineFile >> value0 >> value1 >> value2 >> value3;
-        transformFromFile->SetElement(i, 0, value0);
-        transformFromFile->SetElement(i, 1, value1);
-        transformFromFile->SetElement(i, 2, value2);
-        transformFromFile->SetElement(i, 3, value3);
-
-        i++;
-        if (i > 3)
-        {
-          break;
-        }
-      }
-    }
+    transformFromFile = LoadMatrix4x4FromFile(fileName, true);
   }
 
   this->ApplyTransformToNode(transformFromFile, m_CurrentDataNode);
@@ -872,21 +849,45 @@ void AffineTransformer::ApplyTransformToNode(const vtkSmartPointer<vtkMatrix4x4>
   /**************************************************************
   * This is the main method to apply a transformation from file.
   **************************************************************/
-
   // Reset the geometry
-  vtkSmartPointer<vtkMatrix4x4> total = m_CurrentDataNode->GetData()->GetGeometry()->GetVtkTransform()->GetMatrix();
-  vtkSmartPointer<vtkMatrix4x4> totalInverted = vtkSmartPointer<vtkMatrix4x4>::New();
-  vtkMatrix4x4::Invert(total, totalInverted);
-  m_CurrentDataNode->GetData()->GetGeometry()->Compose(totalInverted);
+  mitk::BaseGeometry::Pointer geometry = node->GetData()->GetGeometry();
+  mitk::BaseGeometry::Pointer newGeometry = mitk::Geometry3D::New();
 
+  //if (geometry->GetImageGeometry())
+  //{
+  //  newGeometry = mitk::SlicedGeometry3D::New();
+  //  newGeometry->SetImageGeometry(true);
+  //}
+  //else
+  //{
+  //  newGeometry 
+  //}
+
+  newGeometry->SetIdentity();
   vtkSmartPointer<vtkMatrix4x4> initialTransformation
     = AffineTransformDataNodeProperty::LoadTransformFromNode(INITIAL_TRANSFORM_KEY.c_str(), *(node.GetPointer()));
-  node->GetData()->GetGeometry()->Compose(initialTransformation);
+  newGeometry->Compose(initialTransformation);
 
   AffineTransformDataNodeProperty::Pointer transformFromFileProperty = AffineTransformDataNodeProperty::New();
   transformFromFileProperty->SetTransform(*(transformFromFile.GetPointer()));
-  node->GetData()->GetGeometry()->Compose(transformFromFile);
+  newGeometry->Compose(transformFromFile);
+  
+  if (geometry->GetImageGeometry()) // if an image must update the plane geometry
+  {
+    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
 
+    mitk::SlicedGeometry3D::Pointer imageSlice = image->GetSlicedGeometry();
+    mitk::PlaneGeometry::Pointer imagePlane = imageSlice->GetPlaneGeometry(0);
+
+    imagePlane->SetIndexToWorldTransform(newGeometry->GetIndexToWorldTransform());    
+    image->GetSlicedGeometry()->InitializeEvenlySpaced(imagePlane, newGeometry->GetSpacing()[2], image->GetSlicedGeometry()->GetSlices());
+  }
+  else
+  {
+    node->GetData()->SetGeometry(newGeometry);
+  }
+
+  // update the date node properties
   AffineTransformDataNodeProperty::Pointer affineTransformIdentity = AffineTransformDataNodeProperty::New();
   affineTransformIdentity->Identity();
 
