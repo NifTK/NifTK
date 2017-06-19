@@ -36,6 +36,7 @@
 #include <QmitkDataNodeSelectionProvider.h>
 #include <QmitkEnums.h>
 #include <QmitkCustomVariants.h>
+#include <QmitkNodeDescriptorManager.h>
 
 #include <niftkMultiViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
@@ -53,6 +54,8 @@ class MultiViewerEditorPrivate
 public:
   MultiViewerEditorPrivate(MultiViewerEditor* q);
   ~MultiViewerEditorPrivate();
+
+  static const QString s_DATAMANAGER_VIEW_ID;
 
   static bool s_OptionsProcessed;
 
@@ -73,6 +76,8 @@ public:
   QList<mitk::DataNode::Pointer> DataNodeSelectionToQList(mitk::DataNodeSelection::ConstPointer currentSelection) const;
 
   mitk::DataNodeSelection::ConstPointer QListToDataNodeSelection(const QList<mitk::DataNode::Pointer>& currentSelection) const;
+
+  void DisallowReinit();
 
   MultiViewerWidget* m_MultiViewer;
   MultiViewerVisibilityManager::Pointer m_MultiViewerVisibilityManager;
@@ -100,6 +105,8 @@ public:
 
 bool MultiViewerEditorPrivate::s_OptionsProcessed = false;
 
+const QString MultiViewerEditorPrivate::s_DATAMANAGER_VIEW_ID = "org.mitk.views.datamanager";
+
 //-----------------------------------------------------------------------------
 struct MultiViewerEditorPartListener : public berry::IPartListener
 {
@@ -114,7 +121,18 @@ struct MultiViewerEditorPartListener : public berry::IPartListener
   //-----------------------------------------------------------------------------
   Events::Types GetPartEventTypes() const override
   {
-    return Events::CLOSED | Events::HIDDEN | Events::VISIBLE;
+    return Events::OPENED | Events::CLOSED | Events::HIDDEN | Events::VISIBLE;
+  }
+
+
+  //-----------------------------------------------------------------------------
+  void PartOpened(const berry::IWorkbenchPartReference::Pointer& partRef) override
+  {
+    if (partRef->GetId() == MultiViewerEditor::EDITOR_ID
+        || partRef->GetId() == MultiViewerEditorPrivate::s_DATAMANAGER_VIEW_ID)
+    {
+      d->DisallowReinit();
+    }
   }
 
 
@@ -171,12 +189,13 @@ private:
 
 };
 
+const QString DATAMANAGERVIEW_ID;
+
 
 //-----------------------------------------------------------------------------
 MultiViewerEditorPrivate::MultiViewerEditorPrivate(MultiViewerEditor* q)
 : q_ptr(q)
 , m_MultiViewer(0)
-, m_MultiViewerVisibilityManager(0)
 , m_RenderingManager(0)
 , m_PartListener(new MultiViewerEditorPartListener(this))
 , m_RenderingManagerInterface(0)
@@ -213,6 +232,50 @@ MultiViewerEditorPrivate::~MultiViewerEditorPrivate()
 
   delete m_DataNodeSelectionModel;
   delete m_DataNodeItemModel;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerEditorPrivate::DisallowReinit()
+{
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
+  if (prefService != nullptr)
+  {
+    /// Disable global reinit after a node is added or removed.
+    berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(s_DATAMANAGER_VIEW_ID);
+    if (prefs.IsNotNull())
+    {
+      prefs->PutBool("Call global reinit if node is added", false);
+      prefs->PutBool("Call global reinit if node is deleted", false);
+    }
+
+    /// Disable global reinit when hitting 'R' or 'Ctrl+R' in the Data Manager.
+    berry::IPreferences::Pointer hotKeysPrefs = prefService->GetSystemPreferences()->Node("/DataManager/Hotkeys");
+    if (hotKeysPrefs.IsNotNull())
+    {
+      hotKeysPrefs->Put("Reinit selected nodes", "none");
+      hotKeysPrefs->Put("Global Reinit", "none");
+      hotKeysPrefs->Flush();
+    }
+  }
+
+  /// Remove the "Reinit" and "Global Reinit" context menus from the Data Manager.
+  QmitkNodeDescriptorManager* nodeDescriptorManager = QmitkNodeDescriptorManager::GetInstance();
+  if (nodeDescriptorManager)
+  {
+    QmitkNodeDescriptor* unknownNodeDescriptor = nodeDescriptorManager->GetUnknownDataNodeDescriptor();
+    if (unknownNodeDescriptor)
+    {
+      for (QAction* action: unknownNodeDescriptor->GetBatchActions())
+      {
+        QString text = action->text();
+        if (text == "Reinit" || text == "Global Reinit")
+        {
+          unknownNodeDescriptor->RemoveAction(action);
+        }
+      }
+    }
+  }
 }
 
 
