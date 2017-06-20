@@ -849,21 +849,10 @@ void AffineTransformer::ApplyTransformToNode(const vtkSmartPointer<vtkMatrix4x4>
   /**************************************************************
   * This is the main method to apply a transformation from file.
   **************************************************************/
-  // Reset the geometry
-  mitk::BaseGeometry::Pointer geometry = node->GetData()->GetGeometry();
-  mitk::BaseGeometry::Pointer newGeometry = mitk::Geometry3D::New();
-
-  //if (geometry->GetImageGeometry())
-  //{
-  //  newGeometry = mitk::SlicedGeometry3D::New();
-  //  newGeometry->SetImageGeometry(true);
-  //}
-  //else
-  //{
-  //  newGeometry 
-  //}
-
+  // Create a new geometry with the correct transformation
+  mitk::Geometry3D::Pointer newGeometry = mitk::Geometry3D::New();
   newGeometry->SetIdentity();
+
   vtkSmartPointer<vtkMatrix4x4> initialTransformation
     = AffineTransformDataNodeProperty::LoadTransformFromNode(INITIAL_TRANSFORM_KEY.c_str(), *(node.GetPointer()));
   newGeometry->Compose(initialTransformation);
@@ -871,15 +860,16 @@ void AffineTransformer::ApplyTransformToNode(const vtkSmartPointer<vtkMatrix4x4>
   AffineTransformDataNodeProperty::Pointer transformFromFileProperty = AffineTransformDataNodeProperty::New();
   transformFromFileProperty->SetTransform(*(transformFromFile.GetPointer()));
   newGeometry->Compose(transformFromFile);
-  
-  if (geometry->GetImageGeometry()) // if an image must update the plane geometry
+
+  // initialize the geometry
+  mitk::BaseGeometry::Pointer geometry = node->GetData()->GetGeometry();  
+  if (geometry->GetImageGeometry())
   {
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
-
     mitk::SlicedGeometry3D::Pointer imageSlice = image->GetSlicedGeometry();
     mitk::PlaneGeometry::Pointer imagePlane = imageSlice->GetPlaneGeometry(0);
-
     imagePlane->SetIndexToWorldTransform(newGeometry->GetIndexToWorldTransform());    
+
     image->GetSlicedGeometry()->InitializeEvenlySpaced(imagePlane, newGeometry->GetSpacing()[2], image->GetSlicedGeometry()->GetSlices());
   }
   else
