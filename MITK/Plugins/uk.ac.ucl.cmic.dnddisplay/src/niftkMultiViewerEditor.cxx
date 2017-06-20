@@ -32,13 +32,16 @@
 #include <mitkIDataStorageService.h>
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
-#include <QmitkMimeTypes.h>
+#include <QmitkCustomVariants.h>
 #include <QmitkDataNodeSelectionProvider.h>
 #include <QmitkEnums.h>
-#include <QmitkCustomVariants.h>
+#include <QmitkMimeTypes.h>
+#include <QmitkNodeDescriptorManager.h>
 
 #include <niftkMultiViewerWidget.h>
 #include <niftkMultiViewerVisibilityManager.h>
+#include <niftkSingleViewerWidget.h>
+
 #include "internal/niftkPluginActivator.h"
 #include "niftkDnDDisplayPreferencePage.h"
 
@@ -53,6 +56,8 @@ class MultiViewerEditorPrivate
 public:
   MultiViewerEditorPrivate(MultiViewerEditor* q);
   ~MultiViewerEditorPrivate();
+
+  static const QString s_DATAMANAGER_VIEW_ID;
 
   static bool s_OptionsProcessed;
 
@@ -74,8 +79,9 @@ public:
 
   mitk::DataNodeSelection::ConstPointer QListToDataNodeSelection(const QList<mitk::DataNode::Pointer>& currentSelection) const;
 
+  void DisallowReinit();
+
   MultiViewerWidget* m_MultiViewer;
-  MultiViewerVisibilityManager::Pointer m_MultiViewerVisibilityManager;
   mitk::RenderingManager::Pointer m_RenderingManager;
   QScopedPointer<berry::IPartListener> m_PartListener;
   mitk::IRenderingManager* m_RenderingManagerInterface;
@@ -100,6 +106,8 @@ public:
 
 bool MultiViewerEditorPrivate::s_OptionsProcessed = false;
 
+const QString MultiViewerEditorPrivate::s_DATAMANAGER_VIEW_ID = "org.mitk.views.datamanager";
+
 //-----------------------------------------------------------------------------
 struct MultiViewerEditorPartListener : public berry::IPartListener
 {
@@ -114,7 +122,18 @@ struct MultiViewerEditorPartListener : public berry::IPartListener
   //-----------------------------------------------------------------------------
   Events::Types GetPartEventTypes() const override
   {
-    return Events::CLOSED | Events::HIDDEN | Events::VISIBLE;
+    return Events::OPENED | Events::CLOSED | Events::HIDDEN | Events::VISIBLE;
+  }
+
+
+  //-----------------------------------------------------------------------------
+  void PartOpened(const berry::IWorkbenchPartReference::Pointer& partRef) override
+  {
+    if (partRef->GetId() == MultiViewerEditor::EDITOR_ID
+        || partRef->GetId() == MultiViewerEditorPrivate::s_DATAMANAGER_VIEW_ID)
+    {
+      d->DisallowReinit();
+    }
   }
 
 
@@ -171,12 +190,13 @@ private:
 
 };
 
+const QString DATAMANAGERVIEW_ID;
+
 
 //-----------------------------------------------------------------------------
 MultiViewerEditorPrivate::MultiViewerEditorPrivate(MultiViewerEditor* q)
 : q_ptr(q)
 , m_MultiViewer(0)
-, m_MultiViewerVisibilityManager(0)
 , m_RenderingManager(0)
 , m_PartListener(new MultiViewerEditorPartListener(this))
 , m_RenderingManagerInterface(0)
@@ -213,6 +233,50 @@ MultiViewerEditorPrivate::~MultiViewerEditorPrivate()
 
   delete m_DataNodeSelectionModel;
   delete m_DataNodeItemModel;
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerEditorPrivate::DisallowReinit()
+{
+  berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
+  if (prefService != nullptr)
+  {
+    /// Disable global reinit after a node is added or removed.
+    berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(s_DATAMANAGER_VIEW_ID);
+    if (prefs.IsNotNull())
+    {
+      prefs->PutBool("Call global reinit if node is added", false);
+      prefs->PutBool("Call global reinit if node is deleted", false);
+    }
+
+    /// Disable global reinit when hitting 'R' or 'Ctrl+R' in the Data Manager.
+    berry::IPreferences::Pointer hotKeysPrefs = prefService->GetSystemPreferences()->Node("/DataManager/Hotkeys");
+    if (hotKeysPrefs.IsNotNull())
+    {
+      hotKeysPrefs->Put("Reinit selected nodes", "none");
+      hotKeysPrefs->Put("Global Reinit", "none");
+      hotKeysPrefs->Flush();
+    }
+  }
+
+  /// Remove the "Reinit" and "Global Reinit" context menus from the Data Manager.
+  QmitkNodeDescriptorManager* nodeDescriptorManager = QmitkNodeDescriptorManager::GetInstance();
+  if (nodeDescriptorManager)
+  {
+    QmitkNodeDescriptor* unknownNodeDescriptor = nodeDescriptorManager->GetUnknownDataNodeDescriptor();
+    if (unknownNodeDescriptor)
+    {
+      for (QAction* action: unknownNodeDescriptor->GetBatchActions())
+      {
+        QString text = action->text();
+        if (text == "Reinit" || text == "Global Reinit")
+        {
+          unknownNodeDescriptor->RemoveAction(action);
+        }
+      }
+    }
+  }
 }
 
 
@@ -1001,22 +1065,16 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     bool magnificationTracking = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_MAGNIFICATION_SELECT_TRACKING, true);
     bool timeStepTracking = prefs->GetBool(DnDDisplayPreferencePage::DNDDISPLAY_TIME_SELECT_TRACKING, true);
 
-    d->m_MultiViewerVisibilityManager = MultiViewerVisibilityManager::New(dataStorage);
-    d->m_MultiViewerVisibilityManager->SetInterpolationType(defaultInterpolationType);
-    d->m_MultiViewerVisibilityManager->SetDefaultWindowLayout(defaultLayout);
-    d->m_MultiViewerVisibilityManager->SetDropType(defaultDropType);
-
     d->m_RenderingManager->SetDataStorage(dataStorage);
 
     // Create the MultiViewerWidget
-    d->m_MultiViewer = new MultiViewerWidget(
-        d->m_MultiViewerVisibilityManager,
-        d->m_RenderingManager,
-        parent);
+    d->m_MultiViewer = new MultiViewerWidget(d->m_RenderingManager, parent);
 
     d->m_MultiViewer->SetViewerNumber(defaultNumberOfRows, defaultNumberOfColumns);
 
     // Setup GUI a bit more.
+    d->m_MultiViewer->SetInterpolationType(defaultInterpolationType);
+    d->m_MultiViewer->SetDefaultWindowLayout(defaultLayout);
     d->m_MultiViewer->SetDropType(defaultDropType);
     d->m_MultiViewer->SetShowOptionsVisible(showShowingOptions);
     d->m_MultiViewer->SetWindowLayoutControlsVisible(showWindowLayoutControls);

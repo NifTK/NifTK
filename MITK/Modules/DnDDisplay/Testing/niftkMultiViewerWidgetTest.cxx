@@ -46,7 +46,6 @@ public:
   mitk::DataNode::Pointer ImageNode;
 
   MultiViewerWidget* MultiViewer;
-  MultiViewerVisibilityManager::Pointer VisibilityManager;
 
   bool InteractiveMode;
 };
@@ -121,11 +120,6 @@ void MultiViewerWidgetTestClass::initTestCase()
   MITK_TEST_CONDITION_REQUIRED(mitk::Equal(allImages->size(), 1), ".. Test image loaded.");
 
   d->ImageNode = (*allImages)[0];
-
-  d->VisibilityManager = MultiViewerVisibilityManager::New(d->DataStorage);
-  d->VisibilityManager->SetInterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION);
-  d->VisibilityManager->SetDefaultWindowLayout(WINDOW_LAYOUT_CORONAL);
-  d->VisibilityManager->SetDropType(DNDDISPLAY_DROP_SINGLE);
 }
 
 
@@ -133,7 +127,6 @@ void MultiViewerWidgetTestClass::initTestCase()
 void MultiViewerWidgetTestClass::cleanupTestCase()
 {
   Q_D(MultiViewerWidgetTestClass);
-  d->VisibilityManager = 0;
 }
 
 
@@ -143,9 +136,11 @@ void MultiViewerWidgetTestClass::init()
   Q_D(MultiViewerWidgetTestClass);
 
   // Create the MultiViewerWidget
-  d->MultiViewer = new MultiViewerWidget(d->VisibilityManager, d->RenderingManager);
+  d->MultiViewer = new MultiViewerWidget(d->RenderingManager);
 
   // Setup GUI a bit more.
+  d->MultiViewer->SetInterpolationType(DNDDISPLAY_CUBIC_INTERPOLATION);
+  d->MultiViewer->SetDefaultWindowLayout(WINDOW_LAYOUT_CORONAL);
   d->MultiViewer->SetDropType(DNDDISPLAY_DROP_SINGLE);
   d->MultiViewer->SetShowOptionsVisible(true);
   d->MultiViewer->SetWindowLayoutControlsVisible(true);

@@ -14,8 +14,9 @@
 
 set(SRC_CPP_FILES
   niftkDnDDisplayPreferencePage.cxx
-  niftkSingleViewerEditor.cxx
+  niftkLoadDataIntoViewerAction.cxx
   niftkMultiViewerEditor.cxx
+  niftkSingleViewerEditor.cxx
 )
 
 set(INTERNAL_CPP_FILES
@@ -29,6 +30,7 @@ set(UI_FILES
 set(MOC_H_FILES
   src/internal/niftkPluginActivator.h
   src/niftkDnDDisplayPreferencePage.h
+  src/niftkLoadDataIntoViewerAction.h
   src/niftkMultiViewerEditor.h
   src/niftkSingleViewerEditor.h
 )

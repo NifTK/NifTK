@@ -40,8 +40,7 @@
 #include <mitkBaseGeometry.h>
 #include <QmitkRenderWindow.h>
 
-#include <niftkSingleViewerWidget.h>
-
+#include "niftkSingleViewerWidget.h"
 #include "niftkMultiViewerControls.h"
 
 
@@ -50,7 +49,6 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 MultiViewerWidget::MultiViewerWidget(
-    MultiViewerVisibilityManager* visibilityManager,
     mitk::RenderingManager* renderingManager,
     QWidget* parent, Qt::WindowFlags f)
 : QWidget(parent, f)
@@ -59,7 +57,7 @@ MultiViewerWidget::MultiViewerWidget(
 , m_PinButton(NULL)
 , m_PopupWidget(NULL)
 , m_DisplayConvention(DISPLAY_CONVENTION_RADIO)
-, m_VisibilityManager(visibilityManager)
+, m_VisibilityManager(MultiViewerVisibilityManager::New(renderingManager->GetDataStorage()))
 , m_RenderingManager(renderingManager)
 , m_SelectedViewerIndex(0)
 , m_ViewerRows(0)
@@ -74,8 +72,6 @@ MultiViewerWidget::MultiViewerWidget(
 , m_BindingOptions(0)
 , m_ControlPanel(0)
 {
-  assert(visibilityManager);
-
   this->setFocusPolicy(Qt::StrongFocus);
 
   /************************************
@@ -220,7 +216,7 @@ MultiViewerControls* MultiViewerWidget::CreateControlPanel(QWidget* parent)
 //-----------------------------------------------------------------------------
 MultiViewerWidget::~MultiViewerWidget()
 {
-  m_VisibilityManager->DeregisterViewers();
+  m_VisibilityManager = nullptr;
 
   this->EnableLinkedNavigation(false);
 }

@@ -19,10 +19,10 @@
     </editor>
   </extension-->
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="org.niftk.DnDDisplayPreferencePage" name="Drag and Drop Display" 
+    <page id="org.niftk.DnDDisplayPreferencePage" name="Drag and Drop Display"
       class="niftk::DnDDisplayPreferencePage" category="org.mitk.EditorsPreferencePage">
       <keywordreference id="org.niftk.DnDDisplayPreferencePageKeywords"/>
-    </page>     
+    </page>
   </extension>
 
   <extension point="org.blueberry.ui.keywords">
@@ -33,5 +33,13 @@
     <keyword id="org.niftk.DnDDisplayPreferencePageKeywords" label="drop"/>
     <keyword id="org.niftk.DnDDisplayPreferencePageKeywords" label="ortho"/>
   </extension>
-  
+
+  <extension point="org.mitk.gui.qt.datamanager.contextMenuActions">
+    <contextMenuAction
+          nodeDescriptorName="Unknown"
+          label="Load into viewer"
+          class="niftk::LoadDataIntoViewerAction"
+          icon="" />
+  </extension>
+
 </plugin>

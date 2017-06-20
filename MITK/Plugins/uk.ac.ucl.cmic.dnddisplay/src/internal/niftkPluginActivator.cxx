@@ -19,13 +19,12 @@
 #include <berryIWorkbenchPage.h>
 
 #include <mitkLogMacros.h>
-#include <mitkDataStorage.h>
-#include <mitkIDataStorageReference.h>
 #include <mitkIDataStorageService.h>
 #include <QmitkMimeTypes.h>
 
 #include <niftkMultiViewerWidget.h>
 #include <niftkDnDDisplayPreferencePage.h>
+#include <niftkLoadDataIntoViewerAction.h>
 #include <niftkMultiViewerEditor.h>
 //#include <niftkSingleViewerEditor.h>
 
@@ -54,10 +53,13 @@ PluginActivator::PluginActivator()
 void PluginActivator::start(ctkPluginContext* context)
 {
   m_Context = context;
+  m_DataStorageServiceTracker = new ctkServiceTracker<mitk::IDataStorageService*>(context);
+  m_DataStorageServiceTracker->open();
 
   BERRY_REGISTER_EXTENSION_CLASS(MultiViewerEditor, context);
 //  BERRY_REGISTER_EXTENSION_CLASS(SingleViewerEditor, context);
   BERRY_REGISTER_EXTENSION_CLASS(DnDDisplayPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(LoadDataIntoViewerAction, context);
 }
 
 
@@ -65,6 +67,8 @@ void PluginActivator::start(ctkPluginContext* context)
 void PluginActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
+  m_DataStorageServiceTracker->close();
+  delete m_DataStorageServiceTracker;
 }
 
 
@@ -79,6 +83,34 @@ PluginActivator* PluginActivator::GetInstance()
 ctkPluginContext* PluginActivator::GetContext()
 {
   return m_Context;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::IDataStorageReference::Pointer PluginActivator::GetDataStorageReference() const
+{
+  mitk::IDataStorageService* dsService = m_DataStorageServiceTracker->getService();
+
+  if (dsService)
+  {
+    return dsService->GetDataStorage();
+  }
+
+  return mitk::IDataStorageReference::Pointer(nullptr);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataStorage::Pointer PluginActivator::GetDataStorage() const
+{
+  mitk::IDataStorageService* dsService = m_DataStorageServiceTracker->getService();
+
+  if (dsService)
+  {
+    return dsService->GetDataStorage()->GetDataStorage();
+  }
+
+  return nullptr;
 }
 
 }
