@@ -403,8 +403,6 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
     }
   }
 
-  this->WaitCursorOn();
-
   // Override the base colour to be orange, and we revert this when OK pressed at the end.
   mitk::Color tmpColor;
   tmpColor[0] = 1.0;
@@ -527,10 +525,26 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   workingData[Tool::INITIAL_SEEDS] = initialSeedsNode;
   toolManager->SetWorkingData(workingData);
 
+  int sliceAxis = this->GetReferenceImageSliceAxis();
+  int sliceIndex = this->GetReferenceImageSliceIndex();
+
+  if (sliceAxis == -1 || sliceIndex == -1)
+  {
+    this->RemoveWorkingData();
+
+    QMessageBox::warning(
+          d->m_GUI->GetParent(),
+          "",
+          "Cannot determine the axis and index of the current slice.\n"
+          "Make sure that a 2D render window is selected. Cannot continue.",
+          QMessageBox::Ok);
+    return;
+  }
+
+  this->WaitCursorOn();
+
   if (isRestarting)
   {
-    int sliceAxis = this->GetReferenceImageSliceAxis();
-    int sliceIndex = this->GetReferenceImageSliceIndex();
     this->InitialiseSeedsForSlice(sliceAxis, sliceIndex);
     this->UpdateCurrentSliceContours();
   }
@@ -560,11 +574,9 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   this->UpdateRegionGrowing(false);
   this->RequestRenderWindowUpdate();
 
-  d->m_SliceAxis = this->GetReferenceImageSliceAxis();
-  d->m_SliceIndex = this->GetReferenceImageSliceIndex();
+  d->m_SliceAxis = sliceAxis;
+  d->m_SliceIndex = sliceIndex;
   d->m_SelectedPosition = this->GetSelectedPosition();
-
-  this->WaitCursorOff();
 
   d->m_WasRestarted = isRestarting;
 
@@ -572,6 +584,8 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   {
     this->GetView()->SetDataManagerSelection(newSegmentation);
   } 
+
+  this->WaitCursorOff();
 }
 
 
@@ -745,8 +759,16 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
       int sliceIndex = this->GetReferenceImageSliceIndex();
       mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
-      assert(sliceAxis >= 0);
-      assert(sliceIndex >= 0);
+      if (sliceAxis == -1 || sliceIndex == -1)
+      {
+        QMessageBox::warning(
+              d->m_GUI->GetParent(),
+              "",
+              "Cannot determine the axis and index of the current slice.\n"
+              "Make sure that a 2D render window is selected. Cannot continue.",
+              QMessageBox::Ok);
+        return;
+      }
 
       if (!d->m_IsUpdating
           && !d->m_IsChangingSlice)
@@ -1204,17 +1226,25 @@ void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
     int sliceIndex = this->GetReferenceImageSliceIndex();
     int sliceAxis = this->GetReferenceImageSliceAxis();
 
-    if (sliceIndex != -1 && sliceAxis != -1)
+    if (sliceIndex == -1 || sliceAxis == -1)
     {
-      try
-      {
-        AccessFixedDimensionByItk_n(referenceImage, ITKRecalculateMinAndMaxOfSeedValues, 3, (seeds, sliceAxis, sliceIndex, min, max));
-        d->m_GUI->SetSeedMinAndMaxValues(min, max);
-      }
-      catch(const mitk::AccessByItkException& e)
-      {
-        MITK_ERROR << "Caught exception, so abandoning recalculating min and max of seeds values, due to:" << e.what();
-      }
+      QMessageBox::warning(
+            d->m_GUI->GetParent(),
+            "",
+            "Cannot determine the axis and index of the current slice.\n"
+            "Make sure that a 2D render window is selected. Cannot continue.",
+            QMessageBox::Ok);
+      return;
+    }
+
+    try
+    {
+      AccessFixedDimensionByItk_n(referenceImage, ITKRecalculateMinAndMaxOfSeedValues, 3, (seeds, sliceAxis, sliceIndex, min, max));
+      d->m_GUI->SetSeedMinAndMaxValues(min, max);
+    }
+    catch(const mitk::AccessByItkException& e)
+    {
+      MITK_ERROR << "Caught exception, so abandoning recalculating min and max of seeds values, due to:" << e.what();
     }
   }
 }
@@ -1223,6 +1253,8 @@ void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering)
 {
+  Q_D(GeneralSegmentorController);
+
   if (!this->HasInitialisedWorkingData())
   {
     return;
@@ -1230,6 +1262,17 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
 
   int sliceIndex = this->GetReferenceImageSliceIndex();
   int sliceAxis = this->GetReferenceImageSliceAxis();
+
+  if (sliceIndex == -1 || sliceAxis == -1)
+  {
+    QMessageBox::warning(
+          d->m_GUI->GetParent(),
+          "",
+          "Cannot determine the axis and index of the current slice.\n"
+          "Make sure that a 2D render window is selected. Cannot continue.",
+          QMessageBox::Ok);
+    return;
+  }
 
   mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
   assert(segmentationImage);
@@ -1247,18 +1290,15 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
 
   if (contourSet)
   {
-    if (sliceIndex >= 0 && sliceAxis >= 0)
+    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex, sliceIndex, contourSet);
+
+    if (contourSet->GetSize() > 0)
     {
-      GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex, sliceIndex, contourSet);
+      workingData[Tool::CONTOURS]->Modified();
 
-      if (contourSet->GetSize() > 0)
+      if (updateRendering)
       {
-        workingData[Tool::CONTOURS]->Modified();
-
-        if (updateRendering)
-        {
-          this->RequestRenderWindowUpdate();
-        }
+        this->RequestRenderWindowUpdate();
       }
     }
   }
@@ -1352,6 +1392,18 @@ void GeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
   {
     int sliceAxis = this->GetReferenceImageSliceAxis();
     int sliceIndex = this->GetReferenceImageSliceIndex();
+
+    if (sliceIndex == -1 || sliceAxis == -1)
+    {
+      QMessageBox::warning(
+            d->m_GUI->GetParent(),
+            "",
+            "Cannot determine the axis and index of the current slice.\n"
+            "Make sure that a 2D render window is selected. Cannot continue.",
+            QMessageBox::Ok);
+      return;
+    }
+
     double lowerThreshold = d->m_GUI->GetLowerThreshold();
     double upperThreshold = d->m_GUI->GetUpperThreshold();
     bool skipUpdate = !isThresholdingOn;
@@ -1501,13 +1553,24 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
   int sliceIndex = this->GetReferenceImageSliceIndex();
   int sliceAxis = this->GetReferenceImageSliceAxis();
 
+  if (sliceIndex == -1 || sliceAxis == -1)
+  {
+    QMessageBox::warning(
+          d->m_GUI->GetParent(),
+          "",
+          "Cannot determine the axis and index of the current slice.\n"
+          "Make sure that a 2D render window is selected. Cannot continue.",
+          QMessageBox::Ok);
+    return;
+  }
+
   std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (d->m_GUI->IsSeePriorCheckBoxChecked())
   {
     mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[Tool::PRIOR_CONTOURS]->GetData());
-    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex-1, sliceIndex, contourSet);
+    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex - 1, sliceIndex, contourSet);
 
     if (contourSet->GetSize() > 0)
     {
@@ -1523,7 +1586,7 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
   if (d->m_GUI->IsSeeNextCheckBoxChecked())
   {
     mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[Tool::NEXT_CONTOURS]->GetData());
-    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex+1, sliceIndex, contourSet);
+    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex + 1, sliceIndex, contourSet);
 
     if (contourSet->GetSize() > 0)
     {
@@ -2302,6 +2365,17 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
         sliceUpDirection = 0;
       }
 
+      if (sliceIndex == -1 || sliceAxis == -1)
+      {
+        QMessageBox::warning(
+              d->m_GUI->GetParent(),
+              "",
+              "Cannot determine the axis and index of the current slice.\n"
+              "Make sure that a 2D render window is selected. Cannot continue.",
+              QMessageBox::Ok);
+        return;
+      }
+
       mitk::PointSet::Pointer copyOfInputSeeds = mitk::PointSet::New();
       mitk::PointSet::Pointer outputSeeds = mitk::PointSet::New();
       std::vector<int> outputRegion;
@@ -2506,9 +2580,14 @@ void GeneralSegmentorController::DoWipe(int direction)
   int sliceIndex = this->GetReferenceImageSliceIndex();
   int sliceUpDirection = this->GetReferenceImageSliceUpDirection();
 
-  if (sliceAxis == -1 || sliceIndex == -1)
+  if (sliceIndex == -1 || sliceAxis == -1)
   {
-    MITK_ERROR << "Could not wipe: Error, sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex;
+    QMessageBox::warning(
+          d->m_GUI->GetParent(),
+          "",
+          "Cannot determine the axis and index of the current slice.\n"
+          "Make sure that a 2D render window is selected. Cannot continue.",
+          QMessageBox::Ok);
     return;
   }
 
@@ -2627,8 +2706,14 @@ void GeneralSegmentorController::DoThresholdApply(
   int sliceIndex = this->GetReferenceImageSliceIndex();
   int sliceAxis = this->GetReferenceImageSliceAxis();
 
-  if (sliceAxis == -1 || sliceIndex == -1)
+  if (sliceIndex == -1 || sliceAxis == -1)
   {
+    QMessageBox::warning(
+          d->m_GUI->GetParent(),
+          "",
+          "Cannot determine the axis and index of the current slice.\n"
+          "Make sure that a 2D render window is selected. Cannot continue.",
+          QMessageBox::Ok);
     return;
   }
 
@@ -2751,6 +2836,17 @@ void GeneralSegmentorController::OnCleanButtonClicked()
   bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
   int sliceAxis = this->GetReferenceImageSliceAxis();
   int sliceIndex = this->GetReferenceImageSliceIndex();
+
+  if (sliceIndex == -1 || sliceAxis == -1)
+  {
+    QMessageBox::warning(
+          d->m_GUI->GetParent(),
+          "",
+          "Cannot determine the axis and index of the current slice.\n"
+          "Make sure that a 2D render window is selected. Cannot continue.",
+          QMessageBox::Ok);
+    return;
+  }
 
   if (!isThresholdingOn)
   {
