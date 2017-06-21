@@ -1,23 +1,23 @@
 <config>
-  <event_variant class="InteractionKeyEvent" name="KeyS">
+  <event_variant class="InteractionKeyEvent" name="SelectSeedTool">
     <attribute name="Key" value="S"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="KeyD">
+  <event_variant class="InteractionKeyEvent" name="SelectDrawTool">
     <attribute name="Key" value="D"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="KeySpace">
+  <event_variant class="InteractionKeyEvent" name="SelectPolyTool">
+    <attribute name="Key" value="F"/>
+  </event_variant>
+  <event_variant class="InteractionKeyEvent" name="UnselectTools">
     <attribute name="Key" value=" "/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="KeyN">
+  <event_variant class="InteractionKeyEvent" name="UnselectTools2">
     <attribute name="Key" value="N"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="KeyY">
-    <attribute name="Key" value="Y"/>
-  </event_variant>
-  <event_variant class="InteractionKeyEvent" name="KeyV">
+  <event_variant class="InteractionKeyEvent" name="SelectViewMode">
     <attribute name="Key" value="V"/>
   </event_variant>
-  <event_variant class="InteractionKeyEvent" name="KeyC">
+  <event_variant class="InteractionKeyEvent" name="CleanSlice">
     <attribute name="Key" value="C"/>
   </event_variant>
 </config>
