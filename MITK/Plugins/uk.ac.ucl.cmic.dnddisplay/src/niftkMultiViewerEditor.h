@@ -58,6 +58,7 @@ namespace niftk
  * \ingroup uk_ac_ucl_cmic_dnddisplay
  */
 
+class MultiViewerEditorPartListener;
 class MultiViewerEditorPrivate;
 class MultiViewerWidget;
 
@@ -168,6 +169,12 @@ protected:
   /// \brief Called when the preferences object of this editor changed.
   virtual void OnPreferencesChanged(const berry::IBerryPreferences*);
 
+  /// \brief Called when the node selection has changed in the given workbench part.
+  void OnSelectionChanged(berry::IWorkbenchPart::Pointer part, const QList<mitk::DataNode::Pointer>& selectedNodes);
+
+  /// \brief Called when a null selection occurs in the given workbench part.
+  void OnNullSelection(berry::IWorkbenchPart::Pointer part);
+
   /// \brief Creates the main Qt GUI element parts.
   virtual void CreateQtPartControl(QWidget* parent);
 
@@ -194,18 +201,17 @@ private:
   QList<mitk::DataNode::Pointer> GetSelectedNodes() const;
 
   /// \brief Sets the current selection of this editor part.
-  /// Additionally, it notifies other parts of the workbench about the selection change.
+  /// Additionally, it notifies other parts of the workbench about the selection change,
+  /// unless this is suppressed by passing `false` to the `fireNodesSelected` argument.
+  /// Suppressing the event is useful when we just want to update the current selection
+  /// after the data manager selection has changed.
   /// \param selection The list of data nodes to be selected in this editor.
-  void SetSelectedNodes(const QList<mitk::DataNode::Pointer>& selectedNodes);
-
-  /// Informs other parts of the workbench that the nodes are selected via the blueberry selection service.
-  ///
-  /// \note This method should not be used if you have set your own selection provider via
-  /// SetSelectionProvider() or your own QItemSelectionModel via GetDataNodeSelectionModel().
-  virtual void FireNodesSelected(const QList<mitk::DataNode::Pointer>& nodes);
+  /// \param fireNodesSelected Flag to tell if other workbench parts should be notified.
+  void SetSelectedNodes(const QList<mitk::DataNode::Pointer>& selectedNodes, bool fireNodesSelected = true);
 
   const QScopedPointer<MultiViewerEditorPrivate> d;
 
+  friend class MultiViewerEditorPartListener;
   friend class MultiViewerEditorPrivate;
 };
 
