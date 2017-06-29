@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkMITKNDITracker.h"
+#include <niftkMITKMathsUtils.h>
 
 #include <mitkException.h>
 #include <mitkTrackingDeviceSourceConfigurator.h>
@@ -182,9 +183,9 @@ bool MITKNDITracker::IsTracking() const
 
 
 //-----------------------------------------------------------------------------
-std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > MITKNDITracker::GetTrackingData()
+std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > MITKNDITracker::GetTrackingData()
 {
-  std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > result;
+  std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > result;
 
   // So, if not tracking (e.g didn't connect to tracker),
   // we can still play-back, so we should not fail to return.
@@ -194,6 +195,7 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > MITKNDITracker::GetTrackin
   }
 
   m_TrackerSource->Update();
+
   for(unsigned int i=0; i< m_TrackerSource->GetNumberOfOutputs(); i++)
   {
     mitk::NavigationData::Pointer currentTool = m_TrackerSource->GetOutput(i);
@@ -204,6 +206,7 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > MITKNDITracker::GetTrackin
         std::string name = currentTool->GetName();
         mitk::Matrix3D rotation = currentTool->GetRotationMatrix();
         mitk::Point3D position = currentTool->GetPosition();
+
         vtkSmartPointer<vtkMatrix4x4> transform = vtkSmartPointer<vtkMatrix4x4>::New();
         transform->Identity();
         for (int r = 0; r < 3; r++)
@@ -214,7 +217,16 @@ std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > MITKNDITracker::GetTrackin
           }
           transform->SetElement(r, 3, position[r]);
         }
-        result.insert(std::pair<std::string, vtkSmartPointer<vtkMatrix4x4> >(name, transform));
+
+        // Converting to translation vector and quaternion.
+        // Note: This is a bit inefficient. However, we don't currently
+        // (meaning 'as of 2017-05-22'), use this class at all. So,
+        // I'm just implementing this to satisfy the base class API.
+        mitk::Point4D rotationQuaternion;
+        mitk::Vector3D translation;
+        niftk::ConvertMatrixToRotationAndTranslation(*transform, rotationQuaternion, translation);
+        std::pair<mitk::Point4D, mitk::Vector3D> transformAsQuaternion(rotationQuaternion, translation);
+        result.insert(std::pair<std::string, std::pair<mitk::Point4D, mitk::Vector3D> >(name, transformAsQuaternion));
       }
     }
   }

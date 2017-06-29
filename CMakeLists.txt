@@ -1326,6 +1326,7 @@ set(MITK_LEGACY_EXPORT_MACRO_NAME ${_mitk_legacy_export_macro_name})
 # Find Optional External packages
 ######################################################################
 find_package(UltrasonixUlterius)
+find_package(Atracsys)
 
 
 ######################################################################

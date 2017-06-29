@@ -15,7 +15,7 @@
 
 MITK_CREATE_MODULE(
   DEPENDS niftkCore niftkIGIDataSources niftkNDITrackers niftkSerialPort
-  PACKAGE_DEPENDS CTK|CTKWidgets  NiftyLink|OpenIGTLink
+  PACKAGE_DEPENDS Qt4|QtGui Qt5|Widgets CTK|CTKWidgets  NiftyLink|OpenIGTLink
   AUTOLOAD_WITH niftkIGIDataSources
 )
 

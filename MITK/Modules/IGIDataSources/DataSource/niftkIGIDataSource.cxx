@@ -41,7 +41,6 @@ IGIDataSource::IGIDataSource(const std::string& name,
 , m_IsRecording(false)
 , m_IsPlayingBack(false)
 {
-
   if (m_DataStorage.IsNull())
   {
     mitkThrow() << "mitk::DataStorage is NULL!";

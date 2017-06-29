@@ -60,7 +60,6 @@ if(BUILD_NiftyIGI)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     SerialPort
-    NDICAPI 
     OpenCVUtils
     OpenCVImageConversion
     QImageConversion
@@ -68,12 +67,15 @@ if(BUILD_NiftyIGI)
     ICPReg
     OpenCV
     SurfRecon
-    NDITrackers
     IGI
     IGIOverlayEditor
     IGIGui
     IGIServices
     IGIDataSources
+    IGITrackers
+    NDICAPI
+    NDITrackers
+    Atracsys
     USRecon
     USReconGui
     USReg
@@ -98,6 +100,7 @@ if(BUILD_NiftyIGI)
     QtCameraVideoDataSourceService
     BKMedicalDataSourceService
     BlackMagicDataSourceService
+    AtracsysDataSourceService
   )
 
   if(BUILD_CAFFE)

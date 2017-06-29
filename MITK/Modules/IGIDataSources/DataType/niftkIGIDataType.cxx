@@ -29,7 +29,6 @@ IGIDataType::IGIDataType()
 , m_FrameId(0)
 , m_IsSaved(false)
 , m_ShouldBeSaved(false)
-, m_FileName("")
 {
 }
 
@@ -41,7 +40,6 @@ IGIDataType::IGIDataType(const IGIDataType& other)
 , m_FrameId(other.m_FrameId)
 , m_IsSaved(other.m_IsSaved)
 , m_ShouldBeSaved(other.m_ShouldBeSaved)
-, m_FileName(other.m_FileName)
 {
 }
 
@@ -53,7 +51,6 @@ IGIDataType::IGIDataType(IGIDataType&& other)
 , m_FrameId(std::move(other.m_FrameId))
 , m_IsSaved(std::move(other.m_IsSaved))
 , m_ShouldBeSaved(std::move(other.m_ShouldBeSaved))
-, m_FileName(std::move(other.m_FileName))
 {
 
 }
@@ -75,7 +72,6 @@ IGIDataType& IGIDataType::operator=(IGIDataType&& other)
   m_FrameId = other.m_FrameId;
   m_IsSaved = other.m_IsSaved;
   m_ShouldBeSaved = other.m_ShouldBeSaved;
-  m_FileName = other.m_FileName;
   return *this;
 }
 
@@ -88,7 +84,23 @@ void IGIDataType::Clone(const IGIDataType& other)
   m_FrameId = other.m_FrameId;
   m_IsSaved = other.m_IsSaved;
   m_ShouldBeSaved = other.m_ShouldBeSaved;
-  m_FileName = other.m_FileName;
+}
+
+
+//-----------------------------------------------------------------------------
+bool IGIDataType::IsLate(const niftk::IGIDataSourceI::IGITimeType& time)
+{
+  return (time - this->GetTimeStampInNanoSeconds()) > this->GetDuration();
+}
+
+//-----------------------------------------------------------------------------
+int IGIDataType::GetLagInMilliseconds(const niftk::IGIDataSourceI::IGITimeType& time)
+{
+  if (this->GetTimeStampInNanoSeconds() > time)
+  {
+    mitkThrow() << "Data is ahead of requested time stamp, which should never happen.";
+  }
+  return (time - this->GetTimeStampInNanoSeconds())/1000000;
 }
 
 } // end namespace

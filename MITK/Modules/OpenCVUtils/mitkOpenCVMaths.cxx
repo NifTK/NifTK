@@ -1788,7 +1788,7 @@ cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
 
     //we write temp out, not because it's interesting but because it
     //seems to fix a bug in the averaging code, trac 2895
-    MITK_INFO << "temp " << temp;
+    MITK_DEBUG << "temp " << temp;
   }
 
   temp_T = temp_T / static_cast<double>(Matrices.size());
@@ -1802,8 +1802,8 @@ cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
   cv::eigen(rtr , eigenvalues, eigenvectors);
   cv::Mat rootedEigenValues = cvCreateMat(3,3,CV_64FC1);
   //write out the vectors and values, because it might be interesting, trac 2972
-  MITK_INFO << "eigenvalues " << eigenvalues;
-  MITK_INFO << "eigenvectors " << eigenvectors;
+  MITK_DEBUG << "eigenvalues " << eigenvalues;
+  MITK_DEBUG << "eigenvectors " << eigenvectors;
   for ( int row = 0 ; row < 3 ; row ++ )
   {
     for ( int col = 0 ; col < 3 ; col ++ )
@@ -1819,7 +1819,7 @@ cv::Mat AverageMatrices (const std::vector <cv::Mat>& Matrices )
     }
   }
   //write out the rooted eigenValues trac 2972
-  MITK_INFO << " rooted eigenvalues " << rootedEigenValues;
+  MITK_DEBUG << " rooted eigenvalues " << rootedEigenValues;
 
   cv::Mat returnMat = cvCreateMat (4,4,CV_64FC1);
   cv::Mat temp2 = cvCreateMat(3,3,CV_64FC1);

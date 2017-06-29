@@ -36,7 +36,7 @@ public:
   /**
   * \brief Retrives the current tracking data.
   */
-  virtual std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData() override;
+  virtual std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > GetTrackingData() override;
 
 protected:
 

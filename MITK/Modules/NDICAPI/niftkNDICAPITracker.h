@@ -388,7 +388,7 @@ public:
     to the tools.  This should only be used within vtkTracker.cxx.
   */
   PlusStatus InternalUpdate();
-  std::map<std::string, std::vector<double> > GetTrackerMatrices();
+  std::map<std::string, std::vector<double> > GetTrackerQuaternions();
 
   /*! Read NDI tracker configuration from xml data */
   // NifTK commented out: virtual PlusStatus ReadConfiguration(vtkXMLDataElement* config);
@@ -518,10 +518,10 @@ private:
   NDICAPITracker(const NDICAPITracker&); /* Purposefully not implemented. */
   void operator=(const NDICAPITracker&); /* Purposefully not implemented. */
 
-  std::map<std::string, std::vector<double> > m_TrackerMatrices;
+  std::map<std::string, std::vector<double> > m_TrackerQuaternions;
 
-  unsigned int m_SuppressUpateErrorsAfterNRepeats;  //to stop repeated calls to internal update flooding the console
-  unsigned int m_UpdateErrorRepeatCounter;          //to stop repeated calls to internal update flooding the console
+  unsigned int m_SuppressUpateErrorsAfterNRepeats;  // To stop repeated calls to internal update flooding the console.
+  unsigned int m_UpdateErrorRepeatCounter;          // To stop repeated calls to internal update flooding the console.
 };
 
 } // end namespace

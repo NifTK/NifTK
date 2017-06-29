@@ -16,64 +16,27 @@
 #define niftkNDITracker_h
 
 #include <niftkNDITrackersExports.h>
-#include <itkObject.h>
-#include <itkObjectFactory.h>
-#include <mitkCommon.h>
-#include <mitkDataStorage.h>
-#include <mitkNavigationToolStorage.h>
+#include <niftkIGITracker.h>
 #include <mitkTrackingVolumeGenerator.h>
-#include <map>
 
 namespace niftk
 {
 
 /**
  * \class NDITracker
- * \brief Base class for NifTK interfaces to NDI trackers.
- *
- * The main design point is that tracking starts during the
- * constructor, and stops during the destructor. All errors
- * are thrown as mitk::Exception. Then you repeatedly
- * call GetTrackingData(). This class does not do
- * threading. It is assumed that the calling client
- * can manage buffers of matrices, threading etc.
- * This thing just grabs the latest tracking matrices each time
- * you you call GetTrackingData().
+ * \brief Abstract base class for NifTK interfaces to NDI trackers.
+ * \see IGITrackers
  */
-class NIFTKNDITRACKERS_EXPORT NDITracker : public itk::Object
+class NIFTKNDITRACKERS_EXPORT NDITracker : public niftk::IGITracker
 {
 public:
 
-  mitkClassMacroItkParent(NDITracker, itk::Object)
-  itkGetMacro(PreferredFramesPerSecond, int);
+  mitkClassMacroItkParent(NDITracker, niftk::IGITracker)
 
   /**
-  * \brief Retrives the current tracking data.
-  * \return map of tool-name and tracking matrix.
-  *
-  * Given that errors are thrown during construction,
-  * (like RAII pattern), then once the constructor
-  * is complete we can assume that the tracker is valid.
-  *
-  * Therefore we repeated call this method. If a tool is
-  * not visible, nothing for that tool will be returned.
-  * So, this will return a varying number of items, depending
-  * on how many tools are visible to the tracker. So
-  * zero items returned is a valid output.
+  * \see niftk::IGITracker::GetTrackingData()
   */
-  virtual std::map<std::string, vtkSmartPointer<vtkMatrix4x4> > GetTrackingData() = 0;
-
-  /**
-  * \brief Set the tracking volume visible or invisible.
-  *
-  * Each tracker loads a tracking volume for visualisation purposes.
-  */
-  void SetVisibilityOfTrackingVolume(bool isVisible);
-
-  /**
-  * \brief Get the visibility flag for the tracking volume.
-  */
-  bool GetVisibilityOfTrackingVolume() const;
+  virtual std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > GetTrackingData() = 0;
 
 protected:
 
@@ -88,17 +51,12 @@ protected:
   NDITracker(const NDITracker&); // Purposefully not implemented.
   NDITracker& operator=(const NDITracker&); // Purposefully not implemented.
 
-  // Passed in to constructor.
-  mitk::DataStorage::Pointer             m_DataStorage;
+  // Passed in to constructor, and stored in this class (see also base class).
   std::string                            m_PortName;
   mitk::TrackingDeviceData               m_DeviceData;
-  std::string                            m_ToolConfigFileName;
-  int                                    m_PreferredFramesPerSecond;
 
-  // Created during constructor.
-  mitk::NavigationToolStorage::Pointer   m_NavigationToolStorage;
+  // Created during constructor, and stored in this class (see also base class).
   mitk::TrackingVolumeGenerator::Pointer m_TrackingVolumeGenerator;
-  mitk::DataNode::Pointer                m_TrackingVolumeNode;
 
 }; // end class
 

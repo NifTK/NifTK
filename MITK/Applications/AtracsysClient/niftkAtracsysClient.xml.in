@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Tracking</category>
+  <title>Atracsys Client</title>
+  <description><![CDATA[Test harness to connect to Atracsys Fusion Track 500.]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Matt Clarkson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <file>
+      <name>outputFile</name>
+      <flag>o</flag>
+      <longflag>outputFile</longflag>
+      <description>A file to write data to.</description>
+      <label>Output File</label>
+      <channel>output</channel>
+    </file>
+    
+  </parameters>
+
+  <parameters>
+    <label>Optional Parameters</label>
+    <description><![CDATA[Optional Parameters]]></description>
+
+    <file fileExtensions=".IGTToolStorage">
+      <name>toolStorage</name>
+      <flag>t</flag>
+      <longflag>toolStorage</longflag>
+      <description>MITK Tool Storage file</description>
+      <label>Tool Storage</label>
+      <channel>input</channel>
+    </file>
+
+    <integer>
+      <name>numberSamples</name>
+      <flag>n</flag>
+      <longflag>numberSamples</longflag>
+      <description>Number of samples to grab</description>
+      <label>Number of Samples</label>
+      <default>-1</default>
+    </integer>
+    
+    <boolean>
+      <name>average</name>
+      <flag>a</flag>
+      <longflag>average</longflag>
+      <description>Average over multiple samples.</description>
+      <label>Average</label>
+      <default>false</default>
+      <channel>input</channel>
+    </boolean>
+
+  </parameters>
+
+</executable>

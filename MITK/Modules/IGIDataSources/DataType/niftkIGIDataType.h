@@ -57,10 +57,10 @@ public:
   bool GetShouldBeSaved() const { return m_ShouldBeSaved; }
   void SetShouldBeSaved(bool shouldBe) { m_ShouldBeSaved = shouldBe; }
 
-  std::string GetFileName() const { return m_FileName; }
-  void SetFileName(const std::string& fileName) { m_FileName = fileName; }
-
   virtual void Clone(const IGIDataType&);
+
+  bool IsLate(const niftk::IGIDataSourceI::IGITimeType& time);
+  int GetLagInMilliseconds(const niftk::IGIDataSourceI::IGITimeType& time);
 
 private:
 
@@ -69,7 +69,6 @@ private:
   niftk::IGIDataSourceI::IGIIndexType m_FrameId;
   bool                                m_IsSaved;
   bool                                m_ShouldBeSaved;
-  std::string                         m_FileName;
 };
 
 } // end namespace
