@@ -61,6 +61,7 @@ namespace niftk
 class MultiViewerEditorPartListener;
 class MultiViewerEditorPrivate;
 class MultiViewerWidget;
+class SingleViewerWidget;
 
 class DNDDISPLAY_EXPORT MultiViewerEditor :
   public QmitkAbstractRenderEditor, public mitk::ILinkedRenderWindowPart
@@ -182,7 +183,9 @@ private slots:
 
   void ProcessOptions();
 
-  void OnWindowSelected();
+  void OnNodesDropped(SingleViewerWidget* viewer, const std::vector<mitk::DataNode*>& droppedNodes);
+
+  void OnWindowSelected(SingleViewerWidget* viewer);
 
   void OnViewerDestroyed(QObject* object);
 

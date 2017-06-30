@@ -1144,7 +1144,8 @@ void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
     d->m_SelectedNodes[d->m_SelectedViewer] = selectedNodes;
     this->SetSelectedNodes(selectedNodes, false);
 
-    this->connect(d->m_MultiViewer, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
+    this->connect(d->m_MultiViewer, SIGNAL(NodesDropped(SingleViewerWidget*, const std::vector<mitk::DataNode*>&)), SLOT(OnNodesDropped(SingleViewerWidget*, const std::vector<mitk::DataNode*>&)));
+    this->connect(d->m_MultiViewer, SIGNAL(WindowSelected(SingleViewerWidget*)), SLOT(OnWindowSelected(SingleViewerWidget*)));
   }
 
   /// The command line arguments should be processed after the widget has been created
@@ -1352,9 +1353,15 @@ void MultiViewerEditor::OnSelectionChanged(berry::IWorkbenchPart::Pointer part,
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerEditor::OnWindowSelected()
+void MultiViewerEditor::OnNodesDropped(SingleViewerWidget* viewer, const std::vector<mitk::DataNode*>& droppedNodes)
 {
-  SingleViewerWidget* selectedViewer = d->m_MultiViewer->GetSelectedViewer();
+  std::copy(droppedNodes.begin(), droppedNodes.end(), std::back_inserter(d->m_SelectedNodes[viewer]));
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerEditor::OnWindowSelected(SingleViewerWidget* selectedViewer)
+{
   if (selectedViewer != d->m_SelectedViewer)
   {
     /// Saving data node selection for the current viewer. To avoid memory leak,

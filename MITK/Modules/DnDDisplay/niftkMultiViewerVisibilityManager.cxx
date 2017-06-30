@@ -132,7 +132,7 @@ void MultiViewerVisibilityManager::RegisterViewer(SingleViewerWidget* viewer)
 
   viewer->SetVisibility(nodes, false);
 
-  this->connect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
+  this->connect(viewer, SIGNAL(NodesDropped(const std::vector<mitk::DataNode*>&)), SLOT(OnNodesDropped(const std::vector<mitk::DataNode*>&)));
   this->connect(viewer, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
 }
 
@@ -147,7 +147,7 @@ void MultiViewerVisibilityManager::DeregisterViewers(std::size_t startIndex, std
   for (std::size_t i = startIndex; i < endIndex; ++i)
   {
     SingleViewerWidget* viewer = m_Viewers[i];
-    QObject::disconnect(viewer, SIGNAL(NodesDropped(std::vector<mitk::DataNode*>)), this, SLOT(OnNodesDropped(std::vector<mitk::DataNode*>)));
+    QObject::disconnect(viewer, SIGNAL(NodesDropped(const std::vector<mitk::DataNode*>&)), this, SLOT(OnNodesDropped(const std::vector<mitk::DataNode*>&)));
     QObject::disconnect(viewer, SIGNAL(WindowSelected()), this, SLOT(OnWindowSelected()));
     this->RemoveNodesFromViewer(viewer);
     m_DroppedNodes.erase(viewer);
@@ -642,21 +642,21 @@ void MultiViewerVisibilityManager::UpdateGlobalVisibilities(mitk::BaseRenderer* 
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> nodes)
+void MultiViewerVisibilityManager::OnNodesDropped(const std::vector<mitk::DataNode*>& droppedNodes)
 {
   SingleViewerWidget* viewer = qobject_cast<SingleViewerWidget*>(this->sender());
 
   int viewerIndex = std::find(m_Viewers.begin(), m_Viewers.end(), viewer) - m_Viewers.begin();
   assert(viewerIndex != m_Viewers.size());
 
-  WindowLayout windowLayout = this->GetWindowLayout(nodes);
+  WindowLayout windowLayout = this->GetWindowLayout(droppedNodes);
 
   if (m_DropType == DNDDISPLAY_DROP_SINGLE)
   {
-    mitk::TimeGeometry::Pointer timeGeometry = this->GetTimeGeometry(nodes, -1);
+    mitk::TimeGeometry::Pointer timeGeometry = this->GetTimeGeometry(droppedNodes, -1);
     if (timeGeometry.IsNull())
     {
-      MITK_ERROR << "Error, dropping " << nodes.size() << " nodes into viewer " << viewerIndex
+      MITK_ERROR << "Error, dropping " << droppedNodes.size() << " nodes into viewer " << viewerIndex
                  << ", could not find geometry which must be a programming bug.";
       return;
     }
@@ -676,9 +676,9 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
     }
 
     // Then add all nodes into the same viewer denoted by viewerIndex (the one that was dropped into).
-    for (std::size_t i = 0; i < nodes.size(); i++)
+    for (std::size_t i = 0; i < droppedNodes.size(); i++)
     {
-      this->AddNodeToViewer(viewer, nodes[i]);
+      this->AddNodeToViewer(viewer, droppedNodes[i]);
     }
   }
   else if (m_DropType == DNDDISPLAY_DROP_MULTIPLE)
@@ -689,7 +689,7 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
 
     std::size_t dropIndex = viewerIndex;
 
-    for (std::size_t i = 0; i < nodes.size(); i++)
+    for (std::size_t i = 0; i < droppedNodes.size(); i++)
     {
       while (dropIndex < m_Viewers.size() && !m_Viewers[dropIndex]->isVisible())
       {
@@ -704,10 +704,10 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
 
       SingleViewerWidget* viewerDropInto = m_Viewers[dropIndex];
 
-      mitk::TimeGeometry::Pointer timeGeometry = this->GetTimeGeometry(nodes, i);
+      mitk::TimeGeometry::Pointer timeGeometry = this->GetTimeGeometry(droppedNodes, i);
       if (timeGeometry.IsNull())
       {
-        MITK_ERROR << "Error, dropping node " << i << ", from a list of " << nodes.size() << " nodes into viewer " << dropIndex << ", could not find geometry which must be a programming bug." << std::endl;
+        MITK_ERROR << "Error, dropping node " << i << ", from a list of " << droppedNodes.size() << " nodes into viewer " << dropIndex << ", could not find geometry which must be a programming bug." << std::endl;
         return;
       }
 
@@ -726,7 +726,7 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
       }
 
       // ...and then adding a single image to that viewer, denoted by dropIndex.
-      this->AddNodeToViewer(viewerDropInto, nodes[i]);
+      this->AddNodeToViewer(viewerDropInto, droppedNodes[i]);
 
       // We need to always increment by at least one viewer, or else infinite loop-a-rama.
       dropIndex++;
@@ -734,10 +734,10 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
   }
   else if (m_DropType == DNDDISPLAY_DROP_ALL)
   {
-    mitk::TimeGeometry::Pointer timeGeometry = this->GetTimeGeometry(nodes, -1);
+    mitk::TimeGeometry::Pointer timeGeometry = this->GetTimeGeometry(droppedNodes, -1);
     if (timeGeometry.IsNull())
     {
-      MITK_ERROR << "Error, dropping " << nodes.size() << " nodes into viewer " << viewerIndex << ", could not find geometry which must be a programming bug." << std::endl;
+      MITK_ERROR << "Error, dropping " << droppedNodes.size() << " nodes into viewer " << viewerIndex << ", could not find geometry which must be a programming bug." << std::endl;
       return;
     }
 
@@ -822,9 +822,9 @@ void MultiViewerVisibilityManager::OnNodesDropped(std::vector<mitk::DataNode*> n
     // Now add the nodes to the right number of viewers.
     for (std::size_t i = 0; i < numberOfViewersToUse; i++)
     {
-      for (std::size_t j = 0; j < nodes.size(); j++)
+      for (std::size_t j = 0; j < droppedNodes.size(); j++)
       {
-        this->AddNodeToViewer(m_Viewers[i], nodes[j]);
+        this->AddNodeToViewer(m_Viewers[i], droppedNodes[j]);
       }
     }
   } // end if (which method of dropping)

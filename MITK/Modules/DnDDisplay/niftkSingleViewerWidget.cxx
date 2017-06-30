@@ -79,10 +79,10 @@ SingleViewerWidget::SingleViewerWidget(QWidget* parent, mitk::RenderingManager* 
   m_GridLayout->addWidget(m_MultiWidget);
 
   // Connect to MultiWindowWidget, so we can listen for signals.
-  this->connect(this->GetAxialWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
-  this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), Qt::DirectConnection);
+  this->connect(this->GetAxialWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, const std::vector<mitk::DataNode*>&)), Qt::DirectConnection);
+  this->connect(this->GetSagittalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, const std::vector<mitk::DataNode*>&)), Qt::DirectConnection);
+  this->connect(this->GetCoronalWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, const std::vector<mitk::DataNode*>&)), Qt::DirectConnection);
+  this->connect(this->Get3DWindow(), SIGNAL(NodesDropped(QmitkRenderWindow*, std::vector<mitk::DataNode*>)), SLOT(OnNodesDropped(QmitkRenderWindow*, const std::vector<mitk::DataNode*>&)), Qt::DirectConnection);
   this->connect(m_MultiWidget, SIGNAL(WindowSelected()), SIGNAL(WindowSelected()));
   this->connect(m_MultiWidget, SIGNAL(WindowLayoutChanged(WindowLayout)), SIGNAL(WindowLayoutChanged(WindowLayout)));
   this->connect(m_MultiWidget, SIGNAL(SelectedPositionChanged(const mitk::Point3D&)), SIGNAL(SelectedPositionChanged(const mitk::Point3D&)));
@@ -121,10 +121,10 @@ void SingleViewerWidget::SetDisplayConvention(int displayConvention)
 
 
 //-----------------------------------------------------------------------------
-void SingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, std::vector<mitk::DataNode*> nodes)
+void SingleViewerWidget::OnNodesDropped(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& droppedNodes)
 {
   Q_UNUSED(renderWindow);
-  emit NodesDropped(nodes);
+  emit NodesDropped(droppedNodes);
   m_MultiWidget->SetFocused();
 }
 

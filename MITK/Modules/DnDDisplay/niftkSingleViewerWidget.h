@@ -393,7 +393,7 @@ signals:
   void SelectViewer(int index);
 
   /// \brief Emitted when nodes are dropped on the SingleViewer widget.
-  void NodesDropped(std::vector<mitk::DataNode*> nodes);
+  void NodesDropped(const std::vector<mitk::DataNode*>& droppedNodes);
 
   /// \brief Emitted when the selected slice has changed in a render window of this viewer.
   void SelectedPositionChanged(const mitk::Point3D& selectedPosition);
@@ -434,11 +434,6 @@ signals:
   /// \brief Emitted when the visibility of the property annotation has changed.
   void PropertyAnnotationVisibilityChanged(bool visible);
 
-public slots:
-
-  /// \brief Called when nodes are dropped on the contained render windows.
-  virtual void OnNodesDropped(QmitkRenderWindow *renderWindow, std::vector<mitk::DataNode*> nodes);
-
 protected:
 
   /// \brief Re-renders the visible render windows on a paint event, e.g. when the widget is resized.
@@ -457,6 +452,9 @@ protected slots:
 
   /// \brief Called when the scale factor binding has changed.
   virtual void OnScaleFactorBindingChanged();
+
+  /// \brief Called when nodes are dropped on the contained render windows.
+  virtual void OnNodesDropped(QmitkRenderWindow* renderWindow, const std::vector<mitk::DataNode*>& droppedNodes);
 
 private:
 
