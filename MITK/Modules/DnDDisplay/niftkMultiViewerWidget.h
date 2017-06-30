@@ -284,7 +284,9 @@ signals:
 
   void BindingOptionsChanged(int bindingOptions);
 
-  void WindowSelected();
+  void NodesDropped(SingleViewerWidget* viewer, const std::vector<mitk::DataNode*>& droppedNodes);
+
+  void WindowSelected(SingleViewerWidget* viewer);
 
 protected slots:
 
@@ -350,6 +352,9 @@ protected slots:
 
   /// \brief Called when the drop accumulation has been changed through the control panel.
   void OnDropAccumulateControlChanged(bool checked);
+
+  /// \brief Called when data nodes have been dropped onto a window of a viewer.
+  void OnNodesDropped(const std::vector<mitk::DataNode*>& droppedNodes);
 
   /// \brief Called when a window of one of the viewers receives the focus.
   void OnWindowSelected();

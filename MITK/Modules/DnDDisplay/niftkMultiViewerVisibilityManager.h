@@ -133,7 +133,7 @@ signals:
 public slots:
 
   /// \brief When nodes are dropped, we set all the default properties, and renderer specific visibility flags etc.
-  void OnNodesDropped(std::vector<mitk::DataNode*> nodes);
+  void OnNodesDropped(const std::vector<mitk::DataNode*>& nodes);
 
 protected:
 

@@ -238,8 +238,8 @@ SingleViewerWidget* MultiViewerWidget::CreateViewer(const QString& name)
   viewer->SetDefaultSingleWindowLayout(m_SingleWindowLayout);
   viewer->SetDefaultMultiWindowLayout(m_MultiWindowLayout);
 
+  this->connect(viewer, SIGNAL(NodesDropped(const std::vector<mitk::DataNode*>&)), SLOT(OnNodesDropped(const std::vector<mitk::DataNode*>&)));
   this->connect(viewer, SIGNAL(WindowSelected()), SLOT(OnWindowSelected()));
-  this->connect(viewer, SIGNAL(WindowSelected()), SIGNAL(WindowSelected()));
   this->connect(viewer, SIGNAL(SelectPreviousViewer()), SLOT(OnSelectPreviousViewer()));
   this->connect(viewer, SIGNAL(SelectNextViewer()), SLOT(OnSelectNextViewer()));
   this->connect(viewer, SIGNAL(SelectViewer(int)), SLOT(OnSelectViewer(int)));
@@ -1177,15 +1177,25 @@ void MultiViewerWidget::SetSelectedViewer(int viewerIndex)
 
 
 //-----------------------------------------------------------------------------
+void MultiViewerWidget::OnNodesDropped(const std::vector<mitk::DataNode*>& droppedNodes)
+{
+  SingleViewerWidget* viewer = qobject_cast<SingleViewerWidget*>(QObject::sender());
+  emit NodesDropped(viewer, droppedNodes);
+}
+
+
+//-----------------------------------------------------------------------------
 void MultiViewerWidget::OnWindowSelected()
 {
-  auto it = std::find(m_Viewers.begin(), m_Viewers.end(), QObject::sender());
+  SingleViewerWidget* selectedViewer = qobject_cast<SingleViewerWidget*>(QObject::sender());
+  assert(selectedViewer);
+
+  auto it = std::find(m_Viewers.begin(), m_Viewers.end(), selectedViewer);
   assert(it != m_Viewers.end());
 
   int selectedViewerIndex = it - m_Viewers.begin();
 
   m_SelectedViewerIndex = selectedViewerIndex;
-  SingleViewerWidget* selectedViewer = m_Viewers[selectedViewerIndex];
 
   m_ControlPanel->SetWindowLayout(selectedViewer->GetWindowLayout());
 
@@ -1219,6 +1229,8 @@ void MultiViewerWidget::OnWindowSelected()
   m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
 
   this->OnCursorVisibilityChanged(selectedViewer->IsCursorVisible());
+
+  emit WindowSelected(selectedViewer);
 }
 
 
