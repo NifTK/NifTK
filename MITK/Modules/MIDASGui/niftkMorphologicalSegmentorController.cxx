@@ -395,7 +395,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
         /// pipeline parameters are stored in the data node. We need to relaunch the pipeline
         /// up to the step where it was finished last time.
         newSegmentation->SetBoolProperty("midas.morph.restarting", true);
-        this->SetControlsFromSegmentationNodeProps();
+        this->SetControlsFromSegmentationNode();
       }
       else
       {
@@ -412,7 +412,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     {
       this->SetSegmentationNodePropsFromReferenceImage();
       this->SetControlsFromReferenceImage();
-      this->SetControlsFromSegmentationNodeProps();
+      this->SetControlsFromSegmentationNode();
       m_PipelineManager->UpdateSegmentation();
     }
   }
@@ -446,7 +446,7 @@ void MorphologicalSegmentorController::OnDataManagerSelectionChanged(const QList
 
     if (referenceImage && segmentationImage)
     {
-      this->SetControlsFromSegmentationNodeProps();
+      this->SetControlsFromSegmentationNode();
     }
 
     bool isAlreadyFinished = true;
@@ -635,7 +635,7 @@ void MorphologicalSegmentorController::OnRestartButtonClicked()
     m_PipelineManager->ClearWorkingData();
     this->SetSegmentationNodePropsFromReferenceImage();
     this->SetControlsFromReferenceImage();
-    this->SetControlsFromSegmentationNodeProps();
+    this->SetControlsFromSegmentationNode();
     m_PipelineManager->UpdateSegmentation();
 
     /// Reset the axial cut-off plane to the bottom of the image.
@@ -875,12 +875,10 @@ void MorphologicalSegmentorController::SetControlsFromReferenceImage()
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorController::SetControlsFromSegmentationNodeProps()
+void MorphologicalSegmentorController::SetControlsFromSegmentationNode()
 {
-  MorphologicalSegmentorPipelineParams params;
-  m_PipelineManager->GetPipelineParamsFromSegmentationNode(params);
-
-  m_MorphologicalSegmentorGUI->SetControlsByPipelineParams(params);
+  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+  m_MorphologicalSegmentorGUI->SetControlsFromSegmentationNode(segmentationNode);
 }
 
 }

@@ -229,24 +229,51 @@ void MorphologicalSegmentorGUI::SetControlsByReferenceImage(double lowestValue, 
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorGUI::SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params)
+void MorphologicalSegmentorGUI::SetControlsFromSegmentationNode(mitk::DataNode* segmentationNode)
 {
   bool wasBlocked = this->blockSignals(true);
 
-  m_ThresholdingLowerThresholdSlider->setValue(params.m_LowerIntensityThreshold);
-  m_ThresholdingUpperThresholdSlider->setValue(params.m_UpperIntensityThreshold);
-  m_ThresholdingAxialCutOffSlider->setValue(params.m_AxialCutOffSlice);
-  m_ErosionsUpperThresholdSlider->setValue(params.m_UpperErosionsThreshold);
-  m_ErosionsIterationsSlider->setValue(params.m_NumberOfErosions);
-  m_DilationsLowerThresholdSlider->setValue(params.m_LowerPercentageThresholdForDilations);
-  m_DilationsUpperThresholdSlider->setValue(params.m_UpperPercentageThresholdForDilations);
-  m_DilationsIterationsSlider->setValue(params.m_NumberOfDilations);
-  m_RethresholdingBoxSizeSlider->setValue(params.m_BoxSize);
+  if (segmentationNode)
+  {
+    int intValue;
+    float floatValue;
 
-  int tabIndex = params.m_Stage;
+    segmentationNode->GetIntProperty("midas.morph.stage", intValue);
+    m_TabWidget->setCurrentIndex(intValue);
 
-  m_TabWidget->setCurrentIndex(tabIndex);
-  this->SetEnabled(true);
+    segmentationNode->GetFloatProperty("midas.morph.thresholding.lower", floatValue);
+    m_ThresholdingLowerThresholdSlider->setValue(floatValue);
+
+    segmentationNode->GetFloatProperty("midas.morph.thresholding.upper", floatValue);
+    m_ThresholdingUpperThresholdSlider->setValue(floatValue);
+
+    segmentationNode->GetIntProperty("midas.morph.thresholding.slice", intValue);
+    m_ThresholdingAxialCutOffSlider->setValue(intValue);
+
+    segmentationNode->GetFloatProperty("midas.morph.erosion.threshold", floatValue);
+    m_ErosionsUpperThresholdSlider->setValue(floatValue);
+
+    segmentationNode->GetIntProperty("midas.morph.erosion.iterations", intValue);
+    m_ErosionsIterationsSlider->setValue(intValue);
+
+    segmentationNode->GetFloatProperty("midas.morph.dilation.lower", floatValue);
+    m_DilationsLowerThresholdSlider->setValue(floatValue);
+
+    segmentationNode->GetFloatProperty("midas.morph.dilation.upper", floatValue);
+    m_DilationsUpperThresholdSlider->setValue(floatValue);
+
+    segmentationNode->GetIntProperty("midas.morph.dilation.iterations", intValue);
+    m_DilationsIterationsSlider->setValue(intValue);
+
+    segmentationNode->GetIntProperty("midas.morph.rethresholding.box", intValue);
+    m_RethresholdingBoxSizeSlider->setValue(intValue);
+
+    this->SetEnabled(true);
+  }
+  else
+  {
+    this->SetEnabled(false);
+  }
 
   this->blockSignals(wasBlocked);
 }

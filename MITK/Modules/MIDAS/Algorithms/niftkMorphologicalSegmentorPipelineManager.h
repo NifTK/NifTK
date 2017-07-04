@@ -82,9 +82,6 @@ public:
   /// \brief Used to retrieve the working image from the tool manager.
   mitk::Image* GetWorkingImage(int index = 0) const;
 
-  /// \brief Finds the segmentation node, and if present will populate params with the parameters found on the segmentation node.
-  void GetPipelineParamsFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const;
-
   /// \brief Calls update on the ITK pipeline using the MITK AccessByItk macros.
   void UpdateSegmentation();
 
