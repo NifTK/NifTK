@@ -166,7 +166,7 @@ protected:
 
   /// \brief Assumes input is a valid segmentation node, then searches for the derived
   /// children of the node, looking for the seeds and contours  as described in the class introduction.
-  virtual std::vector<mitk::DataNode*> GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node) override;
+  virtual std::vector<mitk::DataNode*> GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode) override;
 
   /// \brief Creates the general segmentor widget that holds the GUI components of the view.
   virtual BaseGUI* CreateGUI(QWidget* parent) override;
@@ -383,7 +383,7 @@ private:
   void DiscardSegmentation();
 
   /// \brief Clears both images of the working data.
-  void ClearWorkingData();
+  void ClearWorkingNodes();
 
   QScopedPointer<GeneralSegmentorControllerPrivate> d_ptr;
 

@@ -110,9 +110,46 @@ bool MorphologicalSegmentorController::IsAWorkingImage(const mitk::DataNode::Poi
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node)
+std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
 {
-  return m_PipelineManager->GetWorkingDataFromSegmentationNode(node);
+  assert(segmentationNode.IsNotNull());
+
+  std::vector<mitk::DataNode*> workingNodes(5);
+  std::fill(workingNodes.begin(), workingNodes.end(), (mitk::DataNode*) 0);
+
+  workingNodes[PaintbrushTool::SEGMENTATION] = segmentationNode;
+
+  mitk::DataStorage::SetOfObjects::Pointer derivedNodes = niftk::FindDerivedImages(this->GetDataStorage(), segmentationNode, true );
+
+  for (std::size_t i = 0; i < derivedNodes->size(); i++)
+  {
+    mitk::DataNode::Pointer derivedNode = derivedNodes->at(i);
+    std::string name = derivedNode->GetName();
+    if (name == PaintbrushTool::EROSIONS_ADDITIONS_NAME)
+    {
+      workingNodes[PaintbrushTool::EROSIONS_ADDITIONS] = derivedNode;
+    }
+    else if (name == PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME)
+    {
+      workingNodes[PaintbrushTool::EROSIONS_SUBTRACTIONS] = derivedNode;
+    }
+    else if (name == PaintbrushTool::DILATIONS_ADDITIONS_NAME)
+    {
+      workingNodes[PaintbrushTool::DILATIONS_ADDITIONS] = derivedNode;
+    }
+    else if (name == PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME)
+    {
+      workingNodes[PaintbrushTool::DILATIONS_SUBTRACTIONS] = derivedNode;
+    }
+  }
+
+  if (std::count(workingNodes.begin(), workingNodes.end(), (mitk::DataNode*) 0) != 0)
+  {
+    MITK_INFO << "Working data nodes missing for the morphological segmentation pipeline.";
+    workingNodes.clear();
+  }
+
+  return workingNodes;
 }
 
 
@@ -282,14 +319,14 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     // MORPH_EDITS_DILATIONS_SUBTRACTIONS
     // MORPH_EDITS_DILATIONS_ADDITIONS
 
-    std::vector<mitk::DataNode*> workingData(5);
-    workingData[PaintbrushTool::SEGMENTATION] = newSegmentation;
-    workingData[PaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
-    workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
-    workingData[PaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
-    workingData[PaintbrushTool::DILATIONS_SUBTRACTIONS] = dilateSubtractNode;
+    std::vector<mitk::DataNode*> workingNodes(5);
+    workingNodes[PaintbrushTool::SEGMENTATION] = newSegmentation;
+    workingNodes[PaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
+    workingNodes[PaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
+    workingNodes[PaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
+    workingNodes[PaintbrushTool::DILATIONS_SUBTRACTIONS] = dilateSubtractNode;
 
-    toolManager->SetWorkingData(workingData);
+    toolManager->SetWorkingData(workingNodes);
 
     /// Note:
     /// The tool selection box tracks the events when the working data changes,
@@ -596,7 +633,7 @@ void MorphologicalSegmentorController::OnSegmentationEdited(int imageIndex)
   mitk::ToolManager* toolManager = this->GetToolManager();
   if (toolManager)
   {
-    mitk::DataNode* node = toolManager->GetWorkingData(imageIndex);
+    mitk::DataNode* node = this->GetWorkingNode(imageIndex);
     assert(node);
     ITKRegionParametersDataNodeProperty::Pointer prop =
         dynamic_cast<ITKRegionParametersDataNodeProperty*>(node->GetProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str()));
@@ -638,8 +675,8 @@ void MorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataN
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
 
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
-  if (segmentationNode.IsNotNull() && node == segmentationNode && workingData.size() == 5)
+  std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodes();
+  if (segmentationNode.IsNotNull() && node == segmentationNode && workingNodes.size() == 5)
   {
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
 
@@ -647,17 +684,17 @@ void MorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataN
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
       int tabIndex = m_MorphologicalSegmentorGUI->GetTabIndex();
-      workingData[PaintbrushTool::EROSIONS_ADDITIONS]->SetVisibility(false);
-      workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 1);
-      workingData[PaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);
-      workingData[PaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 2);
+      workingNodes[PaintbrushTool::EROSIONS_ADDITIONS]->SetVisibility(false);
+      workingNodes[PaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 1);
+      workingNodes[PaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);
+      workingNodes[PaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 2);
       axialCutOffPlaneNode->SetVisibility(true);
     }
     else
     {
-      for (std::size_t i = 1; i < workingData.size(); ++i)
+      for (std::size_t i = 1; i < workingNodes.size(); ++i)
       {
-        workingData[i]->SetVisibility(false);
+        workingNodes[i]->SetVisibility(false);
       }
       axialCutOffPlaneNode->SetVisibility(false);
     }

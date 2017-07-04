@@ -199,12 +199,12 @@ bool BaseSegmentorController::IsAWorkingImage(const mitk::DataNode::Pointer node
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node)
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
 {
   // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
   std::vector<mitk::DataNode*> result(1);
-  result[0] = node;
+  result[0] = segmentationNode;
   return result;
 }
 
