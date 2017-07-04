@@ -465,11 +465,16 @@ void MorphologicalSegmentorController::OnDataManagerSelectionChanged(const QList
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber)
 {
-  m_PipelineManager->OnThresholdingValuesChanged(lowerThreshold, upperThreshold, axialSliceNumber);
-
-  mitk::DataNode* referenceNode = this->GetReferenceNode();
   mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  const mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceNode->GetData());
+  if (segmentationNode)
+  {
+    segmentationNode->SetFloatProperty("midas.morph.thresholding.lower", lowerThreshold);
+    segmentationNode->SetFloatProperty("midas.morph.thresholding.upper", upperThreshold);
+    segmentationNode->SetIntProperty("midas.morph.thresholding.slice", axialSliceNumber);
+    m_PipelineManager->UpdateSegmentation();
+  }
+
+  const mitk::Image* referenceImage = this->GetReferenceImage();
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
   int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
@@ -489,7 +494,13 @@ void MorphologicalSegmentorController::OnThresholdingValuesChanged(double lowerT
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::OnErosionsValuesChanged(double upperThreshold, int numberOfErosions)
 {
-  m_PipelineManager->OnErosionsValuesChanged(upperThreshold, numberOfErosions);
+  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+  if (segmentationNode)
+  {
+    segmentationNode->SetFloatProperty("midas.morph.erosion.threshold", upperThreshold);
+    segmentationNode->SetIntProperty("midas.morph.erosion.iterations", numberOfErosions);
+    m_PipelineManager->UpdateSegmentation();
+  }
   this->RequestRenderWindowUpdate();
 }
 
@@ -497,7 +508,14 @@ void MorphologicalSegmentorController::OnErosionsValuesChanged(double upperThres
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations)
 {
-  m_PipelineManager->OnDilationsValuesChanged(lowerPercentage, upperPercentage, numberOfDilations);
+  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+  if (segmentationNode)
+  {
+    segmentationNode->SetFloatProperty("midas.morph.dilation.lower", lowerPercentage);
+    segmentationNode->SetFloatProperty("midas.morph.dilation.upper", upperPercentage);
+    segmentationNode->SetIntProperty("midas.morph.dilation.iterations", numberOfDilations);
+    m_PipelineManager->UpdateSegmentation();
+  }
   this->RequestRenderWindowUpdate();
 }
 
@@ -505,7 +523,12 @@ void MorphologicalSegmentorController::OnDilationsValuesChanged(double lowerPerc
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::OnRethresholdingValuesChanged(int boxSize)
 {
-  m_PipelineManager->OnRethresholdingValuesChanged(boxSize);
+  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+  if (segmentationNode)
+  {
+    segmentationNode->SetIntProperty("midas.morph.rethresholding.box", boxSize);
+    m_PipelineManager->UpdateSegmentation();
+  }
   this->RequestRenderWindowUpdate();
 }
 
@@ -570,7 +593,8 @@ void MorphologicalSegmentorController::OnTabChanged(int tabIndex)
       this->OnActiveToolChanged(); // make sure we de-activate tools.
     }
 
-    m_PipelineManager->OnTabChanged(tabIndex);
+    segmentationNode->SetIntProperty("midas.morph.stage", tabIndex);
+    m_PipelineManager->UpdateSegmentation();
 
     this->RequestRenderWindowUpdate();
   }
@@ -804,7 +828,30 @@ mitk::DataNode::Pointer MorphologicalSegmentorController::CreateAxialCutOffPlane
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::SetSegmentationNodePropsFromReferenceImage()
 {
-  m_PipelineManager->SetSegmentationNodePropsFromReferenceImage();
+  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+
+  if (referenceImage && segmentationNode)
+  {
+    int thresholdingSlice = 0;
+    int upDirection = GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
+    if (upDirection == -1)
+    {
+      int axialAxis = GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
+      thresholdingSlice = referenceImage->GetDimension(axialAxis) - 1;
+    }
+
+    segmentationNode->SetIntProperty("midas.morph.stage", 0);
+    segmentationNode->SetFloatProperty("midas.morph.thresholding.lower", referenceImage->GetStatistics()->GetScalarValueMin());
+    segmentationNode->SetFloatProperty("midas.morph.thresholding.upper", referenceImage->GetStatistics()->GetScalarValueMin());
+    segmentationNode->SetIntProperty("midas.morph.thresholding.slice", thresholdingSlice);
+    segmentationNode->SetFloatProperty("midas.morph.erosion.threshold", referenceImage->GetStatistics()->GetScalarValueMax());
+    segmentationNode->SetIntProperty("midas.morph.erosion.iterations", 0);
+    segmentationNode->SetFloatProperty("midas.morph.dilation.lower", 60);
+    segmentationNode->SetFloatProperty("midas.morph.dilation.upper", 160);
+    segmentationNode->SetIntProperty("midas.morph.dilation.iterations", 0);
+    segmentationNode->SetIntProperty("midas.morph.rethresholding.box", 0);
+  }
 }
 
 
