@@ -133,7 +133,7 @@ private:
   void SetControlsFromReferenceImage();
 
   /// \brief Sets the morphological controls by the current property values stored on the segmentation node.
-  void SetControlsFromSegmentationNodeProps();
+  void SetControlsFromSegmentationNode();
 
   /// \brief All the GUI controls for the main Morphological Editor view part.
   MorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;

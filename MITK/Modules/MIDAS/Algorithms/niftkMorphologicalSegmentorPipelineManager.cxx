@@ -117,26 +117,6 @@ mitk::Image* MorphologicalSegmentorPipelineManager::GetWorkingImage(int index) c
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorPipelineManager::GetPipelineParamsFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const
-{
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  if (segmentationNode)
-  {
-    segmentationNode->GetIntProperty("midas.morph.stage", params.m_Stage);
-    segmentationNode->GetFloatProperty("midas.morph.thresholding.lower", params.m_LowerIntensityThreshold);
-    segmentationNode->GetFloatProperty("midas.morph.thresholding.upper", params.m_UpperIntensityThreshold);
-    segmentationNode->GetIntProperty("midas.morph.thresholding.slice", params.m_AxialCutOffSlice);
-    segmentationNode->GetFloatProperty("midas.morph.erosion.threshold", params.m_UpperErosionsThreshold);
-    segmentationNode->GetIntProperty("midas.morph.erosion.iterations", params.m_NumberOfErosions);
-    segmentationNode->GetFloatProperty("midas.morph.dilation.lower", params.m_LowerPercentageThresholdForDilations);
-    segmentationNode->GetFloatProperty("midas.morph.dilation.upper", params.m_UpperPercentageThresholdForDilations);
-    segmentationNode->GetIntProperty("midas.morph.dilation.iterations", params.m_NumberOfDilations);
-    segmentationNode->GetIntProperty("midas.morph.rethresholding.box", params.m_BoxSize);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
 {
   mitk::DataNode* referenceNode = this->GetReferenceNode();
@@ -162,7 +142,16 @@ void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
       )
   {
     MorphologicalSegmentorPipelineParams params;
-    this->GetPipelineParamsFromSegmentationNode(params);
+    segmentationNode->GetIntProperty("midas.morph.stage", params.m_Stage);
+    segmentationNode->GetFloatProperty("midas.morph.thresholding.lower", params.m_LowerIntensityThreshold);
+    segmentationNode->GetFloatProperty("midas.morph.thresholding.upper", params.m_UpperIntensityThreshold);
+    segmentationNode->GetIntProperty("midas.morph.thresholding.slice", params.m_AxialCutOffSlice);
+    segmentationNode->GetFloatProperty("midas.morph.erosion.threshold", params.m_UpperErosionsThreshold);
+    segmentationNode->GetIntProperty("midas.morph.erosion.iterations", params.m_NumberOfErosions);
+    segmentationNode->GetFloatProperty("midas.morph.dilation.lower", params.m_LowerPercentageThresholdForDilations);
+    segmentationNode->GetFloatProperty("midas.morph.dilation.upper", params.m_UpperPercentageThresholdForDilations);
+    segmentationNode->GetIntProperty("midas.morph.dilation.iterations", params.m_NumberOfDilations);
+    segmentationNode->GetIntProperty("midas.morph.rethresholding.box", params.m_BoxSize);
 
     typedef itk::Image<unsigned char, 3> SegmentationImageType;
     typedef mitk::ImageToItk<SegmentationImageType> ImageToItkType;
