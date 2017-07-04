@@ -282,7 +282,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   this->WaitCursorOn();
 
   // Mark the newSegmentation as "unfinished".
-  newSegmentation->SetBoolProperty(MorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), false);
+  newSegmentation->SetBoolProperty("midas.morph.finished", false);
 
   try
   {
@@ -450,7 +450,7 @@ void MorphologicalSegmentorController::OnDataManagerSelectionChanged(const QList
     }
 
     bool isAlreadyFinished = true;
-    bool foundAlreadyFinishedProperty = nodes[0]->GetBoolProperty(MorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), isAlreadyFinished);
+    bool foundAlreadyFinishedProperty = nodes[0]->GetBoolProperty("midas.morph.finished", isAlreadyFinished);
 
     if (foundAlreadyFinishedProperty && !isAlreadyFinished)
     {
@@ -668,7 +668,7 @@ void MorphologicalSegmentorController::OnViewGetsClosed()
   /// This function was called "ClosePart" before it was moved here from niftkMorphologicalSegmentorView.
   /// It was not invoked there, either. I leave this here to remind me that the segmentation should
   /// be discarded when the view is closed.
-  if  (m_PipelineManager->HasSegmentationNode())
+  if  (this->GetWorkingNode())
   {
     this->OnCancelButtonClicked();
   }
@@ -678,17 +678,13 @@ void MorphologicalSegmentorController::OnViewGetsClosed()
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::OnSegmentationEdited(int imageIndex)
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  if (toolManager)
+  mitk::DataNode* node = this->GetWorkingNode(imageIndex);
+  assert(node);
+  ITKRegionParametersDataNodeProperty::Pointer prop =
+      dynamic_cast<ITKRegionParametersDataNodeProperty*>(node->GetProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str()));
+  if (prop.IsNotNull() && prop->HasVolume())
   {
-    mitk::DataNode* node = this->GetWorkingNode(imageIndex);
-    assert(node);
-    ITKRegionParametersDataNodeProperty::Pointer prop =
-        dynamic_cast<ITKRegionParametersDataNodeProperty*>(node->GetProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str()));
-    if (prop.IsNotNull() && prop->HasVolume())
-    {
-      m_PipelineManager->UpdateSegmentation();
-    }
+    m_PipelineManager->UpdateSegmentation();
   }
 }
 
