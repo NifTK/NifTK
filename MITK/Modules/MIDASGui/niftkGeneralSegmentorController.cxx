@@ -322,7 +322,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   mitk::DataNode* selectedNode = selectedNodes.at(0);
 
   /// Create the new segmentation, either using a previously selected one, or create a new volume.
-  mitk::DataNode* newSegmentation;
+  mitk::DataNode::Pointer newSegmentation;
   bool isRestarting = false;
 
   if (niftk::IsNodeABinaryImage(selectedNode)
