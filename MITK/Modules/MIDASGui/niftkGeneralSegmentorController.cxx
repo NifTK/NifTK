@@ -709,6 +709,18 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
 
 
 //-----------------------------------------------------------------------------
+void GeneralSegmentorController::OnReferenceNodesChanged()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void GeneralSegmentorController::OnWorkingNodesChanged()
+{
+}
+
+
+//-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnViewGetsVisible()
 {
   /// TODO

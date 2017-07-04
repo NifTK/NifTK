@@ -45,6 +45,8 @@ BaseSegmentorController::BaseSegmentorController(IBaseView* view)
 BaseSegmentorController::~BaseSegmentorController()
 {
   m_ToolManager->ActiveToolChanged -= mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnActiveToolChanged);
+  m_ToolManager->ReferenceDataChanged -= mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnReferenceNodesChanged);
+  m_ToolManager->WorkingDataChanged -= mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnWorkingNodesChanged);
 }
 
 
@@ -57,6 +59,8 @@ void BaseSegmentorController::SetupGUI(QWidget* parent)
   m_SegmentorGUI->SetToolManager(m_ToolManager);
 
   m_ToolManager->ActiveToolChanged += mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnActiveToolChanged);
+  m_ToolManager->ReferenceDataChanged += mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnReferenceNodesChanged);
+  m_ToolManager->WorkingDataChanged += mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnWorkingNodesChanged);
 
   this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
 }
@@ -383,19 +387,9 @@ bool BaseSegmentorController::HasInitialisedWorkingNodes()
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& selectedNodes)
 {
-  assert(m_SegmentorGUI);
-
-  if (this->HasInitialisedWorkingNodes())
-  {
-    /// It is not allowed to work on several segmentation at a time, simultaneously.
-    /// If you are already working on a segmentation, you have to finalise it (OK)
-    /// or discard it (Cancel) before you can start segmenting another image. (Or
-    /// making another segmentation of the same image.)
-    return;
-  }
-
-  // By default, assume we are not going to enable the controls.
-  bool valid = false;
+  mitk::DataNode* referenceNode = nullptr;
+  mitk::DataNode* segmentationNode = nullptr;
+  std::vector<mitk::DataNode*> workingNodes;
 
   // This plugin only works if you single select, anything else is invalid (for now).
   if (selectedNodes.size() == 1)
@@ -406,10 +400,6 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     // MAJOR ASSUMPTION: Intermediate working images will be hidden, and hence not clickable.
 
     mitk::DataNode* selectedNode = selectedNodes[0];
-    mitk::DataNode* referenceNode;
-    mitk::DataNode* segmentationNode;
-    std::vector<mitk::DataNode*> workingNodes;
-
     // Rely on subclasses deciding if the node is something we are interested in.
     if (this->IsAReferenceImage(selectedNode))
     {
@@ -428,24 +418,22 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
 
     if (segmentationNode)
     {
-
       referenceNode = this->FindReferenceNodeFromSegmentationNode(segmentationNode);
 
       if (this->IsASegmentationImage(selectedNode))
       {
         workingNodes = this->GetWorkingNodesFromSegmentationNode(segmentationNode);
-        valid = true;
       }
     }
-
-    // Tell the tool manager the images for reference and working purposes.
-    this->SetToolManagerSelection(referenceNode, workingNodes);
   }
+
+  // Tell the tool manager the images for reference and working purposes.
+  this->SetToolManagerSelection(referenceNode, workingNodes);
 }
 
 
 //-----------------------------------------------------------------------------
-void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* referenceNode, const std::vector<mitk::DataNode*>& workingNodes)
+void BaseSegmentorController::SetToolManagerSelection(mitk::DataNode* referenceNode, const std::vector<mitk::DataNode*>& workingNodes)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -458,7 +446,7 @@ void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* refe
     toolManager->ActivateTool(-1);
   }
 
-  toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceNode));
+  toolManager->SetReferenceData(referenceNode);
   toolManager->SetWorkingData(workingNodes);
 }
 
@@ -510,6 +498,18 @@ void BaseSegmentorController::OnActiveToolChanged()
   {
     mainWindow->setFocus();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseSegmentorController::OnReferenceNodesChanged()
+{
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseSegmentorController::OnWorkingNodesChanged()
+{
 }
 
 }

@@ -75,6 +75,12 @@ protected:
   /// \brief Called from niftkToolSelectorWidget when a tool changes.
   virtual void OnActiveToolChanged();
 
+  /// \brief Called when the reference data nodes have changed.
+  virtual void OnReferenceNodesChanged();
+
+  /// \brief Called when the working data nodes have changed.
+  virtual void OnWorkingNodesChanged();
+
   /// \brief Gets the vector of the reference data nodes registered with the tool manager.
   /// The data nodes normally holds one grey scale image.
   /// Empty list is returned if this can't be found.
@@ -169,7 +175,7 @@ protected slots:
 private:
 
   /// \brief Propagate data manager selection to tool manager for manual segmentation.
-  virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingNodes);
+  virtual void SetToolManagerSelection(mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingNodes);
 
   mitk::ToolManager::Pointer m_ToolManager;
 

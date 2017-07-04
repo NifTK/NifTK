@@ -173,6 +173,12 @@ protected:
 
   virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
+  /// \brief Called when the reference data nodes have changed.
+  virtual void OnReferenceNodesChanged() override;
+
+  /// \brief Called when the working data nodes have changed.
+  virtual void OnWorkingNodesChanged() override;
+
   /// \brief Called when the different slice gets selected in the viewer.
   /// This happens when a different renderer is selected or when the selected slice
   /// changes in the focused renderer either by interaction (e.g. scrolling by
