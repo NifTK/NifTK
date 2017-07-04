@@ -79,21 +79,32 @@ protected:
   /// \brief Called from niftkToolSelectorWidget when a tool changes.
   virtual void OnActiveToolChanged();
 
-  /// \brief Gets a vector of the working data nodes registered with the tool manager.
-  /// The data nodes normally hold image, but could be surfaces etc.
+  /// \brief Gets the vector of the reference data nodes registered with the tool manager.
+  /// The data nodes normally holds one grey scale image.
   /// Empty list is returned if this can't be found.
-  std::vector<mitk::DataNode*> GetWorkingData();
+  std::vector<mitk::DataNode*> GetReferenceNodes();
 
-  /// \brief Gets a single binary image registered with the ToolManager.
+  /// \brief Gets the reference node with the given index from the tool manager or nullptr if it can't be found.
+  /// Normally, there is only one reference image with 0 index.
+  mitk::DataNode* GetReferenceNode(int index = 0);
+
+  /// \brief Gets the reference image with the given index from the tool manager, or nullptr if this doesn't yet exist or is not an image.
+  /// Normally, there is only one reference image with 0 index.
+  mitk::Image* GetReferenceImage(int index = 0);
+
+  /// \brief Gets the vector of the working data nodes registered with the tool manager.
+  /// The data nodes normally hold image, but could be surfaces, point sets etc.
+  /// Empty list is returned if this can't be found.
+  std::vector<mitk::DataNode*> GetWorkingNodes();
+
+  /// \brief Gets the working data node with the given index from the tool manager or nullptr if it can't be found.
+  /// The data node of the segmented image has the 0 index.
+  mitk::DataNode* GetWorkingNode(int index = 0);
+
+  /// \brief Gets the image in working data node with the given index registered with the ToolManager.
+  /// The segmented image has the 0 index.
   /// Returns nullptr if it can't be found or is not an image.
-  mitk::Image* GetWorkingImage(int index);
-
-  /// \brief Gets the reference node from the tool manager or nullptr if it can't be found.
-  mitk::DataNode* GetReferenceNode();
-
-  /// \brief Gets the reference image from the tool manager, or nullptr if this doesn't yet exist or is not an image.
-  /// Assumes that a reference (grey scale) image is always registered with the tool manager.
-  mitk::Image* GetReferenceImage();
+  mitk::Image* GetWorkingImage(int index = 0);
 
   /// \brief Gets the reference node that the segmentation node belongs to.
   /// Assumes that the reference (grey scale) node is always the direct parent of the

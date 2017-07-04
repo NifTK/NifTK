@@ -645,7 +645,7 @@ void MorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataN
 {
   mitk::DataNode::Pointer segmentationNode = m_PipelineManager->GetSegmentationNode();
 
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
   if (segmentationNode.IsNotNull() && node == segmentationNode && workingData.size() == 5)
   {
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
