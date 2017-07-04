@@ -121,7 +121,7 @@ protected:
   virtual bool IsAWorkingImage(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
-  virtual std::vector<mitk::DataNode*> GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node);
+  virtual std::vector<mitk::DataNode*> GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode);
 
   /// \brief We return true if the segmentation can either be "re-started", i.e. you switch between binary images
   /// in the Data Manager, and if the binary image has the correct hidden child nodes, then

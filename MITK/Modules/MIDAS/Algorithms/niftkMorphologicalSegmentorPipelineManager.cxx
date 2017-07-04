@@ -287,50 +287,6 @@ bool MorphologicalSegmentorPipelineManager::IsNodeAWorkingImage(const mitk::Data
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> MorphologicalSegmentorPipelineManager::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode) const
-{
-  assert(segmentationNode.IsNotNull());
-
-  std::vector<mitk::DataNode*> workingData(5);
-  std::fill(workingData.begin(), workingData.end(), (mitk::DataNode*) 0);
-
-  workingData[PaintbrushTool::SEGMENTATION] = segmentationNode;
-
-  mitk::DataStorage::SetOfObjects::Pointer derivedNodes = niftk::FindDerivedImages(this->GetDataStorage(), segmentationNode, true );
-
-  for (std::size_t i = 0; i < derivedNodes->size(); i++)
-  {
-    mitk::DataNode::Pointer derivedNode = derivedNodes->at(i);
-    std::string name = derivedNode->GetName();
-    if (name == PaintbrushTool::EROSIONS_ADDITIONS_NAME)
-    {
-      workingData[PaintbrushTool::EROSIONS_ADDITIONS] = derivedNode;
-    }
-    else if (name == PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME)
-    {
-      workingData[PaintbrushTool::EROSIONS_SUBTRACTIONS] = derivedNode;
-    }
-    else if (name == PaintbrushTool::DILATIONS_ADDITIONS_NAME)
-    {
-      workingData[PaintbrushTool::DILATIONS_ADDITIONS] = derivedNode;
-    }
-    else if (name == PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME)
-    {
-      workingData[PaintbrushTool::DILATIONS_SUBTRACTIONS] = derivedNode;
-    }
-  }
-
-  if (std::count(workingData.begin(), workingData.end(), (mitk::DataNode*) 0) != 0)
-  {
-    MITK_INFO << "Working data nodes missing for the morphological segmentation pipeline.";
-    workingData.clear();
-  }
-
-  return workingData;
-}
-
-
-//-----------------------------------------------------------------------------
 void MorphologicalSegmentorPipelineManager::SetSegmentationNodePropsFromReferenceImage()
 {
   mitk::Image::ConstPointer referenceImage = this->GetReferenceImage();
