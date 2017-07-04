@@ -268,7 +268,10 @@ void MorphologicalSegmentorGUI::SetControlsFromSegmentationNode(mitk::DataNode* 
     segmentationNode->GetIntProperty("midas.morph.rethresholding.box", intValue);
     m_RethresholdingBoxSizeSlider->setValue(intValue);
 
-    this->SetEnabled(true);
+    bool finished = true;
+    segmentationNode->GetBoolProperty("midas.morph.finished", finished);
+
+    this->SetEnabled(!finished);
   }
   else
   {

@@ -433,32 +433,16 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes)
+void MorphologicalSegmentorController::OnReferenceNodesChanged()
 {
-  BaseSegmentorController::OnDataManagerSelectionChanged(nodes);
+  this->SetControlsFromReferenceImage();
+}
 
-  bool enableWidgets = false;
 
-  if (nodes.size() == 1)
-  {
-    const mitk::Image* referenceImage = this->GetReferenceImage();
-    mitk::Image* segmentationImage = this->GetWorkingImage();
-
-    if (referenceImage && segmentationImage)
-    {
-      this->SetControlsFromSegmentationNode();
-    }
-
-    bool isAlreadyFinished = true;
-    bool foundAlreadyFinishedProperty = nodes[0]->GetBoolProperty("midas.morph.finished", isAlreadyFinished);
-
-    if (foundAlreadyFinishedProperty && !isAlreadyFinished)
-    {
-      enableWidgets = true;
-    }
-  }
-
-  m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(enableWidgets);
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorController::OnWorkingNodesChanged()
+{
+  this->SetControlsFromSegmentationNode();
 }
 
 
@@ -857,19 +841,27 @@ void MorphologicalSegmentorController::SetSegmentationNodePropsFromReferenceImag
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::SetControlsFromReferenceImage()
 {
-  const mitk::Image* referenceImage = this->GetReferenceImage();
-  if (referenceImage)
-  {
-    int axialAxis = this->GetReferenceImageSliceAxis(IMAGE_ORIENTATION_AXIAL);
-    int numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
-    int upDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
+  double lowestValue = 0.0;
+  double highestValue = 1.0;
+  int axialAxis = 0;
+  int numberOfAxialSlices = 1;
+  int upDirection = 1;
 
-    m_MorphologicalSegmentorGUI->SetControlsByReferenceImage(
-        referenceImage->GetStatistics()->GetScalarValueMin(),
-        referenceImage->GetStatistics()->GetScalarValueMax(),
-        numberOfAxialSlices,
-        upDirection);
+  if (auto referenceImage = this->GetReferenceImage())
+  {
+    auto statistics = referenceImage->GetStatistics();
+    lowestValue = statistics->GetScalarValueMin();
+    highestValue = statistics->GetScalarValueMax();
+    axialAxis = this->GetReferenceImageSliceAxis(IMAGE_ORIENTATION_AXIAL);
+    numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
+    upDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
   }
+
+  m_MorphologicalSegmentorGUI->SetControlsByReferenceImage(
+      lowestValue,
+      highestValue,
+      numberOfAxialSlices,
+      upDirection);
 }
 
 
