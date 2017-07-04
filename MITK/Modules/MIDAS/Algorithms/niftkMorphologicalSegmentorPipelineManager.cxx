@@ -331,26 +331,6 @@ std::vector<mitk::DataNode*> MorphologicalSegmentorPipelineManager::GetWorkingDa
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* MorphologicalSegmentorPipelineManager::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) const
-{
-  assert(node);
-  mitk::DataNode* segmentationNode = NULL;
-
-  if (niftk::IsNodeABinaryImage(node))
-  {
-    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, true);
-    if (parent.IsNotNull())
-    {
-      segmentationNode = parent;
-    }
-  }
-
-  return segmentationNode;
-}
-
-
-
-//-----------------------------------------------------------------------------
 void MorphologicalSegmentorPipelineManager::SetSegmentationNodePropsFromReferenceImage()
 {
   mitk::Image::ConstPointer referenceImage = this->GetReferenceImage();
@@ -533,7 +513,7 @@ void MorphologicalSegmentorPipelineManager::FinalizeSegmentation()
       {
         MITK_ERROR << "Caught exception, so finalize pipeline" << e.what();
       }
-      this->RemoveWorkingData();
+      this->RemoveWorkingNodes();
       this->DestroyPipeline(segmentationImage);
 
       segmentationNode->SetBoolProperty(MorphologicalSegmentorPipelineManager::PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED.c_str(), true);
@@ -570,7 +550,7 @@ void MorphologicalSegmentorPipelineManager::ClearWorkingData()
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorPipelineManager::RemoveWorkingData()
+void MorphologicalSegmentorPipelineManager::RemoveWorkingNodes()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
 
