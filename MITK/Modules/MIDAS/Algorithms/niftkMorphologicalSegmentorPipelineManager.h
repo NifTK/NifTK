@@ -51,13 +51,6 @@ class NIFTKMIDAS_EXPORT MorphologicalSegmentorPipelineManager : public itk::Ligh
 
 public:
 
-  /// A static string, (to avoid code duplication), to hold the name of the property that determines if a morphological segmentation is finished.
-  static const std::string PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED;
-
-  /// \brief The output of the previous stage of the segmentation pipeline.
-  static const std::string SEGMENTATION_OF_LAST_STAGE_NAME;
-
-
   mitkClassMacroItkParent(MorphologicalSegmentorPipelineManager, itk::Object)
   itkNewMacro(MorphologicalSegmentorPipelineManager)
 
@@ -106,20 +99,18 @@ public:
   /// \param stage the new stage where we stepped to
   void OnTabChanged(int tabIndex);
 
-  /// \brief Returns true if the segmentation node can be found which implicitly means we are "in progress".
-  bool HasSegmentationNode() const;
+  /// \brief Retrieves the given reference data node.
+  mitk::DataNode* GetReferenceNode(int index = 0) const;
 
-  /// \brief Retrieves the reference image from the tool manager.
-  mitk::Image::ConstPointer GetReferenceImage() const;
+  /// \brief Retrieves the given reference image from the tool manager.
+  const mitk::Image* GetReferenceImage(int index = 0) const;
+
+  /// \brief Retrieves the given working data node.
+  /// The node with index 0 has the actual segmentation image.
+  mitk::DataNode* GetWorkingNode(int index = 0) const;
 
   /// \brief Used to retrieve the working image from the tool manager.
-  mitk::Image::Pointer GetWorkingImage(unsigned int dataIndex) const;
-
-  /// \brief Used to retrieve the actual node of the image being segmented.
-  mitk::DataNode::Pointer GetSegmentationNode() const;
-
-  /// \brief Used to retrieve the segmentation image.
-  mitk::Image::Pointer GetSegmentationImage() const;
+  mitk::Image* GetWorkingImage(int index = 0) const;
 
   /// \brief Finds the segmentation node, and if present will populate params with the parameters found on the segmentation node.
   void GetPipelineParamsFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const;
