@@ -215,22 +215,12 @@ bool BaseSegmentorController::IsAWorkingImage(const mitk::DataNode::Pointer node
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   // This default implementation just says Segmentation node == Working node, which subclasses could override.
 
   std::vector<mitk::DataNode*> result(1);
   result[0] = node;
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
-{
-  // This default implementation just says Segmentation node == Working node, which subclasses could override.
-
-  mitk::DataNode::Pointer result = node;
   return result;
 }
 
@@ -400,7 +390,7 @@ mitk::DataNode* BaseSegmentorController::CreateNewSegmentation()
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::HasInitialisedWorkingData()
+bool BaseSegmentorController::HasInitialisedWorkingNodes()
 {
   return !this->GetWorkingNodes().empty();
 }
@@ -411,7 +401,7 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
 {
   assert(m_SegmentorGUI);
 
-  if (this->HasInitialisedWorkingData())
+  if (this->HasInitialisedWorkingNodes())
   {
     /// It is not allowed to work on several segmentation at a time, simultaneously.
     /// If you are already working on a segmentation, you have to finalise it (OK)
@@ -432,60 +422,60 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     // MAJOR ASSUMPTION: Intermediate working images will be hidden, and hence not clickable.
 
     mitk::DataNode::Pointer selectedNode = selectedNodes[0];
-    mitk::DataNode::Pointer referenceImageNode;
-    mitk::DataNode::Pointer segmentationImageNode;
-    std::vector<mitk::DataNode*> workingDataNodes;
+    mitk::DataNode::Pointer referenceNode;
+    mitk::DataNode::Pointer segmentationNode;
+    std::vector<mitk::DataNode*> workingNodes;
 
     // Rely on subclasses deciding if the node is something we are interested in.
     if (this->IsAReferenceImage(selectedNode))
     {
-      referenceImageNode = selectedNode;
+      referenceNode = selectedNode;
     }
 
     // A segmentation image, is the final output, the one being segmented.
     if (this->IsASegmentationImage(selectedNode))
     {
-      segmentationImageNode = selectedNode;
+      segmentationNode = selectedNode;
     }
     else if (niftk::IsNodeAnUcharBinaryImage(selectedNode) && this->CanStartSegmentationForBinaryNode(selectedNode))
     {
-      segmentationImageNode = selectedNode;
+      segmentationNode = selectedNode;
     }
 
-    if (segmentationImageNode.IsNotNull())
+    if (segmentationNode.IsNotNull())
     {
 
-      referenceImageNode = this->FindReferenceNodeFromSegmentationNode(segmentationImageNode);
+      referenceNode = this->FindReferenceNodeFromSegmentationNode(segmentationNode);
 
       if (this->IsASegmentationImage(selectedNode))
       {
-        workingDataNodes = this->GetWorkingDataFromSegmentationNode(segmentationImageNode);
+        workingNodes = this->GetWorkingNodesFromSegmentationNode(segmentationNode);
         valid = true;
       }
     }
 
     // Tell the tool manager the images for reference and working purposes.
-    this->SetToolManagerSelection(referenceImageNode, workingDataNodes);
+    this->SetToolManagerSelection(referenceNode, workingNodes);
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingDataNodes)
+void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* referenceNode, const std::vector<mitk::DataNode*>& workingNodes)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  if (workingDataNodes.size() == 0 ||
+  if (workingNodes.size() == 0 ||
       ( toolManager->GetWorkingData().size() > 0 &&
-        workingDataNodes.size() > 0 &&
-        toolManager->GetWorkingData(0) != workingDataNodes[0] ))
+        workingNodes.size() > 0 &&
+        toolManager->GetWorkingData(0) != workingNodes[0] ))
   {
     toolManager->ActivateTool(-1);
   }
 
-  toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceData));
-  toolManager->SetWorkingData(workingDataNodes);
+  toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceNode));
+  toolManager->SetWorkingData(workingNodes);
 }
 
 
