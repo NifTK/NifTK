@@ -397,7 +397,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
     newSegmentation = this->CreateNewSegmentation();
 
     // The above method returns nullptr if the user exited the colour selection dialog box.
-    if (newSegmentation)
+    if (newSegmentation.IsNull())
     {
       return;
     }
@@ -583,7 +583,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   if (!isRestarting)
   {
     this->GetView()->SetDataManagerSelection(newSegmentation);
-  } 
+  }
 
   this->WaitCursorOff();
 }
