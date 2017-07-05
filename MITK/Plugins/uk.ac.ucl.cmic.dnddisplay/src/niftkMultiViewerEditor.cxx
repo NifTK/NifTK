@@ -1341,14 +1341,11 @@ bool MultiViewerEditor::IsLinkedNavigationEnabled() const
 
 
 //-----------------------------------------------------------------------------
-void MultiViewerEditor::OnSelectionChanged(berry::IWorkbenchPart::Pointer part,
+void MultiViewerEditor::OnSelectionChanged(berry::IWorkbenchPart::Pointer /*part*/,
                                            const QList<mitk::DataNode::Pointer>& selectedNodes)
 {
-  if (part->GetSite()->GetId() == MultiViewerEditorPrivate::s_DATAMANAGER_VIEW_ID)
-  {
-    d->m_SelectedNodes[d->m_SelectedViewer] = selectedNodes;
-    this->SetSelectedNodes(selectedNodes, false);
-  }
+  d->m_SelectedNodes[d->m_SelectedViewer] = selectedNodes;
+  this->SetSelectedNodes(selectedNodes, false);
 }
 
 
