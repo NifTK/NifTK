@@ -55,9 +55,6 @@ public:
   /// \brief All the GUI controls for the main view part.
   GeneralSegmentorGUI* m_GUI;
 
-  /// \brief Pointer to interface object, used as callback in Undo/Redo framework
-  GeneralSegmentorEventInterface::Pointer m_Interface;
-
   /// \brief This class hooks into the Global Interaction system to respond to Key press events.
   ToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
 
@@ -110,9 +107,6 @@ GeneralSegmentorControllerPrivate::GeneralSegmentorControllerPrivate(GeneralSegm
     m_WasRestarted(false)
 {
   Q_Q(GeneralSegmentorController);
-
-  m_Interface = GeneralSegmentorEventInterface::New();
-  m_Interface->SetGeneralSegmentorController(q);
 
   mitk::ToolManager* toolManager = q->GetToolManager();
   toolManager->RegisterTool("DrawTool");
@@ -885,7 +879,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                 OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
                 doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
                 undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
-                opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+                opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
                 mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
                 this->ExecuteOperation(doOp);
 
@@ -900,7 +894,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
               OpRetainMarks::ProcessorPointer processor = OpRetainMarks::ProcessorType::New();
               doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, sliceAxis, d->m_SliceIndex, sliceIndex, itkOrientation, outputRegion, processor);
               undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, sliceAxis, d->m_SliceIndex, sliceIndex, itkOrientation, outputRegion, processor);
-              opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+              opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
               this->ExecuteOperation(doOp);
             }
@@ -927,7 +921,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
               OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
               doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
               undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
-              opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Apply threshold");
+              opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Apply threshold");
               mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
               this->ExecuteOperation(doOp);
 
@@ -963,7 +957,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                     OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
                     doOp = new OpWipe(OP_WIPE, true, d->m_SliceAxis, d->m_SliceIndex, outputRegion, newSeeds, processor);
                     undoOp = new OpWipe(OP_WIPE, false, d->m_SliceAxis, d->m_SliceIndex, outputRegion, copyOfCurrentSeeds, processor);
-                    opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
+                    opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Wipe command");
                     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
                     this->ExecuteOperation(doOp);
                   }
@@ -989,7 +983,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                 OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
                 doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
                 undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
-                opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Apply threshold");
+                opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Apply threshold");
                 mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
                 this->ExecuteOperation(doOp);
 
@@ -1008,7 +1002,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                 .arg(sliceAxis).arg(sliceIndex);
             doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, newSeeds);
             undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, d->m_SliceAxis, d->m_SliceIndex, copyOfCurrentSeeds);
-            opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+            opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
             this->ExecuteOperation(doOp);
 
@@ -1017,7 +1011,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
                 .arg(d->m_SliceAxis).arg(d->m_SliceIndex).arg(sliceAxis).arg(sliceIndex);
             doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SelectedPosition, selectedPosition);
             undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SelectedPosition, selectedPosition);
-            opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+            opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
             mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
             this->ExecuteOperation(doOp);
 
@@ -2475,14 +2469,14 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
           OpPropagate::ProcessorPointer processor = OpPropagate::ProcessorType::New();
           doOp = new OpPropagate(OP_PROPAGATE, true, outputRegion, processor);
           undoOp = new OpPropagate(OP_PROPAGATE, false, outputRegion, processor);
-          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+          opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
           this->ExecuteOperation(doOp);
 
           message = tr("Propagate: copy seeds");
           doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, outputSeeds);
           undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, sliceIndex, copyOfInputSeeds);
-          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+          opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
           this->ExecuteOperation(doOp);
 
@@ -2708,7 +2702,7 @@ void GeneralSegmentorController::DoWipe(int direction)
     OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
     mitk::Operation* doOp = new OpWipe(OP_WIPE, true, sliceAxis, sliceIndex, outputRegion, outputSeeds, processor);
     mitk::Operation* undoOp = new OpWipe(OP_WIPE, false, sliceAxis, sliceIndex, outputRegion, copyOfInputSeeds, processor);
-    mitk::OperationEvent* opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
+    mitk::OperationEvent* opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Wipe command");
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
     this->ExecuteOperation(doOp);
 
@@ -2844,7 +2838,7 @@ void GeneralSegmentorController::DoThresholdApply(
     OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
     doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, newCheckboxStatus);
     undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, isThresholdingOn);
-    opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+    opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
     this->ExecuteOperation(doOp);
 
@@ -2853,7 +2847,7 @@ void GeneralSegmentorController::DoThresholdApply(
         .arg(sliceAxis).arg(sliceIndex);
     doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, outputSeeds);
     undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, sliceIndex, copyOfInputSeeds);
-    opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+    opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
     this->ExecuteOperation(doOp);
 
@@ -3148,7 +3142,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
 
     doOp = new OpClean(OP_CLEAN, true, outputContourSet);
     undoOp = new OpClean(OP_CLEAN, false, copyOfInputContourSet);
-    opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Clean: Filtering contours");
+    opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Clean: Filtering contours");
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
     this->ExecuteOperation(doOp);
 
@@ -3161,7 +3155,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
       OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
       doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
       undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
-      opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Clean: Calculate new image");
+      opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Clean: Calculate new image");
       mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
       this->ExecuteOperation(doOp);
 

@@ -23,8 +23,6 @@
 #include <niftkToolKeyPressResponder.h>
 #include <niftkToolKeyPressStateMachine.h>
 
-#include "Internal/niftkGeneralSegmentorEventInterface.h"
-
 namespace mitk
 {
 class PointSet;
