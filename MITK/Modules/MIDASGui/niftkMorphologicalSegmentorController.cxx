@@ -595,6 +595,11 @@ void MorphologicalSegmentorController::OnOKButtonClicked()
   {
     this->OnActiveToolChanged();
     m_PipelineManager->FinalizeSegmentation();
+
+    segmentationNode->SetBoolProperty("midas.morph.finished", true);
+    segmentationNode->SetIntProperty("midas.morph.stage", 0);
+
+    this->RemoveWorkingNodes();
     m_MorphologicalSegmentorGUI->SetControlsFromSegmentationNode(nullptr);
 
     /// Remove the axial cut-off plane node from the data storage.
@@ -655,7 +660,7 @@ void MorphologicalSegmentorController::OnCancelButtonClicked()
     this->OnActiveToolChanged();
     m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
-    m_PipelineManager->RemoveWorkingNodes();
+    this->RemoveWorkingNodes();
     mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
     mitk::DataNode* axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
@@ -711,13 +716,32 @@ void MorphologicalSegmentorController::OnNodeRemoved(const mitk::DataNode* remov
     {
       this->GetDataStorage()->Remove(axialCutOffPlaneNode);
     }
-    m_PipelineManager->RemoveWorkingNodes();
+    this->RemoveWorkingNodes();
     mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
     this->GetView()->SetDataManagerSelection(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorController::RemoveWorkingNodes()
+{
+  std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodes();
+
+  mitk::ToolManager* toolManager = this->GetToolManager();
+
+  std::vector<mitk::DataNode*> noWorkingNodes(0);
+  toolManager->SetWorkingData(noWorkingNodes);
+
+  for (unsigned i = 1; i < workingNodes.size(); ++i)
+  {
+    this->GetDataStorage()->Remove(workingNodes[i]);
+  }
+
+  toolManager->ActivateTool(-1);
 }
 
 
