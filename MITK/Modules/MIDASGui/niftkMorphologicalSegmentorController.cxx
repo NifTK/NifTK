@@ -39,8 +39,7 @@ namespace niftk
 MorphologicalSegmentorController::MorphologicalSegmentorController(IBaseView* view)
   : BaseSegmentorController(view),
     m_MorphologicalSegmentorGUI(nullptr),
-    m_PipelineManager(nullptr),
-    m_TabIndex(-1)
+    m_PipelineManager(nullptr)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   toolManager->RegisterTool("PaintbrushTool");
@@ -538,6 +537,9 @@ void MorphologicalSegmentorController::OnTabChanged(int tabIndex)
   mitk::DataNode* segmentationNode = this->GetWorkingNode();
   if (segmentationNode)
   {
+    int previousTabIndex = -1;
+    segmentationNode->GetIntProperty("midas.morph.stage", previousTabIndex);
+
     if (tabIndex == 1 || tabIndex == 2)
     {
       m_MorphologicalSegmentorGUI->SetToolSelectorEnabled(true);
@@ -554,7 +556,7 @@ void MorphologicalSegmentorController::OnTabChanged(int tabIndex)
         dilateSubtractNode->SetVisibility(false);
 
         // Only if we are switching from tab 2 to 1.
-        if (m_TabIndex == 2)
+        if (previousTabIndex == 2)
         {
           const mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
           mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
@@ -573,7 +575,7 @@ void MorphologicalSegmentorController::OnTabChanged(int tabIndex)
         dilateSubtractNode->SetVisibility(true);
 
         // Only if we are switching from tab 1 to 2.
-        if (m_TabIndex == 1)
+        if (previousTabIndex == 1)
         {
           const mitk::Image* erodeSubtractImage = dynamic_cast<mitk::Image*>(erodeSubtractNode->GetData());
           mitk::Image* dilateSubtractImage = dynamic_cast<mitk::Image*>(dilateSubtractNode->GetData());
@@ -597,8 +599,6 @@ void MorphologicalSegmentorController::OnTabChanged(int tabIndex)
 
     this->RequestRenderWindowUpdate();
   }
-
-  m_TabIndex = tabIndex;
 }
 
 
