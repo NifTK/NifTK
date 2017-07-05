@@ -31,12 +31,12 @@ class GeneralSegmentorController;
 class GeneralSegmentorEventInterface: public itk::Object, public mitk::OperationActor
 {
 public:
-  typedef GeneralSegmentorEventInterface       Self;
-  typedef itk::SmartPointer<const Self>             ConstPointer;
-  typedef itk::SmartPointer<Self>                   Pointer;
+  typedef GeneralSegmentorEventInterface Self;
+  typedef itk::SmartPointer<const Self>  ConstPointer;
+  typedef itk::SmartPointer<Self>        Pointer;
 
   /// \brief Creates the object via the ITK object factory.
-  itkNewMacro(Self);
+  itkNewMacro(Self)
 
   /// \brief Sets the view to callback on to.
   void SetGeneralSegmentorController(GeneralSegmentorController* generalSegmentorController);
