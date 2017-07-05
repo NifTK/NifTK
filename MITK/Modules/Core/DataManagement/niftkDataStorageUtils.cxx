@@ -90,7 +90,7 @@ mitk::DataStorage::SetOfObjects::Pointer FindDerivedImages(const mitk::DataStora
   mitk::DataStorage::SetOfObjects::Pointer results = mitk::DataStorage::SetOfObjects::New();
 
   mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
-  mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = storage->GetDerivations( node, isImage, true);
+  mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = storage->GetDerivations(node, isImage, true);
 
   unsigned int counter = 0;
   for (unsigned int i = 0; i < possibleChildren->size(); i++)
