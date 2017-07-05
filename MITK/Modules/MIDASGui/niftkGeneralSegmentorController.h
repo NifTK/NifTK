@@ -393,7 +393,7 @@ private:
 
   QScopedPointer<GeneralSegmentorControllerPrivate> d_ptr;
 
-  Q_DECLARE_PRIVATE(GeneralSegmentorController);
+  Q_DECLARE_PRIVATE(GeneralSegmentorController)
 
 };
 
