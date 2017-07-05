@@ -91,9 +91,6 @@ public:
   /// \brief Clears both images of the working data.
   void ClearWorkingData();
 
-  /// \brief Removes the images we are using for editing during connection breaker from the DataStorage
-  void RemoveWorkingNodes();
-
   /// \brief Completely removes the current pipeline
   void DestroyPipeline(mitk::Image::Pointer segmentation);
 
