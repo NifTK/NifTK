@@ -508,6 +508,13 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   this->GetDataStorage()->Add(initialSegmentationNode, newSegmentation);
   this->GetDataStorage()->Add(initialSeedsNode, newSegmentation);
 
+  newSegmentation->SetBoolProperty("midas.general_segmentor.see_prior", false);
+  newSegmentation->SetBoolProperty("midas.general_segmentor.see_next", false);
+  newSegmentation->SetBoolProperty("midas.general_segmentor.retain_marks", false);
+  newSegmentation->SetBoolProperty("midas.general_segmentor.thresholding", false);
+  newSegmentation->SetFloatProperty("midas.general_segmentor.lower_threshold", 0.0f);
+  newSegmentation->SetFloatProperty("midas.general_segmentor.upper_threshold", 0.0f);
+
   // Set working data. See header file, as the order here is critical, and should match the documented order.
   std::vector<mitk::DataNode*> workingNodes(9);
   workingNodes[Tool::SEGMENTATION] = newSegmentation;
@@ -693,14 +700,136 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnReferenceNodesChanged()
 {
-  this->UpdateGUI();
+  Q_D(GeneralSegmentorController);
+
+  bool wasBlocked = this->blockSignals(true);
+
+  const mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
+  {
+    int referenceImagePixelComponents = referenceImage->GetPixelType().GetNumberOfComponents();
+    if (referenceImagePixelComponents == 1)
+    {
+      d->m_GUI->SetThresholdingCheckBoxEnabled(true);
+      d->m_GUI->SetThresholdingCheckBoxToolTip("Tick this in if you want to apply thresholding within the current regions.");
+    }
+    else
+    {
+      d->m_GUI->SetThresholdingCheckBoxEnabled(false);
+      d->m_GUI->SetThresholdingCheckBoxToolTip("Thresholding is not supported for RGB images.");
+    }
+
+    mitk::DataNode* referenceNode = this->GetReferenceNode();
+
+    float lowestPixelValue;
+    if (!referenceNode->GetFloatProperty("midas.general_segmentor.lowest_pixel_value", lowestPixelValue))
+    {
+      lowestPixelValue = referenceImage->GetStatistics()->GetScalarValueMin();
+    }
+
+    float highestPixelValue;
+    if (!referenceNode->GetFloatProperty("midas.general_segmentor.highest_pixel_value", highestPixelValue))
+    {
+      highestPixelValue = referenceImage->GetStatistics()->GetScalarValueMax();
+    }
+
+    d->m_GUI->SetLowerAndUpperIntensityRanges(lowestPixelValue, highestPixelValue);
+  }
+  else
+  {
+    d->m_GUI->SetSeePriorCheckBoxChecked(false);
+    d->m_GUI->SetSeeNextCheckBoxChecked(false);
+    d->m_GUI->SetRetainMarksCheckBoxChecked(false);
+    d->m_GUI->SetThresholdingCheckBoxEnabled(false);
+    d->m_GUI->SetThresholdingCheckBoxToolTip("");
+    d->m_GUI->SetThresholdingCheckBoxChecked(false);
+    d->m_GUI->SetThresholdingWidgetsEnabled(false);
+    d->m_GUI->SetLowerAndUpperIntensityRanges(0.0, 0.0);
+    d->m_GUI->SetLowerThreshold(0.0);
+    d->m_GUI->SetUpperThreshold(0.0);
+    d->m_GUI->SetSeedMinAndMaxValues(0.0, 0.0);
+  }
+
+  this->blockSignals(wasBlocked);
 }
 
 
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnWorkingNodesChanged()
 {
-  this->UpdateGUI();
+  Q_D(GeneralSegmentorController);
+
+  bool wasBlocked = this->blockSignals(true);
+
+  if (this->HasInitialisedWorkingNodes())
+  {
+    mitk::DataNode* segmentationNode = this->GetWorkingNode();
+    assert(segmentationNode);
+
+    bool boolValue;
+    float floatValue;
+
+    if (!segmentationNode->GetBoolProperty("midas.general_segmentor.see_prior", boolValue))
+    {
+      boolValue = false;
+      segmentationNode->SetBoolProperty("midas.general_segmentor.see_prior", boolValue);
+    }
+    d->m_GUI->SetSeePriorCheckBoxChecked(boolValue);
+
+    if (!segmentationNode->GetBoolProperty("midas.general_segmentor.see_next", boolValue))
+    {
+      boolValue = false;
+      segmentationNode->SetBoolProperty("midas.general_segmentor.see_next", boolValue);
+    }
+    d->m_GUI->SetSeeNextCheckBoxChecked(boolValue);
+
+    if (!segmentationNode->GetBoolProperty("midas.general_segmentor.retain_marks", boolValue))
+    {
+      boolValue = false;
+      segmentationNode->SetBoolProperty("midas.general_segmentor.retain_marks", boolValue);
+    }
+    d->m_GUI->SetRetainMarksCheckBoxChecked(boolValue);
+
+    if (!segmentationNode->GetBoolProperty("midas.general_segmentor.thresholding", boolValue))
+    {
+      boolValue = false;
+      segmentationNode->SetBoolProperty("midas.general_segmentor.thresholding", boolValue);
+    }
+    d->m_GUI->SetThresholdingCheckBoxChecked(boolValue);
+    d->m_GUI->SetThresholdingWidgetsEnabled(boolValue);
+
+    if (!segmentationNode->GetFloatProperty("midas.general_segmentor.lower_threshold", floatValue))
+    {
+      floatValue = 0.0f;
+      segmentationNode->SetBoolProperty("midas.general_segmentor.", floatValue);
+    }
+    d->m_GUI->SetLowerThreshold(floatValue);
+
+    if (!segmentationNode->GetFloatProperty("midas.general_segmentor.upper_threshold", floatValue))
+    {
+      floatValue = 0.0f;
+      segmentationNode->SetBoolProperty("midas.general_segmentor.", floatValue);
+    }
+    d->m_GUI->SetUpperThreshold(floatValue);
+
+    this->RecalculateMinAndMaxOfSeedValues();
+  }
+  else
+  {
+    d->m_GUI->SetSeePriorCheckBoxChecked(false);
+    d->m_GUI->SetSeeNextCheckBoxChecked(false);
+    d->m_GUI->SetRetainMarksCheckBoxChecked(false);
+    d->m_GUI->SetThresholdingCheckBoxEnabled(false);
+    d->m_GUI->SetThresholdingCheckBoxToolTip("");
+    d->m_GUI->SetThresholdingCheckBoxChecked(false);
+    d->m_GUI->SetThresholdingWidgetsEnabled(false);
+    d->m_GUI->SetLowerAndUpperIntensityRanges(0.0, 0.0);
+    d->m_GUI->SetLowerThreshold(0.0);
+    d->m_GUI->SetUpperThreshold(0.0);
+    d->m_GUI->SetSeedMinAndMaxValues(0.0, 0.0);
+  }
+
+  this->blockSignals(wasBlocked);
 }
 
 
@@ -1182,25 +1311,6 @@ void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int slic
 
 
 //-----------------------------------------------------------------------------
-void GeneralSegmentorController::RecalculateMinAndMaxOfImage()
-{
-  Q_D(GeneralSegmentorController);
-
-  if (auto referenceImage = this->GetReferenceImage())
-  {
-    auto statistics = referenceImage->GetStatistics();
-    double min = statistics->GetScalarValueMinNoRecompute();
-    double max = statistics->GetScalarValueMaxNoRecompute();
-    d->m_GUI->SetLowerAndUpperIntensityRanges(min, max);
-  }
-  else
-  {
-    d->m_GUI->SetLowerAndUpperIntensityRanges(0.0, 0.0);
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
 {
   Q_D(GeneralSegmentorController);
@@ -1302,78 +1412,6 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
 
 
 //-----------------------------------------------------------------------------
-void GeneralSegmentorController::UpdateGUI()
-{
-  Q_D(GeneralSegmentorController);
-
-  bool wasBlocked = this->blockSignals(true);
-
-  if (this->HasInitialisedWorkingNodes())
-  {
-    const mitk::Image* referenceImage = this->GetReferenceImage();
-    assert(referenceImage);
-
-    int referenceImagePixelComponents = referenceImage->GetPixelType().GetNumberOfComponents();
-    if (referenceImagePixelComponents == 1)
-    {
-      d->m_GUI->SetThresholdingCheckBoxEnabled(true);
-      d->m_GUI->SetThresholdingCheckBoxToolTip("Tick this in if you want to apply thresholding within the current regions.");
-    }
-    else
-    {
-      d->m_GUI->SetThresholdingCheckBoxEnabled(false);
-      d->m_GUI->SetThresholdingCheckBoxToolTip("Thresholding is not supported for RGB images.");
-    }
-
-    this->RecalculateMinAndMaxOfImage();
-
-    mitk::DataNode* segmentationNode = this->GetWorkingNode();
-    assert(segmentationNode);
-
-    bool boolValue;
-    float floatValue;
-
-    segmentationNode->GetBoolProperty("midas.general_segmentor.see_prior", boolValue);
-    d->m_GUI->SetSeePriorCheckBoxChecked(boolValue);
-
-    segmentationNode->GetBoolProperty("midas.general_segmentor.see_next", boolValue);
-    d->m_GUI->SetSeeNextCheckBoxChecked(boolValue);
-
-    segmentationNode->GetBoolProperty("midas.general_segmentor.retain_marks", boolValue);
-    d->m_GUI->SetRetainMarksCheckBoxChecked(boolValue);
-
-    segmentationNode->GetBoolProperty("midas.general_segmentor.thresholding", boolValue);
-    d->m_GUI->SetThresholdingCheckBoxChecked(boolValue);
-    d->m_GUI->SetThresholdingWidgetsEnabled(boolValue);
-
-    segmentationNode->GetFloatProperty("midas.general_segmentor.lower_threshold", floatValue);
-    d->m_GUI->SetLowerThreshold(floatValue);
-
-    segmentationNode->GetFloatProperty("midas.general_segmentor.upper_threshold", floatValue);
-    d->m_GUI->SetUpperThreshold(floatValue);
-
-    this->RecalculateMinAndMaxOfSeedValues();
-  }
-  else
-  {
-    d->m_GUI->SetSeePriorCheckBoxChecked(false);
-    d->m_GUI->SetSeeNextCheckBoxChecked(false);
-    d->m_GUI->SetRetainMarksCheckBoxChecked(false);
-    d->m_GUI->SetThresholdingCheckBoxEnabled(false);
-    d->m_GUI->SetThresholdingCheckBoxToolTip("");
-    d->m_GUI->SetThresholdingCheckBoxChecked(false);
-    d->m_GUI->SetThresholdingWidgetsEnabled(false);
-    d->m_GUI->SetLowerAndUpperIntensityRanges(0.0, 0.0);
-    d->m_GUI->SetLowerThreshold(0.0);
-    d->m_GUI->SetUpperThreshold(0.0);
-    d->m_GUI->SetSeedMinAndMaxValues(0.0, 0.0);
-  }
-
-  this->blockSignals(wasBlocked);
-}
-
-
-//-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
 {
   if (!this->HasInitialisedWorkingNodes())
@@ -1443,7 +1481,6 @@ void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
   mitk::DataNode* segmentationNode = this->GetWorkingNode();
   segmentationNode->SetBoolProperty("midas.general_segmentor.thresholding", checked);
 
-  this->RecalculateMinAndMaxOfImage();
   this->RecalculateMinAndMaxOfSeedValues();
 
   d->m_GUI->SetThresholdingWidgetsEnabled(checked);
