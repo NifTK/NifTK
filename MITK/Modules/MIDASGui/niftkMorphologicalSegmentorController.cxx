@@ -410,7 +410,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
         int axialCutOffSlice;
         if (newSegmentation->GetIntProperty("midas.morph.thresholding.slice", axialCutOffSlice))
         {
-          this->UpdateAxialCutOffPlaneNode(axialCutOffSlice);
+          this->UpdateAxialCutOffPlane(axialCutOffSlice);
         }
       }
       else
@@ -486,27 +486,7 @@ void MorphologicalSegmentorController::OnAxialCutOffSliceNumberChanged(int axial
     m_PipelineManager->UpdateSegmentation();
   }
 
-  this->UpdateAxialCutOffPlaneNode(axialSliceNumber);
-}
-
-
-void MorphologicalSegmentorController::UpdateAxialCutOffPlaneNode(int axialSliceNumber)
-{
-  const mitk::Image* referenceImage = this->GetReferenceImage();
-  mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
-
-  int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
-  int axialUpDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
-
-  mitk::DataNode* axialCutOffPlaneNode = this->GetWorkingNode(PaintbrushTool::AXIAL_CUT_OFF_PLANE);
-  mitk::Plane* axialCutOffPlane = dynamic_cast<mitk::Plane*>(axialCutOffPlaneNode->GetData());
-
-  // Lift the axial cut-off plane to the height determined by axialSliceNumber.
-  mitk::Point3D planeCentre = axialCutOffPlane->GetGeometry()->GetOrigin();
-  planeCentre[2] = geometry->GetOrigin()[2] + (axialUpDirection * axialSliceNumber - 0.5) * geometry->GetSpacing()[axialAxis];
-  axialCutOffPlane->SetOrigin(planeCentre);
-
-  this->RequestRenderWindowUpdate();
+  this->UpdateAxialCutOffPlane(axialSliceNumber);
 }
 
 
@@ -637,7 +617,6 @@ void MorphologicalSegmentorController::OnOKButtonClicked()
     this->RemoveWorkingNodes();
     m_MorphologicalSegmentorGUI->SetControlsFromSegmentationNode(nullptr);
 
-    this->GetView()->SetDataManagerSelection(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
   }
@@ -657,30 +636,12 @@ void MorphologicalSegmentorController::OnRestartButtonClicked()
     this->SetControlsFromSegmentationNode();
     m_PipelineManager->UpdateSegmentation();
 
-//    /// Reset the axial cut-off plane to the bottom of the image.
-    {
-      mitk::DataNode* referenceNode = this->GetReferenceNode();
-      mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceNode->GetData());
-      mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
+    // The centre of the plane is the same as the centre of the image, but it is shifted
+    // along the axial axis to a position determined by axialSliceNumber.
+    int axialSliceNumber = 0;
+    segmentationNode->GetIntProperty("midas.morph.thresholding.slice", axialSliceNumber);
+    this->UpdateAxialCutOffPlane(axialSliceNumber);
 
-      mitk::DataNode* axialCutOffPlaneNode = this->GetWorkingNode(PaintbrushTool::AXIAL_CUT_OFF_PLANE);
-      mitk::Plane* axialCutOffPlane = dynamic_cast<mitk::Plane*>(axialCutOffPlaneNode->GetData());
-
-      int axialAxis = GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
-      int axialUpDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
-
-      // The centre of the plane is the same as the centre of the image, but it is shifted
-      // along the axial axis to a position determined by axialSliceNumber.
-      int axialSliceNumber = 0;
-      segmentationNode->GetIntProperty("midas.morph.thresholding.slice", axialSliceNumber);
-
-      mitk::Point3D planeCentre = geometry->GetOrigin();
-      planeCentre[2] = geometry->GetOrigin()[2] + (axialUpDirection * axialSliceNumber - 0.5) * geometry->GetSpacing()[axialAxis];
-
-      axialCutOffPlane->SetOrigin(planeCentre);
-   }
-
-    this->GetView()->SetDataManagerSelection(segmentationNode);
     this->RequestRenderWindowUpdate();
   }
 }
@@ -853,6 +814,26 @@ mitk::DataNode::Pointer MorphologicalSegmentorController::CreateAxialCutOffPlane
   axialCutOffPlaneNode->SetData(axialCutOffPlane);
 
   return axialCutOffPlaneNode;
+}
+
+
+void MorphologicalSegmentorController::UpdateAxialCutOffPlane(int axialSliceNumber)
+{
+  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
+
+  int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
+  int axialUpDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
+
+  mitk::DataNode* axialCutOffPlaneNode = this->GetWorkingNode(PaintbrushTool::AXIAL_CUT_OFF_PLANE);
+  mitk::Plane* axialCutOffPlane = dynamic_cast<mitk::Plane*>(axialCutOffPlaneNode->GetData());
+
+  // Lift the axial cut-off plane to the height determined by axialSliceNumber.
+  mitk::Point3D planeCentre = axialCutOffPlane->GetGeometry()->GetOrigin();
+  planeCentre[2] = geometry->GetOrigin()[2] + (axialUpDirection * axialSliceNumber - 0.5) * geometry->GetSpacing()[axialAxis];
+  axialCutOffPlane->SetOrigin(planeCentre);
+
+  this->RequestRenderWindowUpdate();
 }
 
 
