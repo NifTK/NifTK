@@ -16,6 +16,7 @@
 
 #include <QMessageBox>
 
+#include <mitkUndoController.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 
 #include <QmitkRenderWindow.h>
@@ -426,6 +427,8 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
       }
     }
   }
+
+  mitk::UndoController::GetCurrentUndoModel()->Clear();
 
   // Tell the tool manager the images for reference and working purposes.
   this->SetToolManagerSelection(referenceNode, workingNodes);
