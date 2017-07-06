@@ -32,6 +32,7 @@ set(NIFTK_NIFTYMIDAS_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyM
 ###########################################################
 set(_exclude_plugins
   org_mitk_gui_qt_aicpregistration
+  org_mitk_gui_qt_basicimageprocessing
   org_mitk_gui_qt_common_legacy
   org_mitk_gui_qt_extapplication
   org_mitk_gui_qt_igttracking

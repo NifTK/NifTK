@@ -169,18 +169,17 @@ void NIFTKMIDAS_EXPORT ConvertMITKSeedsAndAppendToITKSeeds(const mitk::PointSet*
 ///
 /// and appends them to the ITK contour list.
 ///
-/// The function needs to know the spacing of the original image. Note that the geometry of the MITK contours cannot be
-/// set to the same as that of the reference image or the segmentation image, otherwise the contours would be rendered
-/// to a wrong location in space. Therefore, the spacing has to be retrieved from either the MITK or ITK image and
-/// passed to this function.
+/// The function needs to know the geometry of the original image. Ideally, the geometry of the MITK contours should be
+/// set to the same as this geometry, and the contours should store the (continuous) index coordinates rather than the
+/// mm position in world space. However, the current implementation stores the mm positions in the coordinates and the
+/// geometry is the default, with unity rotation matrix and unit spacing. This is wrong, because you cannot recover the
+/// original indices from that, and the algorithm below needs these indices to identify corner points and side points.
 ///
-/// Note that the spacing must be in world coordinate order, not in voxel coordinate order. That is, the elements of
-/// @spacing have to be the spacing along the sagittal, coronal then axial axis, in this order. ITK images and MITK
-/// geometries store the spacing in voxel coordinate order.
+/// Although this is admittedly wrong, in most cases this does not matter, and it would need too much work to correct it
+/// everywhere. As a cheap workaround, we pass the geometry of the mask as an additional argument, so that we can
+/// recover the original indices from the mm coordinates.
 ///
-/// You can translate between the two coordinate systems with the utility functions in niftkImageOrientationUtils.h.
-///
-void NIFTKMIDAS_EXPORT ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet* mitkContours, ParametricPathVectorType& itkContours, const mitk::Vector3D& spacing);
+void NIFTKMIDAS_EXPORT ConvertMITKContoursAndAppendToITKContours(mitk::ContourModelSet* mitkContours, ParametricPathVectorType& itkContours, const mitk::BaseGeometry* geometry);
 
 
 /**
@@ -198,6 +197,7 @@ struct NIFTKMIDAS_EXPORT GeneralSegmentorPipelineParams
   mitk::ContourModelSet* m_SegmentationContours;
   mitk::ContourModelSet* m_DrawContours;
   mitk::ContourModelSet* m_PolyContours;
+  const mitk::BaseGeometry* m_Geometry;
 };
 
 /**

@@ -149,7 +149,8 @@ if (APPLE)
 endif()
 
 if (APPLE)
-  set(tests_to_exclude "${tests_to_exclude}|DnDDisplay")
+  # This would need X11 that is not available on the Mac CI runner.
+  set(tests_to_exclude "${tests_to_exclude}|DnDDisplay|MorphologicalSegmentor")
 endif()
 
 ctest_start(Continuous TRACK ${group_name})
