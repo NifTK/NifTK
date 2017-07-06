@@ -13,12 +13,12 @@
 #============================================================================*/
 
 NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-  NAME niftkExtractLandmarkFromMITKScene
+  NAME niftkExtractDataFromMITKScene
   BUILD_SLICER
   INSTALL_SCRIPT
   TARGET_LIBRARIES
     niftkcommon
-    MitkLegacyIO
+    niftkITKIO
     MitkSceneSerialization
     ${Boost_LIBRARIES}
 )
