@@ -45,8 +45,8 @@ public:
   mitkClassMacro(PaintbrushToolGUI, QmitkToolGUI)
   itkNewMacro(PaintbrushToolGUI)
 
-  /// \brief Method to set or initialise the size of the eraser (radius of influence).
-  void OnEraserSizeChangedInTool(double eraserSize);
+  /// \brief Method to set or initialise the size of the eraser.
+  void OnEraserSizeChangedInTool(int eraserSize);
 
 signals:
 

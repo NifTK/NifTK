@@ -61,7 +61,7 @@ const mitk::OperationType PaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 
 PaintbrushTool::PaintbrushTool()
   : mitk::SegTool2D(""),
     m_Interface(nullptr),
-    m_EraserSize(1.0),
+    m_EraserSize(1),
     m_EraserVisible(false),
     m_WorkingImageGeometry(nullptr),
     m_WorkingImage(nullptr),
@@ -255,14 +255,14 @@ void PaintbrushTool::SetEraserPosition(const mitk::Point2D& eraserPosition)
 
 
 //-----------------------------------------------------------------------------
-double PaintbrushTool::GetEraserSize() const
+int PaintbrushTool::GetEraserSize() const
 {
   return m_EraserSize;
 }
 
 
 //-----------------------------------------------------------------------------
-void PaintbrushTool::SetEraserSize(double eraserSize)
+void PaintbrushTool::SetEraserSize(int eraserSize)
 {
   if (eraserSize != m_EraserSize)
   {
@@ -279,7 +279,7 @@ void PaintbrushTool::UpdateEraserCursor()
   mitk::BaseRenderer* renderer = mitk::GlobalInteraction::GetInstance()->GetFocusManager()->GetFocused();
   mitk::Point2D voxelSize;
   voxelSize.Fill(1.0);
-  renderer->GetCurrentWorldGeometry2D()->IndexToWorld(voxelSize, voxelSize);
+  renderer->GetCurrentWorldPlaneGeometry()->IndexToWorld(voxelSize, voxelSize);
 
   mitk::Point2D position = m_EraserPosition;
   double radius = m_EraserSize / 2.0;
@@ -421,15 +421,15 @@ void PaintbrushTool::GetListOfAffectedVoxels(
             processor.AddToList(affectedVoxel);
           }
 
-          int actualCursorSize = static_cast<int>(m_EraserSize + 0.5) - 1;
-          if (actualCursorSize > 0)
+          int eraserRadius = m_EraserSize / 2;
+          if (eraserRadius > 0)
           {
             for (int dimension = 0; dimension < 2; dimension++)
             {
               cursorPointIn3DVoxels = projectedPointIn3DVoxels;
 
               // Now draw a cross centred at projectedPointIn3DVoxels, but don't do centre, as it is done above.
-              for (int offset = -actualCursorSize; offset <= actualCursorSize; offset++)
+              for (int offset = -eraserRadius; offset <= eraserRadius; ++offset)
               {
                 if (offset != 0)
                 {

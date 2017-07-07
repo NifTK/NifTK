@@ -115,11 +115,11 @@ public:
   void SetEraserPosition(const mitk::Point2D& eraserPosition);
 
   /// \brief Gets the eraser size.
-  /// Default size is 1 pixel.
-  double GetEraserSize() const;
+  /// Default size is 1 voxel.
+  int GetEraserSize() const;
 
   /// \brief Sets the eraser size.
-  void SetEraserSize(double eraserSize);
+  void SetEraserSize(int eraserSize);
 
   /// \brief Shows or hides the eraser cursor.
   void SetEraserVisible(bool visible, mitk::BaseRenderer* renderer = 0);
@@ -133,7 +133,7 @@ public:
   void SetErosionMode(bool erosionMode);
 
   /** Used to send messages when the eraser size is changed or should be updated in a GUI. */
-  mitk::Message1<double> EraserSizeChanged;
+  mitk::Message1<int> EraserSizeChanged;
 
   /** Method to enable this class to interact with the Undo/Redo framework. */
   virtual void ExecuteOperation(mitk::Operation* operation);
@@ -242,7 +242,7 @@ private:
   mitk::Point2D m_EraserPosition;
 
   // Eraser size for editing, and cursor type is currently always a cross. Size is in voxels.
-  double m_EraserSize;
+  int m_EraserSize;
 
   // This is the 3D geometry associated with the m_WorkingImage, where we assume both working images have same size and geometry.
   mitk::BaseGeometry* m_WorkingImageGeometry;

@@ -56,7 +56,7 @@ PaintbrushToolGUI::PaintbrushToolGUI()
   m_Slider->layout()->setSpacing(3);
   m_Slider->setMinimum(1.0);
   m_Slider->setMaximum(25.0);
-  m_Slider->setSingleStep(1.0);
+  m_Slider->setSingleStep(2.0);
   m_Slider->setPageStep(2.0);
   m_Slider->setValue(1.0);
   m_Slider->setDecimals(0);
@@ -77,7 +77,7 @@ PaintbrushToolGUI::~PaintbrushToolGUI()
 {
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->EraserSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, double>( this, &PaintbrushToolGUI::OnEraserSizeChangedInTool );
+    m_PaintbrushTool->EraserSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, int>(this, &PaintbrushToolGUI::OnEraserSizeChangedInTool);
   }
 }
 
@@ -87,14 +87,14 @@ void PaintbrushToolGUI::OnNewToolAssociated(mitk::Tool* tool)
 {
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->EraserSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, double>( this, &PaintbrushToolGUI::OnEraserSizeChangedInTool );
+    m_PaintbrushTool->EraserSizeChanged -= mitk::MessageDelegate1<PaintbrushToolGUI, int>(this, &PaintbrushToolGUI::OnEraserSizeChangedInTool);
   }
 
   m_PaintbrushTool = dynamic_cast<PaintbrushTool*>( tool );
 
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->EraserSizeChanged += mitk::MessageDelegate1<PaintbrushToolGUI, double>( this, &PaintbrushToolGUI::OnEraserSizeChangedInTool );
+    m_PaintbrushTool->EraserSizeChanged += mitk::MessageDelegate1<PaintbrushToolGUI, int>(this, &PaintbrushToolGUI::OnEraserSizeChangedInTool);
   }
 }
 
@@ -104,8 +104,16 @@ void PaintbrushToolGUI::OnEraserSizeChangedInGui(double value)
 {
   if (m_PaintbrushTool.IsNotNull())
   {
-    m_PaintbrushTool->SetEraserSize(value);
-    m_SizeLabel->setText(QString::number(value));
+    int eraserSize = static_cast<int>(value + 0.5);
+
+    /// Making sure that the eraser size is odd number so that we can draw a nice cross.
+    if (eraserSize % 2 == 0)
+    {
+      ++eraserSize;
+    }
+
+    m_PaintbrushTool->SetEraserSize(eraserSize);
+    m_SizeLabel->setText(QString::number(eraserSize));
 
     mitk::BaseRenderer* renderer =
         mitk::GlobalInteraction::GetInstance()->GetFocusManager()->GetFocused();
@@ -139,7 +147,7 @@ void PaintbrushToolGUI::OnSettingEraserSizeFinished()
 
 
 //-----------------------------------------------------------------------------
-void PaintbrushToolGUI::OnEraserSizeChangedInTool(double eraserSize)
+void PaintbrushToolGUI::OnEraserSizeChangedInTool(int eraserSize)
 {
   m_Slider->setValue(eraserSize);
 }
