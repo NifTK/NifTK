@@ -75,8 +75,8 @@ PaintbrushTool::PaintbrushTool()
 
   m_EraserPosition.Fill(0.0);
 
-  m_EraserCursor = mitk::PlanarCross::New();
-  m_EraserCursor->SetSingleLineMode(false);
+  m_EraserCursor = mitk::PlanarEllipse::New();
+  m_EraserCursor->SetTreatAsCircle(false);
   mitk::Point2D position;
   position[0] = -0.5;
   position[1] = 0.0;
@@ -282,17 +282,15 @@ void PaintbrushTool::UpdateEraserCursor()
   renderer->GetCurrentWorldPlaneGeometry()->IndexToWorld(voxelSize, voxelSize);
 
   mitk::Point2D position = m_EraserPosition;
-  double radius = m_EraserSize / 2.0;
-
-  position[0] = m_EraserPosition[0] - radius * voxelSize[0];
   m_EraserCursor->SetControlPoint(0, position);
+
+  double radius = m_EraserSize / 2.0;
   position[0] = m_EraserPosition[0] + radius * voxelSize[0];
   m_EraserCursor->SetControlPoint(1, position);
+
   position[0] = m_EraserPosition[0];
-  position[1] = m_EraserPosition[1] - radius * voxelSize[1];
-  m_EraserCursor->SetControlPoint(2, position);
   position[1] = m_EraserPosition[1] + radius * voxelSize[1];
-  m_EraserCursor->SetControlPoint(3, position);
+  m_EraserCursor->SetControlPoint(2, position);
 }
 
 
