@@ -45,12 +45,8 @@ public:
   mitkClassMacro(PaintbrushToolGUI, QmitkToolGUI)
   itkNewMacro(PaintbrushToolGUI)
 
-  /// \brief Method to set or initialise the size of the eraser (radius of influence).
-  void OnEraserSizeChangedInTool(double eraserSize);
-
-signals:
-
-public slots:
+  /// \brief Method to set or initialise the size of the eraser.
+  void OnEraserSizeChangedInTool(int eraserSize);
 
 protected slots:
 
@@ -69,7 +65,6 @@ protected:
   virtual ~PaintbrushToolGUI();
 
   ctkSliderWidget* m_Slider;
-  QLabel* m_SizeLabel;
   QFrame* m_Frame;
 
   PaintbrushTool::Pointer m_PaintbrushTool;

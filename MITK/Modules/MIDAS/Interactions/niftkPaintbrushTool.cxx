@@ -61,7 +61,7 @@ const mitk::OperationType PaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 
 PaintbrushTool::PaintbrushTool()
   : mitk::SegTool2D(""),
     m_Interface(nullptr),
-    m_EraserSize(1.0),
+    m_EraserSize(1),
     m_EraserVisible(false),
     m_WorkingImageGeometry(nullptr),
     m_WorkingImage(nullptr),
@@ -255,14 +255,14 @@ void PaintbrushTool::SetEraserPosition(const mitk::Point2D& eraserPosition)
 
 
 //-----------------------------------------------------------------------------
-double PaintbrushTool::GetEraserSize() const
+int PaintbrushTool::GetEraserSize() const
 {
   return m_EraserSize;
 }
 
 
 //-----------------------------------------------------------------------------
-void PaintbrushTool::SetEraserSize(double eraserSize)
+void PaintbrushTool::SetEraserSize(int eraserSize)
 {
   if (eraserSize != m_EraserSize)
   {
@@ -279,7 +279,7 @@ void PaintbrushTool::UpdateEraserCursor()
   mitk::BaseRenderer* renderer = mitk::GlobalInteraction::GetInstance()->GetFocusManager()->GetFocused();
   mitk::Point2D voxelSize;
   voxelSize.Fill(1.0);
-  renderer->GetCurrentWorldGeometry2D()->IndexToWorld(voxelSize, voxelSize);
+  renderer->GetCurrentWorldPlaneGeometry()->IndexToWorld(voxelSize, voxelSize);
 
   mitk::Point2D position = m_EraserPosition;
   double radius = m_EraserSize / 2.0;
@@ -421,15 +421,15 @@ void PaintbrushTool::GetListOfAffectedVoxels(
             processor.AddToList(affectedVoxel);
           }
 
-          int actualCursorSize = static_cast<int>(m_EraserSize + 0.5) - 1;
-          if (actualCursorSize > 0)
+          int eraserRadius = m_EraserSize / 2;
+          if (eraserRadius > 0)
           {
             for (int dimension = 0; dimension < 2; dimension++)
             {
               cursorPointIn3DVoxels = projectedPointIn3DVoxels;
 
               // Now draw a cross centred at projectedPointIn3DVoxels, but don't do centre, as it is done above.
-              for (int offset = -actualCursorSize; offset <= actualCursorSize; offset++)
+              for (int offset = -eraserRadius; offset <= eraserRadius; ++offset)
               {
                 if (offset != 0)
                 {
@@ -633,6 +633,9 @@ bool PaintbrushTool::KeepAddingAddition(mitk::StateMachineAction* action, mitk::
 bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
   assert(m_AddingAdditionInProgress);
+
+  this->SetEraserVisible(false, event->GetSender());
+
   int dataIndex = this->GetDataIndex(true);
   this->SetInvalidRegion(dataIndex);
   // The data is not actually modified here. We fire this event so that the pipeline is
@@ -643,8 +646,6 @@ bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* /*action*/, mi
   // entire image or just the current slice, based on if there is a valid region set. (See
   // the SetInvalidRegion() call above.)
   this->SegmentationEdited.Send(dataIndex);
-
-  this->SetEraserVisible(false, event->GetSender());
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
   m_AddingAdditionInProgress = false;
@@ -703,11 +704,12 @@ bool PaintbrushTool::KeepAddingSubtraction(mitk::StateMachineAction* action, mit
 bool PaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
   assert(m_AddingSubtractionInProgress);
+
+  this->SetEraserVisible(false, event->GetSender());
+
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
   this->SegmentationEdited.Send(dataIndex);
-
-  this->SetEraserVisible(false, event->GetSender());
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
   m_AddingSubtractionInProgress = false;
@@ -766,11 +768,12 @@ bool PaintbrushTool::KeepRemovingSubtraction(mitk::StateMachineAction* action, m
 bool PaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
   assert(m_RemovingSubtractionInProgress);
+
+  this->SetEraserVisible(false, event->GetSender());
+
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
   this->SegmentationEdited.Send(dataIndex);
-
-  this->SetEraserVisible(false, event->GetSender());
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
   m_RemovingSubtractionInProgress = false;
@@ -845,6 +848,11 @@ void PaintbrushTool::SetEraserVisible(bool visible, mitk::BaseRenderer* renderer
 
   m_EraserCursorNode->SetVisibility(visible, renderer);
   m_EraserVisible = visible;
+
+  if (renderer)
+  {
+    renderer->ForceImmediateUpdate();
+  }
 }
 
 
