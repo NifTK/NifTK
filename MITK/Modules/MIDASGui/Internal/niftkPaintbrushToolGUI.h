@@ -48,10 +48,6 @@ public:
   /// \brief Method to set or initialise the size of the eraser.
   void OnEraserSizeChangedInTool(int eraserSize);
 
-signals:
-
-public slots:
-
 protected slots:
 
   /// \brief Qt slot called when the tool is activated.
@@ -69,7 +65,6 @@ protected:
   virtual ~PaintbrushToolGUI();
 
   ctkSliderWidget* m_Slider;
-  QLabel* m_SizeLabel;
   QFrame* m_Frame;
 
   PaintbrushTool::Pointer m_PaintbrushTool;

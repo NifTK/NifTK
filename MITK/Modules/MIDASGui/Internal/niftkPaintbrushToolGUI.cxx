@@ -36,7 +36,6 @@ NIFTK_TOOL_GUI_MACRO_NO_EXPORT(PaintbrushTool, PaintbrushToolGUI, "Paintbrush To
 PaintbrushToolGUI::PaintbrushToolGUI()
   : QmitkToolGUI(),
     m_Slider(nullptr),
-    m_SizeLabel(nullptr),
     m_Frame(nullptr),
     m_ShowEraserTimer(new QTimer(this))
 {
@@ -48,9 +47,6 @@ PaintbrushToolGUI::PaintbrushToolGUI()
 
   QLabel* label = new QLabel( "Eraser width (voxel):", this );
   layout->addWidget(label);
-
-  m_SizeLabel = new QLabel("1", this);
-  layout->addWidget(m_SizeLabel);
 
   m_Slider = new ctkSliderWidget(this);
   m_Slider->layout()->setSpacing(3);
@@ -113,7 +109,6 @@ void PaintbrushToolGUI::OnEraserSizeChangedInGui(double value)
     }
 
     m_PaintbrushTool->SetEraserSize(eraserSize);
-    m_SizeLabel->setText(QString::number(eraserSize));
 
     mitk::BaseRenderer* renderer =
         mitk::GlobalInteraction::GetInstance()->GetFocusManager()->GetFocused();
