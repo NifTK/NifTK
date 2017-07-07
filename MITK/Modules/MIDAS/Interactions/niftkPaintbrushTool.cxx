@@ -633,6 +633,9 @@ bool PaintbrushTool::KeepAddingAddition(mitk::StateMachineAction* action, mitk::
 bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
   assert(m_AddingAdditionInProgress);
+
+  this->SetEraserVisible(false, event->GetSender());
+
   int dataIndex = this->GetDataIndex(true);
   this->SetInvalidRegion(dataIndex);
   // The data is not actually modified here. We fire this event so that the pipeline is
@@ -643,8 +646,6 @@ bool PaintbrushTool::StopAddingAddition(mitk::StateMachineAction* /*action*/, mi
   // entire image or just the current slice, based on if there is a valid region set. (See
   // the SetInvalidRegion() call above.)
   this->SegmentationEdited.Send(dataIndex);
-
-  this->SetEraserVisible(false, event->GetSender());
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
   m_AddingAdditionInProgress = false;
@@ -703,11 +704,12 @@ bool PaintbrushTool::KeepAddingSubtraction(mitk::StateMachineAction* action, mit
 bool PaintbrushTool::StopAddingSubtraction(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
   assert(m_AddingSubtractionInProgress);
+
+  this->SetEraserVisible(false, event->GetSender());
+
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
   this->SegmentationEdited.Send(dataIndex);
-
-  this->SetEraserVisible(false, event->GetSender());
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
   m_AddingSubtractionInProgress = false;
@@ -766,11 +768,12 @@ bool PaintbrushTool::KeepRemovingSubtraction(mitk::StateMachineAction* action, m
 bool PaintbrushTool::StopRemovingSubtraction(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* event)
 {
   assert(m_RemovingSubtractionInProgress);
+
+  this->SetEraserVisible(false, event->GetSender());
+
   int dataIndex = this->GetDataIndex(false);
   this->SetInvalidRegion(dataIndex);
   this->SegmentationEdited.Send(dataIndex);
-
-  this->SetEraserVisible(false, event->GetSender());
 
   InteractionEventObserverMutex::GetInstance()->Unlock(this);
   m_RemovingSubtractionInProgress = false;
@@ -845,6 +848,11 @@ void PaintbrushTool::SetEraserVisible(bool visible, mitk::BaseRenderer* renderer
 
   m_EraserCursorNode->SetVisibility(visible, renderer);
   m_EraserVisible = visible;
+
+  if (renderer)
+  {
+    renderer->ForceImmediateUpdate();
+  }
 }
 
 

@@ -122,7 +122,7 @@ public:
   void SetEraserSize(int eraserSize);
 
   /// \brief Shows or hides the eraser cursor.
-  void SetEraserVisible(bool visible, mitk::BaseRenderer* renderer = 0);
+  void SetEraserVisible(bool visible, mitk::BaseRenderer* renderer = nullptr);
 
   /// \brief Gets the erosion mode.
   /// If true, we are editing image 0,1, and if false, we are editing image 2,3. Default true.
