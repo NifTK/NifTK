@@ -358,7 +358,6 @@ void PaintbrushTool::GetListOfAffectedVoxels(
   mitk::Point3D vectorDifference;
   mitk::Point3D projectedPointIn3DVoxels;
   mitk::Point3D previousProjectedPointIn3DVoxels;
-  mitk::Point3D cursorPointIn3DVoxels;
   itk::Index<3> affectedVoxel;
 
 //  dont forget to set projectedPointIn3DVoxels equal invalid value, then track
@@ -420,35 +419,35 @@ void PaintbrushTool::GetListOfAffectedVoxels(
           }
 
           int eraserRadius = m_EraserSize / 2;
-          if (eraserRadius > 0)
+
+          int xAxis = whichTwoAxesInVoxelSpace[0];
+          int yAxis = whichTwoAxesInVoxelSpace[1];
+          int eraserRadiusSquare = eraserRadius * eraserRadius;
+
+          for (int xOffset = -eraserRadius; xOffset <= eraserRadius; ++xOffset)
           {
-            for (int dimension = 0; dimension < 2; dimension++)
+            int ySquareMax = eraserRadiusSquare - xOffset * xOffset;
+            for (int yOffset = -eraserRadius; yOffset <= eraserRadius; ++yOffset)
             {
-              cursorPointIn3DVoxels = projectedPointIn3DVoxels;
-
-              // Now draw a cross centred at projectedPointIn3DVoxels, but don't do centre, as it is done above.
-              for (int offset = -eraserRadius; offset <= eraserRadius; ++offset)
+              if ((xOffset == 0 && yOffset == 0) || yOffset * yOffset > ySquareMax)
               {
-                if (offset != 0)
-                {
-                  cursorPointIn3DVoxels[whichTwoAxesInVoxelSpace[dimension]] = projectedPointIn3DVoxels[whichTwoAxesInVoxelSpace[dimension]] + offset;
+                /// Centre is already done, and we stay inside the radius.
+                continue;
+              }
 
-                  for (int i = 0; i < 3; i++)
-                  {
-                    affectedVoxel[i] = (long int)cursorPointIn3DVoxels[i];
-                  }
+              affectedVoxel[xAxis] = projectedPointIn3DVoxels[xAxis] + xOffset;
+              affectedVoxel[yAxis] = projectedPointIn3DVoxels[yAxis] + yOffset;
 
-                  // Check we are not outside image before adding any index.
-                  // This means if the stroke of the mouse, or the size of
-                  // the cross is outside of the image, we will not crash.
-                  if (m_WorkingImageGeometry->IsIndexInside(affectedVoxel))
-                  {
-                    processor.AddToList(affectedVoxel);
-                  }
-                }
+              // Check we are not outside image before adding any index.
+              // This means if the stroke of the mouse, or the size of
+              // the cross is outside of the image, we will not crash.
+              if (m_WorkingImageGeometry->IsIndexInside(affectedVoxel))
+              {
+                processor.AddToList(affectedVoxel);
               }
             }
           }
+
           previousProjectedPointIn3DVoxels = projectedPointIn3DVoxels;
         } // end if projected point != previous projected point
       } // end for k, foreach step
