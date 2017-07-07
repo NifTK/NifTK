@@ -23,7 +23,7 @@
 #include <mitkImage.h>
 #include <mitkOperation.h>
 #include <mitkOperationActor.h>
-#include <mitkPlanarCross.h>
+#include <mitkPlanarEllipse.h>
 #include <mitkSegTool2D.h>
 
 #include <usServiceReference.h>
@@ -264,7 +264,7 @@ private:
   bool m_AddingSubtractionInProgress;
   bool m_RemovingSubtractionInProgress;
 
-  mitk::PlanarCross::Pointer m_EraserCursor;
+  mitk::PlanarEllipse::Pointer m_EraserCursor;
   mitk::DataNode::Pointer m_EraserCursorNode;
   bool m_EraserVisible;
 
