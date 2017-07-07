@@ -464,28 +464,26 @@ void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
     }
 
     std::vector<int> region(6);
-    std::vector<bool> editingFlags;
+    std::vector<bool> editingFlags(4);
 
     std::vector<mitk::DataNode*> workingData = this->GetToolManager()->GetWorkingData();
 
-    for (unsigned int i = 0; i < workingData.size(); i++)
+    /// This assumes that the working nodes with the additions and subtractions are from index 1 to 4.
+    /// The pipeline assumes that the editing flags are indexed from 0 to 3. In the past the two indices
+    /// used to match, but for consistency with the irregular editor and compatibility with the image
+    /// selector widget, the segmentation image also needs to be stored in the working data vector with
+    /// index 0. Hence, there is 1 difference between the two indices.
+    for (unsigned i = 0; i < 4; ++i)
     {
-      bool isEditing = false;
+      auto editingProperty = dynamic_cast<ITKRegionParametersDataNodeProperty*>(workingData[i + 1]->GetProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str()));
 
-      ITKRegionParametersDataNodeProperty::Pointer editingProperty
-        = static_cast<ITKRegionParametersDataNodeProperty*>(
-            workingData[i]->GetProperty(PaintbrushTool::REGION_PROPERTY_NAME.c_str()));
-
-      if (editingProperty.IsNotNull())
+      bool isEditing = editingProperty && editingProperty->IsValid();
+      if (isEditing)
       {
-        isEditing = editingProperty->IsValid();
-        if (isEditing)
-        {
-          region = editingProperty->GetITKRegionParameters();
-        }
+        region = editingProperty->GetITKRegionParameters();
       }
 
-      editingFlags.push_back(isEditing);
+      editingFlags[i] = isEditing;
     }
 
     bool isRestarting = false;
