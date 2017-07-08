@@ -26,6 +26,7 @@
 #include <opencv2/core/types_c.h>
 #include <string>
 #include <niftkIGITimerBasedThread.h>
+#include "niftkglhiddenwidget.h"
 
 namespace niftk
 {
@@ -169,14 +170,15 @@ private:
 
   // all the sdi stuff needs an opengl context
   //  so we'll create our own
-  QGLWidget*              oglwin;
+  QGLWidget*                oglwin;
   // we want to share our capture context with other render contexts (e.g. the preview widget)
   // but for that to work we need a hack because for sharing to work, the share-source cannot
   //  be current at the time of call. but our capture context is current (to the capture thread)
   //  all the time! so we just create a dummy context that shares with capture-context but itself
   //  is never ever current to any thread and hence can be shared with new widgets while capture-context
   //  is happily working away. and tada it works :)
-  QGLWidget*              oglshare;  
+  //QGLWidget*              oglshare;  
+  GLHiddenWidget*           oglshare;
 
   CaptureState            current_state;
   std::string             state_message;

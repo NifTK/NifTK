@@ -116,11 +116,13 @@ namespace niftk
     // and then never modify or signal/etc again
 
     oglwin = new QGLWidget(0, 0, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
+    //oglwin = new GLHiddenWidget(0, 0, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
     oglwin->hide();
     assert(oglwin->isValid());
 
     // hack to get context sharing to work while the capture thread is cracking away
-    oglshare = new QGLWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
+    //oglshare = new QGLWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
+    oglshare = new GLHiddenWidget(0, oglwin, Qt::WindowFlags(Qt::Window | Qt::FramelessWindowHint));
     oglshare->hide();
     assert(oglshare->isValid());
     assert(oglwin->isSharing());
@@ -140,6 +142,9 @@ namespace niftk
     }	
     
     oglwin->doneCurrent();    
+    #if QT_VERSION >= 0x050000
+      oglshare->context()->moveToThread(this);
+    #endif
 
     // we want signal/slot processing to happen on our background thread.
     // for that to work we need to explicitly move this object because
@@ -213,8 +218,8 @@ namespace niftk
     // we do not own the device!
     sdidev = 0;
     // but we gotta clear up this one
-    delete sdiin;
-    sdiin = 0;
+    //delete sdiin;
+    //sdiin = 0;
     format = video::StreamFormat();
     // try not to loose any still compressing info
 
@@ -267,7 +272,8 @@ namespace niftk
       {
         // we have one second worth of ringbuffer.
         int   ringbufferslots = format.get_refreshrate();
-        sdiin = new video::SDIInput(sdidev, m_FieldMode, ringbufferslots);
+        if (!sdiin)
+          sdiin = new video::SDIInput(sdidev, m_FieldMode, ringbufferslots);
 
         m_CaptureWidth = sdiin->get_width();
         m_CaptureHeight = sdiin->get_height();
@@ -561,7 +567,8 @@ namespace niftk
 
     // make sure the correct opengl context is active.
     // in OnTimeoutImpl() there's another make-current, but there were circumstances in which that was too late.
-    oglwin->makeCurrent();
+    //oglwin->makeCurrent();
+    oglshare->makeCurrent();
 
     // it's possible for someone else to start and stop our thread.
     // just make sure we start clean if that happens.
@@ -601,6 +608,8 @@ namespace niftk
     assert(ok);
     ok = disconnect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)));
     assert(ok);
+
+    oglshare->makeCurrent();
   }
 
 
@@ -633,9 +642,10 @@ namespace niftk
     }
 
     if (current_state == NVidiaSDIDataSourceImpl::PRE_INIT)
-    {
-      oglwin->makeCurrent();
+    {      
+      oglshare->makeCurrent();
       current_state = NVidiaSDIDataSourceImpl::HW_ENUM;
+
 
       // side note: we could try to avoid a race-condition of PRE_INIT-make-current and signal delivery
       // by connecting the signals only after HW_ENUM, when we know that it is safe to deliver them.
@@ -650,9 +660,8 @@ namespace niftk
     {
       try
       {
-        // libvideo does its own glew init, so we can get cracking straight away
-        InitVideo();
-
+        // libvideo does its own glew init, so we can get cracking straight away        
+        InitVideo();   
         // once we have an input setup
         //  grab at least one frame (not quite sure why)
         if (sdiin)
