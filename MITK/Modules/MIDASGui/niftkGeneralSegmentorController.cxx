@@ -2677,7 +2677,7 @@ void GeneralSegmentorController::DoWipe(int direction)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnThresholdApplyButtonClicked()
 {
-  this->DoThresholdApply(true, false, false);
+  this->DoThresholdApply(false, false, false);
 }
 
 
@@ -2946,7 +2946,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
     {
       bool useThresholdsWhenCalculatingEnclosedSeeds = false;
 
-      this->DoThresholdApply(true, false, true);
+      this->DoThresholdApply(false, false, true);
 
       // Get seeds just on the current slice
       mitk::PointSet::Pointer seedsForCurrentSlice = mitk::PointSet::New();
