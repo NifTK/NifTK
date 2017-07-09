@@ -138,23 +138,6 @@ protected:
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
   virtual void ApplyDisplayOptions(mitk::DataNode* node);
 
-  /// \brief Returns which image coordinate corresponds to the currently selected orientation.
-  /// Retrieves the currently active QmitkRenderWindow, and the reference image registered with the ToolManager,
-  /// and returns the Image axis that the current view is looking along, or -1 if it can not be worked out.
-  int GetReferenceImageSliceAxis();
-
-  /// \brief Returns which image coordinate corresponds to the given orientation.
-  /// Looks up the ReferenceImage registered with ToolManager and returns the axis [0,1,2]
-  /// that corresponds to the given orientation, or -1 if it can't be found.
-  int GetReferenceImageSliceAxis(ImageOrientation orientation);
-
-  /// \brief Returns the slice index in the reference image that corresponds to the currently displayed slice.
-  /// This might be different to the slice displayed in the viewer, depending on the up direction.
-  int GetReferenceImageSliceIndex();
-
-  /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
-  int GetReferenceImageSliceUpDirection();
-
   /// \brief Creates from derived classes when the the user hits the "New segmentation", producing a dialog box,
   /// and on successful completion of the dialog box, will create a new segmentation image.
   ///
