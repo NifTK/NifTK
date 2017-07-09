@@ -256,14 +256,14 @@ void BaseSegmentorController::ApplyDisplayOptions(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 int BaseSegmentorController::GetReferenceImageSliceAxis()
 {
-  int referenceImageAxis = -1;
+  int referenceImageSliceAxis = -1;
   const mitk::Image* referenceImage = this->GetReferenceImage();
   ImageOrientation orientation = this->GetOrientation();
   if (referenceImage && orientation != IMAGE_ORIENTATION_UNKNOWN)
   {
-    referenceImageAxis = GetThroughPlaneAxis(referenceImage, orientation);
+    referenceImageSliceAxis = GetThroughPlaneAxis(referenceImage, orientation);
   }
-  return referenceImageAxis;
+  return referenceImageSliceAxis;
 }
 
 
