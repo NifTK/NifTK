@@ -43,7 +43,7 @@ mitk::DataNode* FindFirstParentImage(const mitk::DataStorage* storage, const mit
   {
     mitk::DataNode* possibleNode = (*possibleParents)[i];
 
-    bool isBinary;
+    bool isBinary = false;
     possibleNode->GetBoolProperty("binary", isBinary);
 
     if (isBinary == lookForBinary)
@@ -98,7 +98,7 @@ mitk::DataStorage::SetOfObjects::Pointer FindDerivedImages(const mitk::DataStora
 
     mitk::DataNode* possibleNode = (*possibleChildren)[i];
 
-    bool isBinary;
+    bool isBinary = false;
     possibleNode->GetBoolProperty("binary", isBinary);
 
     if (isBinary == lookForBinary)
@@ -119,7 +119,7 @@ bool IsNodeAHelperObject(const mitk::DataNode* node)
 
   if (node)
   {
-    bool isHelper(false);
+    bool isHelper;
     if (node->GetBoolProperty("helper object", isHelper) && isHelper)
     {
       result = true;
@@ -133,7 +133,7 @@ bool IsNodeAHelperObject(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 bool IsNodeAGreyScaleImage(const mitk::DataNode* node)
 {
-  bool isBinary = false;
+  bool isBinary;
 
   return node
       && dynamic_cast<mitk::Image*>(node->GetData())
@@ -144,7 +144,7 @@ bool IsNodeAGreyScaleImage(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 bool IsNodeABinaryImage(const mitk::DataNode* node)
 {
-  bool isBinary = false;
+  bool isBinary;
 
   return node
       && dynamic_cast<mitk::Image*>(node->GetData())
@@ -165,7 +165,7 @@ mitk::DataNode* FindNthImage(const std::vector<mitk::DataNode*>& nodes, int n, b
 
   for(unsigned int i = 0; i < nodes.size(); ++i)
   {
-      bool isImage(false);
+      bool isImage = false;
       if (nodes.at(i)->GetData())
       {
         isImage = dynamic_cast<mitk::Image*>(nodes.at(i)->GetData()) != NULL;
@@ -286,7 +286,7 @@ mitk::DataStorage::SetOfObjects::Pointer FindNodesStartingWith(const mitk::DataS
 //-----------------------------------------------------------------------------
 mitk::TimeGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, int nodeIndex)
 {
-  mitk::TimeGeometry::Pointer geometry = NULL;
+  mitk::TimeGeometry::Pointer geometry;
 
   int indexThatWeActuallyUsed = -1;
 
@@ -295,7 +295,7 @@ mitk::TimeGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataSt
   {
 
     // First try to find an image geometry, and if so, use the first one.
-    mitk::Image::Pointer image = NULL;
+    mitk::Image::Pointer image;
     for (unsigned int i = 0; i < nodes.size(); i++)
     {
       image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
