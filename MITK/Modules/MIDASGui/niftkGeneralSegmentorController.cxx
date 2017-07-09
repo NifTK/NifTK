@@ -293,6 +293,72 @@ std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingNodesFromSegm
 
 
 //-----------------------------------------------------------------------------
+int GeneralSegmentorController::GetReferenceImageSliceAxis()
+{
+  int referenceImageSliceAxis = -1;
+  const mitk::Image* referenceImage = this->GetReferenceImage();
+  ImageOrientation orientation = this->GetOrientation();
+  if (referenceImage && orientation != IMAGE_ORIENTATION_UNKNOWN)
+  {
+    referenceImageSliceAxis = niftk::GetThroughPlaneAxis(referenceImage, orientation);
+  }
+  return referenceImageSliceAxis;
+}
+
+
+//-----------------------------------------------------------------------------
+int GeneralSegmentorController::GetReferenceImageSliceAxis(ImageOrientation orientation)
+{
+  int referenceImageSliceAxis = -1;
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
+  {
+    referenceImageSliceAxis = niftk::GetThroughPlaneAxis(referenceImage, orientation);
+  }
+  return referenceImageSliceAxis;
+}
+
+
+//-----------------------------------------------------------------------------
+int GeneralSegmentorController::GetReferenceImageSliceIndex()
+{
+  int referenceImageSliceIndex = -1;
+
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::SliceNavigationController* snc = this->GetSliceNavigationController();
+
+  if (referenceImage && snc)
+  {
+    const mitk::PlaneGeometry* planeGeometry = snc->GetCurrentPlaneGeometry();
+    if (planeGeometry)
+    {
+      mitk::Point3D originInMm = planeGeometry->GetOrigin();
+      mitk::Point3D originInVx;
+      referenceImage->GetGeometry()->WorldToIndex(originInMm, originInVx);
+
+      int viewAxis = this->GetReferenceImageSliceAxis();
+      referenceImageSliceIndex = (int)(originInVx[viewAxis] + 0.5);
+    }
+  }
+  return referenceImageSliceIndex;
+}
+
+
+//-----------------------------------------------------------------------------
+int GeneralSegmentorController::GetReferenceImageSliceUpDirection()
+{
+  int upDirection = 0;
+  const mitk::Image* referenceImage = this->GetReferenceImage();
+  ImageOrientation orientation = this->GetOrientation();
+  if (referenceImage && orientation != IMAGE_ORIENTATION_UNKNOWN)
+  {
+    upDirection = niftk::GetUpDirection(referenceImage, orientation);
+  }
+  return upDirection;
+}
+
+
+//-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 {
   Q_D(GeneralSegmentorController);
