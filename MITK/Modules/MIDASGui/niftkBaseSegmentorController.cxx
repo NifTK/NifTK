@@ -175,14 +175,6 @@ mitk::Image* BaseSegmentorController::GetWorkingImage(int index)
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::FindReferenceNodeFromSegmentationNode(const mitk::DataNode* segmentationNode)
-{
-  mitk::DataNode* result = niftk::FindFirstParentImage(this->GetDataStorage(), segmentationNode, false);
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 bool BaseSegmentorController::IsAReferenceImage(const mitk::DataNode* node)
 {
   return niftk::IsNodeAGreyScaleImage(node);
@@ -197,16 +189,10 @@ bool BaseSegmentorController::IsASegmentationImage(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::IsAWorkingImage(const mitk::DataNode* node)
-{
-  return niftk::IsNodeABinaryImage(node);
-}
-
-
-//-----------------------------------------------------------------------------
 std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodesFromSegmentationNode(mitk::DataNode* segmentationNode)
 {
-  // This default implementation just says Segmentation node == Working node, which subclasses could override.
+  /// This default implementation just says Segmentation node == Working node, which subclasses could override.
+  /// Every derived class should store the segmentation node in the first (0th) element of the vector, though.
 
   std::vector<mitk::DataNode*> result(1);
   result[0] = segmentationNode;
@@ -215,7 +201,7 @@ std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodesFromSegment
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::CanStartSegmentationForBinaryNode(const mitk::DataNode* node)
+bool BaseSegmentorController::CanStartSegmentationFrom(const mitk::DataNode* node)
 {
   bool canRestart = false;
 
@@ -346,14 +332,14 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     {
       segmentationNode = selectedNode;
     }
-    else if (niftk::IsNodeABinaryImage(selectedNode) && this->CanStartSegmentationForBinaryNode(selectedNode))
+    else if (niftk::IsNodeABinaryImage(selectedNode) && this->CanStartSegmentationFrom(selectedNode))
     {
       segmentationNode = selectedNode;
     }
 
     if (segmentationNode)
     {
-      referenceNode = this->FindReferenceNodeFromSegmentationNode(segmentationNode);
+      referenceNode = niftk::FindFirstParentImage(this->GetDataStorage(), segmentationNode, false);
 
       if (this->IsASegmentationImage(selectedNode))
       {

@@ -134,36 +134,6 @@ bool MorphologicalSegmentorController::IsASegmentationImage(const mitk::DataNode
 
 
 //-----------------------------------------------------------------------------
-bool MorphologicalSegmentorController::IsAWorkingImage(const mitk::DataNode* node)
-{
-  assert(node);
-  bool result = false;
-
-  if (niftk::IsNodeABinaryImage(node))
-  {
-    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, true);
-    if (parent.IsNotNull())
-    {
-      std::string name;
-      if (node->GetStringProperty("name", name))
-      {
-        if (   name == PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME
-            || name == PaintbrushTool::EROSIONS_ADDITIONS_NAME
-            || name == PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME
-            || name == PaintbrushTool::DILATIONS_ADDITIONS_NAME
-            )
-        {
-          result = true;
-        }
-      }
-    }
-  }
-
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingNodesFromSegmentationNode(mitk::DataNode* segmentationNode)
 {
   assert(segmentationNode);
@@ -242,7 +212,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   bool isRestarting = false;
 
   if (niftk::IsNodeABinaryImage(selectedNode)
-      && this->CanStartSegmentationForBinaryNode(selectedNode)
+      && this->CanStartSegmentationFrom(selectedNode)
       && !this->IsASegmentationImage(selectedNode)
       )
   {
