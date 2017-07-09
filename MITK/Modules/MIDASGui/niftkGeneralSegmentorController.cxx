@@ -375,7 +375,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   bool isRestarting = false;
 
   if (niftk::IsNodeAnUcharBinaryImage(selectedNode)
-      && this->CanStartSegmentationForBinaryNode(selectedNode)
+      && this->CanStartSegmentationFrom(selectedNode)
       && !this->IsASegmentationImage(selectedNode)
       )
   {

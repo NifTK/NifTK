@@ -60,9 +60,6 @@ protected:
   /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME.
   virtual bool IsASegmentationImage(const mitk::DataNode* node) override;
 
-  /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME, and have a binary image parent.
-  virtual bool IsAWorkingImage(const mitk::DataNode* node) override;
-
   /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME. Returns empty list if both not found.
   virtual std::vector<mitk::DataNode*> GetWorkingNodesFromSegmentationNode(mitk::DataNode* segmentationNode) override;
 
