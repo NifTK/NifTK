@@ -85,7 +85,7 @@ public:
 
   /// Runs the application.
   /// Like mitk::BaseApplication::run(), but it exits clean after Poco exceptions.
-  int run();
+  int run() override;
 
 protected:
 
