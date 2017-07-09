@@ -207,88 +207,47 @@ void GeneralSegmentorController::SetupGUI(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-bool GeneralSegmentorController::IsASegmentationImage(const mitk::DataNode* node)
-{
-  assert(node);
-  bool result = false;
-
-  if (niftk::IsNodeAnUcharBinaryImage(node))
-  {
-
-    mitk::DataNode* parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
-
-    if (parent)
-    {
-      mitk::DataStorage* dataStorage = this->GetDataStorage();
-      mitk::DataNode* seedsNode = dataStorage->GetNamedDerivedNode(Tool::SEEDS_NAME.c_str(), node, true);
-      mitk::DataNode* currentContoursNode = dataStorage->GetNamedDerivedNode(Tool::CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode* drawContoursNode = dataStorage->GetNamedDerivedNode(Tool::DRAW_CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode* seePriorContoursNode = dataStorage->GetNamedDerivedNode(Tool::PRIOR_CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode* seeNextContoursNode = dataStorage->GetNamedDerivedNode(Tool::NEXT_CONTOURS_NAME.c_str(), node, true);
-      mitk::DataNode* regionGrowingImageNode = dataStorage->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), node, true);
-
-      if (seedsNode
-          && currentContoursNode
-          && drawContoursNode
-          && seePriorContoursNode
-          && seeNextContoursNode
-          && regionGrowingImageNode
-          )
-      {
-        result = true;
-      }
-    }
-  }
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingNodesFromSegmentationNode(mitk::DataNode* segmentationNode)
+std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingNodesFrom(mitk::DataNode* segmentationNode)
 {
   assert(segmentationNode);
-  std::vector<mitk::DataNode*> result;
+  std::vector<mitk::DataNode*> workingNodes;
 
   if (niftk::IsNodeAnUcharBinaryImage(segmentationNode))
   {
-    mitk::DataNode* parent = niftk::FindFirstParentImage(this->GetDataStorage(), segmentationNode, false);
+    mitk::DataStorage* dataStorage = this->GetDataStorage();
+    mitk::DataNode* seedsNode = dataStorage->GetNamedDerivedNode(Tool::SEEDS_NAME.c_str(), segmentationNode, true);
+    mitk::DataNode* currentContoursNode = dataStorage->GetNamedDerivedNode(Tool::CONTOURS_NAME.c_str(), segmentationNode, true);
+    mitk::DataNode* drawContoursNode = dataStorage->GetNamedDerivedNode(Tool::DRAW_CONTOURS_NAME.c_str(), segmentationNode, true);
+    mitk::DataNode* seePriorContoursNode = dataStorage->GetNamedDerivedNode(Tool::PRIOR_CONTOURS_NAME.c_str(), segmentationNode, true);
+    mitk::DataNode* seeNextContoursNode = dataStorage->GetNamedDerivedNode(Tool::NEXT_CONTOURS_NAME.c_str(), segmentationNode, true);
+    mitk::DataNode* regionGrowingImageNode = dataStorage->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
+    mitk::DataNode* initialSegmentationNode = dataStorage->GetNamedDerivedNode(Tool::INITIAL_SEGMENTATION_NAME.c_str(), segmentationNode, true);
+    mitk::DataNode* initialSeedsNode = dataStorage->GetNamedDerivedNode(Tool::INITIAL_SEEDS_NAME.c_str(), segmentationNode, true);
 
-    if (parent)
+    if (seedsNode
+        && currentContoursNode
+        && drawContoursNode
+        && seePriorContoursNode
+        && seeNextContoursNode
+        && regionGrowingImageNode
+        && initialSegmentationNode
+        && initialSeedsNode
+        )
     {
-      mitk::DataStorage* dataStorage = this->GetDataStorage();
-      mitk::DataNode* seedsNode = dataStorage->GetNamedDerivedNode(Tool::SEEDS_NAME.c_str(), segmentationNode, true);
-      mitk::DataNode* currentContoursNode = dataStorage->GetNamedDerivedNode(Tool::CONTOURS_NAME.c_str(), segmentationNode, true);
-      mitk::DataNode* drawContoursNode = dataStorage->GetNamedDerivedNode(Tool::DRAW_CONTOURS_NAME.c_str(), segmentationNode, true);
-      mitk::DataNode* seePriorContoursNode = dataStorage->GetNamedDerivedNode(Tool::PRIOR_CONTOURS_NAME.c_str(), segmentationNode, true);
-      mitk::DataNode* seeNextContoursNode = dataStorage->GetNamedDerivedNode(Tool::NEXT_CONTOURS_NAME.c_str(), segmentationNode, true);
-      mitk::DataNode* regionGrowingImageNode = dataStorage->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
-      mitk::DataNode* initialSegmentationNode = dataStorage->GetNamedDerivedNode(Tool::INITIAL_SEGMENTATION_NAME.c_str(), segmentationNode, true);
-      mitk::DataNode* initialSeedsNode = dataStorage->GetNamedDerivedNode(Tool::INITIAL_SEEDS_NAME.c_str(), segmentationNode, true);
-
-      if (seedsNode
-          && currentContoursNode
-          && drawContoursNode
-          && seePriorContoursNode
-          && seeNextContoursNode
-          && regionGrowingImageNode
-          && initialSegmentationNode
-          && initialSeedsNode
-          )
-      {
-        // The order of this list must match the order they were created in.
-        result.push_back(segmentationNode);
-        result.push_back(seedsNode);
-        result.push_back(currentContoursNode);
-        result.push_back(drawContoursNode);
-        result.push_back(seePriorContoursNode);
-        result.push_back(seeNextContoursNode);
-        result.push_back(regionGrowingImageNode);
-        result.push_back(initialSegmentationNode);
-        result.push_back(initialSeedsNode);
-      }
+      // The order of this list must match the order they were created in.
+      workingNodes.push_back(segmentationNode);
+      workingNodes.push_back(seedsNode);
+      workingNodes.push_back(currentContoursNode);
+      workingNodes.push_back(drawContoursNode);
+      workingNodes.push_back(seePriorContoursNode);
+      workingNodes.push_back(seeNextContoursNode);
+      workingNodes.push_back(regionGrowingImageNode);
+      workingNodes.push_back(initialSegmentationNode);
+      workingNodes.push_back(initialSeedsNode);
     }
   }
-  return result;
+
+  return workingNodes;
 }
 
 
@@ -375,9 +334,8 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   bool isRestarting = false;
 
   if (niftk::IsNodeAnUcharBinaryImage(selectedNode)
-      && this->CanStartSegmentationFrom(selectedNode)
-      && !this->IsASegmentationImage(selectedNode)
-      )
+      && this->GetWorkingNodesFrom(selectedNode).empty()
+      && this->CanStartSegmentationFrom(selectedNode))
   {
     try
     {
@@ -700,7 +658,7 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -814,7 +772,7 @@ void GeneralSegmentorController::OnWorkingNodesChanged()
 
   bool wasBlocked = this->blockSignals(true);
 
-  if (this->HasInitialisedWorkingNodes())
+  if (this->HasWorkingNodes())
   {
     mitk::DataNode* segmentationNode = this->GetWorkingNode();
     assert(segmentationNode);
@@ -930,7 +888,7 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 
   if (orientation != d->m_Orientation || selectedSliceIndex != d->m_SelectedSliceIndex)
   {
-    if (this->HasInitialisedWorkingNodes()
+    if (this->HasWorkingNodes()
         && orientation != IMAGE_ORIENTATION_UNKNOWN)
     {
       int sliceAxis = this->GetReferenceImageSliceAxis();
@@ -1260,7 +1218,7 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
 
   if (d->m_IsDeleting
       || d->m_IsUpdating
-      || !this->HasInitialisedWorkingNodes()
+      || !this->HasWorkingNodes()
       )
   {
     return;
@@ -1331,7 +1289,7 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnNodeRemoved(const mitk::DataNode* removedNode)
 {
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -1387,7 +1345,7 @@ mitk::PointSet* GeneralSegmentorController::GetSeeds()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int sliceIndex)
 {
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -1466,7 +1424,7 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -1519,7 +1477,7 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
 {
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -1540,7 +1498,7 @@ void GeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnSeeNextCheckBoxToggled(bool checked)
 {
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -1561,7 +1519,7 @@ void GeneralSegmentorController::OnSeeNextCheckBoxToggled(bool checked)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnRetainMarksCheckBoxToggled(bool checked)
 {
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -1576,7 +1534,7 @@ void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     // So, if there is NO working data, we leave the widgets disabled regardless.
     d->m_GUI->SetThresholdingWidgetsEnabled(false);
@@ -1671,7 +1629,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -1780,7 +1738,7 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -1854,7 +1812,7 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
 
   bool sliceDoesHaveUnenclosedSeeds = false;
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return sliceDoesHaveUnenclosedSeeds;
   }
@@ -1941,7 +1899,7 @@ void GeneralSegmentorController::FilterSeedsToCurrentSlice(
     mitk::PointSet* outputPoints
     )
 {
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -2051,7 +2009,7 @@ void GeneralSegmentorController::RemoveWorkingNodes()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -2079,7 +2037,7 @@ void GeneralSegmentorController::RemoveWorkingNodes()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::RestoreInitialSegmentation()
 {
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -2126,7 +2084,7 @@ void GeneralSegmentorController::OnOKButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -2154,7 +2112,7 @@ void GeneralSegmentorController::OnResetButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -2202,7 +2160,7 @@ void GeneralSegmentorController::DiscardSegmentation()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -2233,7 +2191,7 @@ void GeneralSegmentorController::OnRestartButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -2260,7 +2218,7 @@ void GeneralSegmentorController::OnRestartButtonClicked()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::ClearWorkingNodes()
 {
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -2331,7 +2289,7 @@ bool GeneralSegmentorController::SelectSeedTool()
   /// We should not do anything with the tools until they are registered to the
   /// tool manager.
 
-  if (this->HasInitialisedWorkingNodes())
+  if (this->HasWorkingNodes())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -2355,7 +2313,7 @@ bool GeneralSegmentorController::SelectDrawTool()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (this->HasInitialisedWorkingNodes())
+  if (this->HasWorkingNodes())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -2379,7 +2337,7 @@ bool GeneralSegmentorController::SelectPolyTool()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (this->HasInitialisedWorkingNodes())
+  if (this->HasWorkingNodes())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -2402,7 +2360,7 @@ bool GeneralSegmentorController::UnselectTools()
 {
   Q_D(GeneralSegmentorController);
 
-  if (this->HasInitialisedWorkingNodes())
+  if (this->HasWorkingNodes())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
 
@@ -2424,7 +2382,7 @@ bool GeneralSegmentorController::SelectViewMode()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (this->HasInitialisedWorkingNodes())
+  if (this->HasWorkingNodes())
   {
     mitk::DataNode* segmentationNode = this->GetWorkingNode();
     segmentationNode->SetVisibility(!segmentationNode->IsVisible(0));
@@ -2454,7 +2412,7 @@ bool GeneralSegmentorController::CleanSlice()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (this->HasInitialisedWorkingNodes())
+  if (this->HasWorkingNodes())
   {
     this->OnCleanButtonClicked();
     return true;
@@ -2490,7 +2448,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -2790,7 +2748,7 @@ void GeneralSegmentorController::DoWipe(int direction)
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -2925,7 +2883,7 @@ void GeneralSegmentorController::DoThresholdApply(
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -3064,7 +3022,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }
@@ -3393,7 +3351,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasInitialisedWorkingNodes())
+  if (!this->HasWorkingNodes())
   {
     return;
   }

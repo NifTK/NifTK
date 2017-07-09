@@ -96,45 +96,7 @@ void MorphologicalSegmentorController::SetupGUI(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-bool MorphologicalSegmentorController::IsASegmentationImage(const mitk::DataNode* node)
-{
-  assert(node);
-
-  /// It needs to hold a binary image.
-  if (!niftk::IsNodeABinaryImage(node))
-  {
-    return false;
-  }
-
-  mitk::DataStorage* dataStorage = this->GetDataStorage();
-
-  /// Its parent node needs to hold a grey scale image.
-  if (!niftk::FindFirstParentImage(dataStorage, node, false))
-  {
-    return false;
-  }
-
-  /// It should also have four children for the paintbrush tool and one for the
-  /// axial cut-off plane node.
-
-  std::set<std::string> set;
-
-  mitk::DataStorage::SetOfObjects::ConstPointer children = dataStorage->GetDerivations(node);
-  for (auto it = children->Begin(); it != children->End(); ++it)
-  {
-    set.insert(it->Value()->GetName());
-  }
-
-  return set.find(PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME) != set.end()
-      && set.find(PaintbrushTool::EROSIONS_ADDITIONS_NAME) != set.end()
-      && set.find(PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME) != set.end()
-      && set.find(PaintbrushTool::DILATIONS_ADDITIONS_NAME) != set.end()
-      && set.find(PaintbrushTool::AXIAL_CUT_OFF_PLANE_NAME) != set.end();
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingNodesFromSegmentationNode(mitk::DataNode* segmentationNode)
+std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingNodesFrom(mitk::DataNode* segmentationNode)
 {
   assert(segmentationNode);
 
@@ -212,9 +174,8 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   bool isRestarting = false;
 
   if (niftk::IsNodeAnUcharBinaryImage(selectedNode)
-      && this->CanStartSegmentationFrom(selectedNode)
-      && !this->IsASegmentationImage(selectedNode)
-      )
+      && this->GetWorkingNodesFrom(selectedNode).empty()
+      && this->CanStartSegmentationFrom(selectedNode))
   {
     newSegmentation =  selectedNode;
     isRestarting = true;
@@ -270,7 +231,6 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     float segCol[3];
     newSegmentation->GetColor(segCol);
     mitk::ColorProperty::Pointer segmentationColor = mitk::ColorProperty::New(segCol[0], segCol[1], segCol[2]);
-
 
     // Create extra data and store with ToolManager
     ITKRegionParametersDataNodeProperty::Pointer erodeAddEditingProp = ITKRegionParametersDataNodeProperty::New();

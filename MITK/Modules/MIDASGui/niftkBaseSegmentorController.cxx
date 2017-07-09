@@ -191,21 +191,7 @@ mitk::Image* BaseSegmentorController::GetWorkingImage(int index)
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::IsAReferenceImage(const mitk::DataNode* node)
-{
-  return niftk::IsNodeAGreyScaleImage(node);
-}
-
-
-//-----------------------------------------------------------------------------
-bool BaseSegmentorController::IsASegmentationImage(const mitk::DataNode* node)
-{
-  return niftk::IsNodeAnUcharBinaryImage(node);
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodesFromSegmentationNode(mitk::DataNode* segmentationNode)
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodesFrom(mitk::DataNode* segmentationNode)
 {
   /// This default implementation just says Segmentation node == Working node, which subclasses could override.
   /// Every derived class should store the segmentation node in the first (0th) element of the vector, though.
@@ -315,7 +301,7 @@ mitk::DataNode::Pointer BaseSegmentorController::CreateNewSegmentation()
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::HasInitialisedWorkingNodes()
+bool BaseSegmentorController::HasWorkingNodes()
 {
   return !this->GetWorkingNodes().empty();
 }
@@ -325,7 +311,6 @@ bool BaseSegmentorController::HasInitialisedWorkingNodes()
 void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& selectedNodes)
 {
   mitk::DataNode* referenceNode = nullptr;
-  mitk::DataNode* segmentationNode = nullptr;
   std::vector<mitk::DataNode*> workingNodes;
 
   // This plugin only works if you single select, anything else is invalid (for now).
@@ -338,28 +323,25 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
 
     mitk::DataNode* selectedNode = selectedNodes[0];
     // Rely on subclasses deciding if the node is something we are interested in.
-    if (this->IsAReferenceImage(selectedNode))
+    if (niftk::IsNodeAGreyScaleImage(selectedNode))
     {
       referenceNode = selectedNode;
     }
 
     // A segmentation image, is the final output, the one being segmented.
-    if (this->IsASegmentationImage(selectedNode))
+    if (niftk::IsNodeAnUcharBinaryImage(selectedNode))
     {
-      segmentationNode = selectedNode;
-    }
-    else if (niftk::IsNodeAnUcharBinaryImage(selectedNode) && this->CanStartSegmentationFrom(selectedNode))
-    {
-      segmentationNode = selectedNode;
-    }
+      mitk::DataNode* potentialReferenceNode = niftk::FindFirstParentImage(this->GetDataStorage(), selectedNode, false);
 
-    if (segmentationNode)
-    {
-      referenceNode = niftk::FindFirstParentImage(this->GetDataStorage(), segmentationNode, false);
-
-      if (this->IsASegmentationImage(selectedNode))
+      if (potentialReferenceNode)
       {
-        workingNodes = this->GetWorkingNodesFromSegmentationNode(segmentationNode);
+        std::vector<mitk::DataNode*> potentialWorkingNodes = this->GetWorkingNodesFrom(selectedNode);
+        if (!potentialWorkingNodes.empty()
+            || this->CanStartSegmentationFrom(selectedNode))
+        {
+          referenceNode = potentialReferenceNode;
+          workingNodes = potentialWorkingNodes;
+        }
       }
     }
   }
