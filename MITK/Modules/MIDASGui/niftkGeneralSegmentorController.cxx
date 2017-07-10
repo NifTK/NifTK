@@ -1236,61 +1236,46 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
   }
 
   std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodes();
-  if (workingNodes.size() > 0)
+
+  bool seedsChanged = false;
+  bool drawContoursChanged = false;
+
+  if (workingNodes[Tool::SEEDS] && workingNodes[Tool::SEEDS] == node)
   {
-    bool seedsChanged(false);
-    bool drawContoursChanged(false);
+    seedsChanged = true;
+  }
 
-    if (workingNodes[Tool::SEEDS] && workingNodes[Tool::SEEDS] == node)
+  if (workingNodes[Tool::DRAW_CONTOURS] && workingNodes[Tool::DRAW_CONTOURS] == node)
+  {
+    drawContoursChanged = true;
+  }
+
+  if (!seedsChanged && !drawContoursChanged)
+  {
+    return;
+  }
+
+  mitk::DataNode* segmentationNode = workingNodes[Tool::SEGMENTATION];
+
+  mitk::PointSet* seeds = this->GetSeeds();
+  if (seeds && seeds->GetSize() > 0)
+  {
+    bool contourIsBeingEdited = false;
+    if (segmentationNode == node)
     {
-      seedsChanged = true;
-    }
-    if (workingNodes[Tool::DRAW_CONTOURS] && workingNodes[Tool::DRAW_CONTOURS] == node)
-    {
-      drawContoursChanged = true;
+      segmentationNode->GetBoolProperty(ContourTool::EDITING_PROPERTY_NAME.c_str(), contourIsBeingEdited);
     }
 
-    if (!seedsChanged && !drawContoursChanged)
+    if (!contourIsBeingEdited)
     {
-      return;
-    }
-
-    mitk::DataNode* segmentationNode = workingNodes[Tool::SEGMENTATION];
-    if (segmentationNode)
-    {
-      mitk::PointSet* seeds = this->GetSeeds();
-      if (seeds && seeds->GetSize() > 0)
+      if (seedsChanged)
       {
-
-        bool contourIsBeingEdited(false);
-        if (segmentationNode == node)
-        {
-          segmentationNode->GetBoolProperty(ContourTool::EDITING_PROPERTY_NAME.c_str(), contourIsBeingEdited);
-        }
-
-        if (!contourIsBeingEdited)
-        {
-          if (seedsChanged)
-          {
-            this->RecalculateMinAndMaxOfSeedValues();
-          }
-
-          if (seedsChanged || drawContoursChanged)
-          {
-            this->UpdateRegionGrowing();
-          }
-        }
+        this->RecalculateMinAndMaxOfSeedValues();
       }
 
-      float lowerThreshold;
-      float upperThreshold;
-      if (segmentationNode->GetFloatProperty("general segmentor.lower threshold", lowerThreshold))
+      if (seedsChanged || drawContoursChanged)
       {
-        d->m_GUI->SetLowerThreshold(lowerThreshold);
-      }
-      if (segmentationNode->GetFloatProperty("general segmentor.upper threshold", upperThreshold))
-      {
-        d->m_GUI->SetUpperThreshold(upperThreshold);
+        this->UpdateRegionGrowing();
       }
     }
   }
@@ -1610,10 +1595,6 @@ void GeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
     double lowerThreshold = d->m_GUI->GetLowerThreshold();
     double upperThreshold = d->m_GUI->GetUpperThreshold();
     bool skipUpdate = !isThresholdingOn;
-
-    mitk::DataNode* segmentationNode = this->GetWorkingNode();
-    segmentationNode->SetFloatProperty("general segmentor.lower threshold", lowerThreshold);
-    segmentationNode->SetFloatProperty("general segmentor.upper threshold", upperThreshold);
 
     this->UpdateRegionGrowing(isThresholdingOn, sliceAxis, sliceIndex, lowerThreshold, upperThreshold, skipUpdate);
 
