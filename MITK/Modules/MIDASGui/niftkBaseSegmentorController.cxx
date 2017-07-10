@@ -189,28 +189,24 @@ std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodesFrom(mitk::
 //-----------------------------------------------------------------------------
 bool BaseSegmentorController::CanStartSegmentationFrom(const mitk::DataNode* node)
 {
-  bool canRestart = false;
-
-  if (node && niftk::IsNodeABinaryImage(node))
+  if (!node || !niftk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode* parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
-    if (parent)
-    {
-      if (niftk::IsNodeANonBinaryImage(parent))
-      {
-        canRestart = true;
-      }
-    }
+    return false;
   }
 
-  return canRestart;
+  mitk::DataNode* firstNonBinaryImageParent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
+
+  return niftk::IsNodeAGreyScaleImage(firstNonBinaryImageParent);
 }
 
 
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::ApplyDisplayOptions(mitk::DataNode* node)
 {
-  if (!node) return;
+  if (!node)
+  {
+    return;
+  }
 
   bool isBinary(false);
   if (node->GetBoolProperty("binary", isBinary) && isBinary)
