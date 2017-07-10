@@ -207,20 +207,14 @@ void GeneralSegmentorController::SetupGUI(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-bool GeneralSegmentorController::CanStartSegmentationFrom(const mitk::DataNode* node)
+bool GeneralSegmentorController::IsNodeAValidReferenceImage(const mitk::DataNode* node)
 {
-  if (!node || !niftk::IsNodeABinaryImage(node))
+  if (!node)
   {
     return false;
   }
 
-  mitk::DataNode* firstNonBinaryImageParent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
-  if (!firstNonBinaryImageParent)
-  {
-    return false;
-  }
-
-  mitk::Image* image = dynamic_cast<mitk::Image*>(firstNonBinaryImageParent->GetData());
+  mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
   unsigned pixelComponents = image->GetPixelType().GetNumberOfComponents();
 
   /// Only grey scale, RGB or RGBA reference images are supported.
@@ -355,9 +349,8 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   mitk::DataNode::Pointer newSegmentation;
   bool isRestarting = false;
 
-  if (niftk::IsNodeABinaryImage(selectedNode)
-      && this->GetWorkingNodesFrom(selectedNode).empty()
-      && this->CanStartSegmentationFrom(selectedNode))
+  if (this->IsNodeAValidSegmentationImage(selectedNode)
+      && this->GetWorkingNodesFrom(selectedNode).empty())
   {
     try
     {
