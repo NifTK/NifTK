@@ -44,6 +44,14 @@ bool IsNodeABinaryImage(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
+bool IsNodeAnUcharBinaryImage(const mitk::DataNode* node)
+{
+  return IsNodeABinaryImage(node)
+      && dynamic_cast<mitk::Image*>(node->GetData())->GetPixelType().GetComponentType() == itk::ImageIOBase::UCHAR;
+}
+
+
+//-----------------------------------------------------------------------------
 bool IsNodeANonBinaryImage(const mitk::DataNode* node)
 {
   bool isBinary;
@@ -55,13 +63,14 @@ bool IsNodeANonBinaryImage(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-bool IsNodeAnUcharBinaryImage(const mitk::DataNode* node)
+bool IsNodeAGreyScaleImage(const mitk::DataNode* node)
 {
-  return IsNodeABinaryImage(node)
-      && dynamic_cast<mitk::Image*>(node->GetData())->GetPixelType().GetComponentType() == itk::ImageIOBase::UCHAR;
+  return IsNodeANonBinaryImage(node)
+      && dynamic_cast<mitk::Image*>(node->GetData())->GetPixelType().GetNumberOfComponents() == 1;
 }
 
 
+//-----------------------------------------------------------------------------
 bool IsNodeAHelperObject(const mitk::DataNode* node)
 {
   bool result = false;
