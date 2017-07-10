@@ -62,10 +62,10 @@ public:
   void SetEnabled(bool enabled);
 
   /// \brief Set the dialog according to relevant image data.
-  void SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
+  void UpdateByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
 
   /// \brief Set the dialog according to current parameter values
-  void SetControlsFromSegmentationNode(mitk::DataNode* segmentationNode);
+  void UpdateBySegmentationNode(mitk::DataNode* segmentationNode);
 
 signals:
 
