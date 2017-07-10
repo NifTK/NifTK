@@ -203,16 +203,17 @@ std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodesFrom(mitk::
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::CanStartSegmentationFrom(const mitk::DataNode* node)
+bool BaseSegmentorController::IsNodeAValidReferenceImage(const mitk::DataNode* node)
 {
-  if (!node || !niftk::IsNodeAnUcharBinaryImage(node))
-  {
-    return false;
-  }
+  return niftk::IsNodeAGreyScaleImage(node);
+}
 
-  mitk::DataNode* firstNonBinaryImageParent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
 
-  return niftk::IsNodeAGreyScaleImage(firstNonBinaryImageParent);
+//-----------------------------------------------------------------------------
+bool BaseSegmentorController::IsNodeAValidSegmentationImage(const mitk::DataNode* node)
+{
+  return niftk::IsNodeAnUcharBinaryImage(node)
+      && this->IsNodeAValidReferenceImage(niftk::FindFirstParentImage(this->GetDataStorage(), node, false));
 }
 
 
@@ -318,27 +319,23 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     // MAJOR ASSUMPTION: Intermediate working images will be hidden, and hence not clickable.
 
     mitk::DataNode* selectedNode = selectedNodes[0];
+
     // Rely on subclasses deciding if the node is something we are interested in.
-    if (niftk::IsNodeANonBinaryImage(selectedNode) && this->HasSameGeometryAsViewer(selectedNode))
+    if (this->IsNodeAValidReferenceImage(selectedNode) && this->HasSameGeometryAsViewer(selectedNode))
     {
       referenceNode = selectedNode;
     }
 
     // A segmentation image, is the final output, the one being segmented.
-    if (niftk::IsNodeAnUcharBinaryImage(selectedNode))
+    if (this->IsNodeAValidSegmentationImage(selectedNode))
     {
       /// This finds the first not binary parent.
       mitk::DataNode* potentialReferenceNode = niftk::FindFirstParentImage(this->GetDataStorage(), selectedNode, false);
 
-      if (potentialReferenceNode && this->HasSameGeometryAsViewer(potentialReferenceNode))
+      if (this->IsNodeAValidReferenceImage(potentialReferenceNode) && this->HasSameGeometryAsViewer(potentialReferenceNode))
       {
-        std::vector<mitk::DataNode*> potentialWorkingNodes = this->GetWorkingNodesFrom(selectedNode);
-        if (!potentialWorkingNodes.empty()
-            || this->CanStartSegmentationFrom(selectedNode))
-        {
-          referenceNode = potentialReferenceNode;
-          workingNodes = potentialWorkingNodes;
-        }
+        referenceNode = potentialReferenceNode;
+        workingNodes = this->GetWorkingNodesFrom(selectedNode);
       }
     }
   }
@@ -434,14 +431,12 @@ void BaseSegmentorController::OnActiveToolChanged()
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnReferenceNodesChanged()
 {
-  MITK_INFO << "BaseSegmentorController::OnReferenceNodesChanged()";
 }
 
 
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnWorkingNodesChanged()
 {
-  MITK_INFO << "BaseSegmentorController::OnWorkingNodesChanged()";
 }
 
 }
