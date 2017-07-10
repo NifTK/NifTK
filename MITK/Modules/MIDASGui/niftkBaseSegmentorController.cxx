@@ -196,7 +196,7 @@ bool BaseSegmentorController::CanStartSegmentationFrom(const mitk::DataNode* nod
     mitk::DataNode* parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent)
     {
-      if (niftk::IsNodeAGreyScaleImage(parent))
+      if (niftk::IsNodeANonBinaryImage(parent))
       {
         canRestart = true;
       }
@@ -307,7 +307,7 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
 
     mitk::DataNode* selectedNode = selectedNodes[0];
     // Rely on subclasses deciding if the node is something we are interested in.
-    if (niftk::IsNodeAGreyScaleImage(selectedNode) && this->HasSameGeometryAsViewer(selectedNode))
+    if (niftk::IsNodeANonBinaryImage(selectedNode) && this->HasSameGeometryAsViewer(selectedNode))
     {
       referenceNode = selectedNode;
     }

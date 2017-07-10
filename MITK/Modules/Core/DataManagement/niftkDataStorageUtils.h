@@ -26,7 +26,7 @@
 namespace niftk
 {
 
-NIFTKCORE_EXPORT bool IsNodeAGreyScaleImage(const mitk::DataNode* node);
+NIFTKCORE_EXPORT bool IsNodeANonBinaryImage(const mitk::DataNode* node);
 
 NIFTKCORE_EXPORT bool IsNodeABinaryImage(const mitk::DataNode* node);
 
@@ -34,7 +34,7 @@ NIFTKCORE_EXPORT bool IsNodeAHelperObject(const mitk::DataNode* node);
 
 NIFTKCORE_EXPORT mitk::DataNode* FindFirstParent(const mitk::DataStorage* storage, const mitk::DataNode* node);
 
-NIFTKCORE_EXPORT mitk::DataNode* FindParentGreyScaleImage(const mitk::DataStorage* storage, const mitk::DataNode* node);
+NIFTKCORE_EXPORT mitk::DataNode* FindParentNonBinaryImage(const mitk::DataStorage* storage, const mitk::DataNode* node);
 
 NIFTKCORE_EXPORT mitk::DataNode* FindFirstParentImage(const mitk::DataStorage* storage, const mitk::DataNode* node, bool lookForBinary );
 
