@@ -171,7 +171,7 @@ void MorphologicalSegmentorGUI::EnableSegmentationWidgets(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorGUI::SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
+void MorphologicalSegmentorGUI::UpdateByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
 {
   bool wasBlocked = this->blockSignals(true);
 
@@ -229,7 +229,7 @@ void MorphologicalSegmentorGUI::SetControlsByReferenceImage(double lowestValue, 
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorGUI::SetControlsFromSegmentationNode(mitk::DataNode* segmentationNode)
+void MorphologicalSegmentorGUI::UpdateBySegmentationNode(mitk::DataNode* segmentationNode)
 {
   bool wasBlocked = this->blockSignals(true);
 

@@ -127,7 +127,7 @@ mitk::ToolManager* BaseSegmentorController::GetToolManager() const
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> BaseSegmentorController::GetReferenceNodes()
+std::vector<mitk::DataNode*> BaseSegmentorController::GetReferenceNodes() const
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -137,7 +137,7 @@ std::vector<mitk::DataNode*> BaseSegmentorController::GetReferenceNodes()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::GetReferenceNode(int index)
+mitk::DataNode* BaseSegmentorController::GetReferenceNode(int index) const
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -147,7 +147,7 @@ mitk::DataNode* BaseSegmentorController::GetReferenceNode(int index)
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* BaseSegmentorController::GetReferenceImage(int index)
+const mitk::Image* BaseSegmentorController::GetReferenceImage(int index) const
 {
   if (auto node = this->GetReferenceNode(index))
   {
@@ -159,7 +159,7 @@ mitk::Image* BaseSegmentorController::GetReferenceImage(int index)
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodes()
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodes() const
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -169,7 +169,7 @@ std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodes()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::GetWorkingNode(int index)
+mitk::DataNode* BaseSegmentorController::GetWorkingNode(int index) const
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -179,7 +179,7 @@ mitk::DataNode* BaseSegmentorController::GetWorkingNode(int index)
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* BaseSegmentorController::GetWorkingImage(int index)
+mitk::Image* BaseSegmentorController::GetWorkingImage(int index) const
 {
   if (auto node = this->GetWorkingNode(index))
   {
@@ -298,7 +298,7 @@ mitk::DataNode::Pointer BaseSegmentorController::CreateNewSegmentation()
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::HasWorkingNodes()
+bool BaseSegmentorController::HasWorkingNodes() const
 {
   return !this->GetWorkingNodes().empty();
 }
@@ -431,12 +431,14 @@ void BaseSegmentorController::OnActiveToolChanged()
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnReferenceNodesChanged()
 {
+  this->UpdateGUI();
 }
 
 
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnWorkingNodesChanged()
 {
+  this->UpdateGUI();
 }
 
 }
