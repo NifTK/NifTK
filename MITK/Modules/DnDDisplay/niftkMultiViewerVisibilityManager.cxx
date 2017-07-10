@@ -494,7 +494,7 @@ mitk::TimeGeometry::Pointer MultiViewerVisibilityManager::GetTimeGeometry(std::v
     mitk::DataNode* nodeThatWeActuallyUsed = nodes[indexThatWeActuallyUsed];
     if (!niftk::IsNodeANonBinaryImage(nodeThatWeActuallyUsed))
     {
-      mitk::DataNode* node = niftk::FindParentNonBinaryImage(this->GetDataStorage(), nodeThatWeActuallyUsed);
+      mitk::DataNode* node = niftk::FindFirstParentImage(this->GetDataStorage(), nodeThatWeActuallyUsed, false);
       if (node)
       {
         mitk::BaseData* data = node->GetData();

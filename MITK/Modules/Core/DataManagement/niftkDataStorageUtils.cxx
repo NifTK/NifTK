@@ -32,6 +32,47 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
+bool IsNodeABinaryImage(const mitk::DataNode* node)
+{
+  bool isBinary;
+
+  return node
+      && dynamic_cast<mitk::Image*>(node->GetData())
+      && node->GetBoolProperty("binary", isBinary)
+      && isBinary;
+}
+
+
+//-----------------------------------------------------------------------------
+bool IsNodeANonBinaryImage(const mitk::DataNode* node)
+{
+  bool isBinary;
+
+  return node
+      && dynamic_cast<mitk::Image*>(node->GetData())
+      && (!node->GetBoolProperty("binary", isBinary) || !isBinary);
+}
+
+
+//-----------------------------------------------------------------------------
+bool IsNodeAHelperObject(const mitk::DataNode* node)
+{
+  bool result = false;
+
+  if (node)
+  {
+    bool isHelper;
+    if (node->GetBoolProperty("helper object", isHelper) && isHelper)
+    {
+      result = true;
+    }
+  }
+
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::DataNode* FindFirstParentImage(const mitk::DataStorage* storage, const mitk::DataNode* node, bool lookForBinary)
 {
   mitk::DataNode* result = nullptr;
@@ -57,156 +98,6 @@ mitk::DataNode* FindFirstParentImage(const mitk::DataStorage* storage, const mit
 
 
 //-----------------------------------------------------------------------------
-bool IsNodeAHelperObject(const mitk::DataNode* node)
-{
-  bool result = false;
-
-  if (node)
-  {
-    bool isHelper;
-    if (node->GetBoolProperty("helper object", isHelper) && isHelper)
-    {
-      result = true;
-    }
-  }
-
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-bool IsNodeANonBinaryImage(const mitk::DataNode* node)
-{
-  bool isBinary;
-
-  return node
-      && dynamic_cast<mitk::Image*>(node->GetData())
-      && (!node->GetBoolProperty("binary", isBinary) || !isBinary);
-}
-
-
-//-----------------------------------------------------------------------------
-bool IsNodeABinaryImage(const mitk::DataNode* node)
-{
-  bool isBinary;
-
-  return node
-      && dynamic_cast<mitk::Image*>(node->GetData())
-      && node->GetBoolProperty("binary", isBinary)
-      && isBinary;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* FindNthImage(const std::vector<mitk::DataNode*>& nodes, int n, bool lookForBinary)
-{
-  if (nodes.empty())
-  {
-    return nullptr;
-  }
-
-  int numberOfMatchingNodesFound = 0;
-
-  for(unsigned int i = 0; i < nodes.size(); ++i)
-  {
-      bool isImage = false;
-      if (nodes.at(i)->GetData())
-      {
-        isImage = dynamic_cast<mitk::Image*>(nodes.at(i)->GetData());
-      }
-
-      bool isBinary;
-      nodes.at(i)->GetBoolProperty("binary", isBinary);
-
-      if (isImage && isBinary == lookForBinary)
-      {
-        numberOfMatchingNodesFound++;
-        if (numberOfMatchingNodesFound == n)
-        {
-          return nodes.at(i);
-        }
-      }
-  }
-
-  return nullptr;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* FindNthGreyScaleImage(const std::vector<mitk::DataNode*>& nodes, int n)
-{
-  return FindNthImage(nodes, n, false);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* FindNthBinaryImage(const std::vector<mitk::DataNode*>& nodes, int n)
-{
-  return FindNthImage(nodes, n, true);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* FindFirstGreyScaleImage(const std::vector<mitk::DataNode*>& nodes)
-{
-  return FindNthGreyScaleImage(nodes, 1);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* FindFirstBinaryImage(const std::vector<mitk::DataNode*>& nodes)
-{
-  return FindNthBinaryImage(nodes, 1);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* FindFirstParent(const mitk::DataStorage* storage, const mitk::DataNode* node)
-{
-  mitk::DataNode* result = nullptr;
-
-  mitk::DataStorage::SetOfObjects::ConstPointer possibleParents = storage->GetSources(node);
-  if (possibleParents->size() > 0)
-  {
-    result = (*possibleParents)[0];
-  }
-
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* FindParentNonBinaryImage(const mitk::DataStorage* storage, const mitk::DataNode* node)
-{
-  mitk::DataNode* result = nullptr;
-
-  if (node)
-  {
-    const mitk::DataNode* nodeToCheck = node;
-    mitk::DataNode* parent = nullptr;
-    do
-    {
-      parent = FindFirstParent(storage, nodeToCheck);
-      if (parent)
-      {
-        if (IsNodeANonBinaryImage(parent))
-        {
-          result = parent;
-          break;
-        }
-        else
-        {
-          nodeToCheck = parent;
-        }
-      }
-    } while (parent);
-  }
-
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
 mitk::DataStorage::SetOfObjects::Pointer FindNodesStartingWith(const mitk::DataStorage* dataStorage, const std::string prefix)
 {
   mitk::DataStorage::SetOfObjects::Pointer results = mitk::DataStorage::SetOfObjects::New();
@@ -224,89 +115,6 @@ mitk::DataStorage::SetOfObjects::Pointer FindNodesStartingWith(const mitk::DataS
   }
 
   return results;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::TimeGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, int nodeIndex)
-{
-  mitk::TimeGeometry::Pointer geometry;
-
-  int indexThatWeActuallyUsed = -1;
-
-  // If nodeIndex < 0, we are choosing the best geometry from all available nodes.
-  if (nodeIndex < 0)
-  {
-
-    // First try to find an image geometry, and if so, use the first one.
-    mitk::Image::Pointer image;
-    for (unsigned int i = 0; i < nodes.size(); i++)
-    {
-      image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
-      if (image.IsNotNull())
-      {
-        geometry = image->GetTimeGeometry();
-        indexThatWeActuallyUsed = i;
-        break;
-      }
-    }
-
-    // Failing that, use the first geometry available.
-    if (geometry.IsNull())
-    {
-      for (unsigned int i = 0; i < nodes.size(); i++)
-      {
-        mitk::BaseData::Pointer data = nodes[i]->GetData();
-        if (data.IsNotNull())
-        {
-          geometry = data->GetTimeGeometry();
-          indexThatWeActuallyUsed = i;
-          break;
-        }
-      }
-    }
-  }
-  // So, the caller has nominated a specific node, lets just use that one.
-  else if (nodeIndex >= 0 && nodeIndex < (int)nodes.size())
-  {
-    mitk::BaseData::Pointer data = nodes[nodeIndex]->GetData();
-    if (data.IsNotNull())
-    {
-      geometry = data->GetTimeGeometry();
-      indexThatWeActuallyUsed = nodeIndex;
-    }
-  }
-  // Essentially, the nodeIndex is garbage, so just pick the first one.
-  else
-  {
-    mitk::BaseData::Pointer data = nodes[0]->GetData();
-    if (data.IsNotNull())
-    {
-      geometry = data->GetTimeGeometry();
-      indexThatWeActuallyUsed = 0;
-    }
-  }
-
-  // In addition, if the node is NOT a greyscale image, we try and search the parents
-  // of the node to find a greyscale image and use that one in preference.
-  // This assumes that derived datasets, such as point sets, surfaces, segmented
-  // volumes are correctly assigned to parents.
-  if (indexThatWeActuallyUsed != -1)
-  {
-    if (!IsNodeANonBinaryImage(nodes[indexThatWeActuallyUsed]))
-    {
-      mitk::DataNode::Pointer node = FindParentNonBinaryImage(dataStorage, nodes[indexThatWeActuallyUsed]);
-      if (node.IsNotNull())
-      {
-        mitk::BaseData::Pointer data = nodes[0]->GetData();
-        if (data.IsNotNull())
-        {
-          geometry = data->GetTimeGeometry();
-        }
-      }
-    }
-  }
-  return geometry;
 }
 
 
@@ -361,7 +169,7 @@ void LoadMatrixOrCreateDefault(
 
 
 //-----------------------------------------------------------------------------
-void GetCurrentTransformFromNode (const mitk::DataNode::Pointer& node , vtkMatrix4x4& outputMatrix)
+void GetCurrentTransformFromNode(const mitk::DataNode::Pointer& node , vtkMatrix4x4& outputMatrix)
 {
   if (node.IsNull())
   {

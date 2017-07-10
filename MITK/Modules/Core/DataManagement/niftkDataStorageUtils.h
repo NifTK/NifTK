@@ -26,49 +26,15 @@
 namespace niftk
 {
 
-NIFTKCORE_EXPORT bool IsNodeANonBinaryImage(const mitk::DataNode* node);
-
 NIFTKCORE_EXPORT bool IsNodeABinaryImage(const mitk::DataNode* node);
+
+NIFTKCORE_EXPORT bool IsNodeANonBinaryImage(const mitk::DataNode* node);
 
 NIFTKCORE_EXPORT bool IsNodeAHelperObject(const mitk::DataNode* node);
 
-NIFTKCORE_EXPORT mitk::DataNode* FindFirstParent(const mitk::DataStorage* storage, const mitk::DataNode* node);
-
-NIFTKCORE_EXPORT mitk::DataNode* FindParentNonBinaryImage(const mitk::DataStorage* storage, const mitk::DataNode* node);
-
-NIFTKCORE_EXPORT mitk::DataNode* FindFirstParentImage(const mitk::DataStorage* storage, const mitk::DataNode* node, bool lookForBinary );
-
-NIFTKCORE_EXPORT mitk::DataNode* FindNthGreyScaleImage(const std::vector<mitk::DataNode*>& nodes, int n);
-
-NIFTKCORE_EXPORT mitk::DataNode* FindNthBinaryImage(const std::vector<mitk::DataNode*>& nodes, int n);
-
-NIFTKCORE_EXPORT mitk::DataNode* FindFirstGreyScaleImage(const std::vector<mitk::DataNode*>& nodes);
-
-NIFTKCORE_EXPORT mitk::DataNode* FindFirstBinaryImage(const std::vector<mitk::DataNode*>& nodes);
-
-NIFTKCORE_EXPORT mitk::DataNode* FindNthImage(const std::vector<mitk::DataNode*>& nodes, int n, bool lookForBinary);
+NIFTKCORE_EXPORT mitk::DataNode* FindFirstParentImage(const mitk::DataStorage* storage, const mitk::DataNode* node, bool lookForBinary);
 
 NIFTKCORE_EXPORT mitk::DataStorage::SetOfObjects::Pointer FindNodesStartingWith(const mitk::DataStorage* dataStorage, const std::string prefix);
-
-/// \brief GetPreferedGeometry will return the geometry to use by picking one from the list of nodes, or NULL, if none can be found.
-///
-/// \param nodes A vector of mitk::DataNode pointers where we assume each node has a Geometry (which should always be the case).
-/// \param nodeIndex if we specify a node number/index that is a valid node in the vector <code>nodes</code> we just short-cut the search and pick that one.
-/// \return mitk::TimeGeometry::Pointer A pointer to the chosen TimeGeometry or NULL if we didn't find one.
-///
-/// The algorithm is:
-/// <pre>
-/// If nodeIndex < 0,
-///   use the first Image geometry in the list, or failing that, the first available geometry.
-/// else if nodeIndex is a valid node index
-///   pick that geometry regardless of what it belongs to
-/// else (user specified a useless index)
-///   pick the first available geometry.
-///
-/// If the node we found was not a grey-scale image
-///  Try to find a parent grey-scale image, and if successful return that geometry.
-/// </pre>
-NIFTKCORE_EXPORT mitk::TimeGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataStorage, const std::vector<mitk::DataNode*>& nodes, int nodeIndex = -1);
 
 /// \brief Loads a 4x4 matrix from a plain textfile, and puts in data storage with the given nodeName, or else creates Identity matrix.
 /// \param fileName full file name
