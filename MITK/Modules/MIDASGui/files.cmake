@@ -15,7 +15,6 @@
 set(CPP_FILES
   Internal/niftkBaseSegmentorGUI.cxx
   Internal/niftkDrawToolGUI.cxx
-  Internal/niftkGeneralSegmentorEventInterface.cxx
   Internal/niftkGeneralSegmentorGUI.cxx
   Internal/niftkMorphologicalSegmentorGUI.cxx
   Internal/niftkNewSegmentationDialog.cxx

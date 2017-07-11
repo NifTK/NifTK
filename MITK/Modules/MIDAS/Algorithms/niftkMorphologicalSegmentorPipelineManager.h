@@ -51,93 +51,36 @@ class NIFTKMIDAS_EXPORT MorphologicalSegmentorPipelineManager : public itk::Ligh
 
 public:
 
-  /// A static string, (to avoid code duplication), to hold the name of the property that determines if a morphological segmentation is finished.
-  static const std::string PROPERTY_MIDAS_MORPH_SEGMENTATION_FINISHED;
-
-  /// \brief The output of the previous stage of the segmentation pipeline.
-  static const std::string SEGMENTATION_OF_LAST_STAGE_NAME;
-
-
   mitkClassMacroItkParent(MorphologicalSegmentorPipelineManager, itk::Object)
   itkNewMacro(MorphologicalSegmentorPipelineManager)
-
-  /// \brief Sets the mitk::DataStorage on this object.
-  void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Gets the DataStorage pointer from this object.
   mitk::DataStorage::Pointer GetDataStorage() const;
 
-  /// \brief Sets the mitk::ToolManager on this object.
-  void SetToolManager(mitk::ToolManager::Pointer toolManager);
+  /// \brief Sets the mitk::DataStorage on this object.
+  void SetDataStorage(mitk::DataStorage::Pointer dataStorage);
 
   /// \brief Gets the mitk::ToolManager from this object.
   mitk::ToolManager::Pointer GetToolManager() const;
 
+  /// \brief Sets the mitk::ToolManager on this object.
+  void SetToolManager(mitk::ToolManager::Pointer toolManager);
+
 //  void SetErosionSubtractionsInput(mitk::Image::ConstPointer erosionSubtractions, mitk::Image::Pointer segmentation);
 //  void SetDilationSubtractionsInput(mitk::Image::ConstPointer dilationSubtractions, mitk::Image::Pointer segmentation);
 
-  /// \brief Sets the thresholding parameters.
-  ///
-  /// \param lowerThreshold the lowest intensity value included in the segmentation
-  /// \param upperThreshold the upper intensity value included in the segmentation
-  /// \param axialSliceNumber the number of the first slice, counting from the inferior end of the imaging volume to include in the imaging volume.
-  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
+  /// \brief Retrieves the given reference data node.
+  mitk::DataNode* GetReferenceNode(int index = 0) const;
 
-  /// \brief Sets the conditional erosion parameters.
-  ///
-  /// \param upperThreshold the highest greyscale intensity value, above which the binary volume is not eroded
-  /// \param numberOfErosions the number of erosion iterations to perform
-  void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
+  /// \brief Retrieves the given reference image from the tool manager.
+  const mitk::Image* GetReferenceImage(int index = 0) const;
 
-  /// \brief Sets the conditional dilation parameters.
-  ///
-  /// \param lowerPercentage the lower percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
-  /// \param upperPercentage the upper percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
-  /// \param numberOfDilations the number of dilation iterations to perform
-  void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
-
-  /// \brief Sets the re-thresholding parameters.
-  ///
-  /// \param boxSize the size of the re-thresholding box (see paper).
-  void OnRethresholdingValuesChanged(int boxSize);
-
-  /// \brief Called when we step to another stage of the pipeline, either fore or backwards.
-  ///
-  /// \param stage the new stage where we stepped to
-  void OnTabChanged(int tabIndex);
-
-  /// \brief Returns true if the segmentation node can be found which implicitly means we are "in progress".
-  bool HasSegmentationNode() const;
-
-  /// \brief Retrieves the reference image from the tool manager.
-  mitk::Image::ConstPointer GetReferenceImage() const;
+  /// \brief Retrieves the given working data node.
+  /// The node with index 0 has the actual segmentation image.
+  mitk::DataNode* GetWorkingNode(int index = 0) const;
 
   /// \brief Used to retrieve the working image from the tool manager.
-  mitk::Image::Pointer GetWorkingImage(unsigned int dataIndex) const;
-
-  /// \brief Used to retrieve the actual node of the image being segmented.
-  mitk::DataNode::Pointer GetSegmentationNode() const;
-
-  /// \brief Used to retrieve the segmentation image.
-  mitk::Image::Pointer GetSegmentationImage() const;
-
-  /// \brief Finds the segmentation node, and if present will populate params with the parameters found on the segmentation node.
-  void GetPipelineParamsFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const;
-
-  /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_NAME and ADDITIONS_NAME.
-  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) const;
-
-  /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_NAME and ADDITIONS_NAME, and have a binary image parent.
-  virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node) const;
-
-  /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_NAME and ADDITIONS_NAME. Returns empty list if both not found.
-  virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const;
-
-  /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.
-  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) const;
-
-  /// \brief Looks up the reference image, and sets default property values onto the segmentation node, which are later used to update GUI controls.
-  void SetSegmentationNodePropsFromReferenceImage();
+  mitk::Image* GetWorkingImage(int index = 0) const;
 
   /// \brief Calls update on the ITK pipeline using the MITK AccessByItk macros.
   void UpdateSegmentation();
@@ -147,9 +90,6 @@ public:
 
   /// \brief Clears both images of the working data.
   void ClearWorkingData();
-
-  /// \brief Removes the images we are using for editing during connection breaker from the DataStorage
-  void RemoveWorkingData();
 
   /// \brief Completely removes the current pipeline
   void DestroyPipeline(mitk::Image::Pointer segmentation);

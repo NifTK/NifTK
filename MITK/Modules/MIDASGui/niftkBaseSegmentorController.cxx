@@ -16,6 +16,7 @@
 
 #include <QMessageBox>
 
+#include <mitkUndoController.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 
 #include <QmitkRenderWindow.h>
@@ -45,6 +46,8 @@ BaseSegmentorController::BaseSegmentorController(IBaseView* view)
 BaseSegmentorController::~BaseSegmentorController()
 {
   m_ToolManager->ActiveToolChanged -= mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnActiveToolChanged);
+  m_ToolManager->ReferenceDataChanged -= mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnReferenceNodesChanged);
+  m_ToolManager->WorkingDataChanged -= mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnWorkingNodesChanged);
 }
 
 
@@ -57,6 +60,8 @@ void BaseSegmentorController::SetupGUI(QWidget* parent)
   m_SegmentorGUI->SetToolManager(m_ToolManager);
 
   m_ToolManager->ActiveToolChanged += mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnActiveToolChanged);
+  m_ToolManager->ReferenceDataChanged += mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnReferenceNodesChanged);
+  m_ToolManager->WorkingDataChanged += mitk::MessageDelegate<BaseSegmentorController>(this, &BaseSegmentorController::OnWorkingNodesChanged);
 
   this->connect(m_SegmentorGUI, SIGNAL(NewSegmentationButtonClicked()), SLOT(OnNewSegmentationButtonClicked()));
 }
@@ -106,7 +111,39 @@ mitk::ToolManager* BaseSegmentorController::GetToolManager() const
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingData()
+std::vector<mitk::DataNode*> BaseSegmentorController::GetReferenceNodes() const
+{
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  assert(toolManager);
+
+  return toolManager->GetReferenceData();
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode* BaseSegmentorController::GetReferenceNode(int index) const
+{
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  assert(toolManager);
+
+  return toolManager->GetReferenceData(index);
+}
+
+
+//-----------------------------------------------------------------------------
+const mitk::Image* BaseSegmentorController::GetReferenceImage(int index) const
+{
+  if (auto node = this->GetReferenceNode(index))
+  {
+    return dynamic_cast<mitk::Image*>(node->GetData());
+  }
+
+  return nullptr;
+}
+
+
+//-----------------------------------------------------------------------------
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodes() const
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -116,131 +153,61 @@ std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingData()
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* BaseSegmentorController::GetWorkingImage(int index)
-{
-  mitk::Image* result = nullptr;
-
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
-  if (workingData.size() > 0 && index >= 0 && index < (int)workingData.size())
-  {
-    mitk::DataNode::Pointer node = workingData[index];
-
-    if (node.IsNotNull())
-    {
-      mitk::Image* image = dynamic_cast<mitk::Image*>( node->GetData() );
-      if (image)
-      {
-        result = image;
-      }
-    }
-  }
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::GetReferenceNode()
+mitk::DataNode* BaseSegmentorController::GetWorkingNode(int index) const
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  return toolManager->GetReferenceData(0);
+  return toolManager->GetWorkingData(index);
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* BaseSegmentorController::GetReferenceImage()
+mitk::Image* BaseSegmentorController::GetWorkingImage(int index) const
 {
-  mitk::Image* result = nullptr;
-
-  mitk::DataNode* node = this->GetReferenceNode();
-  if (node)
+  if (auto node = this->GetWorkingNode(index))
   {
-    mitk::Image* image = dynamic_cast<mitk::Image*>( node->GetData() );
-    if (image)
-    {
-      result = image;
-    }
+    return dynamic_cast<mitk::Image*>(node->GetData());
   }
-  return result;
+
+  return nullptr;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::FindReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode)
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodesFrom(mitk::DataNode* segmentationNode)
 {
-  mitk::DataNode* result = niftk::FindFirstParentImage(this->GetDataStorage(), segmentationNode, false);
+  /// This default implementation just says Segmentation node == Working node, which subclasses could override.
+  /// Every derived class should store the segmentation node in the first (0th) element of the vector, though.
+
+  std::vector<mitk::DataNode*> result(1);
+  result[0] = segmentationNode;
   return result;
 }
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::IsAReferenceImage(const mitk::DataNode::Pointer node)
+bool BaseSegmentorController::IsNodeAValidReferenceImage(const mitk::DataNode* node)
 {
   return niftk::IsNodeAGreyScaleImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::IsASegmentationImage(const mitk::DataNode::Pointer node)
+bool BaseSegmentorController::IsNodeAValidSegmentationImage(const mitk::DataNode* node)
 {
-  return niftk::IsNodeABinaryImage(node);
-}
-
-
-//-----------------------------------------------------------------------------
-bool BaseSegmentorController::IsAWorkingImage(const mitk::DataNode::Pointer node)
-{
-  return niftk::IsNodeABinaryImage(node);
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
-{
-  // This default implementation just says Segmentation node == Working node, which subclasses could override.
-
-  std::vector<mitk::DataNode*> result(1);
-  result[0] = node;
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
-{
-  // This default implementation just says Segmentation node == Working node, which subclasses could override.
-
-  mitk::DataNode::Pointer result = node;
-  return result;
-}
-
-
-//-----------------------------------------------------------------------------
-bool BaseSegmentorController::CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node)
-{
-  bool canRestart = false;
-
-  if (node.IsNotNull() && niftk::IsNodeABinaryImage(node))
-  {
-    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
-    if (parent.IsNotNull())
-    {
-      if (niftk::IsNodeAGreyScaleImage(parent))
-      {
-        canRestart = true;
-      }
-    }
-  }
-
-  return canRestart;
+  return niftk::IsNodeABinaryImage(node)
+      && this->IsNodeAValidReferenceImage(niftk::FindFirstParentImage(this->GetDataStorage(), node, false));
 }
 
 
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::ApplyDisplayOptions(mitk::DataNode* node)
 {
-  if (!node) return;
+  if (!node)
+  {
+    return;
+  }
 
   bool isBinary(false);
   if (node->GetBoolProperty("binary", isBinary) && isBinary)
@@ -256,86 +223,20 @@ void BaseSegmentorController::ApplyDisplayOptions(mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-int BaseSegmentorController::GetReferenceImageSliceAxis()
+mitk::DataNode::Pointer BaseSegmentorController::CreateNewSegmentation()
 {
-  int referenceImageAxis = -1;
-  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
-  ImageOrientation orientation = this->GetOrientation();
-  if (referenceImage.IsNotNull() && orientation != IMAGE_ORIENTATION_UNKNOWN)
-  {
-    referenceImageAxis = GetThroughPlaneAxis(referenceImage, orientation);
-  }
-  return referenceImageAxis;
-}
-
-
-//-----------------------------------------------------------------------------
-int BaseSegmentorController::GetReferenceImageSliceAxis(ImageOrientation orientation)
-{
-  int referenceImageSliceAxis = -1;
-  mitk::Image* referenceImage = this->GetReferenceImage();
-  if (referenceImage)
-  {
-    referenceImageSliceAxis = GetThroughPlaneAxis(referenceImage, orientation);
-  }
-  return referenceImageSliceAxis;
-}
-
-
-//-----------------------------------------------------------------------------
-int BaseSegmentorController::GetReferenceImageSliceIndex()
-{
-  int referenceImageSliceIndex = -1;
-
-  mitk::Image* referenceImage = this->GetReferenceImage();
-  mitk::SliceNavigationController* snc = this->GetSliceNavigationController();
-
-  if (referenceImage && snc)
-  {
-    const mitk::PlaneGeometry* planeGeometry = snc->GetCurrentPlaneGeometry();
-    if (planeGeometry)
-    {
-      mitk::Point3D originInMm = planeGeometry->GetOrigin();
-      mitk::Point3D originInVx;
-      referenceImage->GetGeometry()->WorldToIndex(originInMm, originInVx);
-
-      int viewAxis = this->GetReferenceImageSliceAxis();
-      referenceImageSliceIndex = (int)(originInVx[viewAxis] + 0.5);
-    }
-  }
-  return referenceImageSliceIndex;
-}
-
-
-//-----------------------------------------------------------------------------
-int BaseSegmentorController::GetReferenceImageSliceUpDirection()
-{
-  int upDirection = 0;
-  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
-  ImageOrientation orientation = this->GetOrientation();
-  if (referenceImage.IsNotNull() && orientation != IMAGE_ORIENTATION_UNKNOWN)
-  {
-    upDirection = niftk::GetUpDirection(referenceImage, orientation);
-  }
-  return upDirection;
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::CreateNewSegmentation()
-{
-  mitk::DataNode::Pointer emptySegmentation = NULL;
+  mitk::DataNode::Pointer emptySegmentation;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
   // Assumption: If a reference image is selected in the data manager, then it MUST be registered with ToolManager, and hence this is the one we intend to segment.
-  mitk::DataNode::Pointer referenceNode = this->GetReferenceNode();
-  if (referenceNode.IsNotNull())
+  mitk::DataNode* referenceNode = this->GetReferenceNode();
+  if (referenceNode)
   {
     // Assumption: If a reference image is selected in the data manager, then it MUST be registered with ToolManager, and hence this is the one we intend to segment.
-    mitk::Image::Pointer referenceImage = this->GetReferenceImage();
-    if (referenceImage.IsNotNull())
+    const mitk::Image* referenceImage = this->GetReferenceImage();
+    if (referenceImage)
     {
       if (referenceImage->GetDimension() > 2)
       {
@@ -354,7 +255,7 @@ mitk::DataNode* BaseSegmentorController::CreateNewSegmentation()
             emptySegmentation->SetProperty("binaryimage.selectedcolor", mitk::ColorProperty::New(color));
             emptySegmentation->SetProperty("midas.tmp.selectedcolor", mitk::ColorProperty::New(color));
 
-            if (emptySegmentation.IsNotNull())
+            if (emptySegmentation)
             {
               this->ApplyDisplayOptions(emptySegmentation);
               this->GetDataStorage()->Add(emptySegmentation, referenceNode); // add as a child, because the segmentation "derives" from the original
@@ -376,33 +277,22 @@ mitk::DataNode* BaseSegmentorController::CreateNewSegmentation()
       MITK_ERROR << "'Create new segmentation' button should never be clickable unless an image is selected...";
     }
   }
-  return emptySegmentation.GetPointer();
+  return emptySegmentation;
 }
 
 
 //-----------------------------------------------------------------------------
-bool BaseSegmentorController::HasInitialisedWorkingData()
+bool BaseSegmentorController::HasWorkingNodes() const
 {
-  return !this->GetWorkingData().empty();
+  return !this->GetWorkingNodes().empty();
 }
 
 
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& selectedNodes)
 {
-  assert(m_SegmentorGUI);
-
-  if (this->HasInitialisedWorkingData())
-  {
-    /// It is not allowed to work on several segmentation at a time, simultaneously.
-    /// If you are already working on a segmentation, you have to finalise it (OK)
-    /// or discard it (Cancel) before you can start segmenting another image. (Or
-    /// making another segmentation of the same image.)
-    return;
-  }
-
-  // By default, assume we are not going to enable the controls.
-  bool valid = false;
+  mitk::DataNode* referenceNode = nullptr;
+  std::vector<mitk::DataNode*> workingNodes;
 
   // This plugin only works if you single select, anything else is invalid (for now).
   if (selectedNodes.size() == 1)
@@ -412,67 +302,84 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     // In addition, you can work out any intermediate working images (either that image, or children).
     // MAJOR ASSUMPTION: Intermediate working images will be hidden, and hence not clickable.
 
-    mitk::DataNode::Pointer selectedNode = selectedNodes[0];
-    mitk::DataNode::Pointer referenceImageNode;
-    mitk::DataNode::Pointer segmentationImageNode;
-    std::vector<mitk::DataNode*> workingDataNodes;
+    mitk::DataNode* selectedNode = selectedNodes[0];
 
     // Rely on subclasses deciding if the node is something we are interested in.
-    if (this->IsAReferenceImage(selectedNode))
+    if (this->IsNodeAValidReferenceImage(selectedNode) && this->HasSameGeometryAsViewer(selectedNode))
     {
-      referenceImageNode = selectedNode;
+      referenceNode = selectedNode;
     }
 
     // A segmentation image, is the final output, the one being segmented.
-    if (this->IsASegmentationImage(selectedNode))
+    if (this->IsNodeAValidSegmentationImage(selectedNode))
     {
-      segmentationImageNode = selectedNode;
-    }
-    else if (niftk::IsNodeABinaryImage(selectedNode) && this->CanStartSegmentationForBinaryNode(selectedNode))
-    {
-      segmentationImageNode = selectedNode;
-    }
+      /// This finds the first not binary parent.
+      mitk::DataNode* potentialReferenceNode = niftk::FindFirstParentImage(this->GetDataStorage(), selectedNode, false);
 
-    if (segmentationImageNode.IsNotNull())
-    {
-
-      referenceImageNode = this->FindReferenceNodeFromSegmentationNode(segmentationImageNode);
-
-      if (this->IsASegmentationImage(selectedNode))
+      if (this->IsNodeAValidReferenceImage(potentialReferenceNode) && this->HasSameGeometryAsViewer(potentialReferenceNode))
       {
-        workingDataNodes = this->GetWorkingDataFromSegmentationNode(segmentationImageNode);
-        valid = true;
+        referenceNode = potentialReferenceNode;
+        workingNodes = this->GetWorkingNodesFrom(selectedNode);
       }
     }
-
-    // Tell the tool manager the images for reference and working purposes.
-    this->SetToolManagerSelection(referenceImageNode, workingDataNodes);
   }
+
+  mitk::UndoController::GetCurrentUndoModel()->Clear();
+
+  // Tell the tool manager the images for reference and working purposes.
+  this->SetToolManagerSelection(referenceNode, workingNodes);
 }
 
 
 //-----------------------------------------------------------------------------
-void BaseSegmentorController::SetToolManagerSelection(const mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingDataNodes)
+bool BaseSegmentorController::HasSameGeometryAsViewer(mitk::DataNode* node)
+{
+  assert(node);
+
+  auto data = node->GetData();
+  auto snc = this->GetSliceNavigationController();
+
+  return data && snc && data->GetTimeGeometry() == snc->GetInputWorldTimeGeometry();
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseSegmentorController::SetToolManagerSelection(mitk::DataNode* referenceNode, const std::vector<mitk::DataNode*>& workingNodes)
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  if (workingDataNodes.size() == 0 ||
+  if (workingNodes.size() == 0 ||
       ( toolManager->GetWorkingData().size() > 0 &&
-        workingDataNodes.size() > 0 &&
-        toolManager->GetWorkingData(0) != workingDataNodes[0] ))
+        workingNodes.size() > 0 &&
+        toolManager->GetWorkingData(0) != workingNodes[0] ))
   {
     toolManager->ActivateTool(-1);
   }
 
-  toolManager->SetReferenceData(const_cast<mitk::DataNode*>(referenceData));
-  toolManager->SetWorkingData(workingDataNodes);
+  toolManager->SetReferenceData(referenceNode);
+  toolManager->SetWorkingData(workingNodes);
 }
 
 
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnViewGetsActivated()
 {
+  this->OnDataManagerSelectionChanged(this->GetDataManagerSelection());
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseSegmentorController::OnFocusChanged()
+{
+  /// We need to emulate a data manager selection change again.
+  ///
+  /// This is needed because the segmentation tools are supposed to be enabled
+  /// only when the focused window was initialised with the geometry of the
+  /// reference image. If this is not true, we remove the reference image from
+  /// the tool manager and a segmentators are disabled.
+  ///
+  /// See also the 'HasSameGeometryAsViewer()' function.
   this->OnDataManagerSelectionChanged(this->GetDataManagerSelection());
 }
 
@@ -517,6 +424,24 @@ void BaseSegmentorController::OnActiveToolChanged()
   {
     mainWindow->setFocus();
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseSegmentorController::OnReferenceNodesChanged()
+{
+  mitk::UndoController::GetCurrentUndoModel()->Clear();
+
+  this->UpdateGUI();
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseSegmentorController::OnWorkingNodesChanged()
+{
+  mitk::UndoController::GetCurrentUndoModel()->Clear();
+
+  this->UpdateGUI();
 }
 
 }

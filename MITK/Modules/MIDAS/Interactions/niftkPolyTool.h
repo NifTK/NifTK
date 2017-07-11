@@ -42,7 +42,8 @@ namespace niftk
  * which should be the mitk::ContourModelSet representing the current set of contours in the gui, which in MIDAS terms
  * is the green lines representing the current segmentation.
  */
-class NIFTKMIDAS_EXPORT PolyTool : public ContourTool {
+class NIFTKMIDAS_EXPORT PolyTool : public ContourTool
+{
 
 public:
 
@@ -50,10 +51,10 @@ public:
   itkNewMacro(PolyTool)
 
   /// \see mitk::Tool::GetName()
-  virtual const char* GetName() const;
+  virtual const char* GetName() const override;
 
   /// \see mitk::Tool::GetXPM()
-  virtual const char** GetXPM() const;
+  virtual const char** GetXPM() const override;
 
   /// \brief We store the name of the anchor points node, which is used to store the first point on a poly line.
   static const std::string MIDAS_POLY_TOOL_ANCHOR_POINTS;
@@ -62,13 +63,13 @@ public:
   static const std::string MIDAS_POLY_TOOL_PREVIOUS_CONTOUR;
 
   /// \brief Method to enable this class to interact with the Undo/Redo framework.
-  virtual void ExecuteOperation(mitk::Operation* operation);
+  virtual void ExecuteOperation(mitk::Operation* operation) override;
 
   /// \brief When called, we initialize contours, as the PolyLine keeps going until the whole tool is Activated/Deactivated.
-  virtual void Activated();
+  virtual void Activated() override;
 
   /// \brief When called, add the current poly line to the node specified by niftk::Tool::CURRENT_CONTOURS_NAME.
-  virtual void Deactivated();
+  virtual void Deactivated() override;
 
   /// \brief When called, we incrementally build up a poly line.
   virtual bool AddLine(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
@@ -85,17 +86,17 @@ public:
   /// \brief Clears the contour, meaning it re-initialised the feedback contour in
   /// mitk::FeedbackContourTool, and also the background contour in ContourTool
   /// and the Previous Contour and Poly Line points in this class.
-  virtual void ClearData();
+  virtual void ClearData() override;
 
 protected:
 
   PolyTool(); // purposely hidden
   virtual ~PolyTool(); // purposely hidden
 
-  virtual void InitializeStateMachine();
+  virtual void InitializeStateMachine() override;
 
   /// \brief Connects state machine actions to functions.
-  virtual void ConnectActionsAndFunctions();
+  virtual void ConnectActionsAndFunctions() override;
 
 private:
 

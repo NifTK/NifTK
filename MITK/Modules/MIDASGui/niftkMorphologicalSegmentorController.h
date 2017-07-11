@@ -57,43 +57,57 @@ public:
 
 protected:
 
-  /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME.
-  virtual bool IsASegmentationImage(const mitk::DataNode::Pointer node) override;
-
-  /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME, and have a binary image parent.
-  virtual bool IsAWorkingImage(const mitk::DataNode::Pointer node) override;
-
   /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_IMAGE_NAME and ADDITIONS_IMAGE_NAME. Returns empty list if both not found.
-  virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) override;
-
-  /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.
-  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) override;
+  virtual std::vector<mitk::DataNode*> GetWorkingNodesFrom(mitk::DataNode* segmentationNode) override;
 
   /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
   virtual BaseGUI* CreateGUI(QWidget* parent) override;
 
-  /// \brief Called when the selection changes in the data manager.
-  /// \see QmitkAbstractView::OnSelectionChanged.
-  virtual void OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes) override;
+  /// \brief Updates the GUI controls based on the selected reference and working nodes.
+  virtual void UpdateGUI() const override;
 
 protected slots:
 
   /// \brief Called when the user hits the button "New segmentation", which creates the necessary reference data.
   virtual void OnNewSegmentationButtonClicked() override;
 
-  /// \brief Called from niftkMorphologicalSegmentorGUI when thresholding sliders or spin boxes changed.
-  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
+  /// \brief Sets the thresholding parameters.
+  /// Called when the thresholding sliders or spin boxes changed.
+  ///
+  /// \param lowerThreshold the lowest intensity value included in the segmentation
+  /// \param upperThreshold the upper intensity value included in the segmentation
+  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold);
 
-  /// \brief Called from niftkMorphologicalSegmentorGUI when erosion sliders or spin boxes changed.
+  /// \brief Sets the axial cut-off slice number.
+  /// Called when the axial cut-off slider or spin box changed.
+  ///
+  /// \param axialSliceNumber the number of the first slice, counting from the inferior end of the imaging volume to include in the imaging volume.
+  void OnAxialCutOffSliceNumberChanged(int axialSliceNumber);
+
+  /// \brief Sets the conditional erosion parameters.
+  /// Called when the erosion sliders or spin boxes changed.
+  ///
+  /// \param upperThreshold the highest greyscale intensity value, above which the binary volume is not eroded
+  /// \param numberOfErosions the number of erosion iterations to perform
   void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
 
-  /// \brief Called from niftkMorphologicalSegmentorGUI when dilation sliders or spin boxes changed.
+  /// \brief Sets the conditional dilation parameters.
+  /// Called when the dilation sliders or spin boxes changed.
+  ///
+  /// \param lowerPercentage the lower percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
+  /// \param upperPercentage the upper percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
+  /// \param numberOfDilations the number of dilation iterations to perform
   void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
 
-  /// \brief Called from niftkMorphologicalSegmentorGUI when re-thresholding widgets changed.
+  /// \brief Sets the re-thresholding parameters.
+  /// Called when re-thresholding widgets changed.
+  ///
+  /// \param boxSize the size of the re-thresholding box (see paper).
   void OnRethresholdingValuesChanged(int boxSize);
 
-  /// \brief Called from niftkMorphologicalSegmentorGUI when a tab changes.
+  /// \brief Called when we step to another stage of the pipeline, either fore or backwards.
+  ///
+  /// \param stage the new stage where we stepped to
   void OnTabChanged(int i);
 
   /// \brief Called from niftkMorphologicalSegmentatorControls when OK button is clicked, which should finalise / finish and accept the segmentation.
@@ -110,23 +124,23 @@ private:
   /// \brief Creates a node for storing the axial cut-off plane.
   mitk::DataNode::Pointer CreateAxialCutOffPlaneNode(const mitk::Image* referenceImage);
 
+  /// \brief Adjusts the "height" of the axial cut-off plane.
+  /// Called when the axial cut-off slider or spin box changed and when the segmentation is restarted.
+  ///
+  /// \param axialSliceNumber the number of the first slice, counting from the inferior end of the imaging volume to include in the imaging volume.
+  void UpdateAxialCutOffPlane(int axialSliceNumber);
+
+  /// \brief Removes the working nodes from the data storage
+  void RemoveWorkingNodes();
+
   /// \brief Looks up the reference image, and sets default parameter values on the segmentation node.
   void SetSegmentationNodePropsFromReferenceImage();
-
-  /// \brief Sets the morphological controls to default values specified by reference image, like min/max intensity range, number of axial slices etc.
-  void SetControlsFromReferenceImage();
-
-  /// \brief Sets the morphological controls by the current property values stored on the segmentation node.
-  void SetControlsFromSegmentationNodeProps();
 
   /// \brief All the GUI controls for the main Morphological Editor view part.
   MorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;
 
   /// \brief As much "business logic" as possible is delegated to this class so we can unit test it, without a GUI.
   MorphologicalSegmentorPipelineManager::Pointer m_PipelineManager;
-
-  /// \brief Keep local variable to update after the tab has changed.
-  int m_TabIndex;
 
 };
 

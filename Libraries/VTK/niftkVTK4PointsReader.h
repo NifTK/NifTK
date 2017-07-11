@@ -38,15 +38,15 @@ class NIFTKVTK_WINEXPORT VTK4PointsReader : public vtkPolyDataAlgorithm
 public:
 
   static VTK4PointsReader* New();
-  vtkTypeMacro(VTK4PointsReader, vtkPolyDataAlgorithm);
+  vtkTypeMacro(VTK4PointsReader, vtkPolyDataAlgorithm)
 
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
   /**
    * \brief Set/Get the name of the file from which to read points.
    */
-  vtkSetStringMacro(FileName);
-  vtkGetStringMacro(FileName);
+  vtkSetStringMacro(FileName)
+  vtkGetStringMacro(FileName)
 
   /**
    * \brief turn on range clipping (discards points that fall outside the set range)
@@ -65,8 +65,8 @@ public:
   /**
    * \brief Set/Get whether to read the weights (4th) column. Set to false if the file only has three columns
    */
-  vtkSetMacro(m_ReadWeights,bool);
-  vtkGetMacro(m_ReadWeights,bool);
+  vtkSetMacro(m_ReadWeights,bool)
+  vtkGetMacro(m_ReadWeights,bool)
 
 protected:
 
