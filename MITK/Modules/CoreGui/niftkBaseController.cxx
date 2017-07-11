@@ -523,6 +523,13 @@ mitk::Point3D BaseController::GetSelectedPosition() const
 
 
 //-----------------------------------------------------------------------------
+void BaseController::SetSelectedPosition(const mitk::Point3D& selectedPosition)
+{
+  this->GetView()->SetSelectedPosition(selectedPosition);
+}
+
+
+//-----------------------------------------------------------------------------
 void BaseController::WaitCursorOn()
 {
   QApplication::setOverrideCursor( QCursor(Qt::WaitCursor) );
