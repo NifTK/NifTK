@@ -430,6 +430,8 @@ void BaseSegmentorController::OnActiveToolChanged()
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnReferenceNodesChanged()
 {
+  mitk::UndoController::GetCurrentUndoModel()->Clear();
+
   this->UpdateGUI();
 }
 
@@ -437,6 +439,8 @@ void BaseSegmentorController::OnReferenceNodesChanged()
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnWorkingNodesChanged()
 {
+  mitk::UndoController::GetCurrentUndoModel()->Clear();
+
   this->UpdateGUI();
 }
 
