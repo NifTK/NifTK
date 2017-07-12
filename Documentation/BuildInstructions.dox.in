@@ -60,6 +60,7 @@ screenshots from a Mac.
       <li>
         Visual Studio 2012 and Visual Studio 2013 are supported. For Visual Studio 2012 
         you must have at least the "Professional" version, otherwise you won't have OpenMP support.
+        In Visual Studio, the build directory must be less than 50 characters, when doing a Superbuild make sure your directory is less than 17 characters.
       </li>
     </ul>
   </li>
@@ -441,7 +442,7 @@ on Linux and Mac only. Below you can find screenshots about using the CMake GUI 
     However, if you want to run "make install", set this variable.
   </li>
   <li>
-    If you want CUDA, turn on NIFTK_USE_CUDA. This is an advanced option.
+    If you want CUDA, turn on NIFTK_USE_CUDA. This is an advanced option. You need to ensure NVAPI, CUDA SDK (version 4.0) is installed. 
   </li>
   <li>
     Similar to the Qt build, on Mac OS X El Capitan (10.11), you have to use the system
