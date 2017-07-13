@@ -69,8 +69,7 @@ public:
 
 signals:
 
-  void ThresholdingValuesChanged(double lowerThreshold, double upperThreshold);
-  void AxialCutOffSliceNumberChanged(int axialSliceNumber);
+  void ThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSlicerNumber);
   void ErosionsValuesChanged(double upperThreshold, int numberOfErosions);
   void DilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
   void RethresholdingValuesChanged(int boxSize);
@@ -94,6 +93,13 @@ protected slots:
   void OnRethresholdingSliderChanged();
   void OnRestartButtonClicked();
   void OnCancelButtonClicked();
+
+private:
+
+  void EmitThresholdingValues();
+  void EmitErosionValues();
+  void EmitDilationValues();
+  void EmitRethresholdingValues();
 
 };
 

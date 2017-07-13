@@ -85,13 +85,8 @@ protected slots:
   ///
   /// \param lowerThreshold the lowest intensity value included in the segmentation
   /// \param upperThreshold the upper intensity value included in the segmentation
-  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold);
-
-  /// \brief Sets the axial cut-off slice number.
-  /// Called when the axial cut-off slider or spin box changed.
-  ///
   /// \param axialSliceNumber the number of the first slice, counting from the inferior end of the imaging volume to include in the imaging volume.
-  void OnAxialCutOffSliceNumberChanged(int axialSliceNumber);
+  void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
 
   /// \brief Sets the conditional erosion parameters.
   /// Called when the erosion sliders or spin boxes changed.
@@ -132,12 +127,6 @@ private:
 
   /// \brief Creates a node for storing the axial cut-off plane.
   mitk::DataNode::Pointer CreateAxialCutOffPlaneNode(const mitk::Image* referenceImage);
-
-  /// \brief Adjusts the "height" of the axial cut-off plane.
-  /// Called when the axial cut-off slider or spin box changed and when the segmentation is restarted.
-  ///
-  /// \param axialSliceNumber the number of the first slice, counting from the inferior end of the imaging volume to include in the imaging volume.
-  void UpdateAxialCutOffPlaneNode(int axialSliceNumber);
 
   /// \brief Removes the working nodes from the data storage
   void RemoveWorkingNodes();

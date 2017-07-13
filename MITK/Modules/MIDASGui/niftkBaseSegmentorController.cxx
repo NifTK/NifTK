@@ -520,14 +520,12 @@ void BaseSegmentorController::OnActiveToolChanged()
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnReferenceNodesChanged()
 {
-  MITK_INFO << "BaseSegmentorController::OnReferenceNodesChanged()";
 }
 
 
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnWorkingNodesChanged()
 {
-  MITK_INFO << "BaseSegmentorController::OnWorkingNodesChanged()";
 }
 
 }

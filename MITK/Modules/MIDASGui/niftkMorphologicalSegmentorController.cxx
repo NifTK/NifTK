@@ -84,8 +84,7 @@ void MorphologicalSegmentorController::SetupGUI(QWidget* parent)
 
   m_MorphologicalSegmentorGUI = dynamic_cast<MorphologicalSegmentorGUI*>(this->GetSegmentorGUI());
 
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ThresholdingValuesChanged(double, double)), SLOT(OnThresholdingValuesChanged(double, double)));
-  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(AxialCutOffSliceNumberChanged(int)), SLOT(OnAxialCutOffSliceNumberChanged(int)));
+  this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ThresholdingValuesChanged(double, double, int)), SLOT(OnThresholdingValuesChanged(double, double, int)));
   this->connect(m_MorphologicalSegmentorGUI, SIGNAL(ErosionsValuesChanged(double, int)), SLOT(OnErosionsValuesChanged(double, int)));
   this->connect(m_MorphologicalSegmentorGUI, SIGNAL(DilationsValuesChanged(double, double, int)), SLOT(OnDilationsValuesChanged(double, double, int)));
   this->connect(m_MorphologicalSegmentorGUI, SIGNAL(RethresholdingValuesChanged(int)), SLOT(OnRethresholdingValuesChanged(int)));
@@ -100,37 +99,32 @@ void MorphologicalSegmentorController::SetupGUI(QWidget* parent)
 bool MorphologicalSegmentorController::IsASegmentationImage(const mitk::DataNode* node)
 {
   assert(node);
-
-  /// It needs to hold a binary image.
-  if (!niftk::IsNodeABinaryImage(node))
-  {
-    return false;
-  }
-
-  mitk::DataStorage* dataStorage = this->GetDataStorage();
-
-  /// Its parent node needs to hold a grey scale image.
-  if (!niftk::FindFirstParentImage(dataStorage, node, false))
-  {
-    return false;
-  }
-
-  /// It should also have four children for the paintbrush tool and one for the
-  /// axial cut-off plane node.
-
   std::set<std::string> set;
 
-  mitk::DataStorage::SetOfObjects::ConstPointer children = dataStorage->GetDerivations(node);
-  for (auto it = children->Begin(); it != children->End(); ++it)
+  bool result = false;
+
+  if (niftk::IsNodeABinaryImage(node))
   {
-    set.insert(it->Value()->GetName());
+    mitk::DataNode* parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
+    if (parent)
+    {
+      // Should also have at least 4 children (see PaintbrushTool)
+      mitk::DataStorage::SetOfObjects::Pointer children = niftk::FindDerivedImages(this->GetDataStorage(), node, true);
+      for (std::size_t i = 0; i < children->size(); ++i)
+      {
+        set.insert(children->at(i)->GetName());
+      }
+      if (set.find(PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME) != set.end()
+          && set.find(PaintbrushTool::EROSIONS_ADDITIONS_NAME) != set.end()
+          && set.find(PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME) != set.end()
+          && set.find(PaintbrushTool::DILATIONS_ADDITIONS_NAME) != set.end())
+      {
+        result = true;
+      }
+    }
   }
 
-  return set.find(PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME) != set.end()
-      && set.find(PaintbrushTool::EROSIONS_ADDITIONS_NAME) != set.end()
-      && set.find(PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME) != set.end()
-      && set.find(PaintbrushTool::DILATIONS_ADDITIONS_NAME) != set.end()
-      && set.find(PaintbrushTool::AXIAL_CUT_OFF_PLANE_NAME) != set.end();
+  return result;
 }
 
 
@@ -174,11 +168,11 @@ std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingNodesFr
 
   workingNodes[PaintbrushTool::SEGMENTATION] = segmentationNode;
 
-  mitk::DataStorage::SetOfObjects::ConstPointer derivedNodes = this->GetDataStorage()->GetDerivations(segmentationNode);
+  mitk::DataStorage::SetOfObjects::Pointer derivedNodes = niftk::FindDerivedImages(this->GetDataStorage(), segmentationNode, true );
 
-  for (auto it = derivedNodes->Begin(); it != derivedNodes->End(); ++it)
+  for (std::size_t i = 0; i < derivedNodes->size(); i++)
   {
-    mitk::DataNode* derivedNode = it->Value();
+    mitk::DataNode* derivedNode = derivedNodes->at(i);
     std::string name = derivedNode->GetName();
     if (name == PaintbrushTool::EROSIONS_ADDITIONS_NAME)
     {
@@ -407,11 +401,6 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
         /// up to the step where it was finished last time.
         newSegmentation->SetBoolProperty("midas.morph.restarting", true);
         this->SetControlsFromSegmentationNode();
-        int axialCutOffSlice;
-        if (newSegmentation->GetIntProperty("midas.morph.thresholding.slice", axialCutOffSlice))
-        {
-          this->UpdateAxialCutOffPlaneNode(axialCutOffSlice);
-        }
       }
       else
       {
@@ -463,35 +452,17 @@ void MorphologicalSegmentorController::OnWorkingNodesChanged()
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorController::OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold)
+void MorphologicalSegmentorController::OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber)
 {
   mitk::DataNode* segmentationNode = this->GetWorkingNode();
   if (segmentationNode)
   {
     segmentationNode->SetFloatProperty("midas.morph.thresholding.lower", lowerThreshold);
     segmentationNode->SetFloatProperty("midas.morph.thresholding.upper", upperThreshold);
-    m_PipelineManager->UpdateSegmentation();
-
-    this->RequestRenderWindowUpdate();
-  }
-}
-
-
-void MorphologicalSegmentorController::OnAxialCutOffSliceNumberChanged(int axialSliceNumber)
-{
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  if (segmentationNode)
-  {
     segmentationNode->SetIntProperty("midas.morph.thresholding.slice", axialSliceNumber);
     m_PipelineManager->UpdateSegmentation();
   }
 
-  this->UpdateAxialCutOffPlaneNode(axialSliceNumber);
-}
-
-
-void MorphologicalSegmentorController::UpdateAxialCutOffPlaneNode(int axialSliceNumber)
-{
   const mitk::Image* referenceImage = this->GetReferenceImage();
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
@@ -657,7 +628,7 @@ void MorphologicalSegmentorController::OnRestartButtonClicked()
     this->SetControlsFromSegmentationNode();
     m_PipelineManager->UpdateSegmentation();
 
-//    /// Reset the axial cut-off plane to the bottom of the image.
+    /// Reset the axial cut-off plane to the bottom of the image.
     {
       mitk::DataNode* referenceNode = this->GetReferenceNode();
       mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceNode->GetData());
@@ -667,18 +638,15 @@ void MorphologicalSegmentorController::OnRestartButtonClicked()
       mitk::Plane* axialCutOffPlane = dynamic_cast<mitk::Plane*>(axialCutOffPlaneNode->GetData());
 
       int axialAxis = GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
-      int axialUpDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
 
       // The centre of the plane is the same as the centre of the image, but it is shifted
       // along the axial axis to a position determined by axialSliceNumber.
-      int axialSliceNumber = 0;
-      segmentationNode->GetIntProperty("midas.morph.thresholding.slice", axialSliceNumber);
-
-      mitk::Point3D planeCentre = geometry->GetOrigin();
-      planeCentre[2] = geometry->GetOrigin()[2] + (axialUpDirection * axialSliceNumber - 0.5) * geometry->GetSpacing()[axialAxis];
+      // As an initial point we set it one slice below the 'height' of the origin.
+      mitk::Point3D planeCentre = geometry->GetCenter();
+      planeCentre[2] = geometry->GetOrigin()[axialAxis] - geometry->GetSpacing()[axialAxis];
 
       axialCutOffPlane->SetOrigin(planeCentre);
-   }
+    }
 
     this->GetView()->SetDataManagerSelection(segmentationNode);
     this->RequestRenderWindowUpdate();
@@ -789,7 +757,7 @@ void MorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataN
       workingNodes[PaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 1);
       workingNodes[PaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);
       workingNodes[PaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 2);
-      workingNodes[PaintbrushTool::AXIAL_CUT_OFF_PLANE]->SetVisibility(true);
+      workingNodes[PaintbrushTool::AXIAL_CUT_OFF_PLANE]->SetVisibility(tabIndex == 0);
     }
     else
     {
@@ -837,7 +805,7 @@ mitk::DataNode::Pointer MorphologicalSegmentorController::CreateAxialCutOffPlane
   axialCutOffPlane->SetExtent(geometry->GetExtentInMM(sagittalAxis), geometry->GetExtentInMM(coronalAxis));
 
   mitk::DataNode::Pointer axialCutOffPlaneNode = mitk::DataNode::New();
-  axialCutOffPlaneNode->SetName(PaintbrushTool::AXIAL_CUT_OFF_PLANE_NAME);
+  axialCutOffPlaneNode->SetName("Axial cut-off plane");
   axialCutOffPlaneNode->SetColor(1.0, 1.0, 0.0);
   axialCutOffPlaneNode->SetIntProperty("layer", 1000);
   axialCutOffPlaneNode->SetOpacity(0.5);
