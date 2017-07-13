@@ -153,7 +153,7 @@ protected:
   /// and on successful completion of the dialog box, will create a new segmentation image.
   ///
   /// \return mitk::DataNode* A new segmentation or <code>NULL</code> if the user cancels the dialog box.
-  virtual mitk::DataNode::Pointer CreateNewSegmentation();
+  virtual mitk::DataNode* CreateNewSegmentation();
 
   /// \brief Gets the segmentor widget that holds the GUI components of the view.
   BaseSegmentorGUI* GetSegmentorGUI() const;

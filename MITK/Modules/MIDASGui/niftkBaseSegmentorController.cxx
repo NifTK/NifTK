@@ -331,9 +331,9 @@ int BaseSegmentorController::GetReferenceImageSliceUpDirection()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode::Pointer BaseSegmentorController::CreateNewSegmentation()
+mitk::DataNode* BaseSegmentorController::CreateNewSegmentation()
 {
-  mitk::DataNode::Pointer emptySegmentation;
+  mitk::DataNode* emptySegmentation = nullptr;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
