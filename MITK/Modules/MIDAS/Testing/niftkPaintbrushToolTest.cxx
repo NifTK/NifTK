@@ -32,6 +32,7 @@
 #include <mitkRenderingManager.h>
 #include <mitkRenderWindow.h>
 #include <mitkStandaloneDataStorage.h>
+#include <mitkStateEvent.h>
 #include <mitkTestingMacros.h>
 #include <mitkToolManager.h>
 #include <mitkVector.h>

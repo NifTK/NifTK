@@ -40,6 +40,7 @@ set(CPP_FILES
   Interactions/niftkPaintbrushToolEventInterface.cxx
   Interactions/niftkPaintbrushToolOpEditImage.cxx
   Interactions/niftkPointSetDataInteractor.cxx
+  Interactions/niftkPointSetInteractor.cxx
   Interactions/niftkPolyTool.cxx
   Interactions/niftkPolyToolEventInterface.cxx
   Interactions/niftkPolyToolOpAddToFeedbackContour.cxx
@@ -63,9 +64,11 @@ set(RESOURCE_FILES
   Interactions/niftkPolyToolConfig.xml
   Interactions/niftkPaintbrushTool.xml
   Interactions/niftkPaintbrushToolConfig.xml
+  Interactions/niftkToolPointSetInteractor.xml
   Interactions/niftkToolPointSetDataInteractor.xml
   Interactions/niftkToolPointSetDataInteractorConfig.xml
   Interactions/niftkSeedTool.xml
+  Interactions/niftkSeedToolPointSetInteractor.xml
   Interactions/niftkSeedToolPointSetDataInteractor.xml
   Interactions/niftkSeedToolPointSetDataInteractorConfig.xml
   Interactions/niftkToolKeyPressStateMachine.xml
