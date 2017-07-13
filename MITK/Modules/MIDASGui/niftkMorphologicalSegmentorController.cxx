@@ -610,8 +610,9 @@ void MorphologicalSegmentorController::OnOKButtonClicked()
   if (segmentationNode)
   {
     this->OnActiveToolChanged();
+    m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
+    m_MorphologicalSegmentorGUI->SetTabIndex(0);
     m_PipelineManager->FinalizeSegmentation();
-    m_MorphologicalSegmentorGUI->SetControlsFromSegmentationNode(nullptr);
 
     /// Remove the axial cut-off plane node from the data storage.
     mitk::DataNode* axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);

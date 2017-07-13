@@ -272,16 +272,6 @@ void MorphologicalSegmentorGUI::SetControlsFromSegmentationNode(mitk::DataNode* 
   }
   else
   {
-    m_TabWidget->setCurrentIndex(0);
-    m_ThresholdingLowerThresholdSlider->setValue(0.0);
-    m_ThresholdingUpperThresholdSlider->setValue(0.0);
-    m_ThresholdingAxialCutOffSlider->setValue(0);
-    m_ErosionsUpperThresholdSlider->setValue(0.0);
-    m_ErosionsIterationsSlider->setValue(0);
-    m_DilationsLowerThresholdSlider->setValue(0.0);
-    m_DilationsUpperThresholdSlider->setValue(0.0);
-    m_DilationsIterationsSlider->setValue(0);
-    m_RethresholdingBoxSizeSlider->setValue(0);
     this->SetEnabled(false);
   }
 

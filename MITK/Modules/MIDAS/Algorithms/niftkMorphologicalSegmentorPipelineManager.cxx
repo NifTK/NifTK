@@ -281,7 +281,6 @@ void MorphologicalSegmentorPipelineManager::FinalizeSegmentation()
     this->DestroyPipeline(segmentationImage);
 
     segmentationNode->SetBoolProperty("midas.morph.finished", true);
-    segmentationNode->SetIntProperty("midas.morph.stage", 0);
 
     UpdateVolumeProperty(segmentationImage, segmentationNode);
   }
