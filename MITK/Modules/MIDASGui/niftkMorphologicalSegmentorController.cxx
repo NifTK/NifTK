@@ -105,8 +105,8 @@ bool MorphologicalSegmentorController::IsASegmentationImage(const mitk::DataNode
 
   if (niftk::IsNodeABinaryImage(node))
   {
-    mitk::DataNode* parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
-    if (parent)
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
+    if (parent.IsNotNull())
     {
       // Should also have at least 4 children (see PaintbrushTool)
       mitk::DataStorage::SetOfObjects::Pointer children = niftk::FindDerivedImages(this->GetDataStorage(), node, true);
@@ -163,8 +163,8 @@ std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingNodesFr
 {
   assert(segmentationNode);
 
-  std::vector<mitk::DataNode*> workingNodes(6);
-  std::fill(workingNodes.begin(), workingNodes.end(), nullptr);
+  std::vector<mitk::DataNode*> workingNodes(5);
+  std::fill(workingNodes.begin(), workingNodes.end(), (mitk::DataNode*) 0);
 
   workingNodes[PaintbrushTool::SEGMENTATION] = segmentationNode;
 
@@ -190,13 +190,9 @@ std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingNodesFr
     {
       workingNodes[PaintbrushTool::DILATIONS_SUBTRACTIONS] = derivedNode;
     }
-    else if (name == PaintbrushTool::AXIAL_CUT_OFF_PLANE_NAME)
-    {
-      workingNodes[PaintbrushTool::AXIAL_CUT_OFF_PLANE] = derivedNode;
-    }
   }
 
-  if (std::count(workingNodes.begin(), workingNodes.end(), nullptr) != 0)
+  if (std::count(workingNodes.begin(), workingNodes.end(), (mitk::DataNode*) 0) != 0)
   {
     MITK_INFO << "Working data nodes missing for the morphological segmentation pipeline.";
     workingNodes.clear();
@@ -280,6 +276,9 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     }
   }
 
+  mitk::DataNode::Pointer axialCutOffPlaneNode = this->CreateAxialCutOffPlaneNode(referenceImage);
+  this->GetDataStorage()->Add(axialCutOffPlaneNode, newSegmentation);
+
   this->WaitCursorOn();
 
   // Mark the newSegmentation as "unfinished".
@@ -343,14 +342,11 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     this->ApplyDisplayOptions(dilateAddNode);
     this->ApplyDisplayOptions(dilateSubtractNode);
 
-    mitk::DataNode::Pointer axialCutOffPlaneNode = this->CreateAxialCutOffPlaneNode(referenceImage);
-
     // Add the image to data storage, and specify this derived image as the one the toolManager will edit to.
     this->GetDataStorage()->Add(erodeAddNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
     this->GetDataStorage()->Add(erodeSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
     this->GetDataStorage()->Add(dilateAddNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
     this->GetDataStorage()->Add(dilateSubtractNode, newSegmentation); // add as a child, because the segmentation "derives" from the original
-    this->GetDataStorage()->Add(axialCutOffPlaneNode, newSegmentation);
 
     // Set working data. Compare with MIDASGeneralSegmentorView.
     // Note the order:
@@ -372,13 +368,12 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
     // MORPH_EDITS_DILATIONS_SUBTRACTIONS
     // MORPH_EDITS_DILATIONS_ADDITIONS
 
-    std::vector<mitk::DataNode*> workingNodes(6);
+    std::vector<mitk::DataNode*> workingNodes(5);
     workingNodes[PaintbrushTool::SEGMENTATION] = newSegmentation;
     workingNodes[PaintbrushTool::EROSIONS_ADDITIONS] = erodeAddNode;
     workingNodes[PaintbrushTool::EROSIONS_SUBTRACTIONS] = erodeSubtractNode;
     workingNodes[PaintbrushTool::DILATIONS_ADDITIONS] = dilateAddNode;
     workingNodes[PaintbrushTool::DILATIONS_SUBTRACTIONS] = dilateSubtractNode;
-    workingNodes[PaintbrushTool::AXIAL_CUT_OFF_PLANE] = axialCutOffPlaneNode;
 
     toolManager->SetWorkingData(workingNodes);
 
@@ -469,8 +464,7 @@ void MorphologicalSegmentorController::OnThresholdingValuesChanged(double lowerT
   int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
   int axialUpDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
 
-  mitk::DataNode* axialCutOffPlaneNode = this->GetWorkingNode(PaintbrushTool::AXIAL_CUT_OFF_PLANE);
-  mitk::Plane* axialCutOffPlane = dynamic_cast<mitk::Plane*>(axialCutOffPlaneNode->GetData());
+  mitk::Plane* axialCutOffPlane = this->GetDataStorage()->GetNamedDerivedObject<mitk::Plane>("Axial cut-off plane", segmentationNode);
 
   // Lift the axial cut-off plane to the height determined by axialSliceNumber.
   mitk::Point3D planeCentre = axialCutOffPlane->GetGeometry()->GetOrigin();
@@ -608,6 +602,10 @@ void MorphologicalSegmentorController::OnOKButtonClicked()
     this->RemoveWorkingNodes();
     m_MorphologicalSegmentorGUI->SetControlsFromSegmentationNode(nullptr);
 
+    /// Remove the axial cut-off plane node from the data storage.
+    mitk::DataNode* axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
+    this->GetDataStorage()->Remove(axialCutOffPlaneNode);
+
     this->GetView()->SetDataManagerSelection(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
@@ -634,8 +632,7 @@ void MorphologicalSegmentorController::OnRestartButtonClicked()
       mitk::Image* referenceImage = dynamic_cast<mitk::Image*>(referenceNode->GetData());
       mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
-      mitk::DataNode* axialCutOffPlaneNode = this->GetWorkingNode(PaintbrushTool::AXIAL_CUT_OFF_PLANE);
-      mitk::Plane* axialCutOffPlane = dynamic_cast<mitk::Plane*>(axialCutOffPlaneNode->GetData());
+      mitk::Plane* axialCutOffPlane = this->GetDataStorage()->GetNamedDerivedObject<mitk::Plane>("Axial cut-off plane", segmentationNode);
 
       int axialAxis = GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
 
@@ -666,6 +663,8 @@ void MorphologicalSegmentorController::OnCancelButtonClicked()
     this->RemoveWorkingNodes();
     mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
+    mitk::DataNode* axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
+    this->GetDataStorage()->Remove(axialCutOffPlaneNode);
     this->GetDataStorage()->Remove(segmentationNode);
     this->GetView()->SetDataManagerSelection(this->GetReferenceNode());
     this->RequestRenderWindowUpdate();
@@ -712,6 +711,11 @@ void MorphologicalSegmentorController::OnNodeRemoved(const mitk::DataNode* remov
     m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
 
+    mitk::DataNode* axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
+    if (axialCutOffPlaneNode)
+    {
+      this->GetDataStorage()->Remove(axialCutOffPlaneNode);
+    }
     this->RemoveWorkingNodes();
     mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
@@ -747,8 +751,10 @@ void MorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataN
   mitk::DataNode* segmentationNode = this->GetWorkingNode();
 
   std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodes();
-  if (segmentationNode && node == segmentationNode && workingNodes.size() == 6)
+  if (segmentationNode && node == segmentationNode && workingNodes.size() == 5)
   {
+    mitk::DataNode* axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
+
     bool segmentationNodeVisibility;
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
@@ -757,7 +763,7 @@ void MorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataN
       workingNodes[PaintbrushTool::EROSIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 1);
       workingNodes[PaintbrushTool::DILATIONS_ADDITIONS]->SetVisibility(false);
       workingNodes[PaintbrushTool::DILATIONS_SUBTRACTIONS]->SetVisibility(tabIndex == 2);
-      workingNodes[PaintbrushTool::AXIAL_CUT_OFF_PLANE]->SetVisibility(tabIndex == 0);
+      axialCutOffPlaneNode->SetVisibility(true);
     }
     else
     {
@@ -765,6 +771,7 @@ void MorphologicalSegmentorController::OnNodeVisibilityChanged(const mitk::DataN
       {
         workingNodes[i]->SetVisibility(false);
       }
+      axialCutOffPlaneNode->SetVisibility(false);
     }
   }
 }

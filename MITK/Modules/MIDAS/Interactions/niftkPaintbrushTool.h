@@ -71,14 +71,13 @@ public:
 
   /// \brief Constants that identify the data needed for the morphological edit tools.
   /// They should be used for indexing the vector of working data.
-  enum
+  enum WorkingImage
   {
     SEGMENTATION,
     EROSIONS_ADDITIONS,
     EROSIONS_SUBTRACTIONS,
     DILATIONS_ADDITIONS,
-    DILATIONS_SUBTRACTIONS,
-    AXIAL_CUT_OFF_PLANE
+    DILATIONS_SUBTRACTIONS
   };
 
   /// \brief Stores the name of the MIDAS additions image, used in Morphological Editor.
@@ -92,9 +91,6 @@ public:
 
   /// \brief Stores the name of the MIDAS connection breaker image, used in Morphological Editor.
   static const std::string DILATIONS_SUBTRACTIONS_NAME;
-
-  /// \brief Stores the name of the axial cut-off slice data node, used in Morphological Editor.
-  static const std::string AXIAL_CUT_OFF_PLANE_NAME;
 
 
   mitkClassMacro(PaintbrushTool, mitk::SegTool2D)

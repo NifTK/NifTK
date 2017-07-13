@@ -157,11 +157,11 @@ void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
     typedef mitk::ImageToItk<SegmentationImageType> ImageToItkType;
 
     /// Note:
-    /// We pass nullptr-s to the pipeline for the inputs that have not been changed.
+    /// We pass NULLs to the pipeline for the inputs that have not been changed.
     /// This is to avoid unnecessary conversions.
 
     std::vector<SegmentationImageType::ConstPointer> workingImages(5);
-    std::fill(workingImages.begin(), workingImages.end(), nullptr);
+    std::fill(workingImages.begin(), workingImages.end(), (SegmentationImageType*)0);
 
     if (!m_Pipelines[segmentationImage])
     {
