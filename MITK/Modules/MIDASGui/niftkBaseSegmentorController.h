@@ -136,9 +136,6 @@ protected:
   /// \brief Utility method to check that we have initialised all the working data nodes such as contours, region growing images etc.
   bool HasWorkingNodes();
 
-  /// \brief Checks if the time geometry of the node data is the same as that of the focused renderer.
-  bool HasSameGeometryAsViewer(mitk::DataNode* node);
-
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.
   virtual void OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes);

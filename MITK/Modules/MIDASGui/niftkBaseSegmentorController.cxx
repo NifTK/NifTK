@@ -323,7 +323,7 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
 
     mitk::DataNode* selectedNode = selectedNodes[0];
     // Rely on subclasses deciding if the node is something we are interested in.
-    if (niftk::IsNodeAGreyScaleImage(selectedNode) && this->HasSameGeometryAsViewer(selectedNode))
+    if (niftk::IsNodeAGreyScaleImage(selectedNode))
     {
       referenceNode = selectedNode;
     }
@@ -331,10 +331,9 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     // A segmentation image, is the final output, the one being segmented.
     if (niftk::IsNodeABinaryImage(selectedNode))
     {
-      /// This finds the first not binary parent.
       mitk::DataNode* potentialReferenceNode = niftk::FindFirstParentImage(this->GetDataStorage(), selectedNode, false);
 
-      if (potentialReferenceNode && this->HasSameGeometryAsViewer(potentialReferenceNode))
+      if (potentialReferenceNode)
       {
         std::vector<mitk::DataNode*> potentialWorkingNodes = this->GetWorkingNodesFrom(selectedNode);
         if (!potentialWorkingNodes.empty()
@@ -351,18 +350,6 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
 
   // Tell the tool manager the images for reference and working purposes.
   this->SetToolManagerSelection(referenceNode, workingNodes);
-}
-
-
-//-----------------------------------------------------------------------------
-bool BaseSegmentorController::HasSameGeometryAsViewer(mitk::DataNode* node)
-{
-  assert(node);
-
-  auto data = node->GetData();
-  auto snc = this->GetSliceNavigationController();
-
-  return data && snc && data->GetTimeGeometry() == snc->GetInputWorldTimeGeometry();
 }
 
 
