@@ -63,7 +63,6 @@ GeneralSegmentorGUI::GeneralSegmentorGUI(QWidget *parent)
   this->connect(m_ThresholdingCheckBox, SIGNAL(toggled(bool)), SIGNAL(ThresholdingCheckBoxToggled(bool)));
   this->connect(m_SeePriorCheckBox, SIGNAL(toggled(bool)), SIGNAL(SeePriorCheckBoxToggled(bool)));
   this->connect(m_SeeNextCheckBox, SIGNAL(toggled(bool)), SIGNAL(SeeNextCheckBoxToggled(bool)));
-  this->connect(m_RetainMarksCheckBox, SIGNAL(toggled(bool)), SIGNAL(RetainMarksCheckBoxToggled(bool)));
   this->connect(m_ThresholdsSlider, SIGNAL(minimumValueChanged(double)), SIGNAL(ThresholdValueChanged()));
   this->connect(m_ThresholdsSlider, SIGNAL(maximumValueChanged(double)), SIGNAL(ThresholdValueChanged()));
 }
@@ -144,9 +143,7 @@ bool GeneralSegmentorGUI::IsSeePriorCheckBoxChecked() const
 //-----------------------------------------------------------------------------
 void GeneralSegmentorGUI::SetSeePriorCheckBoxChecked(bool checked)
 {
-  bool wasBlocked = m_SeePriorCheckBox->blockSignals(true);
   m_SeePriorCheckBox->setChecked(checked);
-  m_SeePriorCheckBox->blockSignals(wasBlocked);
 }
 
 
@@ -160,9 +157,7 @@ bool GeneralSegmentorGUI::IsSeeNextCheckBoxChecked() const
 //-----------------------------------------------------------------------------
 void GeneralSegmentorGUI::SetSeeNextCheckBoxChecked(bool checked)
 {
-  bool wasBlocked = m_SeeNextCheckBox->blockSignals(true);
   m_SeeNextCheckBox->setChecked(checked);
-  m_SeeNextCheckBox->blockSignals(wasBlocked);
 }
 
 
@@ -176,9 +171,7 @@ bool GeneralSegmentorGUI::IsRetainMarksCheckBoxChecked() const
 //-----------------------------------------------------------------------------
 void GeneralSegmentorGUI::SetRetainMarksCheckBoxChecked(bool checked)
 {
-  bool wasBlocked = m_RetainMarksCheckBox->blockSignals(true);
   m_RetainMarksCheckBox->setChecked(checked);
-  m_RetainMarksCheckBox->blockSignals(wasBlocked);
 }
 
 
@@ -211,10 +204,8 @@ void GeneralSegmentorGUI::SetAllWidgetsEnabled(bool enabled)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorGUI::SetLowerAndUpperIntensityRanges(double lower, double upper)
 {
-  bool wasBlocked = m_ThresholdsSlider->blockSignals(true);
   m_ThresholdsSlider->setMinimum(lower);
   m_ThresholdsSlider->setMaximum(upper);
-  m_ThresholdsSlider->blockSignals(wasBlocked);
 }
 
 
@@ -242,9 +233,7 @@ double GeneralSegmentorGUI::GetLowerThreshold() const
 //-----------------------------------------------------------------------------
 void GeneralSegmentorGUI::SetLowerThreshold(double lowerThreshold)
 {
-  bool wasBlocked = m_ThresholdsSlider->blockSignals(true);
   m_ThresholdsSlider->setMinimumValue(lowerThreshold);
-  m_ThresholdsSlider->blockSignals(wasBlocked);
 }
 
 
@@ -258,9 +247,7 @@ double GeneralSegmentorGUI::GetUpperThreshold() const
 //-----------------------------------------------------------------------------
 void GeneralSegmentorGUI::SetUpperThreshold(double upperThreshold)
 {
-  bool wasBlocked = m_ThresholdsSlider->blockSignals(true);
   m_ThresholdsSlider->setMaximumValue(upperThreshold);
-  m_ThresholdsSlider->blockSignals(wasBlocked);
 }
 
 }

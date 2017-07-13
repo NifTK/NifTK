@@ -205,9 +205,6 @@ protected slots:
   /// \brief Qt slot called from "see next" checkbox to show the contour from the next slice.
   void OnSeeNextCheckBoxToggled(bool checked);
 
-  /// \brief Qt slot called from "retain marks" checkbox.
-  void OnRetainMarksCheckBoxToggled(bool checked);
-
   /// \brief Qt slot called when the Clean button is pressed, indicating the
   /// current contours on the current slice should be cleaned, see additional spec,
   /// currently at:  https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1096
@@ -275,8 +272,6 @@ protected slots:
   void OnRestartButtonClicked();
 
 private:
-
-  void UpdateGUI();
 
   virtual void OnViewGetsVisible() override;
 
