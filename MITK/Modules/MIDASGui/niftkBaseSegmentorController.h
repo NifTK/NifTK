@@ -112,8 +112,14 @@ protected:
   /// Returns nullptr if it can't be found or is not an image.
   mitk::Image* GetWorkingImage(int index = 0);
 
+  /// \brief Returns true if node represent an image that is non binary, and false otherwise.
+  virtual bool IsAReferenceImage(const mitk::DataNode* node);
+
+  /// \brief Returns true if node represents an image that is binary, and false otherwise.
+  virtual bool IsASegmentationImage(const mitk::DataNode* node);
+
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
-  virtual std::vector<mitk::DataNode*> GetWorkingNodesFrom(mitk::DataNode* segmentationNode);
+  virtual std::vector<mitk::DataNode*> GetWorkingNodesFromSegmentationNode(mitk::DataNode* segmentationNode);
 
   /// \brief We return true if the segmentation can either be "re-started", i.e. you switch between binary images
   /// in the Data Manager, and if the binary image has the correct hidden child nodes, then
@@ -134,7 +140,7 @@ protected:
   BaseSegmentorGUI* GetSegmentorGUI() const;
 
   /// \brief Utility method to check that we have initialised all the working data nodes such as contours, region growing images etc.
-  bool HasWorkingNodes();
+  bool HasInitialisedWorkingNodes();
 
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.

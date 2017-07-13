@@ -158,9 +158,13 @@ public:
 
 protected:
 
+  /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
+  /// scale parent, and several children as described in the class introduction.
+  virtual bool IsASegmentationImage(const mitk::DataNode* node) override;
+
   /// \brief Assumes input is a valid segmentation node, then searches for the derived
   /// children of the node, looking for the seeds and contours  as described in the class introduction.
-  virtual std::vector<mitk::DataNode*> GetWorkingNodesFrom(mitk::DataNode* segmentationNode) override;
+  virtual std::vector<mitk::DataNode*> GetWorkingNodesFromSegmentationNode(mitk::DataNode* segmentationNode) override;
 
   /// \brief Creates the general segmentor widget that holds the GUI components of the view.
   virtual BaseGUI* CreateGUI(QWidget* parent) override;
