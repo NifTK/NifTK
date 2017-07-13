@@ -16,7 +16,6 @@
 
 #include <QMessageBox>
 
-#include <mitkAnnotationProperty.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
 #include <mitkITKImageImport.h>
@@ -541,11 +540,6 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   newSegmentation->SetBoolProperty("midas.general_segmentor.thresholding", false);
   newSegmentation->SetFloatProperty("midas.general_segmentor.lower_threshold", 0.0f);
   newSegmentation->SetFloatProperty("midas.general_segmentor.upper_threshold", 0.0f);
-  /// We use this annotation property not to store an annotation, actually, but to store
-  /// the selected position in the viewer after any slice change.
-  mitk::AnnotationProperty::Pointer selectedPositionProperty = mitk::AnnotationProperty::New();
-  selectedPositionProperty->SetPosition(this->GetSelectedPosition());
-  newSegmentation->SetProperty("midas.general_segmentor.selected_position", selectedPositionProperty);
 
   // Set working data. See header file, as the order here is critical, and should match the documented order.
   std::vector<mitk::DataNode*> workingNodes(9);
@@ -739,32 +733,7 @@ void GeneralSegmentorController::OnReferenceNodesChanged()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnWorkingNodesChanged()
 {
-  Q_D(GeneralSegmentorController);
-
-  /// This will update the GUI controls.
   BaseSegmentorController::OnWorkingNodesChanged();
-
-  if (this->HasWorkingNodes())
-  {
-    /// Now we select the same position in the viewer where we were last time.
-
-    d->m_IsChangingSlice = true;
-
-    mitk::DataNode* segmentationNode = this->GetWorkingNode();
-    mitk::BaseProperty* property = segmentationNode->GetProperty("midas.general_segmentor.selected_position");
-    if (auto annotationProperty = dynamic_cast<mitk::AnnotationProperty*>(property))
-    {
-      this->SetSelectedPosition(annotationProperty->GetPosition());
-    }
-
-    d->m_Orientation = this->GetOrientation();
-    d->m_SelectedSliceIndex = this->GetSliceIndex();
-    d->m_SliceAxis = this->GetReferenceImageSliceAxis();
-    d->m_SliceIndex = this->GetReferenceImageSliceIndex();
-    d->m_SelectedPosition = this->GetSelectedPosition();
-
-    d->m_IsChangingSlice = false;
-  }
 }
 
 
@@ -1192,10 +1161,6 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
       d->m_SliceIndex = sliceIndex;
       d->m_SelectedPosition = selectedPosition;
 
-      mitk::AnnotationProperty::Pointer selectedPositionProperty = mitk::AnnotationProperty::New();
-      selectedPositionProperty->SetPosition(selectedPosition);
-      mitk::DataNode* segmentationNode = this->GetWorkingNode();
-      segmentationNode->SetProperty("midas.general_segmentor.selected_position", selectedPositionProperty);
     } // if initialised and valid orientation (2D window selected)
 
     d->m_Orientation = orientation;
