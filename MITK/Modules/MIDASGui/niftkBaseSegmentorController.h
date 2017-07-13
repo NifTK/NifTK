@@ -119,7 +119,6 @@ protected:
   /// in the Data Manager, and if the binary image has the correct hidden child nodes, then
   /// this returns true, indicating that it's a valid "in-progress" segmentation.
   /// Or, it can be started because a valid binary image is seleted with a valid reference image.
-  /// This implementation accepts only grey scale images are a reference image.
   virtual bool CanStartSegmentationFrom(const mitk::DataNode* node);
 
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.

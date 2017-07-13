@@ -207,28 +207,6 @@ void GeneralSegmentorController::SetupGUI(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-bool GeneralSegmentorController::CanStartSegmentationFrom(const mitk::DataNode* node)
-{
-  if (!node || !niftk::IsNodeABinaryImage(node))
-  {
-    return false;
-  }
-
-  mitk::DataNode* firstNonBinaryImageParent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
-  if (!firstNonBinaryImageParent)
-  {
-    return false;
-  }
-
-  mitk::Image* image = dynamic_cast<mitk::Image*>(firstNonBinaryImageParent->GetData());
-  unsigned pixelComponents = image->GetPixelType().GetNumberOfComponents();
-
-  /// Only grey scale, RGB or RGBA reference images are supported.
-  return pixelComponents == 1 || pixelComponents == 3 || pixelComponents == 4;
-}
-
-
-//-----------------------------------------------------------------------------
 std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingNodesFrom(mitk::DataNode* segmentationNode)
 {
   assert(segmentationNode);
@@ -332,10 +310,10 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   Q_D(GeneralSegmentorController);
 
   /// Note:
-  /// The 'new segmentation' button is enabled only when a reference image is set.
-  /// A reference image gets set when the selection in the data manager changes to
-  /// a valid reference image or a segmentation that was created by this segmentor.
-  /// Hence, we can assume that we have a valid tool manager and reference image.
+  /// The 'new segmentation' button is enabled only when a reference image is selected.
+  /// A reference image gets selected when the selection in the data manager changes to a valid
+  /// reference image or a segmentation that was created by this segmentor.
+  /// Hence, we can assume that we have a valid tool manager, paintbrush tool and reference image.
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
