@@ -12,43 +12,43 @@
 
 =============================================================================*/
 
-#include "niftkPointSetDataInteractor.h"
+#include "niftkPointSetInteractor.h"
 
+#include <mitkAction.h>
 #include <mitkBaseRenderer.h>
 #include <mitkInteractionConst.h>
-#include <mitkInteractionPositionEvent.h>
 #include <mitkPointSet.h>
 #include <mitkPositionEvent.h>
 #include <mitkRenderingManager.h>
+#include <mitkStateEvent.h>
 
 namespace niftk
 {
 
-PointSetDataInteractor::PointSetDataInteractor()
-: mitk::PointSetDataInteractor()
+PointSetInteractor::PointSetInteractor(const char * type, mitk::DataNode* dataNode, int n)
+: mitk::PointSetInteractor(type, dataNode, n)
 {
-  this->SetAccuracy(1.0);
+  this->SetPrecision(1);
 }
 
-PointSetDataInteractor::~PointSetDataInteractor()
+PointSetInteractor::~PointSetInteractor()
 {
 }
 
-bool PointSetDataInteractor::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
+float PointSetInteractor::CanHandleEvent(const mitk::StateEvent* stateEvent) const
 {
-  return FilteringStateMachine::CanHandleEvent(event);
+  return FilteringStateMachine::CanHandleEvent(stateEvent);
 }
 
 //##Documentation
 //## overwritten cause this class can handle it better!
-bool PointSetDataInteractor::CanHandle(mitk::InteractionEvent* event)
+float PointSetInteractor::CanHandle(const mitk::StateEvent* stateEvent) const
 {
-/*
   float returnValue = 0.0f;
 
   //if it is a key event that can be handled in the current state, then return 0.5
-  mitk::InteractionPositionEvent* displayPositionEvent =
-    dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  const mitk::DisplayPositionEvent* displayPositionEvent =
+    dynamic_cast<const mitk::DisplayPositionEvent*>(stateEvent->GetEvent());
 
   // Key event handling:
   if (!displayPositionEvent)
@@ -92,21 +92,18 @@ bool PointSetDataInteractor::CanHandle(mitk::InteractionEvent* event)
     }
   }
   return returnValue;
-*/
-
-  return true;
 }
 
-bool PointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
+bool PointSetInteractor::ExecuteAction( mitk::Action* action, mitk::StateEvent const* stateEvent )
 {
-  mitk::InteractionPositionEvent* positionEvent =
-      dynamic_cast<mitk::InteractionPositionEvent*>(event);
+  mitk::DisplayPositionEvent const *displayPositionEvent =
+      dynamic_cast<const mitk::DisplayPositionEvent*>(stateEvent->GetEvent());
 
-  if (positionEvent)
+  if (displayPositionEvent)
   {
-    mitk::BaseRenderer* renderer = positionEvent->GetSender();
+    mitk::BaseRenderer* renderer = displayPositionEvent->GetSender();
 
-    mitk::Point3D point3DInMm = positionEvent->GetPositionInWorld();
+    mitk::Point3D point3DInMm = displayPositionEvent->GetWorldPosition();
     const mitk::BaseGeometry* worldGeometry = renderer->GetWorldGeometry();
     mitk::Point3D point3DIndex;
     worldGeometry->WorldToIndex(point3DInMm, point3DIndex);
@@ -121,11 +118,10 @@ bool PointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* action, mit
     displayGeometry->Map(point3DInMm, point2DInMm);
     displayGeometry->WorldToDisplay(point2DInMm, point2DInPx);
 
-    /// TODO Disabled during the MITK upgrade.
-//    positionEvent->SetDisplayPosition(point2DInPx);
+    const_cast<mitk::DisplayPositionEvent*>(displayPositionEvent)->SetDisplayPosition(point2DInPx);
   }
 
-  return Superclass::ExecuteAction(action, event);
+  return Superclass::ExecuteAction(action, stateEvent);
 }
 
 }

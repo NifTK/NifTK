@@ -27,7 +27,8 @@
 
 #include <usServiceReference.h>
 
-#include "niftkPointSetDataInteractor.h"
+//#include "niftkPointSetDataInteractor.h"
+#include "niftkPointSetInteractor.h"
 #include "niftkFilteringStateMachine.h"
 
 namespace niftk
@@ -63,6 +64,12 @@ class NIFTKMIDAS_EXPORT Tool : public mitk::FeedbackContourTool, public Filterin
 public:
 
   mitkClassMacro(Tool, mitk::FeedbackContourTool)
+
+  /// \brief Loads the behaviour string to the global interaction.
+  /// This function should be called before any niftk::Tool object is created.
+  static void LoadBehaviourStrings();
+
+  static bool LoadBehaviour(const std::string& fileName, us::Module* module);
 
   const char* GetGroup() const override;
 
@@ -166,7 +173,8 @@ private:
   void OnSeedsModified();
 
   /// \brief This is the interactor just to add points. All MIDAS tools can add seeds. Only the SeedTool can move/remove them.
-  PointSetDataInteractor::Pointer m_AddToPointSetInteractor;
+  PointSetInteractor::Pointer m_AddToPointSetInteractor;
+//  PointSetDataInteractor::Pointer m_AddToPointSetInteractor;
 
   /// \brief The node that contains the point set that is the working data of the seed tool.
   mitk::DataNode::Pointer m_PointSetNode;
@@ -189,6 +197,8 @@ private:
   /// \brief Stores the current display interactor configurations when this tool is activated.
   /// The configurations are restored when the tool is deactivated.
   std::map<us::ServiceReferenceU, mitk::EventConfig> m_DisplayInteractorConfigs;
+
+  static bool s_BehaviourStringsLoaded;
 
 };
 

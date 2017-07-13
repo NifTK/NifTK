@@ -16,6 +16,7 @@
 
 #include <mitkBaseRenderer.h>
 #include <mitkInteractionEvent.h>
+#include <mitkStateEvent.h>
 
 namespace niftk
 {
@@ -29,6 +30,16 @@ StateMachineRendererFilter::StateMachineRendererFilter()
 //-----------------------------------------------------------------------------
 StateMachineRendererFilter::~StateMachineRendererFilter()
 {
+}
+
+
+//-----------------------------------------------------------------------------
+bool StateMachineRendererFilter::EventFilter(const mitk::StateEvent* stateEvent) const
+{
+  mitk::BaseRenderer* renderer = stateEvent->GetEvent()->GetSender();
+  std::vector<mitk::BaseRenderer*>::const_iterator it =
+      std::find(m_Renderers.begin(), m_Renderers.end(), renderer);
+  return it == m_Renderers.end();
 }
 
 

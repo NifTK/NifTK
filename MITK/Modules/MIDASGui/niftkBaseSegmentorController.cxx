@@ -17,6 +17,7 @@
 #include <QMessageBox>
 
 #include <mitkUndoController.h>
+#include <mitkStateEvent.h>
 #include <mitkVtkResliceInterpolationProperty.h>
 
 #include <QmitkRenderWindow.h>
@@ -85,6 +86,21 @@ const QColor& BaseSegmentorController::GetDefaultSegmentationColour() const
 void BaseSegmentorController::SetDefaultSegmentationColour(const QColor& defaultSegmentationColour)
 {
   m_DefaultSegmentationColour = defaultSegmentationColour;
+}
+
+
+//-----------------------------------------------------------------------------
+bool BaseSegmentorController::EventFilter(const mitk::StateEvent* stateEvent) const
+{
+  if (QmitkRenderWindow* renderWindow = this->GetView()->GetSelectedRenderWindow())
+  {
+    if (renderWindow->GetRenderer() == stateEvent->GetEvent()->GetSender())
+    {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 

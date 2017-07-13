@@ -12,30 +12,30 @@
 
 =============================================================================*/
 
-#ifndef niftkPointSetDataInteractor_h
-#define niftkPointSetDataInteractor_h
+#ifndef niftkPointSetInteractor_h
+#define niftkPointSetInteractor_h
 
 #include "niftkMIDASExports.h"
 
 #include <vector>
 
-#include <mitkPointSetDataInteractor.h>
+#include <mitkPointSetInteractor.h>
 
 #include "niftkFilteringStateMachine.h"
 
 namespace niftk
 {
 /**
- * \class PointSetDataInteractor
- * \brief Derived from mitk::PointSetDataInteractor so we can handle the mouse move event.
+ * \class PointSetInteractor
+ * \brief Derived from mitk::PointSetInteractor so we can handle the mouse move event.
  * \ingroup Interaction
  */
-class NIFTKMIDAS_EXPORT PointSetDataInteractor : public mitk::PointSetDataInteractor, public FilteringStateMachine
+class NIFTKMIDAS_EXPORT PointSetInteractor : public mitk::PointSetInteractor, public FilteringStateMachine
 {
 public:
-  mitkClassMacro(PointSetDataInteractor, mitk::PointSetDataInteractor)
-  itkFactorylessNewMacro(Self)
-  itkCloneMacro(Self)
+  mitkClassMacro(PointSetInteractor, mitk::PointSetInteractor)
+  mitkNewMacro3Param(Self, const char*, mitk::DataNode*, int)
+  mitkNewMacro2Param(Self, const char*, mitk::DataNode*)
 
 protected:
   /**
@@ -44,12 +44,12 @@ protected:
    * If no n is set, then the number of points is unlimited
    * n=0 is not supported. In this case, n is set to 1.
    */
-  PointSetDataInteractor();
+  PointSetInteractor(const char * type, mitk::DataNode* dataNode, int n = -1);
 
   /**
    * \brief Default Destructor
    **/
-  virtual ~PointSetDataInteractor();
+  virtual ~PointSetInteractor();
 
   /// \brief Tells if this tool can handle the given event.
   ///
@@ -59,20 +59,21 @@ protected:
   ///
   /// Note that this function is purposefully not virtual. Eventual subclasses should
   /// override the CanHandle function.
-  bool FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode);
+  float CanHandleEvent(const mitk::StateEvent* stateEvent) const override;
 
-  virtual bool CanHandle(mitk::InteractionEvent* event);
+  /**
+   * \brief overriden the base class function, to enable mouse move events.
+   */
+  virtual float CanHandle(const mitk::StateEvent* stateEvent) const override;
 
   /**
   * @brief Convert the given Actions to Operations and send to data and UndoController
   *
-  * Overrides mitk::PointSetDataInteractor::ExecuteAction() so that for any operation the
+  * Overrides mitk::PointSetInteractor::ExecuteAction() so that for any operation the
   * display position is modified to be in the middle of a pixel.
   */
-  virtual bool ExecuteAction(mitk::StateMachineAction* action, mitk::InteractionEvent* event);
+  virtual bool ExecuteAction( mitk::Action* action, mitk::StateEvent const* stateEvent ) override;
 
 };
-
 }
-
 #endif
