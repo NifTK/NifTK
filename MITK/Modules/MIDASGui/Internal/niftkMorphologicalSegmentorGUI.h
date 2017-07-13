@@ -22,11 +22,6 @@
 
 class QAbstractButton;
 
-namespace mitk
-{
-class DataNode;
-}
-
 namespace niftk
 {
 
@@ -65,7 +60,7 @@ public:
   void SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
 
   /// \brief Set the dialog according to current parameter values
-  void SetControlsFromSegmentationNode(mitk::DataNode* segmentationNode);
+  void SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params);
 
 signals:
 
