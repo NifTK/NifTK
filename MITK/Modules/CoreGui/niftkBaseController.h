@@ -65,6 +65,10 @@ public:
   /// The selected position is the voxel at the intersection of the crosshair planes.
   mitk::Point3D GetSelectedPosition() const;
 
+  /// \brief Sets the selected position in the current editor (render window part).
+  /// The selected position is the voxel at the intersection of the crosshair planes.
+  void SetSelectedPosition(const mitk::Point3D& selectedPosition) const;
+
   /// \brief Sets up the GUI.
   /// This function has to be called from the CreateQtPartControl function of the view.
   virtual void SetupGUI(QWidget* parent);

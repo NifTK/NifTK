@@ -928,12 +928,27 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 
               if (oldSliceHasUnenclosedSeeds)
               {
-                OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
-                doOp = new OpWipe(OP_WIPE, true, d->m_SliceAxis, d->m_SliceIndex, outputRegion, newSeeds, processor);
-                undoOp = new OpWipe(OP_WIPE, false, d->m_SliceAxis, d->m_SliceIndex, outputRegion, copyOfCurrentSeeds, processor);
-                opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
-                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
-                this->ExecuteOperation(doOp);
+                QMessageBox::StandardButton returnValue =
+                    QMessageBox::warning(
+                      d->m_GUI->GetParent(),
+                      tr("NiftyMIDAS"),
+                      tr("There are unenclosed seeds - slice will be wiped\n"
+                         "Are you sure?"),
+                      QMessageBox::Yes | QMessageBox::No);
+
+                if (returnValue == QMessageBox::Yes)
+                {
+                  OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
+                  doOp = new OpWipe(OP_WIPE, true, d->m_SliceAxis, d->m_SliceIndex, outputRegion, newSeeds, processor);
+                  undoOp = new OpWipe(OP_WIPE, false, d->m_SliceAxis, d->m_SliceIndex, outputRegion, copyOfCurrentSeeds, processor);
+                  opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
+                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+                  this->ExecuteOperation(doOp);
+                }
+                else
+                {
+                  operationCancelled = true;
+                }
               }
               else // so, we don't have unenclosed seeds
               {
@@ -991,6 +1006,18 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
               polyTool->Activated();
             }
           }
+          else
+          {
+            /// This slot restores the last selected position from before changing
+            /// slice, by calling this->SetSelectedPosition(d->m_SelectedPosition).
+            /// We cannot call this function directly from here because this would
+            /// cause a recursion in the event handling call chain.
+            /// So, we let this function finish, and ask the Qt timer to call the
+            /// slot 1ms later.
+            QTimer::singleShot(1, this, SLOT(RestoreSelectedPosition()));
+
+            return;
+          }
 
           this->UpdateCurrentSliceContours(false);
           this->UpdatePriorAndNext(false);
@@ -1020,6 +1047,18 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
     d->m_SelectedSliceIndex = selectedSliceIndex;
 
   } // if orientation or selected slice has changed
+}
+
+
+//-----------------------------------------------------------------------------
+void GeneralSegmentorController::RestoreSelectedPosition()
+{
+  Q_D(GeneralSegmentorController);
+
+  bool wasChangingSlice = d->m_IsChangingSlice;
+  d->m_IsChangingSlice = true;
+  this->SetSelectedPosition(d->m_SelectedPosition);
+  d->m_IsChangingSlice = wasChangingSlice;
 }
 
 

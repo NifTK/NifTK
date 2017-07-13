@@ -267,6 +267,10 @@ protected slots:
   /// state of the segmentation.
   void OnRestartButtonClicked();
 
+private slots:
+
+  void RestoreSelectedPosition();
+
 private:
 
   virtual void OnViewGetsVisible() override;
