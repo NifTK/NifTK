@@ -883,7 +883,7 @@ void MorphologicalSegmentorController::SetControlsFromReferenceImage()
     auto statistics = referenceImage->GetStatistics();
     lowestValue = statistics->GetScalarValueMin();
     highestValue = statistics->GetScalarValueMax();
-    axialAxis = niftk::GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
+    axialAxis = this->GetReferenceImageSliceAxis(IMAGE_ORIENTATION_AXIAL);
     numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
     upDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
   }

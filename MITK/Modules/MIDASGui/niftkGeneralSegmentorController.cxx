@@ -2390,8 +2390,8 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     return;
   }
 
-  ImageOrientation orientation = this->GetOrientation();
-  itk::Orientation itkOrientation = GetItkOrientation(orientation);
+  ImageOrientation imageOrientation = this->GetOrientation();
+  itk::Orientation orientation = GetItkOrientation(imageOrientation);
 
   QString message;
 
@@ -2406,15 +2406,15 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
 
     if (isUp)
     {
-      if (orientation == IMAGE_ORIENTATION_AXIAL)
+      if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
       {
         orientationText = "superior to";
       }
-      else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
       {
         orientationText = "right of";
       }
-      else if (orientation == IMAGE_ORIENTATION_CORONAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
       {
         orientationText = "anterior to";
       }
@@ -2425,15 +2425,15 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     }
     else if (!isUp)
     {
-      if (orientation == IMAGE_ORIENTATION_AXIAL)
+      if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
       {
         orientationText = "inferior to";
       }
-      else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
       {
         orientationText = "left of";
       }
-      else if (orientation == IMAGE_ORIENTATION_CORONAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
       {
         orientationText = "posterior to";
       }
@@ -2511,7 +2511,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
       mitk::PointSet::Pointer outputSeeds = mitk::PointSet::New();
       std::vector<int> outputRegion;
 
-      if (sliceAxis != -1 && sliceIndex != -1 && itkOrientation != itk::ORIENTATION_UNKNOWN)
+      if (sliceAxis != -1 && sliceIndex != -1 && orientation != itk::ORIENTATION_UNKNOWN)
       {
         bool wasUpdating = d->m_IsUpdating;
         d->m_IsUpdating = true;
@@ -2578,7 +2578,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
       }
       else
       {
-        MITK_ERROR << "Could not propagate: Error sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex << ", orientation=" << itkOrientation << ", direction=" << sliceUpDirection;
+        MITK_ERROR << "Could not propagate: Error sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex << ", orientation=" << orientation << ", direction=" << sliceUpDirection;
       }
     }
   }
@@ -2599,20 +2599,20 @@ void GeneralSegmentorController::OnWipePlusButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  ImageOrientation orientation = this->GetOrientation();
+  ImageOrientation imageOrientation = this->GetOrientation();
 
   QString orientationText;
   QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
 
-  if (orientation == IMAGE_ORIENTATION_AXIAL)
+  if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
   {
     orientationText = "superior to";
   }
-  else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
   {
     orientationText = "right of";
   }
-  else if (orientation == IMAGE_ORIENTATION_CORONAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
   {
     orientationText = "anterior to";
   }
@@ -2642,20 +2642,20 @@ void GeneralSegmentorController::OnWipeMinusButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  ImageOrientation orientation = this->GetOrientation();
+  ImageOrientation imageOrientation = this->GetOrientation();
 
   QString orientationText;
   QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
 
-  if (orientation == IMAGE_ORIENTATION_AXIAL)
+  if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
   {
     orientationText = "inferior to";
   }
-  else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
   {
     orientationText = "left of";
   }
-  else if (orientation == IMAGE_ORIENTATION_CORONAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
   {
     orientationText = "posterior to";
   }
