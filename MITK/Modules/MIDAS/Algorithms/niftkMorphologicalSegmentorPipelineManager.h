@@ -130,6 +130,9 @@ public:
   /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_NAME and ADDITIONS_NAME, and have a binary image parent.
   virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node) const;
 
+  /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_NAME and ADDITIONS_NAME. Returns empty list if both not found.
+  virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const;
+
   /// \brief Looks up the reference image, and sets default property values onto the segmentation node, which are later used to update GUI controls.
   void SetSegmentationNodePropsFromReferenceImage();
 
