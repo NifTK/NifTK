@@ -137,7 +137,7 @@ private:
   /// Called when the axial cut-off slider or spin box changed and when the segmentation is restarted.
   ///
   /// \param axialSliceNumber the number of the first slice, counting from the inferior end of the imaging volume to include in the imaging volume.
-  void UpdateAxialCutOffPlane(int axialSliceNumber);
+  void UpdateAxialCutOffPlaneNode(int axialSliceNumber);
 
   /// \brief Removes the working nodes from the data storage
   void RemoveWorkingNodes();
