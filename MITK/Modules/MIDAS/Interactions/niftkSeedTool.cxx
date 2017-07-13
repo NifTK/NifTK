@@ -109,8 +109,8 @@ void SeedTool::Activated()
     if (m_PointSetDataInteractor.IsNull())
     {
       m_PointSetDataInteractor = PointSetDataInteractor::New();
-      m_PointSetDataInteractor->LoadStateMachine("niftkPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
-      m_PointSetDataInteractor->SetEventConfig("niftkPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
+      m_PointSetDataInteractor->LoadStateMachine("niftkSeedToolPointSetDataInteractor.xml", us::GetModuleContext()->GetModule());
+      m_PointSetDataInteractor->SetEventConfig("niftkSeedToolPointSetDataInteractorConfig.xml", us::GetModuleContext()->GetModule());
 
       std::vector<StateMachineEventFilter*> eventFilters = this->GetEventFilters();
       std::vector<StateMachineEventFilter*>::const_iterator it = eventFilters.begin();

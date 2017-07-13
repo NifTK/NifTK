@@ -24,67 +24,79 @@
 namespace niftk
 {
 
-//-----------------------------------------------------------------------------
 PointSetDataInteractor::PointSetDataInteractor()
 : mitk::PointSetDataInteractor()
 {
-  /// We can set a very high accuracy here, since sub-voxel positions are rounded
-  /// to the voxel centre positions.
-  this->SetAccuracy(0.001);
+  this->SetAccuracy(1.0);
 }
 
-
-//-----------------------------------------------------------------------------
 PointSetDataInteractor::~PointSetDataInteractor()
 {
 }
 
-
-//-----------------------------------------------------------------------------
 bool PointSetDataInteractor::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   return FilteringStateMachine::CanHandleEvent(event);
 }
 
-
-//-----------------------------------------------------------------------------
-bool PointSetDataInteractor::CheckCondition(const mitk::StateMachineCondition& condition, const mitk::InteractionEvent* event)
+//##Documentation
+//## overwritten cause this class can handle it better!
+bool PointSetDataInteractor::CanHandle(mitk::InteractionEvent* event)
 {
-  const mitk::InteractionPositionEvent* positionEvent =
-      dynamic_cast<const mitk::InteractionPositionEvent*>(event);
+/*
+  float returnValue = 0.0f;
 
-  if (positionEvent)
+  //if it is a key event that can be handled in the current state, then return 0.5
+  mitk::InteractionPositionEvent* displayPositionEvent =
+    dynamic_cast<mitk::InteractionPositionEvent*>(event);
+
+  // Key event handling:
+  if (!displayPositionEvent)
   {
-    /// We replace the sub-voxel position by the voxel centre position.
-
-    mitk::BaseRenderer* renderer = positionEvent->GetSender();
-
-    mitk::Point3D point3DInMm = positionEvent->GetPositionInWorld();
-    const mitk::BaseGeometry* worldGeometry = renderer->GetWorldGeometry();
-    mitk::Point3D point3DIndex;
-    worldGeometry->WorldToIndex(point3DInMm, point3DIndex);
-    point3DIndex[0] = std::floor(point3DIndex[0]) + 0.5;
-    point3DIndex[1] = std::floor(point3DIndex[1]) + 0.5;
-    worldGeometry->IndexToWorld(point3DIndex, point3DInMm);
-
-    mitk::Point2D point2DInMm;
-    mitk::Point2D point2DInPx;
-
-    mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
-    displayGeometry->Map(point3DInMm, point2DInMm);
-    displayGeometry->WorldToDisplay(point2DInMm, point2DInPx);
-
-    mitk::InteractionPositionEvent::Pointer positionEvent2 =
-        mitk::InteractionPositionEvent::New(renderer, point2DInPx, point3DInMm);
-
-    return Superclass::CheckCondition(condition, positionEvent2.GetPointer());
+    // Check, if the current state has a transition waiting for that key event.
+    if (this->GetCurrentState()->GetTransition(stateEvent->GetId()))
+    {
+      return 0.5f;
+    }
+    else
+    {
+      return 0.0f;
+    }
   }
 
-  return Superclass::CheckCondition(condition, event);
+  // Get the time of the sender to look for the right transition.
+  mitk::BaseRenderer* renderer = stateEvent->GetEvent()->GetSender();
+  if (renderer)
+  {
+    unsigned int timeStep = renderer->GetTimeStep(m_DataNode->GetData());
+
+    // If the event can be understood and if there is a transition waiting for that event
+    mitk::State const* state = this->GetCurrentState(timeStep);
+    if (state)
+    {
+      if (state->GetTransition(stateEvent->GetId()))
+      {
+        returnValue = 0.5; //it can be understood
+      }
+    }
+
+    mitk::PointSet* pointSet = dynamic_cast<mitk::PointSet*>(m_DataNode->GetData());
+    if (pointSet)
+    {
+      // if we have one point or more, then check if the have been picked
+      if (pointSet->GetSize(timeStep) > 0
+          && pointSet->SearchPoint(displayPositionEvent->GetWorldPosition(), m_Precision, timeStep) > -1)
+      {
+        returnValue = 1.0;
+      }
+    }
+  }
+  return returnValue;
+*/
+
+  return true;
 }
 
-
-//-----------------------------------------------------------------------------
 bool PointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* action, mitk::InteractionEvent* event)
 {
   mitk::InteractionPositionEvent* positionEvent =
@@ -92,8 +104,6 @@ bool PointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* action, mit
 
   if (positionEvent)
   {
-    /// We replace the sub-voxel position by the voxel centre position.
-
     mitk::BaseRenderer* renderer = positionEvent->GetSender();
 
     mitk::Point3D point3DInMm = positionEvent->GetPositionInWorld();
@@ -110,6 +120,9 @@ bool PointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* action, mit
     mitk::DisplayGeometry* displayGeometry = renderer->GetDisplayGeometry();
     displayGeometry->Map(point3DInMm, point2DInMm);
     displayGeometry->WorldToDisplay(point2DInMm, point2DInPx);
+
+    /// TODO Disabled during the MITK upgrade.
+//    positionEvent->SetDisplayPosition(point2DInPx);
 
     mitk::InteractionPositionEvent::Pointer positionEvent2 =
         mitk::InteractionPositionEvent::New(renderer, point2DInPx, point3DInMm);
