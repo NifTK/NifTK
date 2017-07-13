@@ -26,8 +26,7 @@ namespace itk
  * where we take non-zero pixels in the source image, and write them to the destination image.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT MIDASImageUpdatePasteRegionProcessor : public MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
-{
+class ITK_EXPORT MIDASImageUpdatePasteRegionProcessor : public MIDASImageUpdateRegionProcessor<TPixel, VImageDimension> {
 
 public:
 
@@ -38,10 +37,10 @@ public:
   typedef SmartPointer<const Self>                                 ConstPointer;
 
   /** Method for creation through the object factory. */
-  itkNewMacro(Self)
+  itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(MIDASImageUpdatePasteRegionProcessor, MIDASImageUpdateRegionProcessor)
+  itkTypeMacro(MIDASImageUpdatePasteRegionProcessor, MIDASImageUpdateRegionProcessor);
 
   /** Additional typedefs */
   typedef TPixel PixelType;
@@ -52,27 +51,27 @@ public:
   typedef typename ImageType::RegionType  RegionType;
 
   /** Set the source image. Data is copied from here to destination image. */
-  itkSetObjectMacro(SourceImage, ImageType)
-  itkGetObjectMacro(SourceImage, ImageType)
+  itkSetObjectMacro(SourceImage, ImageType);
+  itkGetObjectMacro(SourceImage, ImageType);
 
   /** Set the source region of interest. */
-  itkSetMacro(SourceRegionOfInterest, RegionType)
-  itkGetMacro(SourceRegionOfInterest, RegionType)
+  itkSetMacro(SourceRegionOfInterest, RegionType);
+  itkGetMacro(SourceRegionOfInterest, RegionType);
 
   /** Overloaded method to provide simple acess via a std::vector, where we assume the length is 6 corresponding to the first 3 numbers indicating the starting index, and the next 3 numbers indicating the region size. */
   void SetSourceRegionOfInterest(std::vector<int> &region);
 
   /** Set/Get flag to copy background. If true, the background value of 0 is copied across, if false, only non-zero values are copied across. */
-  itkSetMacro(CopyBackground, bool)
-  itkGetMacro(CopyBackground, bool)
+  itkSetMacro(CopyBackground, bool);
+  itkGetMacro(CopyBackground, bool);
 
 protected:
   MIDASImageUpdatePasteRegionProcessor();
-  void PrintSelf(std::ostream& os, Indent indent) const override;
+  void PrintSelf(std::ostream& os, Indent indent) const;
   virtual ~MIDASImageUpdatePasteRegionProcessor() {}
 
   // This method that applies the change.
-  virtual void ApplyUpdateToAfterImage() override;
+  virtual void ApplyUpdateToAfterImage();
 
 private:
   MIDASImageUpdatePasteRegionProcessor(const Self&); //purposely not implemented

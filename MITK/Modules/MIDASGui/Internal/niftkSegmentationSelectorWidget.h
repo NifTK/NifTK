@@ -58,8 +58,13 @@ signals:
 
 private:
 
-  /// \brief Updates the texts and tooltips of the labels and the start/restart button.
-  void UpdateWidgets();
+  /// \brief Displays the name of the reference image on a label.
+  /// If there is no reference image selected then it displays the "not selected" message in red.
+  void OnReferenceDataChanged();
+
+  /// \brief Displays the name of the segmentation image on a label.
+  /// If there is no segmentation image selected then it displays the "not selected" message in red.
+  void OnWorkingDataChanged();
 
   mitk::ToolManager* m_ToolManager;
 

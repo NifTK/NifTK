@@ -248,11 +248,11 @@ void BaseControllerPrivate::OnFocusChanged()
         m_SliceChangeObserverTag = sliceNavigationController->AddObserver(mitk::SliceNavigationController::GeometrySliceEvent(NULL, 0), sliceChangedCommand);
       }
 
-      q->OnFocusChanged();
-
       /// The renderer always has a slice navigation controller, but if it has not been initialised with a valid geometry,
       /// the slice navigation controller won't have a plane geometry.
-      if (sliceNavigationController->GetCurrentPlaneGeometry())
+      bool sncIsInitialised = sliceNavigationController->GetCurrentPlaneGeometry() != nullptr;
+
+      if (sncIsInitialised)
       {
         ImageOrientation orientation = q->GetOrientation();
         int sliceIndex = q->GetSliceIndex();
@@ -348,12 +348,6 @@ BaseGUI* BaseController::GetGUI() const
 {
   Q_D(const BaseController);
   return d->m_GUI;
-}
-
-
-//-----------------------------------------------------------------------------
-void BaseController::UpdateGUI() const
-{
 }
 
 
@@ -523,9 +517,9 @@ mitk::Point3D BaseController::GetSelectedPosition() const
 
 
 //-----------------------------------------------------------------------------
-void BaseController::SetSelectedPosition(const mitk::Point3D& selectedPosition)
+void BaseController::SetSelectedPosition(const mitk::Point3D& selectedPosition) const
 {
-  this->GetView()->SetSelectedPosition(selectedPosition);
+  return this->GetView()->SetSelectedPosition(selectedPosition);
 }
 
 

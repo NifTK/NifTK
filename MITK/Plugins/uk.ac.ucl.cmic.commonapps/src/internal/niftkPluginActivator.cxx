@@ -217,7 +217,7 @@ void PluginActivator::RegisterProperties(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void PluginActivator::UpdateLookupTable(mitk::DataNode* node, const mitk::BaseRenderer* /*renderer*/)
 {
-  if (niftk::IsNodeANonBinaryImage(node))
+  if (niftk::IsNodeAGreyScaleImage(node))
   {
     float lowestOpacity = 1;
     bool gotLowest = node->GetFloatProperty("Image Rendering.Lowest Value Opacity", lowestOpacity);
@@ -323,7 +323,7 @@ berry::IPreferences::Pointer PluginActivator::GetPreferences(const QString& pref
 //-----------------------------------------------------------------------------
 void PluginActivator::RegisterLevelWindowProperty(mitk::DataNode* node)
 {
-  if (niftk::IsNodeANonBinaryImage(node))
+  if (niftk::IsNodeAGreyScaleImage(node))
   {
     mitk::Image::ConstPointer image = dynamic_cast<mitk::Image*>(node->GetData());
     berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
@@ -482,7 +482,7 @@ niftk::LookupTableProviderService* PluginActivator::GetLookupTableProvider()
 //-----------------------------------------------------------------------------
 void PluginActivator::RegisterImageRenderingModeProperties(mitk::DataNode* node)
 {
-  if (niftk::IsNodeANonBinaryImage(node))
+  if (niftk::IsNodeAGreyScaleImage(node))
   {
     berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();
     if (systemPreferences.IsNotNull())
@@ -515,7 +515,7 @@ void PluginActivator::RegisterImageRenderingModeProperties(mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void PluginActivator::RegisterInterpolationProperty(mitk::DataNode* node)
 {
-  if (niftk::IsNodeANonBinaryImage(node))
+  if (niftk::IsNodeAGreyScaleImage(node))
   {
     mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     berry::IPreferences::Pointer systemPreferences = this->GetSystemPreferences();

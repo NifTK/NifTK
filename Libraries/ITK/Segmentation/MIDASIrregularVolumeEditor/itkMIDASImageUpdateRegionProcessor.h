@@ -61,14 +61,14 @@ public:
   void SetDestinationRegionOfInterest(std::vector<int> &region);
 
   /** This will copy the m_BeforeImage into the m_DestinationImage */
-  virtual void Undo() override;
+  virtual void Undo();
 
   /** This will copy the m_AfterImage into the m_DestinationImage. This method should also be called to execute the whole process first time round. */
-  virtual void Redo() override;
+  virtual void Redo();
 
 protected:
   MIDASImageUpdateRegionProcessor();
-  void PrintSelf(std::ostream& os, Indent indent) const override;
+  void PrintSelf(std::ostream& os, Indent indent) const;
   virtual ~MIDASImageUpdateRegionProcessor() {}
 
   /** Returns the after image, so derived classes can apply an update. */
@@ -78,7 +78,7 @@ protected:
   /** Derived classes calculate whatever update they like, but can only affect the m_AfterImage, which must be within the destination region of interest. */
   virtual void ApplyUpdateToAfterImage() = 0;
 
-  virtual void ValidateInputs() override;
+  virtual void ValidateInputs();
 
 private:
   MIDASImageUpdateRegionProcessor(const Self&); //purposely not implemented

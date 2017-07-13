@@ -35,9 +35,8 @@ public:
   mitkClassMacro(PosnTool, Tool)
   itkNewMacro(PosnTool)
 
-  virtual const char* GetName() const override;
-
-  virtual const char** GetXPM() const override;
+  virtual const char* GetName() const;
+  virtual const char** GetXPM() const;
 
 protected:
 

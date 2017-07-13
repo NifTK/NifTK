@@ -38,13 +38,13 @@ public:
   typedef itk::SmartPointer<Self>              Pointer;
 
   /// \brief Creates the object via the ITK object factory.
-  itkNewMacro(Self)
+  itkNewMacro(Self);
 
   /// \brief Sets the tool to callback on to.
   void SetContourTool(ContourTool* tool);
 
   /// \brief Main execution function.
-  virtual void  ExecuteOperation(mitk::Operation* op) override;
+  virtual void  ExecuteOperation(mitk::Operation* op);
 
 protected:
   ContourToolEventInterface();

@@ -16,7 +16,6 @@
 
 #include <QMessageBox>
 
-#include <mitkAnnotationProperty.h>
 #include <mitkImageAccessByItk.h>
 #include <mitkImageStatisticsHolder.h>
 #include <mitkITKImageImport.h>
@@ -55,6 +54,9 @@ public:
 
   /// \brief All the GUI controls for the main view part.
   GeneralSegmentorGUI* m_GUI;
+
+  /// \brief Pointer to interface object, used as callback in Undo/Redo framework
+  GeneralSegmentorEventInterface::Pointer m_Interface;
 
   /// \brief This class hooks into the Global Interaction system to respond to Key press events.
   ToolKeyPressStateMachine::Pointer m_ToolKeyPressStateMachine;
@@ -108,6 +110,9 @@ GeneralSegmentorControllerPrivate::GeneralSegmentorControllerPrivate(GeneralSegm
     m_WasRestarted(false)
 {
   Q_Q(GeneralSegmentorController);
+
+  m_Interface = GeneralSegmentorEventInterface::New();
+  m_Interface->SetGeneralSegmentorController(q);
 
   mitk::ToolManager* toolManager = q->GetToolManager();
   toolManager->RegisterTool("DrawTool");
@@ -182,7 +187,6 @@ void GeneralSegmentorController::SetupGUI(QWidget* parent)
   this->connect(d->m_GUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnThresholdingCheckBoxToggled(bool)));
   this->connect(d->m_GUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnSeePriorCheckBoxToggled(bool)));
   this->connect(d->m_GUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnSeeNextCheckBoxToggled(bool)));
-  this->connect(d->m_GUI, SIGNAL(RetainMarksCheckBoxToggled(bool)), SLOT(OnRetainMarksCheckBoxToggled(bool)));
   this->connect(d->m_GUI, SIGNAL(ThresholdValueChanged()), SLOT(OnThresholdValueChanged()));
 
   /// Transfer the focus back to the main window if any button is pressed.
@@ -203,121 +207,92 @@ void GeneralSegmentorController::SetupGUI(QWidget* parent)
   this->connect(d->m_GUI, SIGNAL(ThresholdingCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
   this->connect(d->m_GUI, SIGNAL(SeePriorCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
   this->connect(d->m_GUI, SIGNAL(SeeNextCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
-  this->connect(d->m_GUI, SIGNAL(RetainMarksCheckBoxToggled(bool)), SLOT(OnAnyButtonClicked()));
 }
 
 
 //-----------------------------------------------------------------------------
-bool GeneralSegmentorController::IsNodeAValidReferenceImage(const mitk::DataNode* node)
+bool GeneralSegmentorController::IsASegmentationImage(const mitk::DataNode::Pointer node)
 {
-  if (!node)
+  assert(node);
+  bool result = false;
+
+  if (niftk::IsNodeABinaryImage(node))
   {
-    return false;
-  }
 
-  mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
-  unsigned pixelComponents = image->GetPixelType().GetNumberOfComponents();
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
 
-  /// Only grey scale, RGB or RGBA reference images are supported.
-  return pixelComponents == 1 || pixelComponents == 3 || pixelComponents == 4;
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingNodesFrom(mitk::DataNode* segmentationNode)
-{
-  assert(segmentationNode);
-  std::vector<mitk::DataNode*> workingNodes;
-
-  if (niftk::IsNodeABinaryImage(segmentationNode))
-  {
-    mitk::DataStorage* dataStorage = this->GetDataStorage();
-    mitk::DataNode* seedsNode = dataStorage->GetNamedDerivedNode(Tool::SEEDS_NAME.c_str(), segmentationNode, true);
-    mitk::DataNode* currentContoursNode = dataStorage->GetNamedDerivedNode(Tool::CONTOURS_NAME.c_str(), segmentationNode, true);
-    mitk::DataNode* drawContoursNode = dataStorage->GetNamedDerivedNode(Tool::DRAW_CONTOURS_NAME.c_str(), segmentationNode, true);
-    mitk::DataNode* seePriorContoursNode = dataStorage->GetNamedDerivedNode(Tool::PRIOR_CONTOURS_NAME.c_str(), segmentationNode, true);
-    mitk::DataNode* seeNextContoursNode = dataStorage->GetNamedDerivedNode(Tool::NEXT_CONTOURS_NAME.c_str(), segmentationNode, true);
-    mitk::DataNode* regionGrowingImageNode = dataStorage->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
-    mitk::DataNode* initialSegmentationNode = dataStorage->GetNamedDerivedNode(Tool::INITIAL_SEGMENTATION_NAME.c_str(), segmentationNode, true);
-    mitk::DataNode* initialSeedsNode = dataStorage->GetNamedDerivedNode(Tool::INITIAL_SEEDS_NAME.c_str(), segmentationNode, true);
-
-    if (seedsNode
-        && currentContoursNode
-        && drawContoursNode
-        && seePriorContoursNode
-        && seeNextContoursNode
-        && regionGrowingImageNode
-        && initialSegmentationNode
-        && initialSeedsNode
-        )
+    if (parent.IsNotNull())
     {
-      // The order of this list must match the order they were created in.
-      workingNodes.push_back(segmentationNode);
-      workingNodes.push_back(seedsNode);
-      workingNodes.push_back(currentContoursNode);
-      workingNodes.push_back(drawContoursNode);
-      workingNodes.push_back(seePriorContoursNode);
-      workingNodes.push_back(seeNextContoursNode);
-      workingNodes.push_back(regionGrowingImageNode);
-      workingNodes.push_back(initialSegmentationNode);
-      workingNodes.push_back(initialSeedsNode);
+      mitk::DataStorage* dataStorage = this->GetDataStorage();
+      mitk::DataNode::Pointer seedsNode = dataStorage->GetNamedDerivedNode(Tool::SEEDS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer currentContoursNode = dataStorage->GetNamedDerivedNode(Tool::CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer drawContoursNode = dataStorage->GetNamedDerivedNode(Tool::DRAW_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seePriorContoursNode = dataStorage->GetNamedDerivedNode(Tool::PRIOR_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seeNextContoursNode = dataStorage->GetNamedDerivedNode(Tool::NEXT_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer regionGrowingImageNode = dataStorage->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), node, true);
+
+      if (seedsNode.IsNotNull()
+          && currentContoursNode.IsNotNull()
+          && drawContoursNode.IsNotNull()
+          && seePriorContoursNode.IsNotNull()
+          && seeNextContoursNode.IsNotNull()
+          && regionGrowingImageNode.IsNotNull()
+          )
+      {
+        result = true;
+      }
     }
   }
-
-  return workingNodes;
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
-int GeneralSegmentorController::GetReferenceImageSliceAxis() const
+std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
-  int referenceImageSliceAxis = -1;
-  const mitk::Image* referenceImage = this->GetReferenceImage();
-  ImageOrientation orientation = this->GetOrientation();
-  if (referenceImage && orientation != IMAGE_ORIENTATION_UNKNOWN)
+  assert(node);
+  std::vector<mitk::DataNode*> result;
+
+  if (niftk::IsNodeABinaryImage(node))
   {
-    referenceImageSliceAxis = niftk::GetThroughPlaneAxis(referenceImage, orientation);
-  }
-  return referenceImageSliceAxis;
-}
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
 
-
-//-----------------------------------------------------------------------------
-int GeneralSegmentorController::GetReferenceImageSliceIndex() const
-{
-  int referenceImageSliceIndex = -1;
-
-  const mitk::Image* referenceImage = this->GetReferenceImage();
-  mitk::SliceNavigationController* snc = this->GetSliceNavigationController();
-
-  if (referenceImage && snc)
-  {
-    const mitk::PlaneGeometry* planeGeometry = snc->GetCurrentPlaneGeometry();
-    if (planeGeometry)
+    if (parent.IsNotNull())
     {
-      mitk::Point3D originInMm = planeGeometry->GetOrigin();
-      mitk::Point3D originInVx;
-      referenceImage->GetGeometry()->WorldToIndex(originInMm, originInVx);
+      mitk::DataStorage* dataStorage = this->GetDataStorage();
+      mitk::DataNode::Pointer seedsNode = dataStorage->GetNamedDerivedNode(Tool::SEEDS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer currentContoursNode = dataStorage->GetNamedDerivedNode(Tool::CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer drawContoursNode = dataStorage->GetNamedDerivedNode(Tool::DRAW_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seePriorContoursNode = dataStorage->GetNamedDerivedNode(Tool::PRIOR_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer seeNextContoursNode = dataStorage->GetNamedDerivedNode(Tool::NEXT_CONTOURS_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer regionGrowingImageNode = dataStorage->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer initialSegmentationImageNode = dataStorage->GetNamedDerivedNode(Tool::INITIAL_SEGMENTATION_NAME.c_str(), node, true);
+      mitk::DataNode::Pointer initialSeedsNode = dataStorage->GetNamedDerivedNode(Tool::INITIAL_SEEDS_NAME.c_str(), node, true);
 
-      int viewAxis = this->GetReferenceImageSliceAxis();
-      referenceImageSliceIndex = (int)(originInVx[viewAxis] + 0.5);
+      if (seedsNode.IsNotNull()
+          && currentContoursNode.IsNotNull()
+          && drawContoursNode.IsNotNull()
+          && seePriorContoursNode.IsNotNull()
+          && seeNextContoursNode.IsNotNull()
+          && regionGrowingImageNode.IsNotNull()
+          && initialSegmentationImageNode.IsNotNull()
+          && initialSeedsNode.IsNotNull()
+          )
+      {
+        // The order of this list must match the order they were created in.
+        result.push_back(node);
+        result.push_back(seedsNode);
+        result.push_back(currentContoursNode);
+        result.push_back(drawContoursNode);
+        result.push_back(seePriorContoursNode);
+        result.push_back(seeNextContoursNode);
+        result.push_back(regionGrowingImageNode);
+        result.push_back(initialSegmentationImageNode);
+        result.push_back(initialSeedsNode);
+      }
     }
   }
-  return referenceImageSliceIndex;
-}
-
-
-//-----------------------------------------------------------------------------
-int GeneralSegmentorController::GetReferenceImageSliceUpDirection()
-{
-  int upDirection = 0;
-  const mitk::Image* referenceImage = this->GetReferenceImage();
-  ImageOrientation orientation = this->GetOrientation();
-  if (referenceImage && orientation != IMAGE_ORIENTATION_UNKNOWN)
-  {
-    upDirection = niftk::GetUpDirection(referenceImage, orientation);
-  }
-  return upDirection;
+  return result;
 }
 
 
@@ -327,10 +302,10 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   Q_D(GeneralSegmentorController);
 
   /// Note:
-  /// The 'new segmentation' button is enabled only when a reference image is set.
-  /// A reference image gets set when the selection in the data manager changes to
-  /// a valid reference image or a segmentation that was created by this segmentor.
-  /// Hence, we can assume that we have a valid tool manager and reference image.
+  /// The 'new segmentation' button is enabled only when a reference image is selected.
+  /// A reference image gets selected when the selection in the data manager changes to a valid
+  /// reference image or a segmentation that was created by this segmentor.
+  /// Hence, we can assume that we have a valid tool manager, paintbrush tool and reference image.
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -344,14 +319,16 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
     return;
   }
 
-  mitk::DataNode* selectedNode = selectedNodes.at(0);
+  mitk::DataNode::Pointer selectedNode = selectedNodes.at(0);
 
   /// Create the new segmentation, either using a previously selected one, or create a new volume.
   mitk::DataNode::Pointer newSegmentation;
   bool isRestarting = false;
 
-  if (this->IsNodeAValidSegmentationImage(selectedNode)
-      && this->GetWorkingNodesFrom(selectedNode).empty())
+  if (niftk::IsNodeABinaryImage(selectedNode)
+      && this->CanStartSegmentationForBinaryNode(selectedNode)
+      && !this->IsASegmentationImage(selectedNode)
+      )
   {
     try
     {
@@ -535,37 +512,25 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   this->GetDataStorage()->Add(initialSegmentationNode, newSegmentation);
   this->GetDataStorage()->Add(initialSeedsNode, newSegmentation);
 
-  newSegmentation->SetBoolProperty("midas.general_segmentor.see_prior", false);
-  newSegmentation->SetBoolProperty("midas.general_segmentor.see_next", false);
-  newSegmentation->SetBoolProperty("midas.general_segmentor.retain_marks", false);
-  newSegmentation->SetBoolProperty("midas.general_segmentor.thresholding", false);
-  newSegmentation->SetFloatProperty("midas.general_segmentor.lower_threshold", 0.0f);
-  newSegmentation->SetFloatProperty("midas.general_segmentor.upper_threshold", 0.0f);
-  /// We use this annotation property not to store an annotation, actually, but to store
-  /// the selected position in the viewer after any slice change.
-  mitk::AnnotationProperty::Pointer selectedPositionProperty = mitk::AnnotationProperty::New();
-  selectedPositionProperty->SetPosition(this->GetSelectedPosition());
-  newSegmentation->SetProperty("midas.general_segmentor.selected_position", selectedPositionProperty);
-
   // Set working data. See header file, as the order here is critical, and should match the documented order.
-  std::vector<mitk::DataNode*> workingNodes(9);
-  workingNodes[Tool::SEGMENTATION] = newSegmentation;
-  workingNodes[Tool::SEEDS] = pointSetNode;
-  workingNodes[Tool::CONTOURS] = currentContours;
-  workingNodes[Tool::DRAW_CONTOURS] = drawContours;
-  workingNodes[Tool::PRIOR_CONTOURS] = priorContoursNode;
-  workingNodes[Tool::NEXT_CONTOURS] = nextContoursNode;
-  workingNodes[Tool::REGION_GROWING] = regionGrowingImageNode;
-  workingNodes[Tool::INITIAL_SEGMENTATION] = initialSegmentationNode;
-  workingNodes[Tool::INITIAL_SEEDS] = initialSeedsNode;
-  toolManager->SetWorkingData(workingNodes);
+  std::vector<mitk::DataNode*> workingData(9);
+  workingData[Tool::SEGMENTATION] = newSegmentation;
+  workingData[Tool::SEEDS] = pointSetNode;
+  workingData[Tool::CONTOURS] = currentContours;
+  workingData[Tool::DRAW_CONTOURS] = drawContours;
+  workingData[Tool::PRIOR_CONTOURS] = priorContoursNode;
+  workingData[Tool::NEXT_CONTOURS] = nextContoursNode;
+  workingData[Tool::REGION_GROWING] = regionGrowingImageNode;
+  workingData[Tool::INITIAL_SEGMENTATION] = initialSegmentationNode;
+  workingData[Tool::INITIAL_SEEDS] = initialSeedsNode;
+  toolManager->SetWorkingData(workingData);
 
   int sliceAxis = this->GetReferenceImageSliceAxis();
   int sliceIndex = this->GetReferenceImageSliceIndex();
 
   if (sliceAxis == -1 || sliceIndex == -1)
   {
-    this->RemoveWorkingNodes();
+    this->RemoveWorkingData();
 
     QMessageBox::warning(
           d->m_GUI->GetParent(),
@@ -586,8 +551,22 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 
   this->StoreInitialSegmentation();
 
+  int referenceImagePixelComponents = referenceImage->GetPixelType().GetNumberOfComponents();
+
   // Setup GUI.
   d->m_GUI->SetAllWidgetsEnabled(true);
+  d->m_GUI->SetThresholdingWidgetsEnabled(false);
+  if (referenceImagePixelComponents == 1)
+  {
+    d->m_GUI->SetThresholdingCheckBoxEnabled(true);
+    d->m_GUI->SetThresholdingCheckBoxToolTip("Tick this in if you want to apply thresholding within the current regions.");
+  }
+  else
+  {
+    d->m_GUI->SetThresholdingCheckBoxEnabled(false);
+    d->m_GUI->SetThresholdingCheckBoxToolTip("Thresholding is not supported for RGB images.");
+  }
+  d->m_GUI->SetThresholdingCheckBoxChecked(false);
 
   this->GetView()->FocusOnCurrentWindow();
 
@@ -595,12 +574,16 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   this->UpdateRegionGrowing(false);
   this->RequestRenderWindowUpdate();
 
+  d->m_SliceAxis = sliceAxis;
+  d->m_SliceIndex = sliceIndex;
+  d->m_SelectedPosition = this->GetSelectedPosition();
+
   d->m_WasRestarted = isRestarting;
 
   if (!isRestarting)
   {
     this->GetView()->SetDataManagerSelection(newSegmentation);
-  }
+  } 
 
   this->WaitCursorOff();
 }
@@ -658,12 +641,12 @@ void GeneralSegmentorController::StoreInitialSegmentation()
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  std::vector<mitk::DataNode*> workingNodes = toolManager->GetWorkingData();
+  std::vector<mitk::DataNode*> workingData = toolManager->GetWorkingData();
 
-  mitk::DataNode* segmentationNode = workingNodes[Tool::SEGMENTATION];
-  mitk::DataNode* seedsNode = workingNodes[Tool::SEEDS];
-  mitk::DataNode* initialSegmentationNode = workingNodes[Tool::INITIAL_SEGMENTATION];
-  mitk::DataNode* initialSeedsNode = workingNodes[Tool::INITIAL_SEEDS];
+  mitk::DataNode* segmentationNode = workingData[Tool::SEGMENTATION];
+  mitk::DataNode* seedsNode = workingData[Tool::SEEDS];
+  mitk::DataNode* initialSegmentationNode = workingData[Tool::INITIAL_SEGMENTATION];
+  mitk::DataNode* initialSeedsNode = workingData[Tool::INITIAL_SEEDS];
 
   initialSegmentationNode->SetData(dynamic_cast<mitk::Image*>(segmentationNode->GetData())->Clone());
   initialSeedsNode->SetData(dynamic_cast<mitk::PointSet*>(seedsNode->GetData())->Clone());
@@ -675,34 +658,34 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodes();
-  if (!workingNodes.empty() && node == workingNodes[Tool::SEGMENTATION])
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
+  if (!workingData.empty() && node == workingData[Tool::SEGMENTATION])
   {
     bool segmentationNodeVisibility;
     if (node->GetVisibility(segmentationNodeVisibility, 0) && segmentationNodeVisibility)
     {
-      workingNodes[Tool::SEEDS]->SetVisibility(true);
-      workingNodes[Tool::CONTOURS]->SetVisibility(true);
-      workingNodes[Tool::DRAW_CONTOURS]->SetVisibility(true);
+      workingData[Tool::SEEDS]->SetVisibility(true);
+      workingData[Tool::CONTOURS]->SetVisibility(true);
+      workingData[Tool::DRAW_CONTOURS]->SetVisibility(true);
       if (d->m_GUI->IsSeePriorCheckBoxChecked())
       {
-        workingNodes[Tool::PRIOR_CONTOURS]->SetVisibility(true);
+        workingData[Tool::PRIOR_CONTOURS]->SetVisibility(true);
       }
       if (d->m_GUI->IsSeeNextCheckBoxChecked())
       {
-        workingNodes[Tool::NEXT_CONTOURS]->SetVisibility(true);
+        workingData[Tool::NEXT_CONTOURS]->SetVisibility(true);
       }
       if (d->m_GUI->IsThresholdingCheckBoxChecked())
       {
-        workingNodes[Tool::REGION_GROWING]->SetVisibility(true);
+        workingData[Tool::REGION_GROWING]->SetVisibility(true);
       }
-      workingNodes[Tool::INITIAL_SEGMENTATION]->SetVisibility(false);
-      workingNodes[Tool::INITIAL_SEEDS]->SetVisibility(false);
+      workingData[Tool::INITIAL_SEGMENTATION]->SetVisibility(false);
+      workingData[Tool::INITIAL_SEEDS]->SetVisibility(false);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
       PolyTool* polyTool = this->GetToolByType<PolyTool>();
@@ -711,9 +694,9 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
     }
     else
     {
-      for (std::size_t i = 1; i < workingNodes.size(); ++i)
+      for (std::size_t i = 1; i < workingData.size(); ++i)
       {
-        workingNodes[i]->SetVisibility(false);
+        workingData[i]->SetVisibility(false);
       }
     }
   }
@@ -723,172 +706,6 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
 /**************************************************************
  * End of: Functions to create reference data (hidden nodes)
  *************************************************************/
-
-
-//-----------------------------------------------------------------------------
-void GeneralSegmentorController::OnReferenceNodesChanged()
-{
-  BaseSegmentorController::OnReferenceNodesChanged();
-}
-
-
-//-----------------------------------------------------------------------------
-void GeneralSegmentorController::OnWorkingNodesChanged()
-{
-  Q_D(GeneralSegmentorController);
-
-  /// This will update the GUI controls.
-  BaseSegmentorController::OnWorkingNodesChanged();
-
-  if (this->HasWorkingNodes())
-  {
-    /// Now we select the same position in the viewer where we were last time.
-
-    bool wasChangingSlice = d->m_IsChangingSlice;
-    d->m_IsChangingSlice = true;
-
-    mitk::DataNode* segmentationNode = this->GetWorkingNode();
-    mitk::BaseProperty* property = segmentationNode->GetProperty("midas.general_segmentor.selected_position");
-    if (auto annotationProperty = dynamic_cast<mitk::AnnotationProperty*>(property))
-    {
-      this->SetSelectedPosition(annotationProperty->GetPosition());
-    }
-    else
-    {
-      /// If the last editing location was not recorded in the segmentation node,
-      /// we record the currently selected position in it.
-      mitk::AnnotationProperty::Pointer selectedPositionProperty = mitk::AnnotationProperty::New();
-      selectedPositionProperty->SetPosition(this->GetSelectedPosition());
-      segmentationNode->SetProperty("midas.general_segmentor.selected_position", selectedPositionProperty);
-    }
-
-    d->m_Orientation = this->GetOrientation();
-    d->m_SelectedSliceIndex = this->GetSliceIndex();
-    d->m_SliceAxis = this->GetReferenceImageSliceAxis();
-    d->m_SliceIndex = this->GetReferenceImageSliceIndex();
-    d->m_SelectedPosition = this->GetSelectedPosition();
-
-    d->m_IsChangingSlice = wasChangingSlice;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void GeneralSegmentorController::UpdateGUI() const
-{
-  Q_D(const GeneralSegmentorController);
-
-  mitk::DataNode* referenceNode = this->GetReferenceNode();
-  if (referenceNode)
-  {
-    if (niftk::IsNodeAGreyScaleImage(referenceNode))
-    {
-      d->m_GUI->SetThresholdingCheckBoxEnabled(true);
-      d->m_GUI->SetThresholdingCheckBoxToolTip("Tick this in if you want to apply thresholding within the current regions.");
-    }
-    else
-    {
-      d->m_GUI->SetThresholdingCheckBoxEnabled(false);
-      d->m_GUI->SetThresholdingCheckBoxToolTip("Thresholding is not supported for RGB images.");
-    }
-
-    const mitk::Image* referenceImage = this->GetReferenceImage();
-
-    float lowestPixelValue;
-    if (!referenceNode->GetFloatProperty("midas.general_segmentor.lowest_pixel_value", lowestPixelValue))
-    {
-      lowestPixelValue = referenceImage->GetStatistics()->GetScalarValueMin();
-    }
-
-    float highestPixelValue;
-    if (!referenceNode->GetFloatProperty("midas.general_segmentor.highest_pixel_value", highestPixelValue))
-    {
-      highestPixelValue = referenceImage->GetStatistics()->GetScalarValueMax();
-    }
-
-    d->m_GUI->SetLowerAndUpperIntensityRanges(lowestPixelValue, highestPixelValue);
-  }
-  else
-  {
-    d->m_GUI->SetSeePriorCheckBoxChecked(false);
-    d->m_GUI->SetSeeNextCheckBoxChecked(false);
-    d->m_GUI->SetRetainMarksCheckBoxChecked(false);
-    d->m_GUI->SetThresholdingCheckBoxEnabled(false);
-    d->m_GUI->SetThresholdingCheckBoxToolTip("");
-    d->m_GUI->SetThresholdingCheckBoxChecked(false);
-    d->m_GUI->SetThresholdingWidgetsEnabled(false);
-    d->m_GUI->SetLowerAndUpperIntensityRanges(0.0, 0.0);
-    d->m_GUI->SetLowerThreshold(0.0);
-    d->m_GUI->SetUpperThreshold(0.0);
-    d->m_GUI->SetSeedMinAndMaxValues(0.0, 0.0);
-  }
-
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  if (segmentationNode)
-  {
-    bool boolValue;
-    float floatValue;
-
-    if (!segmentationNode->GetBoolProperty("midas.general_segmentor.see_prior", boolValue))
-    {
-      boolValue = false;
-      segmentationNode->SetBoolProperty("midas.general_segmentor.see_prior", boolValue);
-    }
-    d->m_GUI->SetSeePriorCheckBoxChecked(boolValue);
-
-    if (!segmentationNode->GetBoolProperty("midas.general_segmentor.see_next", boolValue))
-    {
-      boolValue = false;
-      segmentationNode->SetBoolProperty("midas.general_segmentor.see_next", boolValue);
-    }
-    d->m_GUI->SetSeeNextCheckBoxChecked(boolValue);
-
-    if (!segmentationNode->GetBoolProperty("midas.general_segmentor.retain_marks", boolValue))
-    {
-      boolValue = false;
-      segmentationNode->SetBoolProperty("midas.general_segmentor.retain_marks", boolValue);
-    }
-    d->m_GUI->SetRetainMarksCheckBoxChecked(boolValue);
-
-    if (!segmentationNode->GetBoolProperty("midas.general_segmentor.thresholding", boolValue))
-    {
-      boolValue = false;
-      segmentationNode->SetBoolProperty("midas.general_segmentor.thresholding", boolValue);
-    }
-    d->m_GUI->SetThresholdingCheckBoxChecked(boolValue);
-    d->m_GUI->SetThresholdingWidgetsEnabled(boolValue);
-
-    if (!segmentationNode->GetFloatProperty("midas.general_segmentor.lower_threshold", floatValue))
-    {
-      floatValue = 0.0f;
-      segmentationNode->SetBoolProperty("midas.general_segmentor.", floatValue);
-    }
-    d->m_GUI->SetLowerThreshold(floatValue);
-
-    if (!segmentationNode->GetFloatProperty("midas.general_segmentor.upper_threshold", floatValue))
-    {
-      floatValue = 0.0f;
-      segmentationNode->SetBoolProperty("midas.general_segmentor.", floatValue);
-    }
-    d->m_GUI->SetUpperThreshold(floatValue);
-
-    this->RecalculateMinAndMaxOfSeedValues();
-  }
-  else
-  {
-    d->m_GUI->SetSeePriorCheckBoxChecked(false);
-    d->m_GUI->SetSeeNextCheckBoxChecked(false);
-    d->m_GUI->SetRetainMarksCheckBoxChecked(false);
-    d->m_GUI->SetThresholdingCheckBoxEnabled(false);
-    d->m_GUI->SetThresholdingCheckBoxToolTip("");
-    d->m_GUI->SetThresholdingCheckBoxChecked(false);
-    d->m_GUI->SetThresholdingWidgetsEnabled(false);
-    d->m_GUI->SetLowerAndUpperIntensityRanges(0.0, 0.0);
-    d->m_GUI->SetLowerThreshold(0.0);
-    d->m_GUI->SetUpperThreshold(0.0);
-    d->m_GUI->SetSeedMinAndMaxValues(0.0, 0.0);
-  }
-}
 
 
 //-----------------------------------------------------------------------------
@@ -933,326 +750,303 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 {
   Q_D(GeneralSegmentorController);
 
-  if (orientation == d->m_Orientation && selectedSliceIndex == d->m_SelectedSliceIndex)
+  if (orientation != d->m_Orientation || selectedSliceIndex != d->m_SelectedSliceIndex)
   {
-    return;
-  }
-
-  if (!this->HasWorkingNodes() || orientation == IMAGE_ORIENTATION_UNKNOWN)
-  {
-    d->m_Orientation = IMAGE_ORIENTATION_UNKNOWN;
-    d->m_SelectedSliceIndex = -1;
-    d->m_SliceAxis = -1;
-    d->m_SliceIndex = -1;
-    d->m_SelectedPosition.Fill(0);
-
-    return;
-  }
-
-  int sliceAxis = this->GetReferenceImageSliceAxis();
-  int sliceIndex = this->GetReferenceImageSliceIndex();
-  mitk::Point3D selectedPosition = this->GetSelectedPosition();
-
-  if (sliceAxis == -1 || sliceIndex == -1)
-  {
-    QMessageBox::warning(
-          d->m_GUI->GetParent(),
-          "",
-          "Cannot determine the axis and index of the current slice.\n"
-          "Make sure that a 2D render window is selected. Cannot continue.",
-          QMessageBox::Ok);
-
-    d->m_Orientation = IMAGE_ORIENTATION_UNKNOWN;
-    d->m_SelectedSliceIndex = -1;
-    d->m_SliceAxis = sliceAxis;
-    d->m_SliceIndex = sliceIndex;
-    d->m_SelectedPosition.Fill(0);
-
-    return;
-  }
-
-  if (!d->m_IsUpdating && !d->m_IsChangingSlice)
-  {
-    bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
-
-    mitk::Operation* doOp;
-    mitk::Operation* undoOp;
-    mitk::OperationEvent* opEvent;
-
-    DrawTool* drawTool = this->GetToolByType<DrawTool>();
-
-    mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
-    mitk::PointSet::Pointer newSeeds = mitk::PointSet::New();
-    std::vector<int> outputRegion;
-
-    mitk::PointSet* seeds = this->GetSeeds();
-    bool oldSliceIsEmpty = false;
-    bool newSliceIsEmpty = true;
-
-    bool wasUpdating = d->m_IsUpdating;
-    d->m_IsUpdating = true;
-
-    ///////////////////////////////////////////////////////
-    // See: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1742
-    //      for the whole logic surrounding changing slice.
-    ///////////////////////////////////////////////////////
-
-    try
+    if (this->HasInitialisedWorkingData()
+        && orientation != IMAGE_ORIENTATION_UNKNOWN)
     {
-      const mitk::Image* referenceImage = this->GetReferenceImage();
-      const mitk::Image* segmentationImage = this->GetWorkingImage();
-      assert(referenceImage && segmentationImage);
+      int sliceAxis = this->GetReferenceImageSliceAxis();
+      int sliceIndex = this->GetReferenceImageSliceIndex();
+      mitk::Point3D selectedPosition = this->GetSelectedPosition();
 
-      AccessFixedDimensionByItk_n(segmentationImage,
-          ITKSliceIsEmpty, 3,
-          (sliceAxis,
-           sliceIndex,
-           newSliceIsEmpty
-          )
-        );
-
-      bool operationCancelled = false;
-
-      if (orientation == d->m_Orientation
-          && std::abs(d->m_SliceIndex - sliceIndex) == 1
-          && d->m_GUI->IsRetainMarksCheckBoxChecked())
+      if (sliceAxis == -1 || sliceIndex == -1)
       {
-        QMessageBox::StandardButton answer = QMessageBox::NoButton;
-
-        if (!isThresholdingOn)
-        {
-          AccessFixedDimensionByItk_n(segmentationImage,
-              ITKSliceIsEmpty, 3,
-              (d->m_SliceAxis,
-               d->m_SliceIndex,
-               oldSliceIsEmpty
-              )
-            );
-        }
-
-        if (oldSliceIsEmpty)
-        {
-          answer = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
-                                                  tr("The previous slice is empty - retain marks cannot be performed.\n"
-                                                     "Use the 'wipe' functionality to erase slices instead"),
-                                                  QMessageBox::Ok
-                               );
-        }
-        else if (!newSliceIsEmpty)
-        {
-          answer = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
-                                                  tr("The new slice is not empty - retain marks will overwrite the slice.\n"
-                                                     "Are you sure?"),
-                                                  QMessageBox::Yes | QMessageBox::No);
-        }
-
-        if (answer == QMessageBox::Ok || answer == QMessageBox::No )
-        {
-          operationCancelled = true;
-        }
-        else
-        {
-          AccessFixedDimensionByItk_n(segmentationImage,
-              ITKPreprocessingOfSeedsForChangingSlice, 3,
-              (seeds,
-               d->m_SliceAxis,
-               d->m_SliceIndex,
-               sliceAxis,
-               sliceIndex,
-               false, // We propagate seeds at current position, so no optimisation
-               newSliceIsEmpty,
-               copyOfCurrentSeeds,
-               newSeeds,
-               outputRegion
-              )
-            );
-
-          if (isThresholdingOn)
-          {
-            QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(d->m_SliceIndex).arg(sliceIndex);
-            OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-            doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
-            undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
-            opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
-            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
-            this->ExecuteOperation(doOp);
-
-            drawTool->ClearWorkingData();
-            this->UpdateCurrentSliceContours();
-          }
-
-          itk::Orientation itkOrientation = GetItkOrientation(this->GetOrientation());
-
-          // Do retain marks, which copies slice from beforeSliceIndex to afterSliceIndex
-          QString message = tr("Retaining marks in slice %1 and copying to %2").arg(d->m_SliceIndex).arg(sliceIndex);
-          OpRetainMarks::ProcessorPointer processor = OpRetainMarks::ProcessorType::New();
-          doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, sliceAxis, d->m_SliceIndex, sliceIndex, itkOrientation, outputRegion, processor);
-          undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, sliceAxis, d->m_SliceIndex, sliceIndex, itkOrientation, outputRegion, processor);
-          opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
-          this->ExecuteOperation(doOp);
-        }
-      }
-      else // so, switching orientation, jumping slice or "Retain Marks" is off.
-      {
-        AccessFixedDimensionByItk_n(segmentationImage,
-            ITKPreprocessingOfSeedsForChangingSlice, 3,
-            (seeds,
-             d->m_SliceAxis,
-             d->m_SliceIndex,
-             sliceAxis,
-             sliceIndex,
-             true, // optimise seed position on current slice.
-             newSliceIsEmpty,
-             copyOfCurrentSeeds,
-             newSeeds,
-             outputRegion
-            )
-          );
-
-        if (isThresholdingOn)
-        {
-          OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-          doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
-          undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
-          opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Apply threshold");
-          mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
-          this->ExecuteOperation(doOp);
-
-          drawTool->ClearWorkingData();
-          this->UpdateCurrentSliceContours();
-        }
-        else // threshold box not checked
-        {
-          bool oldSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, d->m_SliceAxis, d->m_SliceIndex);
-
-          if (oldSliceHasUnenclosedSeeds)
-          {
-            QMessageBox::StandardButton returnValue =
-                QMessageBox::warning(
-                  d->m_GUI->GetParent(),
-                  tr("NiftyMIDAS"),
-                  tr("There are unenclosed seeds - slice will be wiped\n"
-                     "Are you sure?"),
-                  QMessageBox::Yes | QMessageBox::No);
-
-            if (returnValue == QMessageBox::Yes)
-            {
-              OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
-              doOp = new OpWipe(OP_WIPE, true, d->m_SliceAxis, d->m_SliceIndex, outputRegion, newSeeds, processor);
-              undoOp = new OpWipe(OP_WIPE, false, d->m_SliceAxis, d->m_SliceIndex, outputRegion, copyOfCurrentSeeds, processor);
-              opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Wipe command");
-              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
-              this->ExecuteOperation(doOp);
-            }
-            else
-            {
-              operationCancelled = true;
-            }
-          }
-          else // so, we don't have unenclosed seeds
-          {
-            // There may be the case where the user has simply drawn a region, and put a seed in the middle.
-            // So, we do a region growing, without intensity limits. (we already know there are no unenclosed seeds).
-
-            this->UpdateRegionGrowing(false,
-                                      d->m_SliceAxis,
-                                      d->m_SliceIndex,
-                                      referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
-                                      referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
-                                      false);
-
-            // Then we "apply" this region growing.
-            OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
-            doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
-            undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
-            opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Apply threshold");
-            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
-            this->ExecuteOperation(doOp);
-
-            drawTool->ClearWorkingData();
-
-          } // end if/else unenclosed seeds
-        } // end if/else thresholding on
-      } // end if/else retain marks.
-
-      if (!operationCancelled)
-      {
-        QString oldOrientationName = QString::fromStdString(GetOrientationName(d->m_Orientation));
-        QString newOrientationName = QString::fromStdString(GetOrientationName(orientation));
-        QString message = tr("Propagate seeds on %1 slice %2 (image axis: %3, slice: %4)")
-            .arg(newOrientationName).arg(selectedSliceIndex)
-            .arg(sliceAxis).arg(sliceIndex);
-        doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, newSeeds);
-        undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, d->m_SliceAxis, d->m_SliceIndex, copyOfCurrentSeeds);
-        opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
-        mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
-        this->ExecuteOperation(doOp);
-
-        message = tr("Change from %1 slice %2 to %3 slice %4 (from image axis %5 slice %6 to axis %7 slice %8)")
-            .arg(oldOrientationName).arg(d->m_SelectedSliceIndex).arg(newOrientationName).arg(selectedSliceIndex)
-            .arg(d->m_SliceAxis).arg(d->m_SliceIndex).arg(sliceAxis).arg(sliceIndex);
-        doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SelectedPosition, selectedPosition);
-        undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SelectedPosition, selectedPosition);
-        opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
-        mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
-        this->ExecuteOperation(doOp);
-
-        mitk::ToolManager* toolManager = this->GetToolManager();
-        if (PolyTool* polyTool = dynamic_cast<PolyTool*>(toolManager->GetActiveTool()))
-        {
-          /// This makes the poly tool save its result to the working data nodes and stay it open.
-          polyTool->Deactivated();
-          polyTool->Activated();
-        }
-      }
-      else
-      {
-        d->m_IsUpdating = wasUpdating;
-
-        /// This slot restores the last selected position from before changing
-        /// slice, by calling this->SetSelectedPosition(d->m_SelectedPosition).
-        /// We cannot call this function directly from here because this would
-        /// cause a recursion in the event handling call chain.
-        /// So, we let this function finish, and ask the Qt timer to call the
-        /// slot 1ms later.
-        QTimer::singleShot(1, this, SLOT(RestoreSelectedPosition()));
-
+        QMessageBox::warning(
+              d->m_GUI->GetParent(),
+              "",
+              "Cannot determine the axis and index of the current slice.\n"
+              "Make sure that a 2D render window is selected. Cannot continue.",
+              QMessageBox::Ok);
         return;
       }
 
-      this->UpdateCurrentSliceContours(false);
-      this->UpdatePriorAndNext(false);
-      this->UpdateRegionGrowing(false);
-    }
-    catch(const mitk::AccessByItkException& e)
-    {
-      MITK_ERROR << "Could not change slice: Caught mitk::AccessByItkException:" << e.what();
-    }
-    catch(const itk::ExceptionObject& e)
-    {
-      MITK_ERROR << "Could not change slice: Caught itk::ExceptionObject:" << e.what();
-    }
+      if (!d->m_IsUpdating
+          && !d->m_IsChangingSlice)
+      {
+        bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
 
-    d->m_IsUpdating = wasUpdating;
+        mitk::Operation* doOp;
+        mitk::Operation* undoOp;
+        mitk::OperationEvent* opEvent;
 
-    this->RequestRenderWindowUpdate();
-  }
+        DrawTool* drawTool = this->GetToolByType<DrawTool>();
 
-  d->m_Orientation = orientation;
-  d->m_SelectedSliceIndex = selectedSliceIndex;
-  d->m_SliceAxis = sliceAxis;
-  d->m_SliceIndex = sliceIndex;
-  d->m_SelectedPosition = selectedPosition;
+        mitk::PointSet::Pointer copyOfCurrentSeeds = mitk::PointSet::New();
+        mitk::PointSet::Pointer newSeeds = mitk::PointSet::New();
+        std::vector<int> outputRegion;
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  mitk::AnnotationProperty* selectedPositionProperty =
-      dynamic_cast<mitk::AnnotationProperty*>(segmentationNode->GetProperty("midas.general_segmentor.selected_position"));
-  if (selectedPositionProperty)
-  {
-    /// We can assume that the property is there, because we set it when the working nodes were selected.
-    selectedPositionProperty->SetPosition(selectedPosition);
-  }
+        mitk::PointSet* seeds = this->GetSeeds();
+        bool oldSliceIsEmpty = false;
+        bool newSliceIsEmpty = true;
+
+        bool wasUpdating = d->m_IsUpdating;
+        d->m_IsUpdating = true;
+
+        ///////////////////////////////////////////////////////
+        // See: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/1742
+        //      for the whole logic surrounding changing slice.
+        ///////////////////////////////////////////////////////
+
+        try
+        {
+          const mitk::Image* referenceImage = this->GetReferenceImage();
+          const mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+          assert(referenceImage && segmentationImage);
+
+          AccessFixedDimensionByItk_n(segmentationImage,
+              ITKSliceIsEmpty, 3,
+              (sliceAxis,
+               sliceIndex,
+               newSliceIsEmpty
+              )
+            );
+
+          bool operationCancelled = false;
+
+          if (orientation == d->m_Orientation
+              && std::abs(d->m_SliceIndex - sliceIndex) == 1
+              && d->m_GUI->IsRetainMarksCheckBoxChecked())
+          {
+            QMessageBox::StandardButton answer = QMessageBox::NoButton;
+
+            if (!isThresholdingOn)
+            {
+              AccessFixedDimensionByItk_n(segmentationImage,
+                  ITKSliceIsEmpty, 3,
+                  (d->m_SliceAxis,
+                   d->m_SliceIndex,
+                   oldSliceIsEmpty
+                  )
+                );
+            }
+
+            if (oldSliceIsEmpty)
+            {
+              answer = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
+                                                      tr("The previous slice is empty - retain marks cannot be performed.\n"
+                                                         "Use the 'wipe' functionality to erase slices instead"),
+                                                      QMessageBox::Ok
+                                   );
+            }
+            else if (!newSliceIsEmpty)
+            {
+              answer = QMessageBox::warning(d->m_GUI->GetParent(), tr("NiftyMIDAS"),
+                                                      tr("The new slice is not empty - retain marks will overwrite the slice.\n"
+                                                         "Are you sure?"),
+                                                      QMessageBox::Yes | QMessageBox::No);
+            }
+
+            if (answer == QMessageBox::Ok || answer == QMessageBox::No )
+            {
+              operationCancelled = true;
+            }
+            else
+            {
+              AccessFixedDimensionByItk_n(segmentationImage,
+                  ITKPreprocessingOfSeedsForChangingSlice, 3,
+                  (seeds,
+                   d->m_SliceAxis,
+                   d->m_SliceIndex,
+                   sliceAxis,
+                   sliceIndex,
+                   false, // We propagate seeds at current position, so no optimisation
+                   newSliceIsEmpty,
+                   copyOfCurrentSeeds,
+                   newSeeds,
+                   outputRegion
+                  )
+                );
+
+              if (isThresholdingOn)
+              {
+                QString message = tr("Thresholding slice %1 before copying marks to slice %2").arg(d->m_SliceIndex).arg(sliceIndex);
+                OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+                doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
+                undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
+                opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+                this->ExecuteOperation(doOp);
+
+                drawTool->ClearWorkingData();
+                this->UpdateCurrentSliceContours();
+              }
+
+              itk::Orientation itkOrientation = GetItkOrientation(this->GetOrientation());
+
+              // Do retain marks, which copies slice from beforeSliceIndex to afterSliceIndex
+              QString message = tr("Retaining marks in slice %1 and copying to %2").arg(d->m_SliceIndex).arg(sliceIndex);
+              OpRetainMarks::ProcessorPointer processor = OpRetainMarks::ProcessorType::New();
+              doOp = new OpRetainMarks(OP_RETAIN_MARKS, true, sliceAxis, d->m_SliceIndex, sliceIndex, itkOrientation, outputRegion, processor);
+              undoOp = new OpRetainMarks(OP_RETAIN_MARKS, false, sliceAxis, d->m_SliceIndex, sliceIndex, itkOrientation, outputRegion, processor);
+              opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+              this->ExecuteOperation(doOp);
+            }
+          }
+          else // so, switching orientation, jumping slice or "Retain Marks" is off.
+          {
+            AccessFixedDimensionByItk_n(segmentationImage,
+                ITKPreprocessingOfSeedsForChangingSlice, 3,
+                (seeds,
+                 d->m_SliceAxis,
+                 d->m_SliceIndex,
+                 sliceAxis,
+                 sliceIndex,
+                 true, // optimise seed position on current slice.
+                 newSliceIsEmpty,
+                 copyOfCurrentSeeds,
+                 newSeeds,
+                 outputRegion
+                )
+              );
+
+            if (isThresholdingOn)
+            {
+              OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+              doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
+              undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
+              opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Apply threshold");
+              mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+              this->ExecuteOperation(doOp);
+
+              drawTool->ClearWorkingData();
+              this->UpdateCurrentSliceContours();
+            }
+            else // threshold box not checked
+            {
+              bool oldSliceHasUnenclosedSeeds = this->DoesSliceHaveUnenclosedSeeds(false, d->m_SliceAxis, d->m_SliceIndex);
+
+              if (oldSliceHasUnenclosedSeeds)
+              {
+                QMessageBox::StandardButton returnValue =
+                    QMessageBox::warning(
+                      d->m_GUI->GetParent(),
+                      tr("NiftyMIDAS"),
+                      tr("There are unenclosed seeds - slice will be wiped\n"
+                         "Are you sure?"),
+                      QMessageBox::Yes | QMessageBox::No);
+
+                if (returnValue == QMessageBox::Yes)
+                {
+                  OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
+                  doOp = new OpWipe(OP_WIPE, true, d->m_SliceAxis, d->m_SliceIndex, outputRegion, newSeeds, processor);
+                  undoOp = new OpWipe(OP_WIPE, false, d->m_SliceAxis, d->m_SliceIndex, outputRegion, copyOfCurrentSeeds, processor);
+                  opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
+                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+                  this->ExecuteOperation(doOp);
+                }
+                else
+                {
+                  operationCancelled = true;
+                }
+              }
+              else // so, we don't have unenclosed seeds
+              {
+                // There may be the case where the user has simply drawn a region, and put a seed in the middle.
+                // So, we do a region growing, without intensity limits. (we already know there are no unenclosed seeds).
+
+                this->UpdateRegionGrowing(false,
+                                          d->m_SliceAxis,
+                                          d->m_SliceIndex,
+                                          referenceImage->GetStatistics()->GetScalarValueMinNoRecompute(),
+                                          referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute(),
+                                          false);
+
+                // Then we "apply" this region growing.
+                OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
+                doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
+                undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
+                opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Apply threshold");
+                mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+                this->ExecuteOperation(doOp);
+
+                drawTool->ClearWorkingData();
+
+              } // end if/else unenclosed seeds
+            } // end if/else thresholding on
+          } // end if/else retain marks.
+
+          if (!operationCancelled)
+          {
+            QString oldOrientationName = QString::fromStdString(GetOrientationName(d->m_Orientation));
+            QString newOrientationName = QString::fromStdString(GetOrientationName(orientation));
+            QString message = tr("Propagate seeds on %1 slice %2 (image axis: %3, slice: %4)")
+                .arg(newOrientationName).arg(selectedSliceIndex)
+                .arg(sliceAxis).arg(sliceIndex);
+            doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, newSeeds);
+            undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, d->m_SliceAxis, d->m_SliceIndex, copyOfCurrentSeeds);
+            opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+            this->ExecuteOperation(doOp);
+
+            message = tr("Change from %1 slice %2 to %3 slice %4 (from image axis %5 slice %6 to axis %7 slice %8)")
+                .arg(oldOrientationName).arg(d->m_SelectedSliceIndex).arg(newOrientationName).arg(selectedSliceIndex)
+                .arg(d->m_SliceAxis).arg(d->m_SliceIndex).arg(sliceAxis).arg(sliceIndex);
+            doOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, true, d->m_SelectedPosition, selectedPosition);
+            undoOp = new OpChangeSliceCommand(OP_CHANGE_SLICE, false, d->m_SelectedPosition, selectedPosition);
+            opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
+            mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+            this->ExecuteOperation(doOp);
+
+            mitk::ToolManager* toolManager = this->GetToolManager();
+            if (PolyTool* polyTool = dynamic_cast<PolyTool*>(toolManager->GetActiveTool()))
+            {
+              /// This makes the poly tool save its result to the working data nodes and stay it open.
+              polyTool->Deactivated();
+              polyTool->Activated();
+            }
+          }
+          else
+          {
+            /// This slot restores the last selected position from before changing
+            /// slice, by calling this->SetSelectedPosition(d->m_SelectedPosition).
+            /// We cannot call this function directly from here because this would
+            /// cause a recursion in the event handling call chain.
+            /// So, we let this function finish, and ask the Qt timer to call the
+            /// slot 1ms later.
+            QTimer::singleShot(1, this, SLOT(RestoreSelectedPosition()));
+
+            return;
+          }
+
+          this->UpdateCurrentSliceContours(false);
+          this->UpdatePriorAndNext(false);
+          this->UpdateRegionGrowing(false);
+        }
+        catch(const mitk::AccessByItkException& e)
+        {
+          MITK_ERROR << "Could not change slice: Caught mitk::AccessByItkException:" << e.what();
+        }
+        catch(const itk::ExceptionObject& e)
+        {
+          MITK_ERROR << "Could not change slice: Caught itk::ExceptionObject:" << e.what();
+        }
+
+        d->m_IsUpdating = wasUpdating;
+
+        this->RequestRenderWindowUpdate();
+      } // if not being updated and not changing slice
+
+      d->m_SliceAxis = sliceAxis;
+      d->m_SliceIndex = sliceIndex;
+      d->m_SelectedPosition = selectedPosition;
+
+    } // if initialised and valid orientation (2D window selected)
+
+    d->m_Orientation = orientation;
+    d->m_SelectedSliceIndex = selectedSliceIndex;
+
+  } // if orientation or selected slice has changed
 }
 
 
@@ -1267,6 +1061,7 @@ void GeneralSegmentorController::RestoreSelectedPosition()
   d->m_IsChangingSlice = wasChangingSlice;
 }
 
+
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
 {
@@ -1274,53 +1069,68 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
 
   if (d->m_IsDeleting
       || d->m_IsUpdating
-      || !this->HasWorkingNodes()
+      || !this->HasInitialisedWorkingData()
       )
   {
     return;
   }
 
-  std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodes();
-
-  bool seedsChanged = false;
-  bool drawContoursChanged = false;
-
-  if (workingNodes[Tool::SEEDS] && workingNodes[Tool::SEEDS] == node)
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
+  if (workingData.size() > 0)
   {
-    seedsChanged = true;
-  }
+    bool seedsChanged(false);
+    bool drawContoursChanged(false);
 
-  if (workingNodes[Tool::DRAW_CONTOURS] && workingNodes[Tool::DRAW_CONTOURS] == node)
-  {
-    drawContoursChanged = true;
-  }
-
-  if (!seedsChanged && !drawContoursChanged)
-  {
-    return;
-  }
-
-  mitk::DataNode* segmentationNode = workingNodes[Tool::SEGMENTATION];
-
-  mitk::PointSet* seeds = this->GetSeeds();
-  if (seeds && seeds->GetSize() > 0)
-  {
-    bool contourIsBeingEdited = false;
-    if (segmentationNode == node)
+    if (workingData[Tool::SEEDS] && workingData[Tool::SEEDS] == node)
     {
-      segmentationNode->GetBoolProperty(ContourTool::EDITING_PROPERTY_NAME.c_str(), contourIsBeingEdited);
+      seedsChanged = true;
+    }
+    if (workingData[Tool::DRAW_CONTOURS] && workingData[Tool::DRAW_CONTOURS] == node)
+    {
+      drawContoursChanged = true;
     }
 
-    if (!contourIsBeingEdited)
+    if (!seedsChanged && !drawContoursChanged)
     {
-      if (seedsChanged)
+      return;
+    }
+
+    mitk::DataNode::Pointer segmentationImageNode = workingData[Tool::SEGMENTATION];
+    if (segmentationImageNode.IsNotNull())
+    {
+      mitk::PointSet* seeds = this->GetSeeds();
+      if (seeds && seeds->GetSize() > 0)
       {
-        this->RecalculateMinAndMaxOfSeedValues();
+
+        bool contourIsBeingEdited(false);
+        if (segmentationImageNode.GetPointer() == node)
+        {
+          segmentationImageNode->GetBoolProperty(ContourTool::EDITING_PROPERTY_NAME.c_str(), contourIsBeingEdited);
+        }
+
+        if (!contourIsBeingEdited)
+        {
+          if (seedsChanged)
+          {
+            this->RecalculateMinAndMaxOfSeedValues();
+          }
+
+          if (seedsChanged || drawContoursChanged)
+          {
+            this->UpdateRegionGrowing();
+          }
+        }
       }
 
-      if (seedsChanged || drawContoursChanged)
+      float lowerThreshold;
+      float upperThreshold;
+      if (segmentationImageNode->GetFloatProperty("general segmentor.lower threshold", lowerThreshold))
       {
-        this->UpdateRegionGrowing();
+        d->m_GUI->SetLowerThreshold(lowerThreshold);
+      }
+      if (segmentationImageNode->GetFloatProperty("general segmentor.upper threshold", upperThreshold))
+      {
+        d->m_GUI->SetUpperThreshold(upperThreshold);
       }
     }
   }
@@ -1330,14 +1140,14 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnNodeRemoved(const mitk::DataNode* removedNode)
 {
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(Tool::SEGMENTATION);
 
-  if (segmentationNode == removedNode)
+  if (segmentationNode.GetPointer() == removedNode)
   {
     QMessageBox::StandardButtons saveSegmentation = QMessageBox::question(
           this->GetGUI()->GetParent(),
@@ -1369,21 +1179,27 @@ void GeneralSegmentorController::OnContoursChanged()
 
 
 //-----------------------------------------------------------------------------
-mitk::PointSet* GeneralSegmentorController::GetSeeds() const
+mitk::PointSet* GeneralSegmentorController::GetSeeds()
 {
-  if (auto seedsNode = this->GetWorkingNode(Tool::SEEDS))
+  mitk::PointSet* result = nullptr;
+
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  assert(toolManager);
+
+  mitk::DataNode* seedsNode = toolManager->GetWorkingData(Tool::SEEDS);
+  if (seedsNode)
   {
-    return dynamic_cast<mitk::PointSet*>(seedsNode->GetData());
+    result = dynamic_cast<mitk::PointSet*>(seedsNode->GetData());
   }
 
-  return nullptr;
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int sliceIndex)
 {
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
@@ -1391,7 +1207,7 @@ void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int slic
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
 
-  const mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+  mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
   assert(segmentationImage);
 
   try
@@ -1412,23 +1228,39 @@ void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int slic
 
 
 //-----------------------------------------------------------------------------
-void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues() const
+void GeneralSegmentorController::RecalculateMinAndMaxOfImage()
 {
-  Q_D(const GeneralSegmentorController);
+  Q_D(GeneralSegmentorController);
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
-
-  if (!referenceImage || referenceImage->GetPixelType().GetNumberOfComponents() != 1)
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
   {
-    d->m_GUI->SetSeedMinAndMaxValues(0.0, 0.0);
+    double min = referenceImage->GetStatistics()->GetScalarValueMinNoRecompute();
+    double max = referenceImage->GetStatistics()->GetScalarValueMaxNoRecompute();
+    d->m_GUI->SetLowerAndUpperIntensityRanges(min, max);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
+{
+  Q_D(GeneralSegmentorController);
+
+  mitk::Image* referenceImage = this->GetReferenceImage();
+
+  if (referenceImage->GetPixelType().GetNumberOfComponents() != 1)
+  {
+    d->m_GUI->SetSeedMinAndMaxValues(0, 0);
     return;
   }
 
   mitk::PointSet* seeds = this->GetSeeds();
-  if (seeds)
+
+  if (referenceImage && seeds)
   {
-    double min = 0.0;
-    double max = 0.0;
+    double min = 0;
+    double max = 0;
 
     int sliceIndex = this->GetReferenceImageSliceIndex();
     int sliceAxis = this->GetReferenceImageSliceAxis();
@@ -1462,7 +1294,7 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
@@ -1481,27 +1313,27 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
     return;
   }
 
-  const mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+  mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
   assert(segmentationImage);
 
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  mitk::DataNode* contoursNode = this->GetWorkingNode(Tool::CONTOURS);
-  mitk::ContourModelSet* contours = dynamic_cast<mitk::ContourModelSet*>(contoursNode->GetData());
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
+  mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[Tool::CONTOURS]->GetData());
 
   // TODO
   // This assertion fails sometimes if both the morphological and irregular (this) volume editor is
   // switched on and you are using the paintbrush tool of the morpho editor.
 //  assert(contourSet);
 
-  if (contours)
+  if (contourSet)
   {
-    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex, sliceIndex, contours);
+    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex, sliceIndex, contourSet);
 
-    if (contours->GetSize() > 0)
+    if (contourSet->GetSize() > 0)
     {
-      contoursNode->Modified();
+      workingData[Tool::CONTOURS]->Modified();
 
       if (updateRendering)
       {
@@ -1515,20 +1347,18 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
 {
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  segmentationNode->SetBoolProperty("midas.general_segmentor.see_prior", checked);
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   if (checked)
   {
     this->UpdatePriorAndNext();
   }
-
-  this->GetWorkingNode(Tool::PRIOR_CONTOURS)->SetVisibility(checked);
+  workingData[Tool::PRIOR_CONTOURS]->SetVisibility(checked);
   this->RequestRenderWindowUpdate();
 }
 
@@ -1536,34 +1366,19 @@ void GeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnSeeNextCheckBoxToggled(bool checked)
 {
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  segmentationNode->SetBoolProperty("midas.general_segmentor.see_next", checked);
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   if (checked)
   {
     this->UpdatePriorAndNext();
   }
-
-  this->GetWorkingNode(Tool::NEXT_CONTOURS)->SetVisibility(checked);
+  workingData[Tool::NEXT_CONTOURS]->SetVisibility(checked);
   this->RequestRenderWindowUpdate();
-}
-
-
-//-----------------------------------------------------------------------------
-void GeneralSegmentorController::OnRetainMarksCheckBoxToggled(bool checked)
-{
-  if (!this->HasWorkingNodes())
-  {
-    return;
-  }
-
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  segmentationNode->SetBoolProperty("midas.general_segmentor.retain_marks", checked);
 }
 
 
@@ -1572,16 +1387,14 @@ void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     // So, if there is NO working data, we leave the widgets disabled regardless.
     d->m_GUI->SetThresholdingWidgetsEnabled(false);
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  segmentationNode->SetBoolProperty("midas.general_segmentor.thresholding", checked);
-
+  this->RecalculateMinAndMaxOfImage();
   this->RecalculateMinAndMaxOfSeedValues();
 
   d->m_GUI->SetThresholdingWidgetsEnabled(checked);
@@ -1591,7 +1404,8 @@ void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
     this->UpdateRegionGrowing();
   }
 
-  this->GetWorkingNode(Tool::REGION_GROWING)->SetVisibility(checked);
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
+  workingData[Tool::REGION_GROWING]->SetVisibility(checked);
 
   this->RequestRenderWindowUpdate();
 }
@@ -1601,14 +1415,6 @@ void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
 void GeneralSegmentorController::OnThresholdValueChanged()
 {
   Q_D(GeneralSegmentorController);
-
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-
-  float lowerThreshold = d->m_GUI->GetLowerThreshold();
-  segmentationNode->GetFloatProperty("midas.general_segmentor.lower_threshold", lowerThreshold);
-
-  float upperThreshold = d->m_GUI->GetUpperThreshold();
-  segmentationNode->GetFloatProperty("midas.general_segmentor.upper_threshold", upperThreshold);
 
   this->UpdateRegionGrowing();
 }
@@ -1641,6 +1447,10 @@ void GeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
     double upperThreshold = d->m_GUI->GetUpperThreshold();
     bool skipUpdate = !isThresholdingOn;
 
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
+    segmentationNode->SetFloatProperty("general segmentor.lower threshold", lowerThreshold);
+    segmentationNode->SetFloatProperty("general segmentor.upper threshold", upperThreshold);
+
     this->UpdateRegionGrowing(isThresholdingOn, sliceAxis, sliceIndex, lowerThreshold, upperThreshold, skipUpdate);
 
     if (updateRendering)
@@ -1663,28 +1473,30 @@ void GeneralSegmentorController::UpdateRegionGrowing(
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
-    mitk::DataNode* segmentationNode = this->GetWorkingNode();
-    const mitk::Image* segmentationImage = this->GetWorkingImage();
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
+    mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
-    if (segmentationImage && segmentationNode)
+    if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
-      this->GetWorkingNode(Tool::REGION_GROWING)->SetVisibility(isVisible);
+
+      std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
+      workingData[Tool::REGION_GROWING]->SetVisibility(isVisible);
 
       bool wasUpdating = d->m_IsUpdating;
       d->m_IsUpdating = true;
 
-      mitk::DataNode* regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
+      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
       assert(regionGrowingNode);
 
-      mitk::Image* regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
+      mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
       assert(regionGrowingImage);
 
       mitk::PointSet* seeds = this->GetSeeds();
@@ -1704,8 +1516,8 @@ void GeneralSegmentorController::UpdateRegionGrowing(
         polyToolContours->AddContourModel(polyToolContour);
       }
 
-      mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNode(Tool::CONTOURS)->GetData());
-      mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNode(Tool::DRAW_CONTOURS)->GetData());
+      mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::CONTOURS]->GetData());
+      mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::DRAW_CONTOURS]->GetData());
 
       if (sliceAxis != -1 && sliceIndex != -1)
       {
@@ -1772,7 +1584,7 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
@@ -1791,17 +1603,17 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
     return;
   }
 
-  const mitk::Image* segmentationImage = this->GetWorkingImage();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
+  mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (d->m_GUI->IsSeePriorCheckBoxChecked())
   {
-    mitk::DataNode* priorContoursNode = this->GetWorkingNode(Tool::PRIOR_CONTOURS);
-    mitk::ContourModelSet::Pointer priorContours = dynamic_cast<mitk::ContourModelSet*>(priorContoursNode->GetData());
-    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex - 1, sliceIndex, priorContours);
+    mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[Tool::PRIOR_CONTOURS]->GetData());
+    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex - 1, sliceIndex, contourSet);
 
-    if (priorContours->GetSize() > 0)
+    if (contourSet->GetSize() > 0)
     {
-      priorContoursNode->Modified();
+      workingData[Tool::PRIOR_CONTOURS]->Modified();
 
       if (updateRendering)
       {
@@ -1812,13 +1624,12 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
 
   if (d->m_GUI->IsSeeNextCheckBoxChecked())
   {
-    mitk::DataNode* nextContoursNode = this->GetWorkingNode(Tool::NEXT_CONTOURS);
-    mitk::ContourModelSet::Pointer nextContours = dynamic_cast<mitk::ContourModelSet*>(nextContoursNode->GetData());
-    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex + 1, sliceIndex, nextContours);
+    mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[Tool::NEXT_CONTOURS]->GetData());
+    GenerateOutlineFromBinaryImage(segmentationImage, sliceAxis, sliceIndex + 1, sliceIndex, contourSet);
 
-    if (nextContours->GetSize() > 0)
+    if (contourSet->GetSize() > 0)
     {
-      nextContoursNode->Modified();
+      workingData[Tool::NEXT_CONTOURS]->Modified();
 
       if (updateRendering)
       {
@@ -1844,20 +1655,15 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
-  {
-    return false;
-  }
-
-  if (sliceAxis == -1 || sliceIndex == -1)
-  {
-    return false;
-  }
-
   bool sliceDoesHaveUnenclosedSeeds = false;
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
-  const mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
+  if (!this->HasInitialisedWorkingData())
+  {
+    return sliceDoesHaveUnenclosedSeeds;
+  }
+
+  mitk::Image::ConstPointer referenceImage = this->GetReferenceImage();
+  mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -1872,55 +1678,58 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
     polyToolContours->AddContourModel(polyToolContour);
   }
 
-  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNode(Tool::CONTOURS)->GetData());
-  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNode(Tool::DRAW_CONTOURS)->GetData());
+  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::CONTOURS]->GetData());
+  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::DRAW_CONTOURS]->GetData());
 
   double lowerThreshold = d->m_GUI->GetLowerThreshold();
   double upperThreshold = d->m_GUI->GetUpperThreshold();
 
-  try
+  if (sliceAxis != -1 && sliceIndex != -1)
   {
-    if (referenceImage->GetPixelType().GetNumberOfComponents() == 1)
+    try
     {
-      // The reference image is the grey scale (read only).
-      AccessFixedDimensionByItk_n(referenceImage,
-        ITKSliceDoesHaveUnenclosedSeeds, 3,
-          (seeds,
-           segmentationContours,
-           polyToolContours,
-           drawToolContours,
-           segmentationImage,
-           lowerThreshold,
-           upperThreshold,
-           thresholdOn,
-           sliceAxis,
-           sliceIndex,
-           sliceDoesHaveUnenclosedSeeds
-          )
-      );
-    }
-    else
-    {
-      // The reference image is RGB (read only).
-      AccessFixedTypeByItk_n(
-            referenceImage,
-            ITKSliceDoesHaveUnenclosedSeedsNoThresholds,
-            MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
-            (3),
+      if (referenceImage->GetPixelType().GetNumberOfComponents() == 1)
+      {
+        // The reference image is the grey scale (read only).
+        AccessFixedDimensionByItk_n(referenceImage,
+          ITKSliceDoesHaveUnenclosedSeeds, 3,
             (seeds,
              segmentationContours,
              polyToolContours,
              drawToolContours,
              segmentationImage,
+             lowerThreshold,
+             upperThreshold,
+             thresholdOn,
              sliceAxis,
              sliceIndex,
-             sliceDoesHaveUnenclosedSeeds)
-            );
+             sliceDoesHaveUnenclosedSeeds
+            )
+        );
+      }
+      else
+      {
+        // The reference image is RGB (read only).
+        AccessFixedTypeByItk_n(
+              referenceImage,
+              ITKSliceDoesHaveUnenclosedSeedsNoThresholds,
+              MITK_ACCESSBYITK_COMPOSITE_PIXEL_TYPES_SEQ,
+              (3),
+              (seeds,
+               segmentationContours,
+               polyToolContours,
+               drawToolContours,
+               segmentationImage,
+               sliceAxis,
+               sliceIndex,
+               sliceDoesHaveUnenclosedSeeds)
+              );
+      }
     }
-  }
-  catch(const mitk::AccessByItkException& e)
-  {
-    MITK_ERROR << "Caught exception during ITKSliceDoesHaveUnenclosedSeeds, so will return false, caused by:" << e.what();
+    catch(const mitk::AccessByItkException& e)
+    {
+      MITK_ERROR << "Caught exception during ITKSliceDoesHaveUnenclosedSeeds, so will return false, caused by:" << e.what();
+    }
   }
 
   return sliceDoesHaveUnenclosedSeeds;
@@ -1935,13 +1744,13 @@ void GeneralSegmentorController::FilterSeedsToCurrentSlice(
     mitk::PointSet* outputPoints
     )
 {
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
-  if (referenceImage)
+  mitk::Image::Pointer referenceImage = this->GetReferenceImage();
+  if (referenceImage.IsNotNull())
   {
     try
     {
@@ -2017,7 +1826,7 @@ void GeneralSegmentorController::DestroyPipeline()
 {
   Q_D(GeneralSegmentorController);
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
     bool wasDeleting = d->m_IsDeleting;
@@ -2041,11 +1850,11 @@ void GeneralSegmentorController::DestroyPipeline()
 
 
 //-----------------------------------------------------------------------------
-void GeneralSegmentorController::RemoveWorkingNodes()
+void GeneralSegmentorController::RemoveWorkingData()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
@@ -2054,16 +1863,16 @@ void GeneralSegmentorController::RemoveWorkingNodes()
   d->m_IsDeleting = true;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
-  std::vector<mitk::DataNode*> workingNodes = this->GetWorkingNodes();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   // We don't do the first image, as thats the final segmentation.
-  for (unsigned int i = 1; i < workingNodes.size(); i++)
+  for (unsigned int i = 1; i < workingData.size(); i++)
   {
-    this->GetDataStorage()->Remove(workingNodes[i]);
+    this->GetDataStorage()->Remove(workingData[i]);
   }
 
-  std::vector<mitk::DataNode*> noWorkingNodes(0);
-  toolManager->SetWorkingData(noWorkingNodes);
+  std::vector<mitk::DataNode*> emptyWorkingDataArray(0);
+  toolManager->SetWorkingData(emptyWorkingDataArray);
   toolManager->ActivateTool(-1);
 
   d->m_IsDeleting = wasDeleting;
@@ -2073,15 +1882,15 @@ void GeneralSegmentorController::RemoveWorkingNodes()
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::RestoreInitialSegmentation()
 {
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(Tool::SEGMENTATION);
   assert(segmentationNode);
 
-  mitk::DataNode* seedsNode = this->GetWorkingNode(Tool::SEEDS);
+  mitk::DataNode::Pointer seedsNode = this->GetToolManager()->GetWorkingData(Tool::SEEDS);
   assert(seedsNode);
 
   try
@@ -2090,7 +1899,7 @@ void GeneralSegmentorController::RestoreInitialSegmentation()
     /// now we rather restore the initial state of the segmentation as it was
     /// when we pressed the Create/restart segmentation button.
 
-//    mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
+//    mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
 //    assert(segmentationImage);
 //    AccessFixedDimensionByItk(segmentationImage.GetPointer(), ITKClearImage, 3);
 //    segmentationImage->Modified();
@@ -2099,8 +1908,8 @@ void GeneralSegmentorController::RestoreInitialSegmentation()
 //    mitk::PointSet::Pointer seeds = this->GetSeeds();
 //    seeds->Clear();
 
-    mitk::DataNode* initialSegmentationNode = this->GetWorkingNode(Tool::INITIAL_SEGMENTATION);
-    mitk::DataNode* initialSeedsNode = this->GetWorkingNode(Tool::INITIAL_SEEDS);
+    mitk::DataNode::Pointer initialSegmentationNode = this->GetToolManager()->GetWorkingData(Tool::INITIAL_SEGMENTATION);
+    mitk::DataNode::Pointer initialSeedsNode = this->GetToolManager()->GetWorkingData(Tool::INITIAL_SEEDS);
 
     segmentationNode->SetData(dynamic_cast<mitk::Image*>(initialSegmentationNode->GetData())->Clone());
     seedsNode->SetData(dynamic_cast<mitk::PointSet*>(initialSeedsNode->GetData())->Clone());
@@ -2120,13 +1929,13 @@ void GeneralSegmentorController::OnOKButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
   // Set the colour to that which the user selected in the first place.
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(Tool::SEGMENTATION);
   segmentationNode->SetProperty("color", segmentationNode->GetProperty("midas.tmp.selectedcolor"));
   segmentationNode->SetProperty("binaryimage.selectedcolor", segmentationNode->GetProperty("midas.tmp.selectedcolor"));
 
@@ -2135,7 +1944,7 @@ void GeneralSegmentorController::OnOKButtonClicked()
   this->OnCleanButtonClicked();
 
   this->DestroyPipeline();
-  this->RemoveWorkingNodes();
+  this->RemoveWorkingData();
   d->m_GUI->EnableSegmentationWidgets(false);
 
   this->RequestRenderWindowUpdate();
@@ -2148,7 +1957,7 @@ void GeneralSegmentorController::OnResetButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
@@ -2165,7 +1974,7 @@ void GeneralSegmentorController::OnResetButtonClicked()
     return;
   }
 
-  this->ClearWorkingNodes();
+  this->ClearWorkingData();
   this->UpdateRegionGrowing();
   this->UpdatePriorAndNext();
   this->UpdateCurrentSliceContours();
@@ -2196,23 +2005,23 @@ void GeneralSegmentorController::DiscardSegmentation()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+  mitk::DataNode::Pointer segmentationNode = this->GetToolManager()->GetWorkingData(Tool::SEGMENTATION);
   assert(segmentationNode);
 
   this->DestroyPipeline();
   if (d->m_WasRestarted)
   {
     this->RestoreInitialSegmentation();
-    this->RemoveWorkingNodes();
+    this->RemoveWorkingData();
   }
   else
   {
-    this->RemoveWorkingNodes();
+    this->RemoveWorkingData();
     this->GetDataStorage()->Remove(segmentationNode);
   }
   d->m_GUI->EnableSegmentationWidgets(false);
@@ -2227,7 +2036,7 @@ void GeneralSegmentorController::OnRestartButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
@@ -2252,24 +2061,24 @@ void GeneralSegmentorController::OnRestartButtonClicked()
 
 
 //-----------------------------------------------------------------------------
-void GeneralSegmentorController::ClearWorkingNodes()
+void GeneralSegmentorController::ClearWorkingData()
 {
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  assert(segmentationNode);
+  mitk::DataNode::Pointer workingData = this->GetToolManager()->GetWorkingData(Tool::SEGMENTATION);
+  assert(workingData);
 
-  mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
+  mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(workingData->GetData());
   assert(segmentationImage);
 
   try
   {
-    AccessFixedDimensionByItk(segmentationImage, ITKClearImage, 3);
+    AccessFixedDimensionByItk(segmentationImage.GetPointer(), ITKClearImage, 3);
     segmentationImage->Modified();
-    segmentationNode->Modified();
+    workingData->Modified();
 
     mitk::PointSet::Pointer seeds = this->GetSeeds();
     seeds->Clear();
@@ -2325,7 +2134,7 @@ bool GeneralSegmentorController::SelectSeedTool()
   /// We should not do anything with the tools until they are registered to the
   /// tool manager.
 
-  if (this->HasWorkingNodes())
+  if (this->HasInitialisedWorkingData())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -2349,7 +2158,7 @@ bool GeneralSegmentorController::SelectDrawTool()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (this->HasWorkingNodes())
+  if (this->HasInitialisedWorkingData())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -2373,7 +2182,7 @@ bool GeneralSegmentorController::SelectPolyTool()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (this->HasWorkingNodes())
+  if (this->HasInitialisedWorkingData())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
     int activeToolId = toolManager->GetActiveToolID();
@@ -2396,7 +2205,7 @@ bool GeneralSegmentorController::UnselectTools()
 {
   Q_D(GeneralSegmentorController);
 
-  if (this->HasWorkingNodes())
+  if (this->HasInitialisedWorkingData())
   {
     mitk::ToolManager* toolManager = this->GetToolManager();
 
@@ -2418,9 +2227,9 @@ bool GeneralSegmentorController::SelectViewMode()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (this->HasWorkingNodes())
+  if (this->HasInitialisedWorkingData())
   {
-    mitk::DataNode* segmentationNode = this->GetWorkingNode();
+    mitk::DataNode* segmentationNode = this->GetToolManager()->GetWorkingData(Tool::SEGMENTATION);
     segmentationNode->SetVisibility(!segmentationNode->IsVisible(0));
   }
   else
@@ -2448,7 +2257,7 @@ bool GeneralSegmentorController::CleanSlice()
   Q_D(GeneralSegmentorController);
 
   /// Note: see comment in SelectSeedTool().
-  if (this->HasWorkingNodes())
+  if (this->HasInitialisedWorkingData())
   {
     this->OnCleanButtonClicked();
     return true;
@@ -2484,13 +2293,13 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  ImageOrientation orientation = this->GetOrientation();
-  itk::Orientation itkOrientation = GetItkOrientation(orientation);
+  ImageOrientation imageOrientation = this->GetOrientation();
+  itk::Orientation orientation = GetItkOrientation(imageOrientation);
 
   QString message;
 
@@ -2505,15 +2314,15 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
 
     if (isUp)
     {
-      if (orientation == IMAGE_ORIENTATION_AXIAL)
+      if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
       {
         orientationText = "superior to";
       }
-      else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
       {
         orientationText = "right of";
       }
-      else if (orientation == IMAGE_ORIENTATION_CORONAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
       {
         orientationText = "anterior to";
       }
@@ -2524,15 +2333,15 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     }
     else if (!isUp)
     {
-      if (orientation == IMAGE_ORIENTATION_AXIAL)
+      if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
       {
         orientationText = "inferior to";
       }
-      else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
       {
         orientationText = "left of";
       }
-      else if (orientation == IMAGE_ORIENTATION_CORONAL)
+      else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
       {
         orientationText = "posterior to";
       }
@@ -2557,19 +2366,19 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     return;
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
-    mitk::DataNode* segmentationNode = this->GetWorkingNode();
-    const mitk::Image* segmentationImage = this->GetWorkingImage();
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
+    mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
-    if (segmentationImage)
+    if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
 
-      mitk::DataNode* regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
+      mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
       assert(regionGrowingNode);
 
-      mitk::Image* regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
+      mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
       assert(regionGrowingImage);
 
       mitk::PointSet* seeds = this->GetSeeds();
@@ -2610,7 +2419,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
       mitk::PointSet::Pointer outputSeeds = mitk::PointSet::New();
       std::vector<int> outputRegion;
 
-      if (sliceAxis != -1 && sliceIndex != -1 && itkOrientation != itk::ORIENTATION_UNKNOWN)
+      if (sliceAxis != -1 && sliceIndex != -1 && orientation != itk::ORIENTATION_UNKNOWN)
       {
         bool wasUpdating = d->m_IsUpdating;
         d->m_IsUpdating = true;
@@ -2649,14 +2458,14 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
           OpPropagate::ProcessorPointer processor = OpPropagate::ProcessorType::New();
           doOp = new OpPropagate(OP_PROPAGATE, true, outputRegion, processor);
           undoOp = new OpPropagate(OP_PROPAGATE, false, outputRegion, processor);
-          opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
           this->ExecuteOperation(doOp);
 
           message = tr("Propagate: copy seeds");
           doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, outputSeeds);
           undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, sliceIndex, copyOfInputSeeds);
-          opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
+          opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
           mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
           this->ExecuteOperation(doOp);
 
@@ -2677,7 +2486,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
       }
       else
       {
-        MITK_ERROR << "Could not propagate: Error sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex << ", orientation=" << itkOrientation << ", direction=" << sliceUpDirection;
+        MITK_ERROR << "Could not propagate: Error sliceAxis=" << sliceAxis << ", sliceIndex=" << sliceIndex << ", orientation=" << orientation << ", direction=" << sliceUpDirection;
       }
     }
   }
@@ -2698,20 +2507,20 @@ void GeneralSegmentorController::OnWipePlusButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  ImageOrientation orientation = this->GetOrientation();
+  ImageOrientation imageOrientation = this->GetOrientation();
 
   QString orientationText;
   QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
 
-  if (orientation == IMAGE_ORIENTATION_AXIAL)
+  if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
   {
     orientationText = "superior to";
   }
-  else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
   {
     orientationText = "right of";
   }
-  else if (orientation == IMAGE_ORIENTATION_CORONAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
   {
     orientationText = "anterior to";
   }
@@ -2741,20 +2550,20 @@ void GeneralSegmentorController::OnWipeMinusButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  ImageOrientation orientation = this->GetOrientation();
+  ImageOrientation imageOrientation = this->GetOrientation();
 
   QString orientationText;
   QString messageWithOrientation = "All slices %1 the present will be cleared \nAre you sure?";
 
-  if (orientation == IMAGE_ORIENTATION_AXIAL)
+  if (imageOrientation == IMAGE_ORIENTATION_AXIAL)
   {
     orientationText = "inferior to";
   }
-  else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_SAGITTAL)
   {
     orientationText = "left of";
   }
-  else if (orientation == IMAGE_ORIENTATION_CORONAL)
+  else if (imageOrientation == IMAGE_ORIENTATION_CORONAL)
   {
     orientationText = "posterior to";
   }
@@ -2784,19 +2593,19 @@ void GeneralSegmentorController::DoWipe(int direction)
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (!referenceImage)
   {
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  mitk::Image* segmentationImage = this->GetWorkingImage();
+  mitk::DataNode* segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
+  mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (!segmentationImage || !segmentationNode)
   {
@@ -2882,7 +2691,7 @@ void GeneralSegmentorController::DoWipe(int direction)
     OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
     mitk::Operation* doOp = new OpWipe(OP_WIPE, true, sliceAxis, sliceIndex, outputRegion, outputSeeds, processor);
     mitk::Operation* undoOp = new OpWipe(OP_WIPE, false, sliceAxis, sliceIndex, outputRegion, copyOfInputSeeds, processor);
-    mitk::OperationEvent* opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Wipe command");
+    mitk::OperationEvent* opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
     this->ExecuteOperation(doOp);
 
@@ -2919,12 +2728,12 @@ void GeneralSegmentorController::DoThresholdApply(
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (!referenceImage)
   {
     return;
@@ -2947,18 +2756,18 @@ void GeneralSegmentorController::DoThresholdApply(
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  mitk::Image* segmentationImage = this->GetWorkingImage();
+  mitk::DataNode* segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
+  mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (!segmentationImage || !segmentationNode)
   {
     return;
   }
 
-  mitk::DataNode* regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
+  mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
   assert(regionGrowingNode);
 
-  mitk::Image* regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
+  mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
   assert(regionGrowingImage);
 
   mitk::PointSet* seeds = this->GetSeeds();
@@ -3018,7 +2827,7 @@ void GeneralSegmentorController::DoThresholdApply(
     OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
     doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, newCheckboxStatus);
     undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, isThresholdingOn);
-    opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
+    opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
     this->ExecuteOperation(doOp);
 
@@ -3027,7 +2836,7 @@ void GeneralSegmentorController::DoThresholdApply(
         .arg(sliceAxis).arg(sliceIndex);
     doOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, true, sliceAxis, sliceIndex, outputSeeds);
     undoOp = new OpPropagateSeeds(OP_PROPAGATE_SEEDS, false, sliceAxis, sliceIndex, copyOfInputSeeds);
-    opEvent = new mitk::OperationEvent(this, doOp, undoOp, message.toStdString());
+    opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, message.toStdString());
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
     this->ExecuteOperation(doOp);
 
@@ -3058,7 +2867,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
@@ -3099,14 +2908,14 @@ void GeneralSegmentorController::OnCleanButtonClicked()
     }
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (!referenceImage)
   {
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  mitk::Image* segmentationImage = this->GetWorkingImage();
+  mitk::DataNode* segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
+  mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (!segmentationImage || !segmentationNode)
   {
@@ -3139,16 +2948,16 @@ void GeneralSegmentorController::OnCleanButtonClicked()
     polyToolContours->AddContourModel(polyToolContour);
   }
 
-  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNode(Tool::CONTOURS)->GetData());
+  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::CONTOURS]->GetData());
   assert(segmentationContours);
 
-  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNode(Tool::DRAW_CONTOURS)->GetData());
+  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::DRAW_CONTOURS]->GetData());
   assert(drawToolContours);
 
-  mitk::DataNode* regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
+  mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
   assert(regionGrowingNode);
 
-  mitk::Image* regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
+  mitk::Image::Pointer regionGrowingImage = dynamic_cast<mitk::Image*>(regionGrowingNode->GetData());
   assert(regionGrowingImage);
 
   double lowerThreshold = d->m_GUI->GetLowerThreshold();
@@ -3322,7 +3131,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
 
     doOp = new OpClean(OP_CLEAN, true, outputContourSet);
     undoOp = new OpClean(OP_CLEAN, false, copyOfInputContourSet);
-    opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Clean: Filtering contours");
+    opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Clean: Filtering contours");
     mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
     this->ExecuteOperation(doOp);
 
@@ -3335,7 +3144,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
       OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
       doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, false);
       undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, false);
-      opEvent = new mitk::OperationEvent(this, doOp, undoOp, "Clean: Calculate new image");
+      opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Clean: Calculate new image");
       mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
       this->ExecuteOperation(doOp);
 
@@ -3387,7 +3196,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
 {
   Q_D(GeneralSegmentorController);
 
-  if (!this->HasWorkingNodes())
+  if (!this->HasInitialisedWorkingData())
   {
     return;
   }
@@ -3397,10 +3206,10 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
     return;
   }
 
-  const mitk::Image* segmentationImage = this->GetWorkingImage();
+  const mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
   assert(segmentationImage);
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+  mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
   assert(segmentationNode);
 
   const mitk::Image* referenceImage = this->GetReferenceImage();
@@ -3412,7 +3221,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
 
-  mitk::DataNode* seedsNode = this->GetWorkingNode(Tool::SEEDS);
+  mitk::DataNode::Pointer seedsNode = this->GetWorkingData()[Tool::SEEDS];
   assert(seedsNode);
 
   switch (operation->GetOperationType())
@@ -3558,14 +3367,12 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         mitk::ContourModelSet* newContours = op->GetContourSet();
         assert(newContours);
 
-        mitk::DataNode* contoursNode = this->GetWorkingNode(Tool::CONTOURS);
-
-        mitk::ContourModelSet* contoursToReplace = dynamic_cast<mitk::ContourModelSet*>(contoursNode->GetData());
+        mitk::ContourModelSet* contoursToReplace = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::CONTOURS]->GetData());
         assert(contoursToReplace);
 
         ContourTool::CopyContourSet(*newContours, *contoursToReplace);
         contoursToReplace->Modified();
-        contoursNode->Modified();
+        this->GetWorkingData()[Tool::CONTOURS]->Modified();
 
         segmentationImage->Modified();
         segmentationNode->Modified();

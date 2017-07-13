@@ -31,7 +31,7 @@ namespace niftk
 NIFTKCORE_EXPORT itk::Orientation GetItkOrientation(ImageOrientation orientation);
 
 /// \brief Converts an ITK orientation enum to an MITK orientation enum, and ideally these types should be merged.
-NIFTKCORE_EXPORT ImageOrientation GetOrientation(itk::Orientation orientation);
+NIFTKCORE_EXPORT ImageOrientation GetMitkOrientation(itk::Orientation orientation);
 
 /// \brief Returns the name of the given orientation.
 /// \return the name of the orientation that can be "axial", "sagittal", "coronal" or "unknown".

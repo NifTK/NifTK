@@ -171,7 +171,7 @@ void MorphologicalSegmentorGUI::EnableSegmentationWidgets(bool enabled)
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorGUI::UpdateByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
+void MorphologicalSegmentorGUI::SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection)
 {
   bool wasBlocked = this->blockSignals(true);
 
@@ -229,64 +229,24 @@ void MorphologicalSegmentorGUI::UpdateByReferenceImage(double lowestValue, doubl
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorGUI::UpdateBySegmentationNode(mitk::DataNode* segmentationNode)
+void MorphologicalSegmentorGUI::SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params)
 {
   bool wasBlocked = this->blockSignals(true);
 
-  if (segmentationNode)
-  {
-    int intValue;
-    float floatValue;
+  m_ThresholdingLowerThresholdSlider->setValue(params.m_LowerIntensityThreshold);
+  m_ThresholdingUpperThresholdSlider->setValue(params.m_UpperIntensityThreshold);
+  m_ThresholdingAxialCutOffSlider->setValue(params.m_AxialCutOffSlice);
+  m_ErosionsUpperThresholdSlider->setValue(params.m_UpperErosionsThreshold);
+  m_ErosionsIterationsSlider->setValue(params.m_NumberOfErosions);
+  m_DilationsLowerThresholdSlider->setValue(params.m_LowerPercentageThresholdForDilations);
+  m_DilationsUpperThresholdSlider->setValue(params.m_UpperPercentageThresholdForDilations);
+  m_DilationsIterationsSlider->setValue(params.m_NumberOfDilations);
+  m_RethresholdingBoxSizeSlider->setValue(params.m_BoxSize);
 
-    segmentationNode->GetIntProperty("midas.morph.stage", intValue);
-    m_TabWidget->setCurrentIndex(intValue);
+  int tabIndex = params.m_Stage;
 
-    segmentationNode->GetFloatProperty("midas.morph.thresholding.lower", floatValue);
-    m_ThresholdingLowerThresholdSlider->setValue(floatValue);
-
-    segmentationNode->GetFloatProperty("midas.morph.thresholding.upper", floatValue);
-    m_ThresholdingUpperThresholdSlider->setValue(floatValue);
-
-    segmentationNode->GetIntProperty("midas.morph.thresholding.slice", intValue);
-    m_ThresholdingAxialCutOffSlider->setValue(intValue);
-
-    segmentationNode->GetFloatProperty("midas.morph.erosion.threshold", floatValue);
-    m_ErosionsUpperThresholdSlider->setValue(floatValue);
-
-    segmentationNode->GetIntProperty("midas.morph.erosion.iterations", intValue);
-    m_ErosionsIterationsSlider->setValue(intValue);
-
-    segmentationNode->GetFloatProperty("midas.morph.dilation.lower", floatValue);
-    m_DilationsLowerThresholdSlider->setValue(floatValue);
-
-    segmentationNode->GetFloatProperty("midas.morph.dilation.upper", floatValue);
-    m_DilationsUpperThresholdSlider->setValue(floatValue);
-
-    segmentationNode->GetIntProperty("midas.morph.dilation.iterations", intValue);
-    m_DilationsIterationsSlider->setValue(intValue);
-
-    segmentationNode->GetIntProperty("midas.morph.rethresholding.box", intValue);
-    m_RethresholdingBoxSizeSlider->setValue(intValue);
-
-    bool finished = true;
-    segmentationNode->GetBoolProperty("midas.morph.finished", finished);
-
-    this->SetEnabled(!finished);
-  }
-  else
-  {
-    m_TabWidget->setCurrentIndex(0);
-    m_ThresholdingLowerThresholdSlider->setValue(0.0);
-    m_ThresholdingUpperThresholdSlider->setValue(0.0);
-    m_ThresholdingAxialCutOffSlider->setValue(0);
-    m_ErosionsUpperThresholdSlider->setValue(0.0);
-    m_ErosionsIterationsSlider->setValue(0);
-    m_DilationsLowerThresholdSlider->setValue(0.0);
-    m_DilationsUpperThresholdSlider->setValue(0.0);
-    m_DilationsIterationsSlider->setValue(0);
-    m_RethresholdingBoxSizeSlider->setValue(0);
-    this->SetEnabled(false);
-  }
+  m_TabWidget->setCurrentIndex(tabIndex);
+  this->SetEnabled(true);
 
   this->blockSignals(wasBlocked);
 }
@@ -309,6 +269,47 @@ void MorphologicalSegmentorGUI::SetTabIndex(int tabIndex)
 
 
 //-----------------------------------------------------------------------------
+void MorphologicalSegmentorGUI::EmitThresholdingValues()
+{
+  emit ThresholdingValuesChanged(
+         m_ThresholdingLowerThresholdSlider->value(),
+         m_ThresholdingUpperThresholdSlider->value(),
+         static_cast<int>(m_ThresholdingAxialCutOffSlider->value())
+       );
+}
+
+
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorGUI::EmitErosionValues()
+{
+  emit ErosionsValuesChanged(
+         m_ErosionsUpperThresholdSlider->value(),
+         static_cast<int>(m_ErosionsIterationsSlider->value())
+       );
+}
+
+
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorGUI::EmitDilationValues()
+{
+  emit DilationsValuesChanged(
+         m_DilationsLowerThresholdSlider->value(),
+         m_DilationsUpperThresholdSlider->value(),
+         static_cast<int>(m_DilationsIterationsSlider->value())
+       );
+}
+
+
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorGUI::EmitRethresholdingValues()
+{
+  emit RethresholdingValuesChanged(
+         static_cast<int>(m_RethresholdingBoxSizeSlider->value())
+      );
+}
+
+
+//-----------------------------------------------------------------------------
 void MorphologicalSegmentorGUI::OnThresholdLowerValueChanged()
 {
   double lowerValue = m_ThresholdingLowerThresholdSlider->value();
@@ -319,10 +320,7 @@ void MorphologicalSegmentorGUI::OnThresholdLowerValueChanged()
     m_ThresholdingUpperThresholdSlider->setValue(lowerValue + m_ThresholdingUpperThresholdSlider->singleStep());
     m_ThresholdingUpperThresholdSlider->blockSignals(wasBlocked);
   }
-  emit ThresholdingValuesChanged(
-         m_ThresholdingLowerThresholdSlider->value(),
-         m_ThresholdingUpperThresholdSlider->value()
-       );
+  this->EmitThresholdingValues();
 }
 
 
@@ -337,17 +335,14 @@ void MorphologicalSegmentorGUI::OnThresholdUpperValueChanged()
     m_ThresholdingLowerThresholdSlider->setValue(upperValue - m_ThresholdingLowerThresholdSlider->singleStep());
     m_ThresholdingLowerThresholdSlider->blockSignals(wasBlocked);
   }
-  emit ThresholdingValuesChanged(
-         m_ThresholdingLowerThresholdSlider->value(),
-         m_ThresholdingUpperThresholdSlider->value()
-       );
+  this->EmitThresholdingValues();
 }
 
 
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorGUI::OnAxialCutOffSliderChanged()
 {
-  emit AxialCutOffSliceNumberChanged(static_cast<int>(m_ThresholdingAxialCutOffSlider->value()));
+  this->EmitThresholdingValues();
 }
 
 
@@ -400,18 +395,14 @@ void MorphologicalSegmentorGUI::OnNextButtonClicked()
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorGUI::OnErosionsIterationsChanged()
 {
-  emit ErosionsValuesChanged(
-         m_ErosionsUpperThresholdSlider->value(),
-         static_cast<int>(m_ErosionsIterationsSlider->value()));
+  this->EmitErosionValues();
 }
 
 
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorGUI::OnErosionsUpperThresholdChanged()
 {
-  emit ErosionsValuesChanged(
-         m_ErosionsUpperThresholdSlider->value(),
-         static_cast<int>(m_ErosionsIterationsSlider->value()));
+  this->EmitErosionValues();
 }
 
 
@@ -426,11 +417,7 @@ void MorphologicalSegmentorGUI::OnDilationsLowerThresholdChanged()
     m_DilationsUpperThresholdSlider->setValue(lowerValue + m_DilationsUpperThresholdSlider->singleStep());
     m_DilationsUpperThresholdSlider->blockSignals(wasBlocked);
   }
-  emit DilationsValuesChanged(
-         m_DilationsLowerThresholdSlider->value(),
-         m_DilationsUpperThresholdSlider->value(),
-         static_cast<int>(m_DilationsIterationsSlider->value())
-       );
+  this->EmitDilationValues();
 }
 
 
@@ -445,31 +432,21 @@ void MorphologicalSegmentorGUI::OnDilationsUpperThresholdChanged()
     m_DilationsLowerThresholdSlider->setValue(upperValue - m_DilationsLowerThresholdSlider->singleStep());
     m_DilationsLowerThresholdSlider->blockSignals(wasBlocked);
   }
-  emit DilationsValuesChanged(
-         m_DilationsLowerThresholdSlider->value(),
-         m_DilationsUpperThresholdSlider->value(),
-         static_cast<int>(m_DilationsIterationsSlider->value())
-       );
+  this->EmitDilationValues();
 }
 
 
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorGUI::OnDilationsIterationsChanged()
 {
-  emit DilationsValuesChanged(
-         m_DilationsLowerThresholdSlider->value(),
-         m_DilationsUpperThresholdSlider->value(),
-         static_cast<int>(m_DilationsIterationsSlider->value())
-       );
+  this->EmitDilationValues();
 }
 
 
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorGUI::OnRethresholdingSliderChanged()
 {
-  emit RethresholdingValuesChanged(
-         static_cast<int>(m_RethresholdingBoxSizeSlider->value())
-      );
+  this->EmitRethresholdingValues();
 }
 
 
