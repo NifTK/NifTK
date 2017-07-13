@@ -124,6 +124,12 @@ public:
   /// \brief Finds the segmentation node, and if present will populate params with the parameters found on the segmentation node.
   void GetPipelineParamsFromSegmentationNode(MorphologicalSegmentorPipelineParams& params) const;
 
+  /// \brief For Morphological Editing, a Segmentation image should have a grey scale parent, and two binary children called SUBTRACTIONS_NAME and ADDITIONS_NAME.
+  virtual bool IsNodeASegmentationImage(const mitk::DataNode::Pointer node) const;
+
+  /// \brief For Morphological Editing, a Working image should be called either SUBTRACTIONS_NAME and ADDITIONS_NAME, and have a binary image parent.
+  virtual bool IsNodeAWorkingImage(const mitk::DataNode::Pointer node) const;
+
   /// \brief Looks up the reference image, and sets default property values onto the segmentation node, which are later used to update GUI controls.
   void SetSegmentationNodePropsFromReferenceImage();
 

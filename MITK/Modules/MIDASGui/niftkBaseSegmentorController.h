@@ -109,25 +109,25 @@ protected:
   /// \brief Gets the reference node that the segmentation node belongs to.
   /// Assumes that the reference (grey scale) node is always the direct parent of the
   /// segmentation (binary) node, so we simply search for a non binary parent.
-  mitk::DataNode* FindReferenceNodeFromSegmentationNode(const mitk::DataNode* segmentationNode);
+  mitk::DataNode* FindReferenceNodeFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode);
 
   /// \brief Returns true if node represent an image that is non binary, and false otherwise.
-  virtual bool IsAReferenceImage(const mitk::DataNode* node);
+  virtual bool IsAReferenceImage(const mitk::DataNode::Pointer node);
 
   /// \brief Returns true if node represents an image that is binary, and false otherwise.
-  virtual bool IsASegmentationImage(const mitk::DataNode* node);
+  virtual bool IsASegmentationImage(const mitk::DataNode::Pointer node);
 
   /// \brief Returns true if node represents an image that is binary, and false otherwise.
-  virtual bool IsAWorkingImage(const mitk::DataNode* node);
+  virtual bool IsAWorkingImage(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
-  virtual std::vector<mitk::DataNode*> GetWorkingNodesFromSegmentationNode(mitk::DataNode* segmentationNode);
+  virtual std::vector<mitk::DataNode*> GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer segmentationNode);
 
   /// \brief We return true if the segmentation can either be "re-started", i.e. you switch between binary images
   /// in the Data Manager, and if the binary image has the correct hidden child nodes, then
   /// this returns true, indicating that it's a valid "in-progress" segmentation.
   /// Or, it can be started because a valid binary image is seleted with a valid reference image.
-  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode* node);
+  virtual bool CanStartSegmentationForBinaryNode(const mitk::DataNode::Pointer node);
 
   /// \brief Decorates a DataNode according to the user preference settings, or requirements for binary images.
   virtual void ApplyDisplayOptions(mitk::DataNode* node);

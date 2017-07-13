@@ -226,6 +226,67 @@ mitk::Image::Pointer MorphologicalSegmentorPipelineManager::GetSegmentationImage
 
 
 //-----------------------------------------------------------------------------
+bool MorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const mitk::DataNode::Pointer node) const
+{
+  assert(node);
+  std::set<std::string> set;
+
+  bool result = false;
+
+  if (niftk::IsNodeABinaryImage(node))
+  {
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
+    if (parent.IsNotNull())
+    {
+      // Should also have at least 4 children (see PaintbrushTool)
+      mitk::DataStorage::SetOfObjects::Pointer children = niftk::FindDerivedImages(this->GetDataStorage(), node, true);
+      for (std::size_t i = 0; i < children->size(); ++i)
+      {
+        set.insert(children->at(i)->GetName());
+      }
+      if (set.find(PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME) != set.end()
+          && set.find(PaintbrushTool::EROSIONS_ADDITIONS_NAME) != set.end()
+          && set.find(PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME) != set.end()
+          && set.find(PaintbrushTool::DILATIONS_ADDITIONS_NAME) != set.end())
+      {
+        result = true;
+      }
+    }
+  }
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
+bool MorphologicalSegmentorPipelineManager::IsNodeAWorkingImage(const mitk::DataNode::Pointer node) const
+{
+  assert(node);
+  bool result = false;
+
+  if (niftk::IsNodeABinaryImage(node))
+  {
+    mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, true);
+    if (parent.IsNotNull())
+    {
+      std::string name;
+      if (node->GetStringProperty("name", name))
+      {
+        if (   name == PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME
+            || name == PaintbrushTool::EROSIONS_ADDITIONS_NAME
+            || name == PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME
+            || name == PaintbrushTool::DILATIONS_ADDITIONS_NAME
+            )
+        {
+          result = true;
+        }
+      }
+    }
+  }
+  return result;
+}
+
+
+//-----------------------------------------------------------------------------
 void MorphologicalSegmentorPipelineManager::SetSegmentationNodePropsFromReferenceImage()
 {
   mitk::Image::ConstPointer referenceImage = this->GetReferenceImage();
