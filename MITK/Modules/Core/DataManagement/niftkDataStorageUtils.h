@@ -48,6 +48,10 @@ NIFTKCORE_EXPORT mitk::DataNode* FindFirstBinaryImage(const std::vector<mitk::Da
 
 NIFTKCORE_EXPORT mitk::DataNode* FindNthImage(const std::vector<mitk::DataNode*>& nodes, int n, bool lookForBinary);
 
+NIFTKCORE_EXPORT mitk::DataStorage::SetOfObjects::Pointer FindDerivedImages(const mitk::DataStorage* storage, const mitk::DataNode* node, bool lookForBinary);
+
+NIFTKCORE_EXPORT mitk::DataStorage::SetOfObjects::Pointer FindDerivedVisibleNonHelperChildren(const mitk::DataStorage* storage, const mitk::DataNode* node);
+
 NIFTKCORE_EXPORT mitk::DataStorage::SetOfObjects::Pointer FindNodesStartingWith(const mitk::DataStorage* dataStorage, const std::string prefix);
 
 /// \brief GetPreferedGeometry will return the geometry to use by picking one from the list of nodes, or NULL, if none can be found.

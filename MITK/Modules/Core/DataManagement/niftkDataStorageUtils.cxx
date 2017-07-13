@@ -57,6 +57,62 @@ mitk::DataNode* FindFirstParentImage(const mitk::DataStorage* storage, const mit
 
 
 //-----------------------------------------------------------------------------
+mitk::DataStorage::SetOfObjects::Pointer FindDerivedVisibleNonHelperChildren(const mitk::DataStorage* storage, const mitk::DataNode* node)
+{
+  mitk::DataStorage::SetOfObjects::Pointer results = mitk::DataStorage::SetOfObjects::New();
+
+  unsigned int counter = 0;
+  mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = storage->GetDerivations( node, NULL, false);
+  for (unsigned int i = 0; i < possibleChildren->size(); i++)
+  {
+    mitk::DataNode* possibleNode = (*possibleChildren)[i];
+
+    bool isVisible = false;
+    possibleNode->GetBoolProperty("visible", isVisible);
+
+    bool isHelper = false;
+    possibleNode->GetBoolProperty("helper object", isHelper);
+
+    if (isVisible && !isHelper)
+    {
+      results->InsertElement(counter, possibleNode);
+      counter++;
+    }
+  }
+
+  return results;
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataStorage::SetOfObjects::Pointer FindDerivedImages(const mitk::DataStorage* storage, const mitk::DataNode* node, bool lookForBinary )
+{
+  mitk::DataStorage::SetOfObjects::Pointer results = mitk::DataStorage::SetOfObjects::New();
+
+  mitk::TNodePredicateDataType<mitk::Image>::Pointer isImage = mitk::TNodePredicateDataType<mitk::Image>::New();
+  mitk::DataStorage::SetOfObjects::ConstPointer possibleChildren = storage->GetDerivations(node, isImage, true);
+
+  unsigned int counter = 0;
+  for (unsigned int i = 0; i < possibleChildren->size(); i++)
+  {
+
+    mitk::DataNode* possibleNode = (*possibleChildren)[i];
+
+    bool isBinary = false;
+    possibleNode->GetBoolProperty("binary", isBinary);
+
+    if (isBinary == lookForBinary)
+    {
+      results->InsertElement(counter, possibleNode);
+      counter++;
+    }
+  }
+
+  return results;
+}
+
+
+//-----------------------------------------------------------------------------
 bool IsNodeAHelperObject(const mitk::DataNode* node)
 {
   bool result = false;
@@ -112,7 +168,7 @@ mitk::DataNode* FindNthImage(const std::vector<mitk::DataNode*>& nodes, int n, b
       bool isImage = false;
       if (nodes.at(i)->GetData())
       {
-        isImage = dynamic_cast<mitk::Image*>(nodes.at(i)->GetData());
+        isImage = dynamic_cast<mitk::Image*>(nodes.at(i)->GetData()) != NULL;
       }
 
       bool isBinary;
@@ -318,7 +374,7 @@ void LoadMatrixOrCreateDefault(
     mitk::DataStorage* dataStorage)
 {
   vtkSmartPointer<vtkMatrix4x4> matrix = LoadVtkMatrix4x4FromFile(fileName);
-  if (matrix.GetPointer())
+  if (matrix.GetPointer() == NULL)
   {
     matrix = vtkSmartPointer<vtkMatrix4x4>::New();
     matrix->Identity();
@@ -365,7 +421,7 @@ void GetCurrentTransformFromNode (const mitk::DataNode::Pointer& node , vtkMatri
 {
   if (node.IsNull())
   {
-    mitkThrow() << "In GetCurrentTransformFromNode, node is nullptr";
+    mitkThrow() << "In GetCurrentTransform, node is NULL";
   }
 
   mitk::AffineTransform3D::Pointer affineTransform = node->GetData()->GetGeometry()->GetIndexToWorldTransform();
@@ -394,7 +450,7 @@ void ComposeTransformWithNode(const vtkMatrix4x4& transform, mitk::DataNode::Poi
 {
   if (node.IsNull())
   {
-    mitkThrow() << "In ComposeTransformWithNode, node is nullptr";
+    mitkThrow() << "In ComposeTransformWithNode, node is NULL";
   }
 
   vtkSmartPointer<vtkMatrix4x4> currentMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -412,19 +468,19 @@ void ApplyTransformToNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer
 {
   if (node.IsNull())
   {
-    mitkThrow() << "In ApplyTransformToNode, node is nullptr";
+    mitkThrow() << "In ApplyTransformToNode, node is NULL";
   }
 
   mitk::BaseData::Pointer baseData = node->GetData();
   if (baseData.IsNull())
   {
-    mitkThrow() << "In ApplyTransformToNode, baseData is nullptr";
+    mitkThrow() << "In ApplyTransformToNode, baseData is NULL";
   }
 
   mitk::BaseGeometry* geometry = baseData->GetGeometry();
   if (!geometry)
   {
-    mitkThrow() << "In ApplyTransformToNode, geometry is nullptr";
+    mitkThrow() << "In ApplyTransformToNode, geometry is NULL";
   }
 
   CoordinateAxesData::Pointer axes = dynamic_cast<CoordinateAxesData*>(node->GetData());
@@ -446,7 +502,7 @@ void ApplyTransformToNode(const vtkMatrix4x4& transform, mitk::DataNode::Pointer
 
   mitk::ApplyTransformMatrixOperation* doOp = new mitk::ApplyTransformMatrixOperation(mitk::OpAPPLYTRANSFORMMATRIX, nonConstTransform, dummyPoint);
 
-  if (mitk::UndoController::GetCurrentUndoModel())
+  if (mitk::UndoController::GetCurrentUndoModel() != NULL)
   {
     vtkSmartPointer<vtkMatrix4x4> inverse = vtkSmartPointer<vtkMatrix4x4>::New();
     inverse->DeepCopy(&transform);
