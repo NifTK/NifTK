@@ -275,6 +275,10 @@ protected slots:
   /// state of the segmentation.
   void OnRestartButtonClicked();
 
+private slots:
+
+  void RestoreSelectedPosition();
+
 private:
 
   /// \brief Returns which image coordinate corresponds to the currently selected orientation.

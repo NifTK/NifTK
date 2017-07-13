@@ -73,7 +73,7 @@ bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 {
   bool result = false;
 
-  if (contours != NULL && contours->size() > 0)
+  if (contours && contours->size() > 0)
   {
     ContinuousIndexType halfWayBetweenIndexPoints;
     for (int i = 0; i < TInputImage::ImageDimension; i++)
@@ -113,10 +113,10 @@ bool MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>
 //-----------------------------------------------------------------------------
 template<class TInputImage, class TOutputImage, class TPointSet>
 void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::ConditionalAddPixel(
-    std::stack<typename OutputImageType::IndexType> &r_stack,
-    const typename OutputImageType::IndexType &currentImgIdx,
-    const typename OutputImageType::IndexType &nextImgIdx,
-    const bool &isFullyConnected
+    std::stack<typename OutputImageType::IndexType>& r_stack,
+    const typename OutputImageType::IndexType& currentImgIdx,
+    const typename OutputImageType::IndexType& nextImgIdx,
+    bool isFullyConnected
     )
 {
   /// I.e. not already set.
@@ -135,13 +135,13 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Condit
         (segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
          && isFullyConnected)
         || (segmentationContourImageCurrentPixel == m_SegmentationContourImageInsideValue
-            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
-            & !isFullyConnected)
+            && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue)
         || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
             && segmentationContourImageNextPixel == m_SegmentationContourImageBorderValue
             && isFullyConnected)
         || (segmentationContourImageCurrentPixel == m_SegmentationContourImageBorderValue
-            && segmentationContourImageNextPixel == m_SegmentationContourImageInsideValue)
+            && segmentationContourImageNextPixel == m_SegmentationContourImageInsideValue
+            && isFullyConnected)
         || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
             && isFullyConnected)
         || (segmentationContourImageCurrentPixel == m_SegmentationContourImageOutsideValue
@@ -190,23 +190,23 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
   OutputImagePointerType  sp_output;
   bool isFullyConnected = true;
 
-  if (this->GetInput() != NULL && this->GetSegmentationContourImage() != NULL)
+  if (this->GetInput() && this->GetSegmentationContourImage())
   {
     if (GetSegmentationContourImage()->GetLargestPossibleRegion().GetSize() != this->GetInput()->GetLargestPossibleRegion().GetSize()
      || GetSegmentationContourImage()->GetOrigin() != this->GetInput()->GetOrigin()
      || GetSegmentationContourImage()->GetSpacing() != this->GetInput()->GetSpacing())
     {
-      itkExceptionMacro(<< "Invalid input: Grey-scale and segmentation contour image have inconsistent spatial definitions.");
+      itkExceptionMacro("Invalid input: Grey-scale and segmentation contour image have inconsistent spatial definitions.")
     }
   }
 
-  if (this->GetInput() != NULL && this->GetManualContourImage() != NULL)
+  if (this->GetInput() && this->GetManualContourImage())
   {
     if (GetManualContourImage()->GetLargestPossibleRegion().GetSize() != this->GetInput()->GetLargestPossibleRegion().GetSize()
      || GetManualContourImage()->GetOrigin() != this->GetInput()->GetOrigin()
      || GetManualContourImage()->GetSpacing() != this->GetInput()->GetSpacing())
     {
-      itkExceptionMacro(<< "Invalid input: Grey-scale and manual contour image have inconsistent spatial definitions.");
+      itkExceptionMacro("Invalid input: Grey-scale and manual contour image have inconsistent spatial definitions.")
     }
   }
 
@@ -262,11 +262,11 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
         }
         if (outputRegion.IsInside(imgIdx))
         {
-          ConditionalAddPixel(nextPixelsStack, imgIdx, imgIdx, isFullyConnected);
+          this->ConditionalAddPixel(nextPixelsStack, imgIdx, imgIdx, isFullyConnected);
         }
         else
         {
-          itkDebugMacro(<<"Invalid input: Seed point outside image:" << imgIdx << ", is outside region\n" << outputRegion);
+          itkDebugMacro("Invalid input: Seed point outside image:" << imgIdx << ", is outside region\n" << outputRegion)
         }
       }
     }
@@ -291,8 +291,8 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
   neighborhoodRegion.SetSize(neighborhoodRegionSize);
 
   // Now grow those seeds conditionally.
-  while (nextPixelsStack.size() > 0) {
-
+  while (nextPixelsStack.size() > 0)
+  {
     const __IndexType currImgIndex = nextPixelsStack.top();
 
     /*
@@ -327,7 +327,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
 
             if (outputRegion.IsInside(nextImgIndex))
             {
-              ConditionalAddPixel(nextPixelsStack, currImgIndex, nextImgIndex, isFullyConnected);
+              this->ConditionalAddPixel(nextPixelsStack, currImgIndex, nextImgIndex, isFullyConnected);
             }
           }
         }
@@ -380,7 +380,7 @@ void MIDASRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::Genera
         if (outputRegion.IsInside(nextImgIndex))
         {
           isFullyConnected = this->IsFullyConnected(currImgIndex, nextImgIndex);
-          ConditionalAddPixel(nextPixelsStack, currImgIndex, nextImgIndex, isFullyConnected);
+          this->ConditionalAddPixel(nextPixelsStack, currImgIndex, nextImgIndex, isFullyConnected);
         }
       }
     }
