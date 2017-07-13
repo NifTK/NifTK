@@ -307,6 +307,19 @@ int GeneralSegmentorController::GetReferenceImageSliceAxis()
 
 
 //-----------------------------------------------------------------------------
+int GeneralSegmentorController::GetReferenceImageSliceAxis(ImageOrientation orientation)
+{
+  int referenceImageSliceAxis = -1;
+  mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
+  {
+    referenceImageSliceAxis = niftk::GetThroughPlaneAxis(referenceImage, orientation);
+  }
+  return referenceImageSliceAxis;
+}
+
+
+//-----------------------------------------------------------------------------
 int GeneralSegmentorController::GetReferenceImageSliceIndex()
 {
   int referenceImageSliceIndex = -1;
