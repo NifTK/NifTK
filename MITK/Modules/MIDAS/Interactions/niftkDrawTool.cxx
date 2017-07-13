@@ -53,7 +53,7 @@ struct StaticInit
 {
   StaticInit()
   {
-    DrawTool::CONTOUR_COLOR.Set(249.0/255.0, 249.0/255.0, 89.0/255.0);
+    DrawTool::CONTOUR_COLOR.Set(0.0, 1.0, 0.0);
   }
 } staticInit;
 
