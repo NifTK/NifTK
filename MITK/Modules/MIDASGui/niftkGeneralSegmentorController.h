@@ -192,23 +192,6 @@ protected:
   ///     This depends on the 'up direction' of the axis.
   virtual void OnSelectedSliceChanged(ImageOrientation orientation, int sliceIndex) override;
 
-  /// \brief Returns which image coordinate corresponds to the currently selected orientation.
-  /// Retrieves the currently active QmitkRenderWindow, and the reference image registered with the ToolManager,
-  /// and returns the Image axis that the current view is looking along, or -1 if it can not be worked out.
-  int GetReferenceImageSliceAxis();
-
-  /// \brief Returns which image coordinate corresponds to the given orientation.
-  /// Looks up the ReferenceImage registered with ToolManager and returns the axis [0,1,2]
-  /// that corresponds to the given orientation, or -1 if it can't be found.
-  int GetReferenceImageSliceAxis(ImageOrientation orientation);
-
-  /// \brief Returns the slice index in the reference image that corresponds to the currently displayed slice.
-  /// This might be different to the slice displayed in the viewer, depending on the up direction.
-  int GetReferenceImageSliceIndex();
-
-  /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
-  int GetReferenceImageSliceUpDirection();
-
 protected slots:
 
   /// \brief Qt slot called when the user hits the button "New segmentation",
