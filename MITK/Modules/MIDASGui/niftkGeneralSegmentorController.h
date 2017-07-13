@@ -167,9 +167,6 @@ protected:
   /// \brief Creates the general segmentor widget that holds the GUI components of the view.
   virtual BaseGUI* CreateGUI(QWidget* parent) override;
 
-  /// \brief Updates the GUI controls based on the selected reference and working nodes.
-  virtual void UpdateGUI() const override;
-
   virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
   /// \brief Called when the reference data nodes have changed.
@@ -280,11 +277,11 @@ private:
   /// \brief Returns which image coordinate corresponds to the currently selected orientation.
   /// Retrieves the currently active QmitkRenderWindow, and the reference image registered with the ToolManager,
   /// and returns the Image axis that the current view is looking along, or -1 if it can not be worked out.
-  int GetReferenceImageSliceAxis() const;
+  int GetReferenceImageSliceAxis();
 
   /// \brief Returns the slice index in the reference image that corresponds to the currently displayed slice.
   /// This might be different to the slice displayed in the viewer, depending on the up direction.
-  int GetReferenceImageSliceIndex() const;
+  int GetReferenceImageSliceIndex();
 
   /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
   int GetReferenceImageSliceUpDirection();
@@ -321,7 +318,7 @@ private:
   void StoreInitialSegmentation();
 
   /// \brief Looks for the Seeds registered as WorkingData[1] with the ToolManager.
-  mitk::PointSet* GetSeeds() const;
+  mitk::PointSet* GetSeeds();
 
   /// \brief Initialises seeds for a given slice.
   /// Used when starting a segmentation or switching orientation, to place seeds
@@ -331,7 +328,7 @@ private:
   /// \brief For each seed in the list of seeds and current slice, converts to millimetre position,
   /// and looks up the pixel value in the reference image (grey scale image being segmented)
   /// at that location, and updates the min and max labels on the GUI thresholding panel.
-  void RecalculateMinAndMaxOfSeedValues() const;
+  void RecalculateMinAndMaxOfSeedValues();
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
   bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceAxis, int sliceIndex);

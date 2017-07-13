@@ -114,11 +114,6 @@ protected:
   /// \brief Gets the widget that holds the GUI components of the view.
   BaseGUI* GetGUI() const;
 
-  /// \brief Updates the GUI based on the current data (model).
-  /// This is an empty implementation and it is not used in this class. Derived classes,
-  /// however, are encouraged to override this function to their needs for consistency.
-  virtual void UpdateGUI() const;
-
   /// \brief Gets the segmentor BlueBerry view.
   IBaseView* GetView() const;
 

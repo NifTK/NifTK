@@ -268,7 +268,7 @@ std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingNodesFrom(mit
 
 
 //-----------------------------------------------------------------------------
-int GeneralSegmentorController::GetReferenceImageSliceAxis() const
+int GeneralSegmentorController::GetReferenceImageSliceAxis()
 {
   int referenceImageSliceAxis = -1;
   const mitk::Image* referenceImage = this->GetReferenceImage();
@@ -282,11 +282,11 @@ int GeneralSegmentorController::GetReferenceImageSliceAxis() const
 
 
 //-----------------------------------------------------------------------------
-int GeneralSegmentorController::GetReferenceImageSliceIndex() const
+int GeneralSegmentorController::GetReferenceImageSliceIndex()
 {
   int referenceImageSliceIndex = -1;
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   mitk::SliceNavigationController* snc = this->GetSliceNavigationController();
 
   if (referenceImage && snc)
@@ -726,26 +726,15 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
 //-----------------------------------------------------------------------------
 void GeneralSegmentorController::OnReferenceNodesChanged()
 {
-  BaseSegmentorController::OnReferenceNodesChanged();
-}
+  Q_D(GeneralSegmentorController);
 
+  bool wasBlocked = this->blockSignals(true);
 
-//-----------------------------------------------------------------------------
-void GeneralSegmentorController::OnWorkingNodesChanged()
-{
-  BaseSegmentorController::OnWorkingNodesChanged();
-}
-
-
-//-----------------------------------------------------------------------------
-void GeneralSegmentorController::UpdateGUI() const
-{
-  Q_D(const GeneralSegmentorController);
-
-  mitk::DataNode* referenceNode = this->GetReferenceNode();
-  if (referenceNode)
+  const mitk::Image* referenceImage = this->GetReferenceImage();
+  if (referenceImage)
   {
-    if (niftk::IsNodeAGreyScaleImage(referenceNode))
+    int referenceImagePixelComponents = referenceImage->GetPixelType().GetNumberOfComponents();
+    if (referenceImagePixelComponents == 1)
     {
       d->m_GUI->SetThresholdingCheckBoxEnabled(true);
       d->m_GUI->SetThresholdingCheckBoxToolTip("Tick this in if you want to apply thresholding within the current regions.");
@@ -756,7 +745,7 @@ void GeneralSegmentorController::UpdateGUI() const
       d->m_GUI->SetThresholdingCheckBoxToolTip("Thresholding is not supported for RGB images.");
     }
 
-    const mitk::Image* referenceImage = this->GetReferenceImage();
+    mitk::DataNode* referenceNode = this->GetReferenceNode();
 
     float lowestPixelValue;
     if (!referenceNode->GetFloatProperty("midas.general_segmentor.lowest_pixel_value", lowestPixelValue))
@@ -787,9 +776,22 @@ void GeneralSegmentorController::UpdateGUI() const
     d->m_GUI->SetSeedMinAndMaxValues(0.0, 0.0);
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  if (segmentationNode)
+  this->blockSignals(wasBlocked);
+}
+
+
+//-----------------------------------------------------------------------------
+void GeneralSegmentorController::OnWorkingNodesChanged()
+{
+  Q_D(GeneralSegmentorController);
+
+  bool wasBlocked = this->blockSignals(true);
+
+  if (this->HasWorkingNodes())
   {
+    mitk::DataNode* segmentationNode = this->GetWorkingNode();
+    assert(segmentationNode);
+
     bool boolValue;
     float floatValue;
 
@@ -852,6 +854,8 @@ void GeneralSegmentorController::UpdateGUI() const
     d->m_GUI->SetUpperThreshold(0.0);
     d->m_GUI->SetSeedMinAndMaxValues(0.0, 0.0);
   }
+
+  this->blockSignals(wasBlocked);
 }
 
 
@@ -1287,14 +1291,17 @@ void GeneralSegmentorController::OnContoursChanged()
 
 
 //-----------------------------------------------------------------------------
-mitk::PointSet* GeneralSegmentorController::GetSeeds() const
+mitk::PointSet* GeneralSegmentorController::GetSeeds()
 {
-  if (auto seedsNode = this->GetWorkingNode(Tool::SEEDS))
+  mitk::PointSet* result = nullptr;
+
+  mitk::DataNode* seedsNode = this->GetWorkingNode(Tool::SEEDS);
+  if (seedsNode)
   {
-    return dynamic_cast<mitk::PointSet*>(seedsNode->GetData());
+    result = dynamic_cast<mitk::PointSet*>(seedsNode->GetData());
   }
 
-  return nullptr;
+  return result;
 }
 
 
@@ -1330,11 +1337,11 @@ void GeneralSegmentorController::InitialiseSeedsForSlice(int sliceAxis, int slic
 
 
 //-----------------------------------------------------------------------------
-void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues() const
+void GeneralSegmentorController::RecalculateMinAndMaxOfSeedValues()
 {
-  Q_D(const GeneralSegmentorController);
+  Q_D(GeneralSegmentorController);
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
 
   if (!referenceImage || referenceImage->GetPixelType().GetNumberOfComponents() != 1)
   {
@@ -1590,7 +1597,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(
     return;
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
     mitk::DataNode* segmentationNode = this->GetWorkingNode();
@@ -1937,7 +1944,7 @@ void GeneralSegmentorController::DestroyPipeline()
 {
   Q_D(GeneralSegmentorController);
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
     bool wasDeleting = d->m_IsDeleting;
@@ -2477,7 +2484,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
     return;
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
     mitk::DataNode* segmentationNode = this->GetWorkingNode();
@@ -2709,7 +2716,7 @@ void GeneralSegmentorController::DoWipe(int direction)
     return;
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (!referenceImage)
   {
     return;
@@ -2844,7 +2851,7 @@ void GeneralSegmentorController::DoThresholdApply(
     return;
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (!referenceImage)
   {
     return;
@@ -3019,7 +3026,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
     }
   }
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  mitk::Image* referenceImage = this->GetReferenceImage();
   if (!referenceImage)
   {
     return;

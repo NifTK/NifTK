@@ -63,8 +63,11 @@ protected:
   /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
   virtual BaseGUI* CreateGUI(QWidget* parent) override;
 
-  /// \brief Updates the GUI controls based on the selected reference and working nodes.
-  virtual void UpdateGUI() const override;
+  /// \brief Called when the reference data nodes have changed.
+  virtual void OnReferenceNodesChanged() override;
+
+  /// \brief Called when the working data nodes have changed.
+  virtual void OnWorkingNodesChanged() override;
 
 protected slots:
 
@@ -135,6 +138,12 @@ private:
 
   /// \brief Looks up the reference image, and sets default parameter values on the segmentation node.
   void SetSegmentationNodePropsFromReferenceImage();
+
+  /// \brief Sets the morphological controls to default values specified by reference image, like min/max intensity range, number of axial slices etc.
+  void SetControlsFromReferenceImage();
+
+  /// \brief Sets the morphological controls by the current property values stored on the segmentation node.
+  void SetControlsFromSegmentationNode();
 
   /// \brief All the GUI controls for the main Morphological Editor view part.
   MorphologicalSegmentorGUI* m_MorphologicalSegmentorGUI;

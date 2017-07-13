@@ -96,36 +96,6 @@ void MorphologicalSegmentorController::SetupGUI(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-void MorphologicalSegmentorController::UpdateGUI() const
-{
-  double lowestValue = 0.0;
-  double highestValue = 1.0;
-  int axialAxis = 0;
-  int numberOfAxialSlices = 1;
-  int upDirection = 1;
-
-  if (auto referenceImage = this->GetReferenceImage())
-  {
-    auto statistics = referenceImage->GetStatistics();
-    lowestValue = statistics->GetScalarValueMin();
-    highestValue = statistics->GetScalarValueMax();
-    axialAxis = niftk::GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
-    numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
-    upDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
-  }
-
-  m_MorphologicalSegmentorGUI->UpdateByReferenceImage(
-      lowestValue,
-      highestValue,
-      numberOfAxialSlices,
-      upDirection);
-
-  mitk::DataNode* segmentationNode = this->GetWorkingNode();
-  m_MorphologicalSegmentorGUI->UpdateBySegmentationNode(segmentationNode);
-}
-
-
-//-----------------------------------------------------------------------------
 std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingNodesFrom(mitk::DataNode* segmentationNode)
 {
   assert(segmentationNode);
@@ -364,7 +334,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
         /// pipeline parameters are stored in the data node. We need to relaunch the pipeline
         /// up to the step where it was finished last time.
         newSegmentation->SetBoolProperty("midas.morph.restarting", true);
-        this->UpdateGUI();
+        this->SetControlsFromSegmentationNode();
         int axialCutOffSlice;
         if (newSegmentation->GetIntProperty("midas.morph.thresholding.slice", axialCutOffSlice))
         {
@@ -379,14 +349,16 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
         mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(newSegmentation->GetData());
         AccessFixedDimensionByItk(segmentationImage, ITKClearImage, 3);
         this->SetSegmentationNodePropsFromReferenceImage();
-        this->UpdateGUI();
+        this->SetControlsFromReferenceImage();
+        this->SetControlsFromSegmentationNode();
       }
       m_PipelineManager->UpdateSegmentation();
     }
     else
     {
       this->SetSegmentationNodePropsFromReferenceImage();
-      this->UpdateGUI();
+      this->SetControlsFromReferenceImage();
+      this->SetControlsFromSegmentationNode();
       m_PipelineManager->UpdateSegmentation();
     }
   }
@@ -403,6 +375,20 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   {
     this->GetView()->SetDataManagerSelection(newSegmentation);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorController::OnReferenceNodesChanged()
+{
+  this->SetControlsFromReferenceImage();
+}
+
+
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorController::OnWorkingNodesChanged()
+{
+  this->SetControlsFromSegmentationNode();
 }
 
 
@@ -560,7 +546,7 @@ void MorphologicalSegmentorController::OnOKButtonClicked()
     segmentationNode->SetIntProperty("midas.morph.stage", 0);
 
     this->RemoveWorkingNodes();
-    this->UpdateGUI();
+    m_MorphologicalSegmentorGUI->SetControlsFromSegmentationNode(nullptr);
 
     this->RequestRenderWindowUpdate();
     mitk::UndoController::GetCurrentUndoModel()->Clear();
@@ -577,7 +563,8 @@ void MorphologicalSegmentorController::OnRestartButtonClicked()
     this->OnActiveToolChanged();
     m_PipelineManager->ClearWorkingData();
     this->SetSegmentationNodePropsFromReferenceImage();
-    this->UpdateGUI();
+    this->SetControlsFromReferenceImage();
+    this->SetControlsFromSegmentationNode();
     m_PipelineManager->UpdateSegmentation();
 
     // The centre of the plane is the same as the centre of the image, but it is shifted
@@ -808,6 +795,41 @@ void MorphologicalSegmentorController::SetSegmentationNodePropsFromReferenceImag
     segmentationNode->SetIntProperty("midas.morph.dilation.iterations", 0);
     segmentationNode->SetIntProperty("midas.morph.rethresholding.box", 0);
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorController::SetControlsFromReferenceImage()
+{
+  double lowestValue = 0.0;
+  double highestValue = 1.0;
+  int axialAxis = 0;
+  int numberOfAxialSlices = 1;
+  int upDirection = 1;
+
+  if (auto referenceImage = this->GetReferenceImage())
+  {
+    auto statistics = referenceImage->GetStatistics();
+    lowestValue = statistics->GetScalarValueMin();
+    highestValue = statistics->GetScalarValueMax();
+    axialAxis = niftk::GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
+    numberOfAxialSlices = referenceImage->GetDimension(axialAxis);
+    upDirection = niftk::GetUpDirection(referenceImage, IMAGE_ORIENTATION_AXIAL);
+  }
+
+  m_MorphologicalSegmentorGUI->SetControlsByReferenceImage(
+      lowestValue,
+      highestValue,
+      numberOfAxialSlices,
+      upDirection);
+}
+
+
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorController::SetControlsFromSegmentationNode()
+{
+  mitk::DataNode* segmentationNode = this->GetWorkingNode();
+  m_MorphologicalSegmentorGUI->SetControlsFromSegmentationNode(segmentationNode);
 }
 
 }

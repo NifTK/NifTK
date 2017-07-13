@@ -352,12 +352,6 @@ BaseGUI* BaseController::GetGUI() const
 
 
 //-----------------------------------------------------------------------------
-void BaseController::UpdateGUI() const
-{
-}
-
-
-//-----------------------------------------------------------------------------
 IBaseView* BaseController::GetView() const
 {
   Q_D(const BaseController);
