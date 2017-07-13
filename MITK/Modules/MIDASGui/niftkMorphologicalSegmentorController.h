@@ -69,11 +69,9 @@ protected:
   /// \brief Creates the morphological segmentor widget that holds the GUI components of the view.
   virtual BaseGUI* CreateGUI(QWidget* parent) override;
 
-  /// \brief Called when the reference data nodes have changed.
-  virtual void OnReferenceNodesChanged() override;
-
-  /// \brief Called when the working data nodes have changed.
-  virtual void OnWorkingNodesChanged() override;
+  /// \brief Called when the selection changes in the data manager.
+  /// \see QmitkAbstractView::OnSelectionChanged.
+  virtual void OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& nodes) override;
 
 protected slots:
 
