@@ -151,9 +151,9 @@ public:
   /** Control whether high- or low-valued pixels are vertex-connected.
     * Default is for low-valued pixels to be vertex-connected.
     * (See class documentation.) */
-  itkSetMacro(VertexConnectHighPixels, bool)
-  itkGetConstReferenceMacro(VertexConnectHighPixels, bool)
-  itkBooleanMacro(VertexConnectHighPixels)
+  itkSetMacro(VertexConnectHighPixels, bool);
+  itkGetConstReferenceMacro(VertexConnectHighPixels, bool);
+  itkBooleanMacro(VertexConnectHighPixels);
 
   /** Control whether the largest possible input region is used, or if a
     * custom requested region is to be used. */
@@ -184,15 +184,15 @@ protected:
 
   OrthogonalContourExtractor2DImageFilter();
   virtual ~OrthogonalContourExtractor2DImageFilter();
-  void PrintSelf(std::ostream& os, Indent indent) const override;
+  void PrintSelf(std::ostream& os, Indent indent) const;
 
-  void GenerateData() override;
+  void GenerateData();
 
   /** OrthogonalContourExtractor2DImageFilter manually controls the input requested
     * region via SetRequestedRegion and ClearRequestedRegion, so it must
     * override the superclass method. */
   virtual void GenerateInputRequestedRegion()
-            throw(InvalidRequestedRegionError) override;
+            throw(InvalidRequestedRegionError);
 
 private:
   VertexType InterpolateContourPosition(InputPixelType fromValue,
