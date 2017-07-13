@@ -64,6 +64,12 @@ int BaseApplication::run()
     std::cerr << exc.what() << std::endl;
     std::cerr << "Exiting." << std::endl;
   }
+  /// Note:
+  /// If std::exception is caught here, the debugger gets stuck somewhere in Poco
+  /// when starting the application. This happened on Mac with QtCreator 4.0.1 and
+  /// clang of XCode 7.3.1.
+
+  return 1;
 }
 
 
@@ -74,7 +80,9 @@ void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
 
   this->ReformatOptionDescriptions(options);
 
-  Poco::Util::Option versionOption("version", "V", "Prints the version number.");
+  Poco::Util::Option versionOption("version", "V",
+      "\n"
+      "Prints the version number.\n");
   versionOption.callback(Poco::Util::OptionCallback<BaseApplication>(this, &BaseApplication::PrintVersion));
   options.addOption(versionOption);
 
@@ -166,7 +174,9 @@ void BaseApplication::defineOptions(Poco::Util::OptionSet& options)
   perspectiveOption.argument("<perspective>").binding(PROP_PERSPECTIVE.toStdString());
   options.addOption(perspectiveOption);
 
-  Poco::Util::Option resetPerspectiveOption("reset-perspective", "", "Reverts the perspective to its original layout.");
+  Poco::Util::Option resetPerspectiveOption("reset-perspective", "",
+      "\n"
+      "Reverts the perspective to its original layout.\n");
   resetPerspectiveOption.binding(PROP_RESET_PERSPECTIVE.toStdString());
   options.addOption(resetPerspectiveOption);
 
