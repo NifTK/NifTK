@@ -276,6 +276,8 @@ protected slots:
 
 private:
 
+  void UpdateGUI();
+
   virtual void OnViewGetsVisible() override;
 
   virtual void OnViewGetsHidden() override;
@@ -314,6 +316,10 @@ private:
   /// Used when starting a segmentation or switching orientation, to place seeds
   /// into the regions of the current slice.
   void InitialiseSeedsForSlice(int sliceAxis, int sliceIndex);
+
+  /// \brief Retrieves the min and max of the image (cached), and sets the thresholding
+  /// intensity sliders range accordingly.
+  void RecalculateMinAndMaxOfImage();
 
   /// \brief For each seed in the list of seeds and current slice, converts to millimetre position,
   /// and looks up the pixel value in the reference image (grey scale image being segmented)

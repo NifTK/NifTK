@@ -419,9 +419,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
         /// need to set the initial parameters based on the reference image.
         mitk::Image* segmentationImage = dynamic_cast<mitk::Image*>(newSegmentation->GetData());
         AccessFixedDimensionByItk(segmentationImage, ITKClearImage, 3);
-        this->SetSegmentationNodePropsFromReferenceImage();
         this->SetControlsFromReferenceImage();
-        this->SetControlsFromSegmentationNode();
       }
       m_PipelineManager->UpdateSegmentation();
     }
