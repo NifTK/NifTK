@@ -23,10 +23,10 @@ MIDASThresholdingRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>:
 //-----------------------------------------------------------------------------
 template<class TInputImage, class TOutputImage, class TPointSet>
 void MIDASThresholdingRegionGrowingImageFilter<TInputImage, TOutputImage, TPointSet>::ConditionalAddPixel(
-    std::stack<typename OutputImageType::IndexType> &r_stack,
-    const typename OutputImageType::IndexType &currentImgIdx,
-    const typename OutputImageType::IndexType &nextImgIdx,
-    const bool &isFullyConnected
+    std::stack<typename OutputImageType::IndexType>& r_stack,
+    const typename OutputImageType::IndexType& currentImgIdx,
+    const typename OutputImageType::IndexType& nextImgIdx,
+    bool isFullyConnected
     )
 {
   /// I.e. out of thresholds.

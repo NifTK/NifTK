@@ -147,7 +147,7 @@ public:
   /**
    * \brief Set the seeds, as region growing starts from each seed point.
    */
-  void SetSeedPoints(const PointSetType &seeds)
+  void SetSeedPoints(const PointSetType& seeds)
   {
     mspc_SeedPoints = &seeds;
     this->Modified();
@@ -214,10 +214,10 @@ protected:
    * \param[Out] true if the pixel should be added and false otherwise
    */
   virtual void ConditionalAddPixel(
-                  std::stack<typename OutputImageType::IndexType> &r_stack,
-                  const typename OutputImageType::IndexType &currentImgIdx,
-                  const typename OutputImageType::IndexType &nextImgIdx,
-                  const bool &isFullyConnected);
+                  std::stack<typename OutputImageType::IndexType>& r_stack,
+                  const typename OutputImageType::IndexType& currentImgIdx,
+                  const typename OutputImageType::IndexType& nextImgIdx,
+                  bool isFullyConnected);
 
 private:
 
@@ -229,8 +229,8 @@ private:
    * (Assuming the pixels are next to each other, and not miles apart).
    */
   bool IsFullyConnected(
-                  const typename OutputImageType::IndexType &index1,
-                  const typename OutputImageType::IndexType &index2
+                  const typename OutputImageType::IndexType& index1,
+                  const typename OutputImageType::IndexType& index2
                   );
 
   /**
@@ -242,8 +242,8 @@ private:
    */
   bool IsCrossingLine(
                   const ParametricPathVectorType* contours,
-                  const typename OutputImageType::IndexType &index1,
-                  const typename OutputImageType::IndexType &index2
+                  const typename OutputImageType::IndexType& index1,
+                  const typename OutputImageType::IndexType& index2
                   );
 
   OutputPixelType                        m_ForegroundValue;

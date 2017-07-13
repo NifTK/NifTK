@@ -89,10 +89,10 @@ private:
    * \param[Out] true if the pixel should be added and false otherwise
    */
   virtual void ConditionalAddPixel(
-                  std::stack<typename OutputImageType::IndexType> &r_stack,
-                  const typename OutputImageType::IndexType &currentImgIdx,
-                  const typename OutputImageType::IndexType &nextImgIdx,
-                  const bool &isFullyConnected) override;
+                  std::stack<typename OutputImageType::IndexType>& r_stack,
+                  const typename OutputImageType::IndexType& currentImgIdx,
+                  const typename OutputImageType::IndexType& nextImgIdx,
+                  bool isFullyConnected) override;
 
   InputPixelType                         m_LowerThreshold;
   InputPixelType                         m_UpperThreshold;
