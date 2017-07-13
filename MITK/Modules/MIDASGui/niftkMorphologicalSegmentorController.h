@@ -78,38 +78,19 @@ protected slots:
   /// \brief Called when the user hits the button "New segmentation", which creates the necessary reference data.
   virtual void OnNewSegmentationButtonClicked() override;
 
-  /// \brief Sets the thresholding parameters.
-  /// Called when the thresholding sliders or spin boxes changed.
-  ///
-  /// \param lowerThreshold the lowest intensity value included in the segmentation
-  /// \param upperThreshold the upper intensity value included in the segmentation
-  /// \param axialSliceNumber the number of the first slice, counting from the inferior end of the imaging volume to include in the imaging volume.
+  /// \brief Called from niftkMorphologicalSegmentorGUI when thresholding sliders or spin boxes changed.
   void OnThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSliceNumber);
 
-  /// \brief Sets the conditional erosion parameters.
-  /// Called when the erosion sliders or spin boxes changed.
-  ///
-  /// \param upperThreshold the highest greyscale intensity value, above which the binary volume is not eroded
-  /// \param numberOfErosions the number of erosion iterations to perform
+  /// \brief Called from niftkMorphologicalSegmentorGUI when erosion sliders or spin boxes changed.
   void OnErosionsValuesChanged(double upperThreshold, int numberOfErosions);
 
-  /// \brief Sets the conditional dilation parameters.
-  /// Called when the dilation sliders or spin boxes changed.
-  ///
-  /// \param lowerPercentage the lower percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
-  /// \param upperPercentage the upper percentage of the mean intensity value within the current region of interest, below which voxels are not dilated.
-  /// \param numberOfDilations the number of dilation iterations to perform
+  /// \brief Called from niftkMorphologicalSegmentorGUI when dilation sliders or spin boxes changed.
   void OnDilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
 
-  /// \brief Sets the re-thresholding parameters.
-  /// Called when re-thresholding widgets changed.
-  ///
-  /// \param boxSize the size of the re-thresholding box (see paper).
+  /// \brief Called from niftkMorphologicalSegmentorGUI when re-thresholding widgets changed.
   void OnRethresholdingValuesChanged(int boxSize);
 
-  /// \brief Called when we step to another stage of the pipeline, either fore or backwards.
-  ///
-  /// \param stage the new stage where we stepped to
+  /// \brief Called from niftkMorphologicalSegmentorGUI when a tab changes.
   void OnTabChanged(int i);
 
   /// \brief Called from niftkMorphologicalSegmentatorControls when OK button is clicked, which should finalise / finish and accept the segmentation.
