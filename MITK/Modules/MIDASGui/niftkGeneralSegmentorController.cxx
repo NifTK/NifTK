@@ -663,7 +663,7 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
     return;
   }
 
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   if (!workingData.empty() && node == workingData[Tool::SEGMENTATION])
   {
     bool segmentationNodeVisibility;
@@ -1036,7 +1036,7 @@ void GeneralSegmentorController::OnNodeChanged(const mitk::DataNode* node)
     return;
   }
 
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   if (workingData.size() > 0)
   {
     bool seedsChanged(false);
@@ -1280,7 +1280,7 @@ void GeneralSegmentorController::UpdateCurrentSliceContours(bool updateRendering
   mitk::ToolManager::Pointer toolManager = this->GetToolManager();
   assert(toolManager);
 
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   mitk::ContourModelSet::Pointer contourSet = dynamic_cast<mitk::ContourModelSet*>(workingData[Tool::CONTOURS]->GetData());
 
   // TODO
@@ -1313,7 +1313,7 @@ void GeneralSegmentorController::OnSeePriorCheckBoxToggled(bool checked)
     return;
   }
 
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   if (checked)
   {
@@ -1332,7 +1332,7 @@ void GeneralSegmentorController::OnSeeNextCheckBoxToggled(bool checked)
     return;
   }
 
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   if (checked)
   {
@@ -1365,7 +1365,7 @@ void GeneralSegmentorController::OnThresholdingCheckBoxToggled(bool checked)
     this->UpdateRegionGrowing();
   }
 
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   workingData[Tool::REGION_GROWING]->SetVisibility(checked);
 
   this->RequestRenderWindowUpdate();
@@ -1408,7 +1408,7 @@ void GeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
     double upperThreshold = d->m_GUI->GetUpperThreshold();
     bool skipUpdate = !isThresholdingOn;
 
-    mitk::DataNode::Pointer segmentationNode = this->GetWorkingNodes()[Tool::SEGMENTATION];
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
     segmentationNode->SetFloatProperty("general segmentor.lower threshold", lowerThreshold);
     segmentationNode->SetFloatProperty("general segmentor.upper threshold", upperThreshold);
 
@@ -1442,13 +1442,13 @@ void GeneralSegmentorController::UpdateRegionGrowing(
   mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
-    mitk::DataNode::Pointer segmentationNode = this->GetWorkingNodes()[Tool::SEGMENTATION];
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
     mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
     {
 
-      std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
+      std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
       workingData[Tool::REGION_GROWING]->SetVisibility(isVisible);
 
       bool wasUpdating = d->m_IsUpdating;
@@ -1477,8 +1477,8 @@ void GeneralSegmentorController::UpdateRegionGrowing(
         polyToolContours->AddContourModel(polyToolContour);
       }
 
-      mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodes()[Tool::CONTOURS]->GetData());
-      mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodes()[Tool::DRAW_CONTOURS]->GetData());
+      mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::CONTOURS]->GetData());
+      mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::DRAW_CONTOURS]->GetData());
 
       if (sliceAxis != -1 && sliceIndex != -1)
       {
@@ -1564,7 +1564,7 @@ void GeneralSegmentorController::UpdatePriorAndNext(bool updateRendering)
     return;
   }
 
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
   mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (d->m_GUI->IsSeePriorCheckBoxChecked())
@@ -1639,8 +1639,8 @@ bool GeneralSegmentorController::DoesSliceHaveUnenclosedSeeds(bool thresholdOn, 
     polyToolContours->AddContourModel(polyToolContour);
   }
 
-  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodes()[Tool::CONTOURS]->GetData());
-  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodes()[Tool::DRAW_CONTOURS]->GetData());
+  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::CONTOURS]->GetData());
+  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::DRAW_CONTOURS]->GetData());
 
   double lowerThreshold = d->m_GUI->GetLowerThreshold();
   double upperThreshold = d->m_GUI->GetUpperThreshold();
@@ -1824,7 +1824,7 @@ void GeneralSegmentorController::RemoveWorkingData()
   d->m_IsDeleting = true;
 
   mitk::ToolManager* toolManager = this->GetToolManager();
-  std::vector<mitk::DataNode*> workingData = this->GetWorkingNodes();
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
 
   // We don't do the first image, as thats the final segmentation.
   for (unsigned int i = 1; i < workingData.size(); i++)
@@ -2330,7 +2330,7 @@ void GeneralSegmentorController::DoPropagate(bool isUp, bool is3D)
   mitk::Image* referenceImage = this->GetReferenceImage();
   if (referenceImage)
   {
-    mitk::DataNode::Pointer segmentationNode = this->GetWorkingNodes()[Tool::SEGMENTATION];
+    mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
     mitk::Image::ConstPointer segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
     if (segmentationImage.IsNotNull() && segmentationNode.IsNotNull())
@@ -2565,7 +2565,7 @@ void GeneralSegmentorController::DoWipe(int direction)
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNodes()[Tool::SEGMENTATION];
+  mitk::DataNode* segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
   mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (!segmentationImage || !segmentationNode)
@@ -2717,7 +2717,7 @@ void GeneralSegmentorController::DoThresholdApply(
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNodes()[Tool::SEGMENTATION];
+  mitk::DataNode* segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
   mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (!segmentationImage || !segmentationNode)
@@ -2875,7 +2875,7 @@ void GeneralSegmentorController::OnCleanButtonClicked()
     return;
   }
 
-  mitk::DataNode* segmentationNode = this->GetWorkingNodes()[Tool::SEGMENTATION];
+  mitk::DataNode* segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
   mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
 
   if (!segmentationImage || !segmentationNode)
@@ -2909,10 +2909,10 @@ void GeneralSegmentorController::OnCleanButtonClicked()
     polyToolContours->AddContourModel(polyToolContour);
   }
 
-  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodes()[Tool::CONTOURS]->GetData());
+  mitk::ContourModelSet* segmentationContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::CONTOURS]->GetData());
   assert(segmentationContours);
 
-  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodes()[Tool::DRAW_CONTOURS]->GetData());
+  mitk::ContourModelSet* drawToolContours = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::DRAW_CONTOURS]->GetData());
   assert(drawToolContours);
 
   mitk::DataNode::Pointer regionGrowingNode = this->GetDataStorage()->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
@@ -3170,7 +3170,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
   const mitk::Image* segmentationImage = this->GetWorkingImage(Tool::SEGMENTATION);
   assert(segmentationImage);
 
-  mitk::DataNode::Pointer segmentationNode = this->GetWorkingNodes()[Tool::SEGMENTATION];
+  mitk::DataNode::Pointer segmentationNode = this->GetWorkingData()[Tool::SEGMENTATION];
   assert(segmentationNode);
 
   const mitk::Image* referenceImage = this->GetReferenceImage();
@@ -3182,7 +3182,7 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
   mitk::PointSet* seeds = this->GetSeeds();
   assert(seeds);
 
-  mitk::DataNode::Pointer seedsNode = this->GetWorkingNodes()[Tool::SEEDS];
+  mitk::DataNode::Pointer seedsNode = this->GetWorkingData()[Tool::SEEDS];
   assert(seedsNode);
 
   switch (operation->GetOperationType())
@@ -3328,12 +3328,12 @@ void GeneralSegmentorController::ExecuteOperation(mitk::Operation* operation)
         mitk::ContourModelSet* newContours = op->GetContourSet();
         assert(newContours);
 
-        mitk::ContourModelSet* contoursToReplace = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingNodes()[Tool::CONTOURS]->GetData());
+        mitk::ContourModelSet* contoursToReplace = dynamic_cast<mitk::ContourModelSet*>(this->GetWorkingData()[Tool::CONTOURS]->GetData());
         assert(contoursToReplace);
 
         ContourTool::CopyContourSet(*newContours, *contoursToReplace);
         contoursToReplace->Modified();
-        this->GetWorkingNodes()[Tool::CONTOURS]->Modified();
+        this->GetWorkingData()[Tool::CONTOURS]->Modified();
 
         segmentationImage->Modified();
         segmentationNode->Modified();

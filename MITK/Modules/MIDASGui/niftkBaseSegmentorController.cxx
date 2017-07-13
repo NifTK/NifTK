@@ -122,39 +122,7 @@ mitk::ToolManager* BaseSegmentorController::GetToolManager() const
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> BaseSegmentorController::GetReferenceNodes()
-{
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  return toolManager->GetReferenceData();
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::GetReferenceNode(int index)
-{
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  return toolManager->GetReferenceData(index);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::Image* BaseSegmentorController::GetReferenceImage(int index)
-{
-  if (auto node = this->GetReferenceNode(index))
-  {
-    return dynamic_cast<mitk::Image*>(node->GetData());
-  }
-
-  return nullptr;
-}
-
-
-//-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodes()
+std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingData()
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
@@ -164,24 +132,53 @@ std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodes()
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* BaseSegmentorController::GetWorkingNode(int index)
+mitk::Image* BaseSegmentorController::GetWorkingImage(int index)
 {
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  assert(toolManager);
+  mitk::Image* result = nullptr;
 
-  return toolManager->GetWorkingData(index);
+  std::vector<mitk::DataNode*> workingData = this->GetWorkingData();
+  if (workingData.size() > 0 && index >= 0 && index < (int)workingData.size())
+  {
+    mitk::DataNode::Pointer node = workingData[index];
+
+    if (node.IsNotNull())
+    {
+      mitk::Image* image = dynamic_cast<mitk::Image*>( node->GetData() );
+      if (image)
+      {
+        result = image;
+      }
+    }
+  }
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
-mitk::Image* BaseSegmentorController::GetWorkingImage(int index)
+mitk::DataNode* BaseSegmentorController::GetReferenceNode()
 {
-  if (auto node = this->GetWorkingNode(index))
-  {
-    return dynamic_cast<mitk::Image*>(node->GetData());
-  }
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  assert(toolManager);
 
-  return nullptr;
+  return toolManager->GetReferenceData(0);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::Image* BaseSegmentorController::GetReferenceImage()
+{
+  mitk::Image* result = nullptr;
+
+  mitk::DataNode* node = this->GetReferenceNode();
+  if (node)
+  {
+    mitk::Image* image = dynamic_cast<mitk::Image*>( node->GetData() );
+    if (image)
+    {
+      result = image;
+    }
+  }
+  return result;
 }
 
 
@@ -402,7 +399,7 @@ mitk::DataNode* BaseSegmentorController::CreateNewSegmentation()
 //-----------------------------------------------------------------------------
 bool BaseSegmentorController::HasInitialisedWorkingData()
 {
-  return !this->GetWorkingNodes().empty();
+  return !this->GetWorkingData().empty();
 }
 
 
