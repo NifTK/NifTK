@@ -133,23 +133,48 @@ bool IsNodeAHelperObject(const mitk::DataNode* node)
 //-----------------------------------------------------------------------------
 bool IsNodeAGreyScaleImage(const mitk::DataNode* node)
 {
-  bool isBinary = false;
+  bool result = false;
 
-  return node
-      && dynamic_cast<mitk::Image*>(node->GetData())
-      && (!node->GetBoolProperty("binary", isBinary) || !isBinary);
+  if (node)
+  {
+    mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+    if (image)
+    {
+      bool isBinary(false);
+      bool foundBinaryProperty = node->GetBoolProperty("binary", isBinary);
+
+      if ((foundBinaryProperty && !isBinary) || !foundBinaryProperty)
+      {
+        result = true;
+      }
+    }
+  }
+
+  return result;
 }
 
 
 //-----------------------------------------------------------------------------
 bool IsNodeABinaryImage(const mitk::DataNode* node)
 {
-  bool isBinary = false;
+  bool result = false;
 
-  return node
-      && dynamic_cast<mitk::Image*>(node->GetData())
-      && node->GetBoolProperty("binary", isBinary)
-      && isBinary;
+  if (node)
+  {
+    mitk::Image* image = dynamic_cast<mitk::Image*>(node->GetData());
+    if (image)
+    {
+      bool isBinary(false);
+      bool foundBinaryProperty = node->GetBoolProperty("binary", isBinary);
+
+      if(foundBinaryProperty && isBinary)
+      {
+        result = true;
+      }
+    }
+  }
+
+  return result;
 }
 
 
