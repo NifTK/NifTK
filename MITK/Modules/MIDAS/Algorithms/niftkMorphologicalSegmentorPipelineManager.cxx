@@ -252,7 +252,7 @@ void MorphologicalSegmentorPipelineManager::UpdateSegmentation()
 
     if (foundRestartingFlag)
     {
-      segmentationNode->SetBoolProperty("midas.morph.restarting", false);
+      referenceNode->SetBoolProperty("midas.morph.restarting", false);
     }
 
     segmentationImage->Modified();
@@ -277,7 +277,11 @@ void MorphologicalSegmentorPipelineManager::FinalizeSegmentation()
     {
       MITK_ERROR << "Caught exception, so finalize pipeline" << e.what();
     }
+    this->RemoveWorkingNodes();
     this->DestroyPipeline(segmentationImage);
+
+    segmentationNode->SetBoolProperty("midas.morph.finished", true);
+    segmentationNode->SetIntProperty("midas.morph.stage", 0);
 
     UpdateVolumeProperty(segmentationImage, segmentationNode);
   }
@@ -307,6 +311,23 @@ void MorphologicalSegmentorPipelineManager::ClearWorkingData()
       }
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void MorphologicalSegmentorPipelineManager::RemoveWorkingNodes()
+{
+  std::vector<mitk::DataNode*> workingData = m_ToolManager->GetWorkingData();
+
+  std::vector<mitk::DataNode*> noWorkingData(0);
+  m_ToolManager->SetWorkingData(noWorkingData);
+
+  for (unsigned i = 1; i < workingData.size(); ++i)
+  {
+    this->GetDataStorage()->Remove(workingData[i]);
+  }
+
+  m_ToolManager->ActivateTool(-1);
 }
 
 
