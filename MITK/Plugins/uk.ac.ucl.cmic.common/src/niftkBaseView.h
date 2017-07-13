@@ -91,7 +91,7 @@ public:
    * \brief Retrieves every RenderWindow from the mitkRenderWindowPart.
    * \return The render windows of the render window part, assiciated to their name.
    */
-  virtual QHash<QString,QmitkRenderWindow*> GetQmitkRenderWindows() const override;
+  virtual QHash<QString,QmitkRenderWindow*> GetQmitkRenderWindows() const;
 
   /**
    * \brief Retrieves the currently selected RenderWindow from the mitkRenderWindowPart.
