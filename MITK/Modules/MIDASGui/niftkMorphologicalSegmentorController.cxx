@@ -110,9 +110,16 @@ bool MorphologicalSegmentorController::IsAWorkingImage(const mitk::DataNode::Poi
 
 
 //-----------------------------------------------------------------------------
-std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node)
+std::vector<mitk::DataNode*> MorphologicalSegmentorController::GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node)
 {
   return m_PipelineManager->GetWorkingDataFromSegmentationNode(node);
+}
+
+
+//-----------------------------------------------------------------------------
+mitk::DataNode* MorphologicalSegmentorController::GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node)
+{
+  return m_PipelineManager->GetSegmentationNodeFromWorkingData(node);
 }
 
 
@@ -563,7 +570,7 @@ void MorphologicalSegmentorController::OnCancelButtonClicked()
     this->OnActiveToolChanged();
     m_MorphologicalSegmentorGUI->EnableSegmentationWidgets(false);
     m_MorphologicalSegmentorGUI->SetTabIndex(0);
-    m_PipelineManager->RemoveWorkingNodes();
+    m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
     mitk::DataNode::Pointer axialCutOffPlaneNode = this->GetDataStorage()->GetNamedDerivedNode("Axial cut-off plane", segmentationNode);
@@ -623,7 +630,7 @@ void MorphologicalSegmentorController::OnNodeRemoved(const mitk::DataNode* remov
     {
       this->GetDataStorage()->Remove(axialCutOffPlaneNode);
     }
-    m_PipelineManager->RemoveWorkingNodes();
+    m_PipelineManager->RemoveWorkingData();
     mitk::Image::Pointer segmentationImage = dynamic_cast<mitk::Image*>(segmentationNode->GetData());
     m_PipelineManager->DestroyPipeline(segmentationImage);
     this->GetView()->SetDataManagerSelection(this->GetReferenceNode());

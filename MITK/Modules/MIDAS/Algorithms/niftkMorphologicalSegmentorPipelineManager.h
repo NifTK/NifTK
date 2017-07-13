@@ -133,6 +133,9 @@ public:
   /// \brief Assumes input is a valid segmentation node, then searches for the derived children of the node, looking for binary images called SUBTRACTIONS_NAME and ADDITIONS_NAME. Returns empty list if both not found.
   virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) const;
 
+  /// \brief Assumes input is a valid working node, then searches for a binary parent node, returns NULL if not found.
+  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node) const;
+
   /// \brief Looks up the reference image, and sets default property values onto the segmentation node, which are later used to update GUI controls.
   void SetSegmentationNodePropsFromReferenceImage();
 
@@ -146,7 +149,7 @@ public:
   void ClearWorkingData();
 
   /// \brief Removes the images we are using for editing during connection breaker from the DataStorage
-  void RemoveWorkingNodes();
+  void RemoveWorkingData();
 
   /// \brief Completely removes the current pipeline
   void DestroyPipeline(mitk::Image::Pointer segmentation);

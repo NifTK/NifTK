@@ -121,7 +121,10 @@ protected:
   virtual bool IsAWorkingImage(const mitk::DataNode::Pointer node);
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
-  virtual std::vector<mitk::DataNode*> GetWorkingNodesFromSegmentationNode(const mitk::DataNode::Pointer node);
+  virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node);
+
+  /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
+  virtual mitk::DataNode* GetSegmentationNodeFromWorkingData(const mitk::DataNode::Pointer node);
 
   /// \brief We return true if the segmentation can either be "re-started", i.e. you switch between binary images
   /// in the Data Manager, and if the binary image has the correct hidden child nodes, then
@@ -158,8 +161,8 @@ protected:
   /// \brief Gets the segmentor widget that holds the GUI components of the view.
   BaseSegmentorGUI* GetSegmentorGUI() const;
 
-  /// \brief Utility method to check that we have initialised all the working data nodes such as contours, region growing images etc.
-  bool HasInitialisedWorkingNodes();
+  /// \brief Utility method to check that we have initialised all the working data such as contours, region growing images etc.
+  bool HasInitialisedWorkingData();
 
   /// \brief Called when the selection changes in the data manager.
   /// \see QmitkAbstractView::OnSelectionChanged.
@@ -173,7 +176,7 @@ protected slots:
 private:
 
   /// \brief Propagate data manager selection to tool manager for manual segmentation.
-  virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingNodes);
+  virtual void SetToolManagerSelection(const mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingDataNodes);
 
   mitk::ToolManager::Pointer m_ToolManager;
 
