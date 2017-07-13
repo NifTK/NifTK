@@ -389,7 +389,7 @@ void MultiViewerVisibilityManager::AddNodeToViewer(SingleViewerWidget* viewer, m
   node->SetVisibility(true);
   m_DroppedNodes[viewer].insert(node);
 
-  mitk::DataStorage::SetOfObjects::ConstPointer derivedNodes = this->GetDataStorage()->GetDerivations(node, nullptr, false);
+  mitk::DataStorage::SetOfObjects::ConstPointer derivedNodes = this->GetDataStorage()->GetDerivations(node, NULL, false);
   for (auto it = derivedNodes->Begin(); it != derivedNodes->End(); ++it)
   {
     mitk::DataNode* derivedNode = it->Value();
@@ -431,17 +431,19 @@ bool MultiViewerVisibilityManager::IsForeignNode(mitk::DataNode* node, SingleVie
 //-----------------------------------------------------------------------------
 mitk::TimeGeometry::Pointer MultiViewerVisibilityManager::GetTimeGeometry(std::vector<mitk::DataNode*> nodes, int nodeIndex)
 {
-  mitk::TimeGeometry::Pointer geometry;
+  mitk::TimeGeometry::Pointer geometry = NULL;
   int indexThatWeActuallyUsed = -1;
 
   // If nodeIndex < 0, we are choosing the best geometry from all available nodes.
   if (nodeIndex < 0)
   {
+
     // First try to find an image geometry, and if so, use the first one.
+    mitk::Image::Pointer image = NULL;
     for (std::size_t i = 0; i < nodes.size(); i++)
     {
-      mitk::Image* image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
-      if (image)
+      image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());
+      if (image.IsNotNull())
       {
         geometry = image->GetTimeGeometry();
         indexThatWeActuallyUsed = i;
@@ -454,8 +456,8 @@ mitk::TimeGeometry::Pointer MultiViewerVisibilityManager::GetTimeGeometry(std::v
     {
       for (std::size_t i = 0; i < nodes.size(); i++)
       {
-        mitk::BaseData* data = nodes[i]->GetData();
-        if (data)
+        mitk::BaseData::Pointer data = nodes[i]->GetData();
+        if (data.IsNotNull())
         {
           geometry = data->GetTimeGeometry();
           indexThatWeActuallyUsed = i;
@@ -467,8 +469,8 @@ mitk::TimeGeometry::Pointer MultiViewerVisibilityManager::GetTimeGeometry(std::v
   // So, the caller has nominated a specific node, lets just use that one.
   else if (nodeIndex >= 0 && nodeIndex < (int)nodes.size())
   {
-    mitk::BaseData* data = nodes[nodeIndex]->GetData();
-    if (data)
+    mitk::BaseData::Pointer data = nodes[nodeIndex]->GetData();
+    if (data.IsNotNull())
     {
       geometry = data->GetTimeGeometry();
       indexThatWeActuallyUsed = nodeIndex;
@@ -477,8 +479,8 @@ mitk::TimeGeometry::Pointer MultiViewerVisibilityManager::GetTimeGeometry(std::v
   // Essentially, the nodeIndex is garbage, so just pick the first one.
   else
   {
-    mitk::BaseData* data = nodes[0]->GetData();
-    if (data)
+    mitk::BaseData::Pointer data = nodes[0]->GetData();
+    if (data.IsNotNull())
     {
       geometry = data->GetTimeGeometry();
       indexThatWeActuallyUsed = 0;
@@ -491,21 +493,19 @@ mitk::TimeGeometry::Pointer MultiViewerVisibilityManager::GetTimeGeometry(std::v
   // volumes are correctly assigned to parents.
   if (indexThatWeActuallyUsed != -1)
   {
-    mitk::DataNode* nodeThatWeActuallyUsed = nodes[indexThatWeActuallyUsed];
-    if (!niftk::IsNodeANonBinaryImage(nodeThatWeActuallyUsed))
+    if (!niftk::IsNodeAGreyScaleImage(nodes[indexThatWeActuallyUsed]))
     {
-      mitk::DataNode* node = niftk::FindParentNonBinaryImage(this->GetDataStorage(), nodeThatWeActuallyUsed);
-      if (node)
+      mitk::DataNode::Pointer node = FindParentGreyScaleImage(this->GetDataStorage(), nodes[indexThatWeActuallyUsed]);
+      if (node.IsNotNull())
       {
-        mitk::BaseData* data = node->GetData();
-        if (data)
+        mitk::BaseData::Pointer data = nodes[0]->GetData();
+        if (data.IsNotNull())
         {
           geometry = data->GetTimeGeometry();
         }
       }
     }
   }
-
   return geometry;
 }
 
@@ -568,7 +568,7 @@ WindowLayout MultiViewerVisibilityManager::GetWindowLayout(std::vector<mitk::Dat
     // in the original image data, so we switch to ITK to work it out.
     WindowOrientation orientation = WINDOW_ORIENTATION_CORONAL;
 
-    mitk::Image::Pointer image;
+    mitk::Image::Pointer image = NULL;
     for (std::size_t i = 0; i < nodes.size(); i++)
     {
       image = dynamic_cast<mitk::Image*>(nodes[i]->GetData());

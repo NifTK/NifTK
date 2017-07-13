@@ -75,7 +75,7 @@ bool IsNodeAHelperObject(const mitk::DataNode* node)
 
 
 //-----------------------------------------------------------------------------
-bool IsNodeANonBinaryImage(const mitk::DataNode* node)
+bool IsNodeAGreyScaleImage(const mitk::DataNode* node)
 {
   bool isBinary;
 
@@ -176,7 +176,7 @@ mitk::DataNode* FindFirstParent(const mitk::DataStorage* storage, const mitk::Da
 
 
 //-----------------------------------------------------------------------------
-mitk::DataNode* FindParentNonBinaryImage(const mitk::DataStorage* storage, const mitk::DataNode* node)
+mitk::DataNode* FindParentGreyScaleImage(const mitk::DataStorage* storage, const mitk::DataNode* node)
 {
   mitk::DataNode* result = nullptr;
 
@@ -189,7 +189,7 @@ mitk::DataNode* FindParentNonBinaryImage(const mitk::DataStorage* storage, const
       parent = FindFirstParent(storage, nodeToCheck);
       if (parent)
       {
-        if (IsNodeANonBinaryImage(parent))
+        if (IsNodeAGreyScaleImage(parent))
         {
           result = parent;
           break;
@@ -293,9 +293,9 @@ mitk::TimeGeometry::Pointer GetPreferredGeometry(const mitk::DataStorage* dataSt
   // volumes are correctly assigned to parents.
   if (indexThatWeActuallyUsed != -1)
   {
-    if (!IsNodeANonBinaryImage(nodes[indexThatWeActuallyUsed]))
+    if (!IsNodeAGreyScaleImage(nodes[indexThatWeActuallyUsed]))
     {
-      mitk::DataNode::Pointer node = FindParentNonBinaryImage(dataStorage, nodes[indexThatWeActuallyUsed]);
+      mitk::DataNode::Pointer node = FindParentGreyScaleImage(dataStorage, nodes[indexThatWeActuallyUsed]);
       if (node.IsNotNull())
       {
         mitk::BaseData::Pointer data = nodes[0]->GetData();
