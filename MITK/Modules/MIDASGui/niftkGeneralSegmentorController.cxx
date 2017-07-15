@@ -1008,6 +1008,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
           }
           else
           {
+            d->m_IsUpdating = wasUpdating;
+
             /// This slot restores the last selected position from before changing
             /// slice, by calling this->SetSelectedPosition(d->m_SelectedPosition).
             /// We cannot call this function directly from here because this would
