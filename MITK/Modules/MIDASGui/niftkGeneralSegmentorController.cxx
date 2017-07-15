@@ -928,26 +928,37 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 
               if (oldSliceHasUnenclosedSeeds)
               {
-                QMessageBox::StandardButton returnValue =
-                    QMessageBox::warning(
-                      d->m_GUI->GetParent(),
-                      tr("NiftyMIDAS"),
-                      tr("There are unenclosed seeds - slice will be wiped\n"
-                         "Are you sure?"),
-                      QMessageBox::Yes | QMessageBox::No);
+                AccessFixedDimensionByItk_n(segmentationImage,
+                    ITKSliceIsEmpty, 3,
+                    (d->m_SliceAxis,
+                     d->m_SliceIndex,
+                     oldSliceIsEmpty
+                    )
+                  );
 
-                if (returnValue == QMessageBox::Yes)
+                if (!oldSliceIsEmpty)
                 {
-                  OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
-                  doOp = new OpWipe(OP_WIPE, true, d->m_SliceAxis, d->m_SliceIndex, outputRegion, newSeeds, processor);
-                  undoOp = new OpWipe(OP_WIPE, false, d->m_SliceAxis, d->m_SliceIndex, outputRegion, copyOfCurrentSeeds, processor);
-                  opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
-                  mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
-                  this->ExecuteOperation(doOp);
-                }
-                else
-                {
-                  operationCancelled = true;
+                  QMessageBox::StandardButton returnValue =
+                      QMessageBox::warning(
+                        d->m_GUI->GetParent(),
+                        tr("NiftyMIDAS"),
+                        tr("There are unenclosed seeds - slice will be wiped\n"
+                           "Are you sure?"),
+                        QMessageBox::Yes | QMessageBox::No);
+
+                  if (returnValue == QMessageBox::Yes)
+                  {
+                    OpWipe::ProcessorPointer processor = OpWipe::ProcessorType::New();
+                    doOp = new OpWipe(OP_WIPE, true, d->m_SliceAxis, d->m_SliceIndex, outputRegion, newSeeds, processor);
+                    undoOp = new OpWipe(OP_WIPE, false, d->m_SliceAxis, d->m_SliceIndex, outputRegion, copyOfCurrentSeeds, processor);
+                    opEvent = new mitk::OperationEvent(d->m_Interface, doOp, undoOp, "Wipe command");
+                    mitk::UndoController::GetCurrentUndoModel()->SetOperationEvent(opEvent);
+                    this->ExecuteOperation(doOp);
+                  }
+                  else
+                  {
+                    operationCancelled = true;
+                  }
                 }
               }
               else // so, we don't have unenclosed seeds
@@ -1008,6 +1019,8 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
           }
           else
           {
+            d->m_IsUpdating = wasUpdating;
+
             /// This slot restores the last selected position from before changing
             /// slice, by calling this->SetSelectedPosition(d->m_SelectedPosition).
             /// We cannot call this function directly from here because this would
