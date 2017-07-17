@@ -1160,7 +1160,7 @@ MatrixTrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string
   std::size_t found = imageFiles[0].find_last_of(".");
   std::string  ext = imageFiles[0].substr(found + 1);
 
-  if (( ext != "png") && ( ext != "nii")) // Need to include more image formats...
+  if (( ext != "png") && ( ext != "jpg" ) && ( ext != "nii")) // Need to include more image formats...
   {
     std::ostringstream errorMessage;
     errorMessage << imageFiles[0] << " is not an image file. Wrong directory?" << std::endl;
