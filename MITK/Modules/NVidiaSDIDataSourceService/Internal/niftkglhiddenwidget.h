@@ -7,7 +7,7 @@ class GLHiddenWidget : public QGLWidget
 {
 	Q_OBJECT
 public:
-	GLHiddenWidget(QWidget *parent = Q_NULLPTR, const QGLWidget *shareWidget = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+	GLHiddenWidget(QWidget *parent = nullptr, const QGLWidget *shareWidget = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~GLHiddenWidget();
 
 protected:
