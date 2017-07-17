@@ -28,7 +28,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <vtkMath.h>
-
+#include <highgui.h>
 
 namespace niftk
 {
@@ -1200,18 +1200,33 @@ MatrixTrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string
   }
 
   MatrixTrackedImageData outputData;
+  mitk::Convert2Dto3DImageFilter::Pointer filter = mitk::Convert2Dto3DImageFilter::New();
 
   // Load all images using mitk::IOUtil, assuming there is enough memory
   // Also load tracking data, and if in quaternion form, convert to matrices
   for (int i = 0; i < pairedFiles.size(); i++)
   {
-    // Load one image file
-    mitk::Image::Pointer tmpImage = mitk::IOUtil::LoadImage(pairedFiles[i].first);
-    mitk::Convert2Dto3DImageFilter::Pointer filter = mitk::Convert2Dto3DImageFilter::New();
-    filter->SetInput(tmpImage);
-    filter->Update();
+    found = pairedFiles[i].first.find_last_of(".");
+    ext = pairedFiles[i].first.substr(found + 1);
 
-    mitk::Image::Pointer convertedImage = filter->GetOutput();
+    mitk::Image::Pointer convertedImage = nullptr;
+
+    if (( ext == "png") || ( ext == "jpg" ))
+    {
+      // Use OpenCV/niftk routines.
+      // This creates a 3D image directly, and works with grey-scale and RGB.
+      cv::Mat tmp = cv::imread(pairedFiles[i].first);
+      convertedImage = niftk::CreateMitkImage(&tmp);
+    }
+    else
+    {
+      // Load one image file using mitk::IOUtil.
+      // This will load in as 2D, and hence requires the MITK filter to convert to 3D.
+      mitk::Image::Pointer tmpImage = mitk::IOUtil::LoadImage(pairedFiles[i].first);
+      filter->SetInput(tmpImage);
+      filter->Update();
+      convertedImage = filter->GetOutput();
+    }
 
     // Load one tracking file
     vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
