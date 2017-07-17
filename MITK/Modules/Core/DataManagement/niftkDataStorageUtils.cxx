@@ -178,6 +178,14 @@ bool IsNodeABinaryImage(const mitk::DataNode::Pointer node)
 
 
 //-----------------------------------------------------------------------------
+bool IsNodeAnUcharBinaryImage(const mitk::DataNode::Pointer node)
+{
+  return IsNodeABinaryImage(node)
+      && dynamic_cast<mitk::Image*>(node->GetData())->GetPixelType().GetComponentType() == itk::ImageIOBase::UCHAR;
+}
+
+
+//-----------------------------------------------------------------------------
 mitk::DataNode::Pointer FindNthImage(const std::vector<mitk::DataNode*> &nodes, int n, bool lookForBinary)
 {
   if (nodes.empty()) return NULL;

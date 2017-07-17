@@ -233,7 +233,7 @@ bool MorphologicalSegmentorPipelineManager::IsNodeASegmentationImage(const mitk:
 
   bool result = false;
 
-  if (niftk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeAnUcharBinaryImage(node))
   {
     mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent.IsNotNull())
@@ -263,7 +263,7 @@ bool MorphologicalSegmentorPipelineManager::IsNodeAWorkingImage(const mitk::Data
   assert(node);
   bool result = false;
 
-  if (niftk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeAnUcharBinaryImage(node))
   {
     mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, true);
     if (parent.IsNotNull())
@@ -336,7 +336,7 @@ mitk::DataNode* MorphologicalSegmentorPipelineManager::GetSegmentationNodeFromWo
   assert(node);
   mitk::DataNode* segmentationNode = NULL;
 
-  if (niftk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeAnUcharBinaryImage(node))
   {
     mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, true);
     if (parent.IsNotNull())

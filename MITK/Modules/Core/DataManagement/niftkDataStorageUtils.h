@@ -30,6 +30,8 @@ NIFTKCORE_EXPORT bool IsNodeAGreyScaleImage(const mitk::DataNode::Pointer node);
 
 NIFTKCORE_EXPORT bool IsNodeABinaryImage(const mitk::DataNode::Pointer node);
 
+NIFTKCORE_EXPORT bool IsNodeAnUcharBinaryImage(const mitk::DataNode::Pointer node);
+
 NIFTKCORE_EXPORT bool IsNodeAHelperObject(const mitk::DataNode* node);
 
 NIFTKCORE_EXPORT mitk::DataNode::Pointer FindFirstParent(const mitk::DataStorage* storage, const mitk::DataNode::Pointer node);

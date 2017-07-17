@@ -200,14 +200,14 @@ bool BaseSegmentorController::IsAReferenceImage(const mitk::DataNode::Pointer no
 //-----------------------------------------------------------------------------
 bool BaseSegmentorController::IsASegmentationImage(const mitk::DataNode::Pointer node)
 {
-  return niftk::IsNodeABinaryImage(node);
+  return niftk::IsNodeAnUcharBinaryImage(node);
 }
 
 
 //-----------------------------------------------------------------------------
 bool BaseSegmentorController::IsAWorkingImage(const mitk::DataNode::Pointer node)
 {
-  return niftk::IsNodeABinaryImage(node);
+  return niftk::IsNodeAnUcharBinaryImage(node);
 }
 
 
@@ -237,7 +237,7 @@ bool BaseSegmentorController::CanStartSegmentationForBinaryNode(const mitk::Data
 {
   bool canRestart = false;
 
-  if (node.IsNotNull() && niftk::IsNodeABinaryImage(node))
+  if (node.IsNotNull() && niftk::IsNodeAnUcharBinaryImage(node))
   {
     mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
     if (parent.IsNotNull())
@@ -444,7 +444,7 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
     {
       segmentationImageNode = selectedNode;
     }
-    else if (niftk::IsNodeABinaryImage(selectedNode) && this->CanStartSegmentationForBinaryNode(selectedNode))
+    else if (niftk::IsNodeAnUcharBinaryImage(selectedNode) && this->CanStartSegmentationForBinaryNode(selectedNode))
     {
       segmentationImageNode = selectedNode;
     }

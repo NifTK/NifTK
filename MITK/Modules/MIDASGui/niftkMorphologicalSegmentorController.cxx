@@ -153,7 +153,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   mitk::DataNode::Pointer newSegmentation;
   bool isRestarting = false;
 
-  if (niftk::IsNodeABinaryImage(selectedNode)
+  if (niftk::IsNodeAnUcharBinaryImage(selectedNode)
       && this->CanStartSegmentationForBinaryNode(selectedNode)
       && !this->IsASegmentationImage(selectedNode)
       )

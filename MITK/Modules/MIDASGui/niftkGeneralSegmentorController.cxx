@@ -216,7 +216,7 @@ bool GeneralSegmentorController::IsASegmentationImage(const mitk::DataNode::Poin
   assert(node);
   bool result = false;
 
-  if (niftk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeAnUcharBinaryImage(node))
   {
 
     mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
@@ -253,7 +253,7 @@ std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingDataFromSegme
   assert(node);
   std::vector<mitk::DataNode*> result;
 
-  if (niftk::IsNodeABinaryImage(node))
+  if (niftk::IsNodeAnUcharBinaryImage(node))
   {
     mitk::DataNode::Pointer parent = niftk::FindFirstParentImage(this->GetDataStorage(), node, false);
 
@@ -325,7 +325,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   mitk::DataNode::Pointer newSegmentation;
   bool isRestarting = false;
 
-  if (niftk::IsNodeABinaryImage(selectedNode)
+  if (niftk::IsNodeAnUcharBinaryImage(selectedNode)
       && this->CanStartSegmentationForBinaryNode(selectedNode)
       && !this->IsASegmentationImage(selectedNode)
       )
