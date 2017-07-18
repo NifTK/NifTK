@@ -117,7 +117,7 @@ void IGITimerBasedThread::OnTimeout()
     m_TimeStamp->GetTime();
     niftk::IGIDataSourceI::IGITimeType currentTime = m_TimeStamp->GetTimeStampInNanoseconds();
 
-    if ((currentTime - m_LastTime) > m_TimerIntervalInNanoseconds)
+    if ((currentTime - m_LastTime) >= m_TimerIntervalInNanoseconds)
     {
       m_LastTime = currentTime;
       this->OnTimeoutImpl();
