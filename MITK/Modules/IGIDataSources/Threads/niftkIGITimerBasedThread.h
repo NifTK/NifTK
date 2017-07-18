@@ -16,6 +16,8 @@
 #define niftkIGITimerBasedThread_h
 
 #include "niftkIGIDataSourcesExports.h"
+#include <niftkIGIDataSourceI.h>
+#include <igtlTimeStamp.h>
 #include <QThread>
 #include <QTimer>
 
@@ -54,6 +56,15 @@ public:
   */
   virtual void ForciblyStop();
 
+  /**
+   * \brief Switch between a fast polling method and normal QTimer method.
+   *
+   * If useFastPolling is true will trigger QTimer every 1 milliseconds, and do
+   * time based calculations to decide when to call OnTimeoutImpl(). Otherwise
+   * will just set the QTimer to the specified interval, and let the QTimer sort it.
+   */
+  void SetUseFastPolling(bool useFastPolling);
+
 protected:
 
   /**
@@ -70,8 +81,14 @@ private slots:
 
 private:
 
-  unsigned int  m_TimerInterval;
-  QTimer       *m_Timer;
+  void InternalSetupInterval();
+
+  igtl::TimeStamp::Pointer           m_TimeStamp;
+  niftk::IGIDataSourceI::IGITimeType m_LastTime;
+  niftk::IGIDataSourceI::IGITimeType m_TimerIntervalInNanoseconds;
+  unsigned int                       m_TimerIntervalInMilliseconds;
+  QTimer                            *m_Timer;
+  bool                               m_UseFastPolling;
 };
 
 } // end namespace

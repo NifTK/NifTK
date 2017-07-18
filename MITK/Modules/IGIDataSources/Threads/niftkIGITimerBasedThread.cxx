@@ -20,18 +20,21 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 IGITimerBasedThread::IGITimerBasedThread(QObject *parent) : QThread(parent)
-, m_TimerInterval(0)
-, m_Timer(NULL)
+, m_TimeStamp(nullptr)
+, m_LastTime(0)
+, m_TimerIntervalInNanoseconds(40 * 1000000)
+, m_TimerIntervalInMilliseconds(40)
+, m_Timer(nullptr)
+, m_UseFastPolling(false)
 {
   this->setObjectName("IGITimerBasedThread");
-  this->m_TimerInterval = 40;
+  m_TimeStamp = igtl::TimeStamp::New();
 }
 
 
 //-----------------------------------------------------------------------------
 IGITimerBasedThread::~IGITimerBasedThread()
 {
-  //this->ForciblyStop();
 }
 
 
@@ -55,12 +58,35 @@ void IGITimerBasedThread::ForciblyStop()
 
 
 //-----------------------------------------------------------------------------
+void IGITimerBasedThread::SetUseFastPolling(bool useFastPolling)
+{
+  m_UseFastPolling = useFastPolling;
+  this->InternalSetupInterval();
+}
+
+
+//-----------------------------------------------------------------------------
 void IGITimerBasedThread::SetInterval(unsigned int milliseconds)
 {
-  m_TimerInterval = milliseconds;
-  if (m_Timer != NULL)
+  m_TimerIntervalInMilliseconds = milliseconds;
+  m_TimerIntervalInNanoseconds = milliseconds * 1000000;
+  this->InternalSetupInterval();
+}
+
+
+//-----------------------------------------------------------------------------
+void IGITimerBasedThread::InternalSetupInterval()
+{
+  if (m_Timer != nullptr)
   {
-    m_Timer->setInterval(m_TimerInterval);
+    if (m_UseFastPolling)
+    {
+      m_Timer->setInterval(1);
+    }
+    else
+    {
+      m_Timer->setInterval(m_TimerIntervalInMilliseconds);
+    }
   }
 }
 
@@ -72,7 +98,7 @@ void IGITimerBasedThread::run()
 
   connect(m_Timer, SIGNAL(timeout()), this, SLOT(OnTimeout()), Qt::DirectConnection);
 
-  m_Timer->setInterval(m_TimerInterval);
+  this->InternalSetupInterval();
   m_Timer->start();
 
   this->exec();
@@ -86,7 +112,21 @@ void IGITimerBasedThread::run()
 //-----------------------------------------------------------------------------
 void IGITimerBasedThread::OnTimeout()
 {
-  this->OnTimeoutImpl();
+  if (m_UseFastPolling)
+  {
+    m_TimeStamp->GetTime();
+    niftk::IGIDataSourceI::IGITimeType currentTime = m_TimeStamp->GetTimeStampInNanoseconds();
+
+    if ((currentTime - m_LastTime) > m_TimerIntervalInNanoseconds)
+    {
+      m_LastTime = currentTime;
+      this->OnTimeoutImpl();
+    }
+  }
+  else
+  {
+    this->OnTimeoutImpl();
+  }
 }
 
 } // end namespace
