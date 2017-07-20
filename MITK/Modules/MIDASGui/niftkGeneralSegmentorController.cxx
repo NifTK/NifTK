@@ -1560,10 +1560,10 @@ void GeneralSegmentorController::OnThresholdValueChanged()
   mitk::DataNode* segmentationNode = this->GetWorkingNode();
 
   float lowerThreshold = d->m_GUI->GetLowerThreshold();
-  segmentationNode->GetFloatProperty("midas.general_segmentor.lower_threshold", lowerThreshold);
+  segmentationNode->SetFloatProperty("midas.general_segmentor.lower_threshold", lowerThreshold);
 
   float upperThreshold = d->m_GUI->GetUpperThreshold();
-  segmentationNode->GetFloatProperty("midas.general_segmentor.upper_threshold", upperThreshold);
+  segmentationNode->SetFloatProperty("midas.general_segmentor.upper_threshold", upperThreshold);
 
   this->UpdateRegionGrowing();
 }
