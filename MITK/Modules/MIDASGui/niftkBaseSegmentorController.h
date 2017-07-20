@@ -152,9 +152,6 @@ protected slots:
 
 private:
 
-  /// \brief Propagate data manager selection to tool manager for manual segmentation.
-  virtual void SetToolManagerSelection(mitk::DataNode* referenceData, const std::vector<mitk::DataNode*>& workingNodes);
-
   mitk::ToolManager::Pointer m_ToolManager;
 
   BaseSegmentorGUI* m_SegmentorGUI;

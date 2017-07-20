@@ -343,7 +343,18 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
   mitk::UndoController::GetCurrentUndoModel()->Clear();
 
   // Tell the tool manager the images for reference and working purposes.
-  this->SetToolManagerSelection(referenceNode, workingNodes);
+  mitk::ToolManager* toolManager = this->GetToolManager();
+  assert(toolManager);
+
+  if (workingNodes.empty() ||
+      (!toolManager->GetWorkingData().empty() &&
+       toolManager->GetWorkingData(0) != workingNodes[0]))
+  {
+    toolManager->ActivateTool(-1);
+  }
+
+  toolManager->SetReferenceData(referenceNode);
+  toolManager->SetWorkingData(workingNodes);
 }
 
 
@@ -356,25 +367,6 @@ bool BaseSegmentorController::HasSameGeometryAsViewer(mitk::DataNode* node)
   auto snc = this->GetSliceNavigationController();
 
   return data && snc && data->GetTimeGeometry() == snc->GetInputWorldTimeGeometry();
-}
-
-
-//-----------------------------------------------------------------------------
-void BaseSegmentorController::SetToolManagerSelection(mitk::DataNode* referenceNode, const std::vector<mitk::DataNode*>& workingNodes)
-{
-  mitk::ToolManager* toolManager = this->GetToolManager();
-  assert(toolManager);
-
-  if (workingNodes.size() == 0 ||
-      ( toolManager->GetWorkingData().size() > 0 &&
-        workingNodes.size() > 0 &&
-        toolManager->GetWorkingData(0) != workingNodes[0] ))
-  {
-    toolManager->ActivateTool(-1);
-  }
-
-  toolManager->SetReferenceData(referenceNode);
-  toolManager->SetWorkingData(workingNodes);
 }
 
 
