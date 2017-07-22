@@ -40,7 +40,6 @@ const std::string Tool::NEXT_CONTOURS_NAME = "MIDAS_NEXT_CONTOURS";
 const std::string Tool::DRAW_CONTOURS_NAME = "MIDAS_DRAW_CONTOURS";
 const std::string Tool::REGION_GROWING_NAME = "MIDAS_REGION_GROWING_IMAGE";
 const std::string Tool::INITIAL_SEGMENTATION_NAME = "MIDAS_INITIAL_SEGMENTATION_IMAGE";
-const std::string Tool::INITIAL_SEEDS_NAME = "MIDAS_INITIAL_SEEDS";
 
 //-----------------------------------------------------------------------------
 bool Tool::s_BehaviourStringsLoaded = false;

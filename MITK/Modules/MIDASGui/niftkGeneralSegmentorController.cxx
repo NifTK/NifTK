@@ -238,7 +238,6 @@ std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingNodesFrom(mit
     mitk::DataNode* seeNextContoursNode = dataStorage->GetNamedDerivedNode(Tool::NEXT_CONTOURS_NAME.c_str(), segmentationNode, true);
     mitk::DataNode* regionGrowingImageNode = dataStorage->GetNamedDerivedNode(Tool::REGION_GROWING_NAME.c_str(), segmentationNode, true);
     mitk::DataNode* initialSegmentationNode = dataStorage->GetNamedDerivedNode(Tool::INITIAL_SEGMENTATION_NAME.c_str(), segmentationNode, true);
-    mitk::DataNode* initialSeedsNode = dataStorage->GetNamedDerivedNode(Tool::INITIAL_SEEDS_NAME.c_str(), segmentationNode, true);
 
     if (seedsNode
         && currentContoursNode
@@ -247,7 +246,6 @@ std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingNodesFrom(mit
         && seeNextContoursNode
         && regionGrowingImageNode
         && initialSegmentationNode
-        && initialSeedsNode
         )
     {
       // The order of this list must match the order they were created in.
@@ -259,7 +257,6 @@ std::vector<mitk::DataNode*> GeneralSegmentorController::GetWorkingNodesFrom(mit
       workingNodes.push_back(seeNextContoursNode);
       workingNodes.push_back(regionGrowingImageNode);
       workingNodes.push_back(initialSegmentationNode);
-      workingNodes.push_back(initialSeedsNode);
     }
   }
 
@@ -485,16 +482,6 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   initialSegmentationNode->SetColor(tmpColor);
   initialSegmentationNode->SetProperty("binaryimage.selectedcolor", tmpColorProperty);
 
-  mitk::DataNode::Pointer initialSeedsNode = mitk::DataNode::New();
-  initialSeedsNode->SetProperty("name", mitk::StringProperty::New(Tool::INITIAL_SEEDS_NAME));
-  initialSeedsNode->SetBoolProperty("helper object", true);
-  initialSeedsNode->SetBoolProperty("visible", false);
-  initialSeedsNode->SetBoolProperty("show distant lines", false);
-  initialSeedsNode->SetFloatProperty("Pointset.2D.distance to plane", 0.1);
-  initialSeedsNode->SetBoolProperty("show distances", false);
-  initialSeedsNode->SetProperty("layer", mitk::IntProperty::New(99));
-  initialSeedsNode->SetColor(1.0, 0.0, 0.0);
-
   /// TODO
   /// We should not refer to mitk::RenderingManager::GetInstance() because the DnD display uses its
   /// own rendering manager, not this one, like the MITK display.
@@ -519,7 +506,6 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
 //          currentContours->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
 //          drawContours->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
 //          initialSegmentationNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
-//          initialSeedsNode->SetBoolProperty("visible", false, mitk::BaseRenderer::GetInstance((*iter)));
 //        }
 //      }
 //    }
@@ -533,7 +519,6 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   dataStorage->Add(drawContours, newSegmentation);
   dataStorage->Add(pointSetNode, newSegmentation);
   dataStorage->Add(initialSegmentationNode, newSegmentation);
-  dataStorage->Add(initialSeedsNode, newSegmentation);
 
   newSegmentation->SetBoolProperty("midas.general_segmentor.see_prior", false);
   newSegmentation->SetBoolProperty("midas.general_segmentor.see_next", false);
@@ -543,7 +528,7 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   newSegmentation->SetFloatProperty("midas.general_segmentor.upper_threshold", 0.0f);
 
   // Set working data. See header file, as the order here is critical, and should match the documented order.
-  std::vector<mitk::DataNode*> workingNodes(9);
+  std::vector<mitk::DataNode*> workingNodes(8);
   workingNodes[Tool::SEGMENTATION] = newSegmentation;
   workingNodes[Tool::SEEDS] = pointSetNode;
   workingNodes[Tool::CONTOURS] = currentContours;
@@ -552,7 +537,6 @@ void GeneralSegmentorController::OnNewSegmentationButtonClicked()
   workingNodes[Tool::NEXT_CONTOURS] = nextContoursNode;
   workingNodes[Tool::REGION_GROWING] = regionGrowingImageNode;
   workingNodes[Tool::INITIAL_SEGMENTATION] = initialSegmentationNode;
-  workingNodes[Tool::INITIAL_SEEDS] = initialSeedsNode;
   toolManager->SetWorkingData(workingNodes);
 
   int sliceAxis = this->GetReferenceImageSliceAxis();
@@ -660,12 +644,9 @@ void GeneralSegmentorController::StoreInitialSegmentation()
   std::vector<mitk::DataNode*> workingNodes = toolManager->GetWorkingData();
 
   mitk::DataNode* segmentationNode = workingNodes[Tool::SEGMENTATION];
-  mitk::DataNode* seedsNode = workingNodes[Tool::SEEDS];
   mitk::DataNode* initialSegmentationNode = workingNodes[Tool::INITIAL_SEGMENTATION];
-  mitk::DataNode* initialSeedsNode = workingNodes[Tool::INITIAL_SEEDS];
 
   initialSegmentationNode->SetData(dynamic_cast<mitk::Image*>(segmentationNode->GetData())->Clone());
-  initialSeedsNode->SetData(dynamic_cast<mitk::PointSet*>(seedsNode->GetData())->Clone());
 }
 
 
@@ -701,7 +682,6 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
         workingNodes[Tool::REGION_GROWING]->SetVisibility(true);
       }
       workingNodes[Tool::INITIAL_SEGMENTATION]->SetVisibility(false);
-      workingNodes[Tool::INITIAL_SEEDS]->SetVisibility(false);
 
       mitk::ToolManager::Pointer toolManager = this->GetToolManager();
       PolyTool* polyTool = this->GetToolByType<PolyTool>();
@@ -2085,13 +2065,16 @@ void GeneralSegmentorController::RestoreInitialSegmentation()
 //    seeds->Clear();
 
     mitk::DataNode* initialSegmentationNode = this->GetWorkingNode(Tool::INITIAL_SEGMENTATION);
-    mitk::DataNode* initialSeedsNode = this->GetWorkingNode(Tool::INITIAL_SEEDS);
 
     segmentationNode->SetData(dynamic_cast<mitk::Image*>(initialSegmentationNode->GetData())->Clone());
-    seedsNode->SetData(dynamic_cast<mitk::PointSet*>(initialSeedsNode->GetData())->Clone());
 
+    int sliceAxis = this->GetReferenceImageSliceAxis();
+    int sliceIndex = this->GetReferenceImageSliceIndex();
+
+    this->InitialiseSeedsForSlice(sliceAxis, sliceIndex);
     this->UpdateCurrentSliceContours(false);
     this->UpdateRegionGrowing(false);
+    this->RequestRenderWindowUpdate();
   }
   catch(const mitk::AccessByItkException& e)
   {
