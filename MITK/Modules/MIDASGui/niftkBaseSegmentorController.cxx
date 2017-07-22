@@ -147,18 +147,6 @@ mitk::DataNode* BaseSegmentorController::GetReferenceNode(int index) const
 
 
 //-----------------------------------------------------------------------------
-const mitk::Image* BaseSegmentorController::GetReferenceImage(int index) const
-{
-  if (auto node = this->GetReferenceNode(index))
-  {
-    return dynamic_cast<mitk::Image*>(node->GetData());
-  }
-
-  return nullptr;
-}
-
-
-//-----------------------------------------------------------------------------
 std::vector<mitk::DataNode*> BaseSegmentorController::GetWorkingNodes() const
 {
   mitk::ToolManager* toolManager = this->GetToolManager();
@@ -175,18 +163,6 @@ mitk::DataNode* BaseSegmentorController::GetWorkingNode(int index) const
   assert(toolManager);
 
   return toolManager->GetWorkingData(index);
-}
-
-
-//-----------------------------------------------------------------------------
-mitk::Image* BaseSegmentorController::GetWorkingImage(int index) const
-{
-  if (auto node = this->GetWorkingNode(index))
-  {
-    return dynamic_cast<mitk::Image*>(node->GetData());
-  }
-
-  return nullptr;
 }
 
 
@@ -251,7 +227,7 @@ mitk::DataNode::Pointer BaseSegmentorController::CreateNewSegmentation()
   if (referenceNode)
   {
     // Assumption: If a reference image is selected in the data manager, then it MUST be registered with ToolManager, and hence this is the one we intend to segment.
-    const mitk::Image* referenceImage = this->GetReferenceImage();
+    const mitk::Image* referenceImage = this->GetReferenceData();
     if (referenceImage)
     {
       if (referenceImage->GetDimension() > 2)

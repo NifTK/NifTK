@@ -98,9 +98,21 @@ protected:
   /// Normally, there is only one reference image with 0 index.
   mitk::DataNode* GetReferenceNode(int index = 0) const;
 
-  /// \brief Gets the reference image with the given index from the tool manager, or nullptr if this doesn't yet exist or is not an image.
-  /// Normally, there is only one reference image with 0 index.
-  const mitk::Image* GetReferenceImage(int index = 0) const;
+  /// \brief Gets the reference data with the given index from the tool manager, or nullptr if this doesn't yet exist.
+  /// Normally, there is only one reference data with 0 index, which is an image.
+  template <class D = mitk::Image>
+  const D* GetReferenceData(int index = 0) const
+  {
+    static_assert(std::is_base_of<mitk::BaseData, D>::value,
+                  "Type parameter of this function must derive from mitk::BaseData.");
+
+    if (auto node = this->GetReferenceNode(index))
+    {
+      return dynamic_cast<const D*>(node->GetData());
+    }
+
+    return nullptr;
+  }
 
   /// \brief Gets the vector of the working data nodes registered with the tool manager.
   /// The data nodes normally hold image, but could be surfaces, point sets etc.
@@ -111,10 +123,22 @@ protected:
   /// The data node of the segmented image has the 0 index.
   mitk::DataNode* GetWorkingNode(int index = 0) const;
 
-  /// \brief Gets the image in working data node with the given index registered with the ToolManager.
+  /// \brief Gets the working data with the given index from the tool manager, or nullptr if this doesn't yet exist.
   /// The segmented image has the 0 index.
-  /// Returns nullptr if it can't be found or is not an image.
-  mitk::Image* GetWorkingImage(int index = 0) const;
+  /// Returns nullptr if it can't be found.
+  template <class D = mitk::Image>
+  D* GetWorkingData(int index = 0) const
+  {
+    static_assert(std::is_base_of<mitk::BaseData, D>::value,
+                  "Type parameter of this function must derive from mitk::BaseData.");
+
+    if (auto node = this->GetWorkingNode(index))
+    {
+      return dynamic_cast<D*>(node->GetData());
+    }
+
+    return nullptr;
+  }
 
   /// \brief Assumes that a Working Node == a Segmentation Node, so simply returns the input node.
   virtual std::vector<mitk::DataNode*> GetWorkingNodesFrom(mitk::DataNode* segmentationNode);

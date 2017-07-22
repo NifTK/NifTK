@@ -325,9 +325,6 @@ private:
   /// \brief Stores the initial state of the segmentation so that the Restart button can restore it.
   void StoreInitialSegmentation();
 
-  /// \brief Looks for the Seeds registered as WorkingData[1] with the ToolManager.
-  mitk::PointSet* GetSeeds() const;
-
   /// \brief Initialises seeds for a given slice.
   /// Used when starting a segmentation or switching orientation, to place seeds
   /// into the regions of the current slice.

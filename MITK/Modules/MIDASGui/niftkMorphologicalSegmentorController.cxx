@@ -104,7 +104,7 @@ void MorphologicalSegmentorController::UpdateGUI() const
   int numberOfAxialSlices = 1;
   int upDirection = 1;
 
-  if (auto referenceImage = this->GetReferenceImage())
+  if (auto referenceImage = this->GetReferenceData())
   {
     auto statistics = referenceImage->GetStatistics();
     lowestValue = statistics->GetScalarValueMin();
@@ -185,7 +185,7 @@ void MorphologicalSegmentorController::OnNewSegmentationButtonClicked()
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  const mitk::Image* referenceImage = this->GetReferenceData();
   assert(referenceImage);
 
   mitk::Tool* paintbrushTool = this->GetToolByType<PaintbrushTool>();
@@ -763,7 +763,7 @@ mitk::DataNode::Pointer MorphologicalSegmentorController::CreateAxialCutOffPlane
 
 void MorphologicalSegmentorController::UpdateAxialCutOffPlane(int axialSliceNumber)
 {
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  const mitk::Image* referenceImage = this->GetReferenceData();
   mitk::BaseGeometry* geometry = referenceImage->GetGeometry();
 
   int axialAxis = niftk::GetThroughPlaneAxis(referenceImage, IMAGE_ORIENTATION_AXIAL);
@@ -784,7 +784,7 @@ void MorphologicalSegmentorController::UpdateAxialCutOffPlane(int axialSliceNumb
 //-----------------------------------------------------------------------------
 void MorphologicalSegmentorController::SetSegmentationNodePropsFromReferenceImage()
 {
-  const mitk::Image* referenceImage = this->GetReferenceImage();
+  const mitk::Image* referenceImage = this->GetReferenceData();
   mitk::DataNode* segmentationNode = this->GetWorkingNode();
 
   if (referenceImage && segmentationNode)
