@@ -172,10 +172,11 @@ protected:
 
   virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
 
-  /// \brief Called when the reference data nodes have changed.
-  virtual void OnReferenceNodesChanged() override;
+  /// \brief Called before the working data nodes are changed.
+  /// The tool manager still stores the old working data nodes.
+  virtual void PreWorkingNodesChanged() override;
 
-  /// \brief Called when the working data nodes have changed.
+  /// \brief Called after the working data nodes have changed.
   virtual void OnWorkingNodesChanged() override;
 
   /// \brief Called when the different slice gets selected in the viewer.

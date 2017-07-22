@@ -724,9 +724,38 @@ void GeneralSegmentorController::OnNodeVisibilityChanged(const mitk::DataNode* n
 
 
 //-----------------------------------------------------------------------------
-void GeneralSegmentorController::OnReferenceNodesChanged()
+void GeneralSegmentorController::PreWorkingNodesChanged()
 {
-  BaseSegmentorController::OnReferenceNodesChanged();
+  BaseSegmentorController::PreWorkingNodesChanged();
+
+  if (this->HasWorkingNodes())
+  {
+    /// Do a clean operation. This will update the current slice of the segmentation image.
+    this->OnCleanButtonClicked();
+
+    /// Clear all other working data, except the copy of the initial segmentation that
+    /// is needed to restore the starting state after cancelling.
+    /// The current slice will go orange.
+
+    this->GetSeeds()->Clear();
+
+    mitk::DataNode* contoursNode = this->GetWorkingNode(Tool::CONTOURS);
+    mitk::ContourModelSet* contours = dynamic_cast<mitk::ContourModelSet*>(contoursNode->GetData());
+    contours->Clear();
+
+    mitk::DataNode* priorContoursNode = this->GetWorkingNode(Tool::PRIOR_CONTOURS);
+    mitk::ContourModelSet* priorContours = dynamic_cast<mitk::ContourModelSet*>(priorContoursNode->GetData());
+    priorContours->Clear();
+
+    mitk::DataNode* nextContoursNode = this->GetWorkingNode(Tool::NEXT_CONTOURS);
+    mitk::ContourModelSet* nextContours = dynamic_cast<mitk::ContourModelSet*>(nextContoursNode->GetData());
+    nextContours->Clear();
+
+    mitk::Image* regionGrowingImage = this->GetWorkingImage(Tool::REGION_GROWING);
+    AccessFixedDimensionByItk(regionGrowingImage, ITKClearImage, 3);
+
+    this->RequestRenderWindowUpdate();
+  }
 }
 
 
@@ -734,6 +763,23 @@ void GeneralSegmentorController::OnReferenceNodesChanged()
 void GeneralSegmentorController::OnWorkingNodesChanged()
 {
   BaseSegmentorController::OnWorkingNodesChanged();
+
+  Q_D(GeneralSegmentorController);
+
+  if (this->HasWorkingNodes())
+  {
+    d->m_Orientation = this->GetOrientation();
+    d->m_SelectedSliceIndex = this->GetSliceIndex();
+    d->m_SliceAxis = this->GetReferenceImageSliceAxis();
+    d->m_SliceIndex = this->GetReferenceImageSliceIndex();
+    d->m_SelectedPosition = this->GetSelectedPosition();
+
+    this->InitialiseSeedsForSlice(d->m_SliceAxis, d->m_SliceIndex);
+    this->UpdateCurrentSliceContours(false);
+    this->UpdatePriorAndNext(false);
+    this->UpdateRegionGrowing(false);
+    this->RequestRenderWindowUpdate();
+  }
 }
 
 
@@ -1573,6 +1619,11 @@ void GeneralSegmentorController::OnThresholdValueChanged()
 void GeneralSegmentorController::UpdateRegionGrowing(bool updateRendering)
 {
   Q_D(GeneralSegmentorController);
+
+  if (!this->HasWorkingNodes())
+  {
+    return;
+  }
 
   bool isThresholdingOn = d->m_GUI->IsThresholdingCheckBoxChecked();
 
