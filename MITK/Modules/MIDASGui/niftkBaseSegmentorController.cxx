@@ -307,54 +307,71 @@ bool BaseSegmentorController::HasWorkingNodes() const
 //-----------------------------------------------------------------------------
 void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::DataNode::Pointer>& selectedNodes)
 {
-  mitk::DataNode* referenceNode = nullptr;
-  std::vector<mitk::DataNode*> workingNodes;
+  mitk::DataNode* newReferenceNode = nullptr;
+  std::vector<mitk::DataNode*> newWorkingNodes;
 
-  // This plugin only works if you single select, anything else is invalid (for now).
+  /// This plugin only works if you single select, anything else is invalid (for now).
   if (selectedNodes.size() == 1)
   {
-    // MAJOR ASSUMPTION: To get a segmentation plugin (i.e. all derived classes) to work, you select the segmentation node.
-    // From this segmentation node, you can work out the reference data (always the parent).
-    // In addition, you can work out any intermediate working images (either that image, or children).
-    // MAJOR ASSUMPTION: Intermediate working images will be hidden, and hence not clickable.
+    /// MAJOR ASSUMPTION: To get a segmentation plugin (i.e. all derived classes) to work, you select the segmentation node.
+    /// From this segmentation node, you can work out the reference data (always the parent).
+    /// In addition, you can work out any intermediate working images (either that image, or children).
+    /// MAJOR ASSUMPTION: Intermediate working images will be hidden, and hence not clickable.
 
     mitk::DataNode* selectedNode = selectedNodes[0];
 
-    // Rely on subclasses deciding if the node is something we are interested in.
+    /// Rely on subclasses deciding if the node is something we are interested in.
     if (this->IsNodeAValidReferenceImage(selectedNode) && this->HasSameGeometryAsViewer(selectedNode))
     {
-      referenceNode = selectedNode;
+      newReferenceNode = selectedNode;
     }
-
-    // A segmentation image, is the final output, the one being segmented.
-    if (this->IsNodeAValidSegmentationImage(selectedNode))
+    else if (this->IsNodeAValidSegmentationImage(selectedNode))
     {
       /// This finds the first not binary parent.
       mitk::DataNode* potentialReferenceNode = niftk::FindFirstParentImage(this->GetDataStorage(), selectedNode, false);
 
       if (this->IsNodeAValidReferenceImage(potentialReferenceNode) && this->HasSameGeometryAsViewer(potentialReferenceNode))
       {
-        referenceNode = potentialReferenceNode;
-        workingNodes = this->GetWorkingNodesFrom(selectedNode);
+        newReferenceNode = potentialReferenceNode;
+        newWorkingNodes = this->GetWorkingNodesFrom(selectedNode);
       }
     }
   }
 
-  mitk::UndoController::GetCurrentUndoModel()->Clear();
-
-  // Tell the tool manager the images for reference and working purposes.
+  /// Tell the tool manager the images for reference and working purposes.
   mitk::ToolManager* toolManager = this->GetToolManager();
   assert(toolManager);
 
-  if (workingNodes.empty() ||
-      (!toolManager->GetWorkingData().empty() &&
-       toolManager->GetWorkingData(0) != workingNodes[0]))
+  std::vector<mitk::DataNode*> currentWorkingNodes = this->GetWorkingNodes();
+
+  /// We deactivate the active tool (if any) and reactivate it after setting the new working
+  /// nodes. This is to make sure that the working data is not replaced under a currently
+  /// active tool, potentially messing up its state.
+  int activeToolID = toolManager->GetActiveToolID();
+  if (activeToolID != -1)
   {
     toolManager->ActivateTool(-1);
   }
 
-  toolManager->SetReferenceData(referenceNode);
-  toolManager->SetWorkingData(workingNodes);
+  /// If the working nodes have changed (another segmentation image selected or no valid selection),
+  /// we notify the segmentor so that it can perform some actions (e.g. realise unfinished changes
+  /// on the segmentation image) before the working nodes are replaced in the tool manager.
+  /// We could, in principle, do the same for reference data nodes, but they are constant, so there
+  /// is no need for that.
+  if (newWorkingNodes != currentWorkingNodes)
+  {
+    this->PreWorkingNodesChanged();
+  }
+
+  /// These will perform equality check.
+  toolManager->SetReferenceData(newReferenceNode);
+  toolManager->SetWorkingData(newWorkingNodes);
+
+  /// Activate the same tool again, if there is valid working data.
+  if (activeToolID != -1 && !newWorkingNodes.empty())
+  {
+    toolManager->ActivateTool(activeToolID);
+  }
 }
 
 
@@ -426,6 +443,13 @@ void BaseSegmentorController::OnReferenceNodesChanged()
   mitk::UndoController::GetCurrentUndoModel()->Clear();
 
   this->UpdateGUI();
+}
+
+
+//-----------------------------------------------------------------------------
+void BaseSegmentorController::PreWorkingNodesChanged()
+{
+  mitk::UndoController::GetCurrentUndoModel()->Clear();
 }
 
 

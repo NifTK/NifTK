@@ -79,10 +79,14 @@ protected:
   /// \brief Called from niftkToolSelectorWidget when a tool changes.
   virtual void OnActiveToolChanged();
 
-  /// \brief Called when the reference data nodes have changed.
+  /// \brief Called after the reference data nodes have changed.
   virtual void OnReferenceNodesChanged();
 
-  /// \brief Called when the working data nodes have changed.
+  /// \brief Called before the working data nodes are changed.
+  /// The tool manager still stores the old working data nodes.
+  virtual void PreWorkingNodesChanged();
+
+  /// \brief Called after the working data nodes have changed.
   virtual void OnWorkingNodesChanged();
 
   /// \brief Gets the vector of the reference data nodes registered with the tool manager.
