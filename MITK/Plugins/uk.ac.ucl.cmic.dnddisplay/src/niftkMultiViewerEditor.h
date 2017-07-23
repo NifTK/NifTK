@@ -189,6 +189,9 @@ private slots:
 
   void OnViewerDestroyed(QObject* object);
 
+  /// \brief Sets the current selection in the data manager and this editor and notifies other workbench parts.
+  void UpdateSelection();
+
 private:
 
   /// \brief Gets the current selection made in the Data Manager view.

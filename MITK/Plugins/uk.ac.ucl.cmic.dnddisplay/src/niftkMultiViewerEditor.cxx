@@ -1377,8 +1377,15 @@ void MultiViewerEditor::OnWindowSelected(SingleViewerWidget* selectedViewer)
     /// Other workbench parts are still not not informed about the change.
     this->SetDataManagerSelection(selectedNodes);
 
-    /// Updating the data node selection of this editor and notify other workbench parts.
-    this->SetSelectedNodes(selectedNodes, true);
+    /// We ask Qt to call back the function that updates the data node selection
+    /// in this editor part and notifies other parts. This is needed because
+    /// when this slot is called, the MITK focus event has not been raised yet,
+    /// and the focus has not been transferred to the new window in the MITK
+    /// focus manager (mitk::FocusManager). This could cause problems if the
+    /// client code checks if focused renderer was initialised with the geometry
+    /// of the selected node in the data manager, because the focused renderer
+    /// will not be the same as the selected renderer.
+    QTimer::singleShot(0, this, SLOT(UpdateSelection()));
   }
 }
 
@@ -1477,6 +1484,14 @@ void MultiViewerEditor::SetSelectedNodes(const QList<mitk::DataNode::Pointer>& s
       d->m_DataNodeSelectionModel->blockSignals(wasBlocked);
     }
   }
+}
+
+
+//-----------------------------------------------------------------------------
+void MultiViewerEditor::UpdateSelection()
+{
+  QList<mitk::DataNode::Pointer> selectedNodes = this->GetDataManagerSelection();
+  this->SetSelectedNodes(selectedNodes, true);
 }
 
 }
