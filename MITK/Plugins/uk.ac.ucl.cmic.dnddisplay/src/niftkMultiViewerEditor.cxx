@@ -1359,6 +1359,30 @@ void MultiViewerEditor::OnNodesDropped(SingleViewerWidget* viewer, const std::ve
 //-----------------------------------------------------------------------------
 void MultiViewerEditor::OnWindowSelected(SingleViewerWidget* selectedViewer)
 {
+  /// We need to activate this editor part when the selected viewer has changed,
+  /// because the data node selection change event is fired only for the workbench
+  /// parts that are active. For example, we set the selection of the data manager
+  /// view here, but that will not raise an event, other workbench parts will not be
+  /// notified about that. The other parts will only be notified when this editor
+  /// sets its own selection and fires the event, because this is the active workbench
+  /// part that time.
+  ///
+  /// Usually.
+  ///
+  /// However, if you select another view, e.g. by clicking on its tab but not in
+  /// its widget, the focused renderer will still receive the interactions events.
+  /// If you then hit the comma or dot key to change the viewer, this funtion will
+  /// be called, the data manager selection and the selection of this editor part
+  /// will be set, but the selection change event will be swallowed because this
+  /// is not the active workbench part.
+  ///
+  /// Therefore, we need to activate this part. Practically, it would be enough to
+  /// activate this part when the selected viewer has changed, but we rather activate
+  /// it always, also when only the selected window changed in the same viewer.
+
+  berry::IWorkbenchPart::Pointer thisPart(this);
+  this->GetSite()->GetPage()->Activate(thisPart);
+
   if (selectedViewer != d->m_SelectedViewer)
   {
     /// Saving data node selection for the current viewer. To avoid memory leak,
