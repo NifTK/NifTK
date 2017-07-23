@@ -320,22 +320,21 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
 
   std::vector<mitk::DataNode*> currentWorkingNodes = this->GetWorkingNodes();
 
+  bool workingNodesHaveChanged = newWorkingNodes != currentWorkingNodes;
+
   /// We deactivate the active tool (if any) and reactivate it after setting the new working
   /// nodes. This is to make sure that the working data is not replaced under a currently
   /// active tool, potentially messing up its state.
   int activeToolID = toolManager->GetActiveToolID();
-  if (activeToolID != -1)
-  {
-    toolManager->ActivateTool(-1);
-  }
 
   /// If the working nodes have changed (another segmentation image selected or no valid selection),
   /// we notify the segmentor so that it can perform some actions (e.g. realise unfinished changes
   /// on the segmentation image) before the working nodes are replaced in the tool manager.
   /// We could, in principle, do the same for reference data nodes, but they are constant, so there
   /// is no need for that.
-  if (newWorkingNodes != currentWorkingNodes)
+  if (workingNodesHaveChanged)
   {
+    toolManager->ActivateTool(-1);
     this->PreWorkingNodesChanged();
   }
 
@@ -344,7 +343,7 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
   toolManager->SetWorkingData(newWorkingNodes);
 
   /// Activate the same tool again, if there is valid working data.
-  if (activeToolID != -1 && !newWorkingNodes.empty())
+  if (workingNodesHaveChanged && activeToolID != -1 && !newWorkingNodes.empty())
   {
     toolManager->ActivateTool(activeToolID);
   }
