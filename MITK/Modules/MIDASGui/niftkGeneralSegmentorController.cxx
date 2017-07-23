@@ -209,7 +209,7 @@ void GeneralSegmentorController::SetupGUI(QWidget* parent)
 //-----------------------------------------------------------------------------
 bool GeneralSegmentorController::IsNodeAValidReferenceImage(const mitk::DataNode* node)
 {
-  if (!node)
+  if (!node || niftk::IsNodeABinaryImage(node))
   {
     return false;
   }
