@@ -264,7 +264,7 @@ SingleViewerWidget* MultiViewerWidget::CreateViewer(const QString& name)
 //-----------------------------------------------------------------------------
 void MultiViewerWidget::RequestUpdateAll()
 {
-  foreach (SingleViewerWidget* viewer, m_Viewers)
+  for (SingleViewerWidget* viewer: m_Viewers)
   {
     if (viewer->isVisible())
     {
@@ -324,7 +324,7 @@ void MultiViewerWidget::SetBindingOptions(int bindingOptions)
     {
       SingleViewerWidget* selectedViewer = this->GetSelectedViewer();
       const mitk::Point3D& selectedPosition = selectedViewer->GetSelectedPosition();
-      foreach (SingleViewerWidget* otherViewer, m_Viewers)
+      for (SingleViewerWidget* otherViewer: m_Viewers)
       {
         if (otherViewer != selectedViewer)
         {
@@ -353,7 +353,7 @@ void MultiViewerWidget::SetBindingOptions(int bindingOptions)
       mitk::Vector2D cursorPosition = selectedViewer->GetCursorPosition(orientation);
       const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
 
-      foreach (SingleViewerWidget* otherViewer, m_Viewers)
+      for (SingleViewerWidget* otherViewer: m_Viewers)
       {
         if (otherViewer != selectedViewer)
         {
@@ -394,7 +394,7 @@ void MultiViewerWidget::SetBindingOptions(int bindingOptions)
       double scaleFactor = selectedViewer->GetScaleFactor(orientation);
       std::vector<double> scaleFactors = selectedViewer->GetScaleFactors();
 
-      foreach (SingleViewerWidget* otherViewer, m_Viewers)
+      for (SingleViewerWidget* otherViewer: m_Viewers)
       {
         if (otherViewer != selectedViewer)
         {
@@ -444,7 +444,7 @@ void MultiViewerWidget::SetBindingOptions(int bindingOptions)
     if (newWindowLayoutBinding)
     {
       WindowLayout windowLayout = selectedViewer->GetWindowLayout();
-      foreach (SingleViewerWidget* otherViewer, m_Viewers)
+      for (SingleViewerWidget* otherViewer: m_Viewers)
       {
         if (otherViewer != selectedViewer)
         {
@@ -471,7 +471,7 @@ void MultiViewerWidget::SetBindingOptions(int bindingOptions)
       const mitk::TimeGeometry* timeGeometry = selectedViewer->GetTimeGeometry();
       if (timeGeometry)
       {
-        foreach (SingleViewerWidget* viewer, m_Viewers)
+        for (SingleViewerWidget* viewer: m_Viewers)
         {
           bool signalsWereBlocked = viewer->blockSignals(true);
           viewer->SetBoundTimeGeometry(timeGeometry);
@@ -482,7 +482,7 @@ void MultiViewerWidget::SetBindingOptions(int bindingOptions)
     }
     else
     {
-      foreach (SingleViewerWidget* viewer, m_Viewers)
+      for (SingleViewerWidget* viewer: m_Viewers)
       {
         bool signalsWereBlocked = viewer->blockSignals(true);
         viewer->SetBoundTimeGeometryActive(false);
@@ -625,7 +625,7 @@ void MultiViewerWidget::SetCursorVisible(bool visible)
 
   if (m_ControlPanel->AreViewerCursorsBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
@@ -661,7 +661,7 @@ bool MultiViewerWidget::AreDirectionAnnotationsVisible() const
 void MultiViewerWidget::SetDirectionAnnotationsVisible(bool visible)
 {
   m_ControlPanel->SetDirectionAnnotationsVisible(visible);
-  foreach (SingleViewerWidget* viewer, m_Viewers)
+  for (SingleViewerWidget* viewer: m_Viewers)
   {
     viewer->SetDirectionAnnotationsVisible(visible);
   }
@@ -679,7 +679,7 @@ bool MultiViewerWidget::IsPositionAnnotationVisible() const
 void MultiViewerWidget::SetPositionAnnotationVisible(bool visible)
 {
   m_ControlPanel->SetPositionAnnotationVisible(visible);
-  foreach (SingleViewerWidget* viewer, m_Viewers)
+  for (SingleViewerWidget* viewer: m_Viewers)
   {
     viewer->SetPositionAnnotationVisible(visible);
   }
@@ -697,7 +697,7 @@ bool MultiViewerWidget::IsIntensityAnnotationVisible() const
 void MultiViewerWidget::SetIntensityAnnotationVisible(bool visible)
 {
   m_ControlPanel->SetIntensityAnnotationVisible(visible);
-  foreach (SingleViewerWidget* viewer, m_Viewers)
+  for (SingleViewerWidget* viewer: m_Viewers)
   {
     viewer->SetIntensityAnnotationVisible(visible);
   }
@@ -715,7 +715,7 @@ bool MultiViewerWidget::IsPropertyAnnotationVisible() const
 void MultiViewerWidget::SetPropertyAnnotationVisible(bool visible)
 {
   m_ControlPanel->SetPropertyAnnotationVisible(visible);
-  foreach (SingleViewerWidget* viewer, m_Viewers)
+  for (SingleViewerWidget* viewer: m_Viewers)
   {
     viewer->SetPropertyAnnotationVisible(visible);
   }
@@ -726,7 +726,7 @@ void MultiViewerWidget::SetPropertyAnnotationVisible(bool visible)
 void MultiViewerWidget::SetPropertiesForAnnotation(const QStringList& propertiesForAnnotation)
 {
   m_ControlPanel->SetPropertiesForAnnotation(propertiesForAnnotation);
-  foreach (SingleViewerWidget* viewer, m_Viewers)
+  for (SingleViewerWidget* viewer: m_Viewers)
   {
     viewer->SetPropertiesForAnnotation(propertiesForAnnotation);
   }
@@ -737,7 +737,7 @@ void MultiViewerWidget::SetPropertiesForAnnotation(const QStringList& properties
 void MultiViewerWidget::SetRememberSettingsPerWindowLayout(bool rememberSettingsPerWindowLayout)
 {
   m_RememberSettingsPerWindowLayout = rememberSettingsPerWindowLayout;
-  foreach (SingleViewerWidget* viewer, m_Viewers)
+  for (SingleViewerWidget* viewer: m_Viewers)
   {
     viewer->SetRememberSettingsPerWindowLayout(rememberSettingsPerWindowLayout);
   }
@@ -786,7 +786,7 @@ void MultiViewerWidget::SetBackgroundColour(QColor backgroundColour)
 {
   m_BackgroundColour = backgroundColour;
 
-  foreach (SingleViewerWidget* viewer, m_Viewers)
+  for (SingleViewerWidget* viewer: m_Viewers)
   {
     viewer->SetBackgroundColour(m_BackgroundColour);
   }
@@ -845,7 +845,7 @@ void MultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns)
   }
 
   // Make all current viewers invisible, as we are going to destroy layout.
-  foreach (SingleViewerWidget* viewer, m_Viewers)
+  for (SingleViewerWidget* viewer: m_Viewers)
   {
     viewer->hide();
   }
@@ -964,7 +964,7 @@ void MultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns)
 
     if (timeGeometry)
     {
-      foreach (SingleViewerWidget* otherViewer, m_Viewers)
+      for (SingleViewerWidget* otherViewer: m_Viewers)
       {
         if (otherViewer != selectedViewer)
         {
@@ -981,7 +981,7 @@ void MultiViewerWidget::SetViewerNumber(int viewerRows, int viewerColumns)
     SingleViewerWidget* selectedViewer = this->GetSelectedViewer();
     WindowOrientation orientation = selectedViewer->GetOrientation();
     double magnification = selectedViewer->GetMagnification(orientation);
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != selectedViewer)
       {
@@ -1020,7 +1020,7 @@ void MultiViewerWidget::OnSelectedPositionChanged(const mitk::Point3D& selectedP
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != viewer)
       {
@@ -1048,7 +1048,7 @@ void MultiViewerWidget::OnTimeStepChanged(int timeStep)
 
   if (m_ControlPanel->AreViewerPositionsBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != viewer)
       {
@@ -1068,7 +1068,7 @@ void MultiViewerWidget::OnCursorPositionChanged(WindowOrientation orientation, c
 
   if (m_ControlPanel->AreViewerCursorsBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != viewer)
       {
@@ -1091,7 +1091,7 @@ void MultiViewerWidget::OnScaleFactorChanged(WindowOrientation orientation, doub
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != viewer)
       {
@@ -1112,7 +1112,7 @@ void MultiViewerWidget::OnCursorPositionBindingChanged(bool bound)
 
   if (m_ControlPanel->AreViewerCursorsBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != viewer)
       {
@@ -1132,7 +1132,7 @@ void MultiViewerWidget::OnScaleFactorBindingChanged(bool bound)
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != viewer)
       {
@@ -1285,7 +1285,7 @@ void MultiViewerWidget::OnSelectedSliceControlChanged(int selectedSlice)
 
     if (m_ControlPanel->AreViewerPositionsBound())
     {
-      foreach (SingleViewerWidget* otherViewer, m_Viewers)
+      for (SingleViewerWidget* otherViewer: m_Viewers)
       {
         if (otherViewer != selectedViewer && otherViewer->isVisible())
         {
@@ -1330,7 +1330,7 @@ void MultiViewerWidget::OnMagnificationControlChanged(double magnification)
 
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
@@ -1364,7 +1364,7 @@ void MultiViewerWidget::SetTimeStep(int timeStep)
 
   if (dropType == DNDDISPLAY_DROP_ALL)
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != selectedViewer && otherViewer->isVisible())
       {
@@ -1393,7 +1393,7 @@ void MultiViewerWidget::OnWindowLayoutControlChanged(WindowLayout windowLayout)
 
     if (m_ControlPanel->AreViewerWindowLayoutsBound())
     {
-      foreach (SingleViewerWidget* otherViewer, m_Viewers)
+      for (SingleViewerWidget* otherViewer: m_Viewers)
       {
         if (otherViewer != selectedViewer && otherViewer->isVisible())
         {
@@ -1411,7 +1411,7 @@ void MultiViewerWidget::OnWindowLayoutControlChanged(WindowLayout windowLayout)
       mitk::Vector2D cursorPosition = selectedViewer->GetCursorPosition(orientation);
       const std::vector<mitk::Vector2D>& cursorPositions = selectedViewer->GetCursorPositions();
 
-      foreach (SingleViewerWidget* otherViewer, m_Viewers)
+      for (SingleViewerWidget* otherViewer: m_Viewers)
       {
         if (otherViewer != selectedViewer && otherViewer->isVisible())
         {
@@ -1436,7 +1436,7 @@ void MultiViewerWidget::OnWindowLayoutControlChanged(WindowLayout windowLayout)
       double scaleFactor = selectedViewer->GetScaleFactor(orientation);
       const std::vector<double>& scaleFactors = selectedViewer->GetScaleFactors();
 
-      foreach (SingleViewerWidget* otherViewer, m_Viewers)
+      for (SingleViewerWidget* otherViewer: m_Viewers)
       {
         if (otherViewer != selectedViewer && otherViewer->isVisible())
         {
@@ -1478,7 +1478,7 @@ void MultiViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
   m_ControlPanel->SetWindowCursorsBound(selectedViewer->GetCursorPositionBinding());
   m_ControlPanel->SetWindowMagnificationsBound(selectedViewer->GetScaleFactorBinding());
 
-  foreach (SingleViewerWidget* otherViewer, m_Viewers)
+  for (SingleViewerWidget* otherViewer: m_Viewers)
   {
     if (otherViewer != selectedViewer && otherViewer->isVisible())
     {
@@ -1521,7 +1521,7 @@ void MultiViewerWidget::OnCursorVisibilityChanged(bool visible)
 
   if (m_ControlPanel->AreViewerCursorsBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != viewer)
       {
@@ -1546,7 +1546,7 @@ void MultiViewerWidget::OnDirectionAnnotationsVisibilityChanged(bool visible)
 
   m_ControlPanel->SetDirectionAnnotationsVisible(visible);
 
-  foreach (SingleViewerWidget* otherViewer, m_Viewers)
+  for (SingleViewerWidget* otherViewer: m_Viewers)
   {
     if (otherViewer != viewer)
     {
@@ -1570,7 +1570,7 @@ void MultiViewerWidget::OnPositionAnnotationVisibilityChanged(bool visible)
 
   m_ControlPanel->SetPositionAnnotationVisible(visible);
 
-  foreach (SingleViewerWidget* otherViewer, m_Viewers)
+  for (SingleViewerWidget* otherViewer: m_Viewers)
   {
     if (otherViewer != viewer)
     {
@@ -1594,7 +1594,7 @@ void MultiViewerWidget::OnIntensityAnnotationVisibilityChanged(bool visible)
 
   m_ControlPanel->SetIntensityAnnotationVisible(visible);
 
-  foreach (SingleViewerWidget* otherViewer, m_Viewers)
+  for (SingleViewerWidget* otherViewer: m_Viewers)
   {
     if (otherViewer != viewer)
     {
@@ -1618,7 +1618,7 @@ void MultiViewerWidget::OnPropertyAnnotationVisibilityChanged(bool visible)
 
   m_ControlPanel->SetPropertyAnnotationVisible(visible);
 
-  foreach (SingleViewerWidget* otherViewer, m_Viewers)
+  for (SingleViewerWidget* otherViewer: m_Viewers)
   {
     if (otherViewer != viewer)
     {
@@ -1660,7 +1660,7 @@ void MultiViewerWidget::OnTimeGeometryChanged(const mitk::TimeGeometry* timeGeom
 
   if (m_ControlPanel->AreViewerGeometriesBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       if (otherViewer != dropOntoViewer)
       {
@@ -1737,7 +1737,7 @@ void MultiViewerWidget::OnWindowCursorBindingControlChanged(bool bound)
   /// is either set for each or none of them.
   if (m_ControlPanel->AreViewerCursorsBound())
   {
-    foreach (SingleViewerWidget* viewer, m_Viewers)
+    for (SingleViewerWidget* viewer: m_Viewers)
     {
       if (viewer->isVisible())
       {
@@ -1767,7 +1767,7 @@ void MultiViewerWidget::OnWindowMagnificationBindingControlChanged(bool bound)
   /// is either set for each or none of them.
   if (m_ControlPanel->AreViewerMagnificationsBound())
   {
-    foreach (SingleViewerWidget* otherViewer, m_Viewers)
+    for (SingleViewerWidget* otherViewer: m_Viewers)
     {
       const std::vector<double>& scaleFactors = selectedViewer->GetScaleFactors();
       if (otherViewer != selectedViewer && otherViewer->isVisible())
@@ -1897,7 +1897,7 @@ QHash<QString,QmitkRenderWindow*> MultiViewerWidget::GetRenderWindows() const
   renderWindows.insert("3d", selectedViewer->Get3DWindow());
 
   int i = 0;
-  foreach (SingleViewerWidget* otherViewer, m_Viewers)
+  for (SingleViewerWidget* otherViewer: m_Viewers)
   {
     if (otherViewer != selectedViewer)
     {
@@ -1943,7 +1943,7 @@ mitk::Point3D MultiViewerWidget::GetSelectedPosition(const QString& id) const
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(id);
     if (renderWindow)
     {
-      foreach (SingleViewerWidget* viewer, m_Viewers)
+      for (SingleViewerWidget* viewer: m_Viewers)
       {
         if (viewer->ContainsRenderWindow(renderWindow))
         {
@@ -1970,7 +1970,7 @@ void MultiViewerWidget::SetSelectedPosition(const mitk::Point3D& selectedPositio
     QmitkRenderWindow* renderWindow = this->GetRenderWindow(id);
     if (renderWindow)
     {
-      foreach (SingleViewerWidget* viewer, m_Viewers)
+      for (SingleViewerWidget* viewer: m_Viewers)
       {
         if (viewer->ContainsRenderWindow(renderWindow))
         {
@@ -1995,7 +1995,7 @@ void MultiViewerWidget::EnableLinkedNavigation(bool linkedNavigationEnabled)
   if (linkedNavigationEnabled != m_LinkedNavigationEnabled)
   {
     m_LinkedNavigationEnabled = linkedNavigationEnabled;
-    foreach (SingleViewerWidget* viewer, m_Viewers)
+    for (SingleViewerWidget* viewer: m_Viewers)
     {
       viewer->SetLinkedNavigationEnabled(linkedNavigationEnabled);
     }

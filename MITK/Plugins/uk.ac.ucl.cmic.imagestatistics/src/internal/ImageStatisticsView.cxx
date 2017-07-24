@@ -194,7 +194,7 @@ bool ImageStatisticsView::IsSelectionValid(const QList<mitk::DataNode::Pointer>&
   }
 
   // All nodes must be non null images.
-  foreach( mitk::DataNode::Pointer node, nodes )
+  for (mitk::DataNode::Pointer node: nodes)
   {
     if(node.IsNull())
     {
@@ -1030,7 +1030,7 @@ void ImageStatisticsView::Copy()
 
   selectedText.append(QLatin1Char('\n'));
 
-  foreach (QModelIndex current, indexes)
+  for (QModelIndex current: indexes)
   {
     int row = current.row();
 

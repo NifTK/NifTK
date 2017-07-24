@@ -249,7 +249,7 @@ void IGIDataSourceManager::WriteDescriptorFile(QString absolutePath)
       "# value is the name of the data source.\n"
       "# there is no escaping! so neither key nor value can contain the equal sign!\n";
 
-    foreach ( niftk::IGIDataSourceI::Pointer source, m_Sources )
+    for (niftk::IGIDataSourceI::Pointer source: m_Sources)
     {
       // This should be a relative path!
       // Relative to the descriptor file or directoryName (equivalent).

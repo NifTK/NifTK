@@ -78,7 +78,7 @@ QMap<QString, ctkXnatLoginProfile*> XnatPluginSettings::loginProfiles() const
   QMap<QString, ctkXnatLoginProfile*> profiles;
 
   berry::IPreferences::Pointer profilesNode = preferences->Node("profiles");
-  foreach (QString profileName, profilesNode->ChildrenNames())
+  for (QString profileName: profilesNode->ChildrenNames())
   {
     berry::IPreferences::Pointer profileNode = profilesNode->Node(profileName);
     ctkXnatLoginProfile* profile = new ctkXnatLoginProfile();

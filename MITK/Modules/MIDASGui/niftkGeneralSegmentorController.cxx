@@ -2248,7 +2248,7 @@ bool GeneralSegmentorController::SelectViewMode()
   else
   {
     QList<mitk::DataNode::Pointer> selectedNodes = this->GetDataManagerSelection();
-    foreach (mitk::DataNode::Pointer selectedNode, selectedNodes)
+    for (mitk::DataNode::Pointer selectedNode: selectedNodes)
     {
       selectedNode->SetVisibility(!selectedNode->IsVisible(0));
     }

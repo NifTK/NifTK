@@ -36,7 +36,7 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
 
   m_PlaybackWidget = new IGIDataSourcePlaybackWidget ( dataStorage, m_Manager, groupBox_2 );
   QList<QString> namesOfFactories = m_Manager->GetAllFactoryNames();
-  foreach (QString factory, namesOfFactories)
+  for (QString factory: namesOfFactories)
   {
     m_SourceSelectComboBox->addItem(factory);
   }

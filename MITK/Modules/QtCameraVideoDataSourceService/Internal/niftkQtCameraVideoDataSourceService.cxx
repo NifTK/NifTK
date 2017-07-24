@@ -47,7 +47,7 @@ QtCameraVideoDataSourceService::QtCameraVideoDataSourceService(
   QString videoDeviceName = (properties.value("name")).toString();
 
   QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-  foreach (const QCameraInfo &cameraInfo, cameras)
+  for (const QCameraInfo &cameraInfo: cameras)
   {
     if (cameraInfo.deviceName() == videoDeviceName)
     {

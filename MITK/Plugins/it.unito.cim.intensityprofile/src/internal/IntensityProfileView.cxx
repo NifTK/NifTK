@@ -286,7 +286,7 @@ IntensityProfileView::~IntensityProfileView()
     delete d->removeNodeEventListener;
   }
 
-  foreach (const mitk::DataNode* node, d->visibilityObserverTags.keys())
+  for (const mitk::DataNode* node: d->visibilityObserverTags.keys())
   {
     mitk::BaseProperty* property = node->GetProperty("visible");
     if (property)
@@ -299,10 +299,10 @@ IntensityProfileView::~IntensityProfileView()
     onCrosshairVisibilityOff();
   }
   // TODO somewhere these observers should be removed. Maybe not here.
-  foreach (mitk::DataNode* roiNode, d->roiNodes) {
+  for (mitk::DataNode* roiNode: d->roiNodes) {
     onVisibilityOff(roiNode);
   }
-  foreach (mitk::DataNode* node, d->referenceNodes) {
+  for (mitk::DataNode* node: d->referenceNodes) {
     deselectNode(node);
   }
 
@@ -448,7 +448,7 @@ IntensityProfileView::onVisibilityOn(const mitk::DataNode* cnode)
       return;
     }
     d->roiNodes.push_back(node);
-    foreach (mitk::DataNode* referenceNode, d->referenceNodes) {
+    for (mitk::DataNode* referenceNode: d->referenceNodes) {
       if (dimensionsAreEqual(referenceNode, node, true)) {
         plotRoiProfile(referenceNode, node);
       }
@@ -530,7 +530,7 @@ IntensityProfileView::NodeChanged(const mitk::DataNode* node)
   if (is4DImage->CheckNode(node)) {
     mitk::DataNode* referenceNode = const_cast<mitk::DataNode*>(node);
     if (d->referenceNodes.contains(referenceNode)) {
-      foreach (mitk::DataNode* roiNode, d->roiNodes) {
+      for (mitk::DataNode* roiNode: d->roiNodes) {
         delete d->roiProfileMapsByNode[referenceNode][roiNode];
       }
       d->roiProfileMapsByNode[referenceNode].clear();
@@ -540,7 +540,7 @@ IntensityProfileView::NodeChanged(const mitk::DataNode* node)
   else if (hasBinaryImage->CheckNode(node)) {
     mitk::DataNode* roiNode = const_cast<mitk::DataNode*>(node);
     if (d->roiNodes.contains(roiNode)) {
-      foreach (mitk::DataNode* referenceNode, d->referenceNodes) {
+      for (mitk::DataNode* referenceNode: d->referenceNodes) {
         if (dimensionsAreEqual(referenceNode, roiNode, true)) {
           IntensityProfileViewPrivate::RoiProfileMap roiProfiles = d->roiProfileMapsByNode[referenceNode];
           if (roiProfiles.contains(roiNode)) {
@@ -606,7 +606,7 @@ IntensityProfileView::ComputeTimeBounds()
   timeBounds[0]=stmax; timeBounds[1]=stmin;
 
 
-  foreach (mitk::DataNode* node, d->referenceNodes)
+  for (mitk::DataNode* node: d->referenceNodes)
   {
     const mitk::TimeGeometry* timeGeometry = node->GetData()->GetUpdatedTimeGeometry();
     if (timeGeometry != NULL )
@@ -641,7 +641,7 @@ IntensityProfileView::ComputeRangeBounds()
   mitk::ScalarType minRangeMin = itk::NumericTraits<mitk::ScalarType>::max();
   mitk::ScalarType maxRangeMax = itk::NumericTraits<mitk::ScalarType>::min();
 
-  foreach (mitk::DataNode* node, d->referenceNodes) {
+  for (mitk::DataNode* node: d->referenceNodes) {
     mitk::LevelWindow levelWindow;
 
     if (node->GetLevelWindow(levelWindow)) {
@@ -754,18 +754,18 @@ IntensityProfileView::deselectNode(mitk::DataNode* node)
   }
 
   if (d->roiProfileMapsByNode.contains(node)) {
-    foreach (QwtPlotCurve* profile, d->roiProfileMapsByNode[node]) {
+    for (QwtPlotCurve* profile: d->roiProfileMapsByNode[node]) {
       delete profile;
     }
     d->roiProfileMapsByNode[node].clear();
     d->roiProfileMapsByNode.remove(node);
   }
 
-  foreach (mitk::DataNode* profileNode, d->profileNodeChangeObservers.keys()) {
+  for (mitk::DataNode* profileNode: d->profileNodeChangeObservers.keys()) {
     profileNode->RemoveObserver(d->profileNodeChangeObservers[profileNode]);
   }
   if (!d->storedProfileCurves.isEmpty()) {
-    foreach (QwtPlotCurve* curve, d->storedProfileCurves) {
+    for (QwtPlotCurve* curve: d->storedProfileCurves) {
       delete curve;
     }
   }
@@ -790,7 +790,7 @@ IntensityProfileView::onCrosshairVisibilityOn()
   }
   onCrosshairPositionEvent();
 //  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOn() add listeners";
-  foreach (QmitkRenderWindow* display, d->display->GetQmitkRenderWindows().values()) {
+  for (QmitkRenderWindow* display: d->display->GetQmitkRenderWindows().values()) {
     display->GetSliceNavigationController()->crosshairPositionEvent.AddListener(*d->crosshairPositionListener);
   }
   d->crosshairPositionListenerIsAdded = true;
@@ -813,12 +813,12 @@ IntensityProfileView::onCrosshairVisibilityOff()
   d->showCrosshairProfile = false;
 
 //  MITK_INFO << "IntensityProfileView::onCrosshairVisibilityOff() remove listeners";
-  foreach (QmitkRenderWindow* display, d->display->GetQmitkRenderWindows().values()) {
+  for (QmitkRenderWindow* display: d->display->GetQmitkRenderWindows().values()) {
     display->GetSliceNavigationController()->crosshairPositionEvent.RemoveListener(*d->crosshairPositionListener);
   }
   d->crosshairPositionListenerIsAdded = false;
 
-  foreach (QwtPlotCurve* profile, d->crosshairProfiles) {
+  for (QwtPlotCurve* profile: d->crosshairProfiles) {
     delete profile;
   }
   d->crosshairProfiles.clear();
@@ -852,7 +852,7 @@ IntensityProfileView::onCrosshairPositionEventDelayed()
 //  }
   const mitk::Point3D crossPosition = d->display->GetSelectedPosition();
   calculateCrosshairProfiles(crossPosition);
-  foreach (mitk::DataNode* node, d->referenceNodes) {
+  for (mitk::DataNode* node: d->referenceNodes) {
     d->crosshairProfiles[node]->attach(ui->plotter);
   }
   ui->plotter->replot();
@@ -864,7 +864,7 @@ IntensityProfileView::calculateCrosshairProfiles(mitk::Point3D crosshairPos)
   Q_D(IntensityProfileView);
 
   int symbolIndex = 0;
-  foreach (mitk::DataNode* node, d->referenceNodes) {
+  for (mitk::DataNode* node: d->referenceNodes) {
     mitk::Image::Pointer image4D = dynamic_cast<mitk::Image*>(node->GetData());
     int timeSteps = image4D->GetTimeSteps();
 
@@ -1114,7 +1114,7 @@ void
 IntensityProfileView::onProfileNodeChanged()
 {
   Q_D(IntensityProfileView);
-  foreach (QwtPlotCurve* curve, d->storedProfileCurves) {
+  for (QwtPlotCurve* curve: d->storedProfileCurves) {
     delete curve;
   }
   d->storedProfileCurves.clear();
@@ -1143,7 +1143,7 @@ IntensityProfileView::on_storeCrosshairButton_clicked()
   }
   const mitk::Point3D crosshairPosition = display->GetSelectedPosition();
 
-  foreach (mitk::DataNode* node, d->referenceNodes) {
+  for (mitk::DataNode* node: d->referenceNodes) {
     mitk::PointSet::Pointer crosshairPoints;
     if (hasPointSet->CheckNode(node)) {
       crosshairPoints = dynamic_cast<mitk::PointSet*>(node->GetData());
@@ -1256,7 +1256,7 @@ IntensityProfileView::on_copyStatisticsButton_clicked()
   }
 
   QString clipboard;
-  foreach (mitk::DataNode* node, d->referenceNodes) {
+  for (mitk::DataNode* node: d->referenceNodes) {
     int timeSteps = dynamic_cast<mitk::Image*>(node->GetData())->GetTimeSteps();
     QVector<double> xValues(timeSteps);
     QVector<unsigned> xValueOrder(timeSteps);
@@ -1339,22 +1339,22 @@ IntensityProfileView::on_clearCacheButton_clicked()
   typedef QMap<mitk::DataNode*, StatisticsAtTimeSteps> StatisticsMap;
   typedef QMap<mitk::DataNode*, QMap<mitk::DataNode*, StatisticsAtTimeSteps> > RoiStatisticsMap;
 
-  foreach (StatisticsMap statisticsMap, d->statisticsByNodeAndRoi) {
-    foreach (StatisticsAtTimeSteps statisticsAtTimeSteps, statisticsMap) {
+  for (StatisticsMap statisticsMap: d->statisticsByNodeAndRoi) {
+    for (StatisticsAtTimeSteps statisticsAtTimeSteps: statisticsMap) {
       statisticsAtTimeSteps.clear();
     }
     statisticsMap.clear();
   }
   d->statisticsByNodeAndRoi.clear();
 
-  foreach (StatisticsMap statisticsMap, d->statisticsByRoiAndNode) {
+  for (StatisticsMap statisticsMap: d->statisticsByRoiAndNode) {
     statisticsMap.clear();
   }
   d->statisticsByRoiAndNode.clear();
 
   typedef QMap<mitk::DataNode*, QwtPlotCurve*> RoiProfiles;
-  foreach (RoiProfiles roiProfiles, d->roiProfileMapsByNode) {
-    foreach (QwtPlotCurve* profile, roiProfiles) {
+  for (RoiProfiles roiProfiles: d->roiProfileMapsByNode) {
+    for (QwtPlotCurve* profile: roiProfiles) {
       delete profile;
     }
     roiProfiles.clear();
@@ -1369,7 +1369,7 @@ IntensityProfileView::eventFilter(QObject *obj, QEvent *event)
   Q_D(IntensityProfileView);
   if (obj == d->xAxis) {
     if (event->type() == QEvent::MouseButtonDblClick) {
-      foreach (mitk::DataNode* node, d->referenceNodes) {
+      for (mitk::DataNode* node: d->referenceNodes) {
         bool hasChanged = askXValues(node);
         if (hasChanged) {
           deselectNode(node);
