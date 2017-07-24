@@ -332,7 +332,7 @@ void BaseSegmentorController::OnDataManagerSelectionChanged(const QList<mitk::Da
   /// on the segmentation image) before the working nodes are replaced in the tool manager.
   /// We could, in principle, do the same for reference data nodes, but they are constant, so there
   /// is no need for that.
-  if (workingNodesHaveChanged)
+  if (workingNodesHaveChanged && activeToolID != -1)
   {
     toolManager->ActivateTool(-1);
     this->PreWorkingNodesChanged();
