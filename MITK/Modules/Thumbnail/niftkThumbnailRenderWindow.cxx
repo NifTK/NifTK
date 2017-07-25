@@ -39,24 +39,24 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 ThumbnailRenderWindow::ThumbnailRenderWindow(QWidget *parent, mitk::RenderingManager* renderingManager)
-: QmitkRenderWindow(parent, "thumbnail viewer", 0, renderingManager)
-, m_DataStorage(nullptr)
-, m_BoundingBoxNode(nullptr)
-, m_BoundingBox(nullptr)
-, m_Renderer(nullptr)
-, m_TrackedRenderer(nullptr)
-, m_TrackedRenderingManager(nullptr)
-, m_TrackedWorldTimeGeometry(nullptr)
-, m_TrackedSliceNavigator(nullptr)
-, m_TrackedDisplayGeometry(nullptr)
-, m_TrackedRendererTag(-1)
-, m_TrackedWorldTimeGeometryTag(-1)
-, m_TrackedTimeStepSelectorTag(-1)
-, m_TrackedSliceSelectorTag(-1)
-, m_TrackedDisplayGeometryTag(-1)
-, m_MouseEventEater(nullptr)
-, m_WheelEventEater(nullptr)
-, m_VisibilityTracker(nullptr)
+: QmitkRenderWindow(parent, "thumbnail viewer", nullptr, renderingManager),
+  m_DataStorage(nullptr),
+  m_BoundingBoxNode(nullptr),
+  m_BoundingBox(nullptr),
+  m_Renderer(nullptr),
+  m_TrackedRenderer(nullptr),
+  m_TrackedRenderingManager(nullptr),
+  m_TrackedWorldTimeGeometry(nullptr),
+  m_TrackedSliceNavigator(nullptr),
+  m_TrackedDisplayGeometry(nullptr),
+  m_TrackedRendererTag(-1),
+  m_TrackedWorldTimeGeometryTag(-1),
+  m_TrackedTimeStepSelectorTag(-1),
+  m_TrackedSliceSelectorTag(-1),
+  m_TrackedDisplayGeometryTag(-1),
+  m_MouseEventEater(nullptr),
+  m_WheelEventEater(nullptr),
+  m_VisibilityTracker(nullptr)
 {
   m_DataStorage = renderingManager->GetDataStorage();
   assert(m_DataStorage.IsNotNull());
@@ -211,7 +211,7 @@ void ThumbnailRenderWindow::SetTrackedRenderer(mitk::BaseRenderer::Pointer rende
     this->UntrackRenderer();
   }
 
-  mitk::RenderingManager* renderingManagerToTrack = rendererToTrack ? rendererToTrack->GetRenderingManager() : 0;
+  mitk::RenderingManager* renderingManagerToTrack = rendererToTrack ? rendererToTrack->GetRenderingManager() : nullptr;
   if (renderingManagerToTrack != m_TrackedRenderingManager)
   {
     if (m_TrackedRenderingManager)

@@ -155,7 +155,7 @@ private:
       {
         if (mainWindow->GetRenderer() == trackedRenderer)
         {
-          m_ThumbnailView->SetTrackedRenderer(0);
+          m_ThumbnailView->SetTrackedRenderer(nullptr);
           return;
         }
       }
@@ -169,10 +169,10 @@ private:
 
 //-----------------------------------------------------------------------------
 ThumbnailView::ThumbnailView()
-: m_FocusManagerObserverTag(-1)
-, m_ThumbnailWindow(0)
-, m_TrackOnlyMainWindows(true)
-, m_EditorLifeCycleListener(new EditorLifeCycleListener(this))
+: m_FocusManagerObserverTag(-1),
+  m_ThumbnailWindow(nullptr),
+  m_TrackOnlyMainWindows(true),
+  m_EditorLifeCycleListener(new EditorLifeCycleListener(this))
 {
   m_RenderingManager = mitk::RenderingManager::New();
   mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
@@ -186,7 +186,7 @@ ThumbnailView::~ThumbnailView()
   this->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener.data());
 
   mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-  if (focusManager != NULL)
+  if (focusManager)
   {
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
     m_FocusManagerObserverTag = -1;
@@ -213,7 +213,7 @@ void ThumbnailView::CreateQtPartControl(QWidget* parent)
     this->RetrievePreferenceValues();
 
     mitk::FocusManager* focusManager = mitk::GlobalInteraction::GetInstance()->GetFocusManager();
-    if (focusManager != NULL)
+    if (focusManager)
     {
       itk::SimpleMemberCommand<ThumbnailView>::Pointer onFocusChangedCommand =
         itk::SimpleMemberCommand<ThumbnailView>::New();

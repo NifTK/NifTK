@@ -36,12 +36,12 @@ const QString ThumbnailViewPreferencePage::THUMBNAIL_TRACK_ONLY_MAIN_WINDOWS("th
 
 //-----------------------------------------------------------------------------
 ThumbnailViewPreferencePage::ThumbnailViewPreferencePage()
-: m_MainControl(0)
-, m_BoxThickness(0)
-, m_BoxOpacity(0)
-, m_BoxLayer(0)
-, m_TrackOnlyMainWindows(0)
-, m_Initializing(false)
+: m_MainControl(nullptr),
+  m_BoxThickness(0),
+  m_BoxOpacity(0),
+  m_BoxLayer(0),
+  m_TrackOnlyMainWindows(0),
+  m_Initializing(false)
 {
 
 }

@@ -24,9 +24,9 @@ namespace niftk
 {
 
 ThumbnailInteractor::ThumbnailInteractor(ThumbnailRenderWindow* thumbnailWindow)
-: mitk::DisplayInteractor()
-, m_ThumbnailWindow(thumbnailWindow)
-, m_ZoomFactor(1.05)
+: mitk::DisplayInteractor(),
+  m_ThumbnailWindow(thumbnailWindow),
+  m_ZoomFactor(1.05)
 {
   m_Renderer = thumbnailWindow->GetRenderer();
   m_LastDisplayCoordinate.Fill(0);

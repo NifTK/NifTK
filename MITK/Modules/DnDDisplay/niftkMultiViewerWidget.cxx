@@ -51,26 +51,26 @@ namespace niftk
 MultiViewerWidget::MultiViewerWidget(
     mitk::RenderingManager* renderingManager,
     QWidget* parent, Qt::WindowFlags f)
-: QWidget(parent, f)
-, m_TopLevelLayout(NULL)
-, m_LayoutForRenderWindows(NULL)
-, m_PinButton(NULL)
-, m_PopupWidget(NULL)
-, m_DisplayConvention(DISPLAY_CONVENTION_RADIO)
-, m_VisibilityManager(MultiViewerVisibilityManager::New(renderingManager->GetDataStorage()))
-, m_RenderingManager(renderingManager)
-, m_SelectedViewerIndex(0)
-, m_ViewerRows(0)
-, m_ViewerColumns(0)
-, m_CursorDefaultVisibility(true)
-, m_RememberSettingsPerWindowLayout(false)
-, m_ThumbnailMode(false)
-, m_LinkedNavigationEnabled(false)
-, m_Magnification(0.0)
-, m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
-, m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO_NO_3D)
-, m_BindingOptions(0)
-, m_ControlPanel(0)
+: QWidget(parent, f),
+  m_TopLevelLayout(nullptr),
+  m_LayoutForRenderWindows(nullptr),
+  m_PinButton(nullptr),
+  m_PopupWidget(nullptr),
+  m_DisplayConvention(DISPLAY_CONVENTION_RADIO),
+  m_VisibilityManager(MultiViewerVisibilityManager::New(renderingManager->GetDataStorage())),
+  m_RenderingManager(renderingManager),
+  m_SelectedViewerIndex(0),
+  m_ViewerRows(0),
+  m_ViewerColumns(0),
+  m_CursorDefaultVisibility(true),
+  m_RememberSettingsPerWindowLayout(false),
+  m_ThumbnailMode(false),
+  m_LinkedNavigationEnabled(false),
+  m_Magnification(0.0),
+  m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL),
+  m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO_NO_3D),
+  m_BindingOptions(0),
+  m_ControlPanel(nullptr)
 {
   this->setFocusPolicy(Qt::StrongFocus);
 
@@ -810,7 +810,7 @@ int MultiViewerWidget::GetNumberOfColumns() const
 //-----------------------------------------------------------------------------
 SingleViewerWidget* MultiViewerWidget::GetViewer(int row, int column) const
 {
-  SingleViewerWidget* viewer = 0;
+  SingleViewerWidget* viewer = nullptr;
   if (row >= 0 && row < m_ViewerRows && column >= 0 && column < m_ViewerColumns)
   {
     viewer = m_Viewers[row * m_ViewerColumns + column];
@@ -1926,7 +1926,7 @@ QmitkRenderWindow* MultiViewerWidget::GetRenderWindow(const QString& id) const
   }
   else
   {
-    return NULL;
+    return nullptr;
   }
 }
 
