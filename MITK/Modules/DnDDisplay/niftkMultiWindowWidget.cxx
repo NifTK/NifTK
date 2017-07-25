@@ -922,6 +922,15 @@ void MultiWindowWidget::FitRenderWindows(double scaleFactor)
     }
   }
 
+  if (m_RenderWindows[THREE_D]->isVisible())
+  {
+    int vtkGlobalWarningsWereOn = vtkObject::GetGlobalWarningDisplay();
+    vtkObject::GlobalWarningDisplayOff();
+    m_RenderWindows[THREE_D]->GetRenderer()->GetDisplayGeometry()->Fit();
+    m_RenderWindows[THREE_D]->GetRenderer()->GetVtkRenderer()->ResetCamera();
+    vtkObject::SetGlobalWarningDisplay(vtkGlobalWarningsWereOn);
+  }
+
   this->BlockUpdate(updateWasBlocked);
 }
 
