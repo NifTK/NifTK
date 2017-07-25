@@ -107,7 +107,7 @@ MultiWindowWidget::MultiWindowWidget(
 , m_SelectedWindowIndex(CORONAL)
 , m_FocusLosingWindowIndex(-1)
 , m_CursorVisibility(true)
-, m_WindowLayout(WINDOW_LAYOUT_ORTHO)
+, m_WindowLayout(WINDOW_LAYOUT_ORTHO_NO_3D)
 , m_TimeStep(0)
 , m_CursorPositions(3)
 , m_ScaleFactors(3)
@@ -151,14 +151,11 @@ MultiWindowWidget::MultiWindowWidget(
   m_RenderWindows[CORONAL] = this->GetRenderWindow3();
   m_RenderWindows[THREE_D] = this->GetRenderWindow4();
 
-  // We don't need these 4 lines if we pass in a widget specific RenderingManager.
-  // If we are using a global one then we should use them to try and avoid Invalid Drawable errors on Mac.
-  if (m_RenderingManager == mitk::RenderingManager::GetInstance())
+  /// To minimise render window updates, we always keep only those windows in the rendering
+  /// manager that are visible in the current window layout. See the SetWindowLayout() function.
+  for (QmitkRenderWindow* renderWindow: m_RenderWindows)
   {
-    m_RenderingManager->RemoveRenderWindow(this->mitkWidget1->GetVtkRenderWindow());
-    m_RenderingManager->RemoveRenderWindow(this->mitkWidget2->GetVtkRenderWindow());
-    m_RenderingManager->RemoveRenderWindow(this->mitkWidget3->GetVtkRenderWindow());
-    m_RenderingManager->RemoveRenderWindow(this->mitkWidget4->GetVtkRenderWindow());
+    m_RenderingManager->RemoveRenderWindow(renderWindow->GetVtkRenderWindow());
   }
 
   m_EmptySpace->setAutoFillBackground(true);
@@ -189,10 +186,10 @@ MultiWindowWidget::MultiWindowWidget(
   m_OrientationString[0] = '\0';
 
   // Need each widget to react to Qt drag/drop events.
-  this->mitkWidget1->setAcceptDrops(true);
-  this->mitkWidget2->setAcceptDrops(true);
-  this->mitkWidget3->setAcceptDrops(true);
-  this->mitkWidget4->setAcceptDrops(true);
+  for (int i = 0; i < 4; ++i)
+  {
+    m_RenderWindows[i]->setAcceptDrops(true);
+  }
 
   // Set these off, as it won't matter until there is an image dropped, with a specific layout and orientation.
   for (int i = 0; i < 4; ++i)
@@ -205,8 +202,7 @@ MultiWindowWidget::MultiWindowWidget(
   this->InitialiseIntensityAnnotations();
   this->InitialisePropertyAnnotations();
 
-  // Set default layout. This must be ORTHO.
-  this->SetWindowLayout(WINDOW_LAYOUT_ORTHO);
+  this->SetWindowLayout(m_WindowLayout);
 
   // Default to unselected, so borders are off.
   this->DisableColoredRectangles();
@@ -780,53 +776,6 @@ void MultiWindowWidget::SetPropertiesForAnnotation(const QStringList& properties
 
 
 //-----------------------------------------------------------------------------
-void MultiWindowWidget::Update3DWindowVisibility()
-{
-  if (m_DataStorage.IsNotNull())
-  {
-    mitk::BaseRenderer* axialRenderer = this->mitkWidget1->GetRenderer();
-
-    bool show3DPlanes = false;
-
-    mitk::DataStorage::SetOfObjects::ConstPointer all = m_DataStorage->GetAll();
-    for (mitk::DataStorage::SetOfObjects::ConstIterator it = all->Begin(); it != all->End(); ++it)
-    {
-      if (it->Value().IsNull())
-      {
-        continue;
-      }
-
-      bool visibleIn3DWindow = false;
-      if ((m_WindowLayout == WINDOW_LAYOUT_ORTHO)
-          || m_WindowLayout == WINDOW_LAYOUT_3D)
-      {
-        visibleIn3DWindow = true;
-      }
-
-      bool visibleInAxialWindow = false;
-      if (it->Value()->GetBoolProperty("visible", visibleInAxialWindow, axialRenderer))
-      {
-        if (!visibleInAxialWindow)
-        {
-          visibleIn3DWindow = false;
-        }
-      }
-      it->Value()->SetVisibility(visibleIn3DWindow, mitkWidget4->GetRenderer());
-      if (visibleIn3DWindow)
-      {
-        show3DPlanes = true;
-      }
-    }
-
-    m_PlaneNode1->SetVisibility(show3DPlanes, mitkWidget4->GetRenderer());
-    m_PlaneNode2->SetVisibility(show3DPlanes, mitkWidget4->GetRenderer());
-    m_PlaneNode3->SetVisibility(show3DPlanes, mitkWidget4->GetRenderer());
-  }
-  m_RenderingManager->RequestUpdate(this->mitkWidget4->GetRenderWindow());
-}
-
-
-//-----------------------------------------------------------------------------
 void MultiWindowWidget::SetVisibility(const std::vector<mitk::DataNode*>& nodes, bool visibility)
 {
   for (auto node: nodes)
@@ -834,11 +783,11 @@ void MultiWindowWidget::SetVisibility(const std::vector<mitk::DataNode*>& nodes,
     node->SetVisibility(visibility, mitkWidget1->GetRenderer());
     node->SetVisibility(visibility, mitkWidget2->GetRenderer());
     node->SetVisibility(visibility, mitkWidget3->GetRenderer());
+    node->SetVisibility(visibility, mitkWidget4->GetRenderer());
   }
   this->UpdatePositionAnnotation(m_SelectedWindowIndex);
   this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
   this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
-  this->Update3DWindowVisibility();
 }
 
 
@@ -851,11 +800,11 @@ void MultiWindowWidget::ApplyGlobalVisibility(const std::vector<mitk::DataNode*>
     node->SetVisibility(visibility, mitkWidget1->GetRenderer());
     node->SetVisibility(visibility, mitkWidget2->GetRenderer());
     node->SetVisibility(visibility, mitkWidget3->GetRenderer());
+    node->SetVisibility(visibility, mitkWidget4->GetRenderer());
   }
   this->UpdatePositionAnnotation(m_SelectedWindowIndex);
   this->UpdateIntensityAnnotation(m_SelectedWindowIndex);
   this->UpdatePropertyAnnotation(m_SelectedWindowIndex);
-  this->Update3DWindowVisibility();
 }
 
 
@@ -1106,12 +1055,9 @@ void MultiWindowWidget::SetTimeGeometry(const mitk::TimeGeometry* timeGeometry)
 
     // If m_RenderingManager is a local rendering manager
     // not the global singleton instance, then we never have to worry about this.
-    if (m_RenderingManager == mitk::RenderingManager::GetInstance())
+    for (QmitkRenderWindow* renderWindow: this->GetVisibleRenderWindows())
     {
-      m_RenderingManager->AddRenderWindow(this->GetRenderWindow1()->GetVtkRenderWindow());
-      m_RenderingManager->AddRenderWindow(this->GetRenderWindow2()->GetVtkRenderWindow());
-      m_RenderingManager->AddRenderWindow(this->GetRenderWindow3()->GetVtkRenderWindow());
-      m_RenderingManager->AddRenderWindow(this->GetRenderWindow4()->GetVtkRenderWindow());
+      m_RenderingManager->AddRenderWindow(renderWindow->GetVtkRenderWindow());
     }
 
     // Inspired by:
@@ -1365,9 +1311,9 @@ void MultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
     m_GridLayout->addWidget(this->mitkWidget3Container, 0, 0);  // coronal:  on
-    m_GridLayout->addWidget(m_EmptySpace, 1, 1);  // 3D:       on
+    m_GridLayout->addWidget(m_EmptySpace, 1, 1);                // 3D:       on
   }
-  else // ORTHO or ORTHO_NO_3D
+  else // ORTHO
   {
     m_GridLayout->addWidget(this->mitkWidget1Container, 1, 0);  // axial:    on
     m_GridLayout->addWidget(this->mitkWidget2Container, 0, 1);  // sagittal: on
@@ -1377,108 +1323,49 @@ void MultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
 
   QmitkStdMultiWidgetLayout->addLayout(m_GridLayout);
 
-  bool showAxial = false;
-  bool showSagittal = false;
-  bool showCoronal = false;
-  bool show3D = false;
-  m_CursorAxialPositionsAreBound = false;
-  m_CursorSagittalPositionsAreBound = false;
+  int defaultWindowIndex =
+      windowLayout == WINDOW_LAYOUT_AXIAL ? AXIAL :
+      windowLayout == WINDOW_LAYOUT_3D ? THREE_D :
+      (windowLayout == WINDOW_LAYOUT_SAGITTAL
+       || windowLayout == WINDOW_LAYOUT_3V
+       || windowLayout == WINDOW_LAYOUT_SAG_AX_H
+       || windowLayout == WINDOW_LAYOUT_SAG_AX_V) ? SAGITTAL : CORONAL;
+
+  m_CursorAxialPositionsAreBound =
+      windowLayout == WINDOW_LAYOUT_ORTHO
+      || windowLayout == WINDOW_LAYOUT_ORTHO_NO_3D
+      || windowLayout == WINDOW_LAYOUT_3H
+      || windowLayout == WINDOW_LAYOUT_COR_SAG_H;
+
+  m_CursorSagittalPositionsAreBound ==
+      windowLayout == WINDOW_LAYOUT_ORTHO
+      || windowLayout == WINDOW_LAYOUT_ORTHO_NO_3D
+      || windowLayout == WINDOW_LAYOUT_3V
+      || windowLayout == WINDOW_LAYOUT_COR_AX_V;
+
   m_CursorCoronalPositionsAreBound = false;
 
-  int defaultWindowIndex;
-
-  switch (windowLayout)
+  bool windowsToShow[4];
+  for (int i = 0; i < 4; ++i)
   {
-  case WINDOW_LAYOUT_AXIAL:
-    showAxial = true;
-    defaultWindowIndex = AXIAL;
-    break;
-  case WINDOW_LAYOUT_SAGITTAL:
-    showSagittal = true;
-    defaultWindowIndex = SAGITTAL;
-    break;
-  case WINDOW_LAYOUT_CORONAL:
-    showCoronal = true;
-    defaultWindowIndex = CORONAL;
-    break;
-  case WINDOW_LAYOUT_ORTHO:
-    showAxial = true;
-    showSagittal = true;
-    showCoronal = true;
-    show3D = true;
-    defaultWindowIndex = CORONAL;
-    m_CursorAxialPositionsAreBound = true;
-    m_CursorSagittalPositionsAreBound = true;
-    break;
-  case WINDOW_LAYOUT_ORTHO_NO_3D:
-    showAxial = true;
-    showSagittal = true;
-    showCoronal = true;
-    show3D = false;
-    defaultWindowIndex = CORONAL;
-    m_CursorAxialPositionsAreBound = true;
-    m_CursorSagittalPositionsAreBound = true;
-    break;
-  case WINDOW_LAYOUT_3H:
-    showAxial = true;
-    showSagittal = true;
-    showCoronal = true;
-    defaultWindowIndex = CORONAL;
-    m_CursorAxialPositionsAreBound = true;
-    break;
-  case WINDOW_LAYOUT_3V:
-    showAxial = true;
-    showSagittal = true;
-    showCoronal = true;
-    defaultWindowIndex = SAGITTAL;
-    m_CursorSagittalPositionsAreBound = true;
-    break;
-  case WINDOW_LAYOUT_3D:
-    show3D = true;
-    defaultWindowIndex = THREE_D;
-    break;
-  case WINDOW_LAYOUT_COR_SAG_H:
-    showSagittal = true;
-    showCoronal = true;
-    defaultWindowIndex = CORONAL;
-    m_CursorAxialPositionsAreBound = true;
-    break;
-  case WINDOW_LAYOUT_COR_SAG_V:
-    showSagittal = true;
-    showCoronal = true;
-    defaultWindowIndex = CORONAL;
-    break;
-  case WINDOW_LAYOUT_COR_AX_H:
-    showAxial = true;
-    showCoronal = true;
-    defaultWindowIndex = CORONAL;
-    break;
-  case WINDOW_LAYOUT_COR_AX_V:
-    showAxial = true;
-    showCoronal = true;
-    defaultWindowIndex = CORONAL;
-    m_CursorSagittalPositionsAreBound = true;
-    break;
-  case WINDOW_LAYOUT_SAG_AX_H:
-    showAxial = true;
-    showSagittal = true;
-    defaultWindowIndex = SAGITTAL;
-    break;
-  case WINDOW_LAYOUT_SAG_AX_V:
-    showAxial = true;
-    showSagittal = true;
-    defaultWindowIndex = SAGITTAL;
-    break;
-  default:
-    // die, this should never happen
-    assert((m_WindowLayout >= 0 && m_WindowLayout <= 6) || (m_WindowLayout >= 9 && m_WindowLayout <= 14));
-    break;
+    bool windowWasShown = niftk::IsWindowVisibleInLayout(i, m_WindowLayout);
+    bool windowIsToShow = niftk::IsWindowVisibleInLayout(i, windowLayout);
+    if (windowWasShown && !windowIsToShow)
+    {
+      m_RenderingManager->RemoveRenderWindow(m_RenderWindows[i]->GetVtkRenderWindow());
+    }
+    else if (!windowWasShown && windowIsToShow)
+    {
+      m_RenderingManager->AddRenderWindow(m_RenderWindows[i]->GetVtkRenderWindow());
+    }
+
+    windowsToShow[i] = windowIsToShow;
   }
 
-  this->mitkWidget1Container->setVisible(showAxial);
-  this->mitkWidget2Container->setVisible(showSagittal);
-  this->mitkWidget3Container->setVisible(showCoronal);
-  this->mitkWidget4Container->setVisible(show3D);
+  this->mitkWidget1Container->setVisible(windowsToShow[AXIAL]);
+  this->mitkWidget2Container->setVisible(windowsToShow[SAGITTAL]);
+  this->mitkWidget3Container->setVisible(windowsToShow[CORONAL]);
+  this->mitkWidget4Container->setVisible(windowsToShow[THREE_D]);
 
   m_CursorPositionBinding = niftk::IsMultiWindowLayout(windowLayout);
   m_ScaleFactorBinding = niftk::IsMultiWindowLayout(windowLayout);
@@ -1486,10 +1373,9 @@ void MultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
   m_WindowLayout = windowLayout;
   m_WindowLayoutHasChanged = true;
 
-  this->Update3DWindowVisibility();
   m_GridLayout->activate();
 
-  if (!m_RenderWindows[m_SelectedWindowIndex]->isVisible())
+  if (!windowsToShow[m_SelectedWindowIndex])
   {
     if (m_SelectedWindowIndex < 3)
     {
@@ -1507,18 +1393,6 @@ void MultiWindowWidget::SetWindowLayout(WindowLayout windowLayout)
     if (m_IsFocused)
     {
       m_FocusHasChanged = true;
-    }
-  }
-
-  for (std::size_t i = 0; i < 4; ++i)
-  {
-    if (m_RenderWindows[i]->isVisible())
-    {
-      m_RenderWindows[i]->GetRenderWindow()->SetSize(m_RenderWindows[i]->width(), m_RenderWindows[i]->height());
-    }
-    else
-    {
-      m_RenderWindows[i]->GetRenderWindow()->SetSize(0, 0);
     }
   }
 
@@ -3567,6 +3441,13 @@ bool MultiWindowWidget::BlockUpdate(bool blocked)
 //          m_RenderingManager->RequestUpdate(m_RenderWindows[i]->GetRenderWindow());
           m_RenderingManager->ForceImmediateUpdate(m_RenderWindows[i]->GetRenderWindow());
         }
+      }
+
+      if (m_WindowLayoutHasChanged && m_WindowLayout == WINDOW_LAYOUT_ORTHO)
+      {
+        /// If you switch from 2x2-no3D to 2x2, the 3D window is not updated automatically
+        /// because the window is not resized. Therefore we force an update.
+        rendererNeedsUpdate[THREE_D] = true;
       }
 
       /// Sending events and signals.

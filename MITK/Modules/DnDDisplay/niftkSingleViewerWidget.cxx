@@ -48,7 +48,7 @@ SingleViewerWidget::SingleViewerWidget(QWidget* parent, mitk::RenderingManager* 
 , m_GeometryInitialised(false)
 , m_RememberSettingsPerWindowLayout(false)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
-, m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
+, m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO_NO_3D)
 {
   if (renderingManager == NULL)
   {

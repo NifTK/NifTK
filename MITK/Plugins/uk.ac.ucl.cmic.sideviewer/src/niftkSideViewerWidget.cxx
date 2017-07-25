@@ -269,10 +269,10 @@ SideViewerWidget::~SideViewerWidget()
 {
   if (m_MainRenderingManager)
   {
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+    for (QmitkRenderWindow* renderWindow: m_Viewer->GetVisibleRenderWindows())
+    {
+      m_MainRenderingManager->RemoveRenderWindow(renderWindow->GetRenderWindow());
+    }
     m_MainRenderingManager = 0;
   }
 
@@ -406,10 +406,10 @@ void SideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
 {
   if (m_MainRenderingManager)
   {
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+    for (QmitkRenderWindow* renderWindow: m_Viewer->GetVisibleRenderWindows())
+    {
+      m_MainRenderingManager->RemoveRenderWindow(renderWindow->GetRenderWindow());
+    }
     m_MainRenderingManager = 0;
   }
 
@@ -676,20 +676,20 @@ void SideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderWindow
   {
     if (m_MainRenderingManager)
     {
-      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
-      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
-      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
-      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+      for (QmitkRenderWindow* renderWindow: m_Viewer->GetVisibleRenderWindows())
+      {
+        m_MainRenderingManager->RemoveRenderWindow(renderWindow->GetRenderWindow());
+      }
     }
 
     m_MainRenderingManager = mainRenderingManager;
 
     if (m_MainRenderingManager)
     {
-      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
-      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
-      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
-      m_MainRenderingManager->AddRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+      for (QmitkRenderWindow* renderWindow: m_Viewer->GetVisibleRenderWindows())
+      {
+        m_MainRenderingManager->AddRenderWindow(renderWindow->GetRenderWindow());
+      }
     }
   }
 
@@ -920,6 +920,23 @@ void SideViewerWidget::OnScaleFactorChanged(WindowOrientation orientation, doubl
 //-----------------------------------------------------------------------------
 void SideViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 {
+  std::vector<QmitkRenderWindow*> renderWindows = m_Viewer->GetRenderWindows();
+  assert(renderWindows.size() == 4);
+  for (int i = 0; i < 4; ++i)
+  {
+    bool windowWasShown = niftk::IsWindowVisibleInLayout(i, m_WindowLayout);
+    bool windowIsToShow = niftk::IsWindowVisibleInLayout(i, windowLayout);
+
+    if (windowWasShown && !windowIsToShow)
+    {
+      m_MainRenderingManager->RemoveRenderWindow(renderWindows[i]->GetRenderWindow());
+    }
+    else if (!windowWasShown && windowIsToShow)
+    {
+      m_MainRenderingManager->AddRenderWindow(renderWindows[i]->GetRenderWindow());
+    }
+  }
+
   bool axialWindowRadioButtonWasBlocked = m_AxialWindowRadioButton->blockSignals(true);
   bool sagittalWindowRadioButtonWasBlocked = m_SagittalWindowRadioButton->blockSignals(true);
   bool coronalWindowRadioButtonWasBlocked = m_CoronalWindowRadioButton->blockSignals(true);
@@ -973,11 +990,6 @@ void SideViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
   m_MultiWindowComboBox->blockSignals(multiWindowComboBoxWasBlocked);
 
   m_WindowLayout = windowLayout;
-
-  /// Note:
-  /// The selected window has not necessarily been changed, but it is not costly
-  /// to refresh the GUI buttons every time.
-//  this->OnViewerWindowChanged();
 }
 
 

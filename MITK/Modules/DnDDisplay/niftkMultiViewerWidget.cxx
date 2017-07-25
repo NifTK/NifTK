@@ -68,7 +68,7 @@ MultiViewerWidget::MultiViewerWidget(
 , m_LinkedNavigationEnabled(false)
 , m_Magnification(0.0)
 , m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
-, m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
+, m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO_NO_3D)
 , m_BindingOptions(0)
 , m_ControlPanel(0)
 {
