@@ -688,7 +688,7 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::MatrixTrackedImageD
     mitkThrow() << "Ultrasound images should be unsigned char.";
   }
 
-  if (data[0].first->GetPixelType().GetNumberOfComponents() != 1)
+  if (data[0].first->GetPixelType().GetNumberOfComponents() != 1) // Need to be changed!!!
   {
     mitkThrow() << "Ultrasound images should have 1 component (i.e. greyscale not RGB)";
   }
@@ -1216,7 +1216,17 @@ MatrixTrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string
       // Use OpenCV/niftk routines.
       // This creates a 3D image directly, and works with grey-scale and RGB.
       cv::Mat tmp = cv::imread(pairedFiles[i].first);
-      convertedImage = niftk::CreateMitkImage(&tmp);
+      
+      if (tmp.channels() == 3) // If it's a colour image, convert to grey scale
+      {
+        cv::Mat greyImage;
+        cv::cvtColor(tmp, greyImage, CV_BGR2GRAY); // If you load the image with OpenCV it will be BGR
+        convertedImage = niftk::CreateMitkImage(&greyImage);
+      }
+      else
+      {
+        convertedImage = niftk::CreateMitkImage(&tmp);
+      }
     }
     else
     {
