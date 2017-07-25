@@ -192,6 +192,49 @@ inline WindowLayout GetWindowLayout(const std::string& windowLayoutName)
 }
 
 
+/// \brief Tells if a window with a given index belongs to a given window layout.
+/// The index can go from 0 to 3 and these values mean the axial, sagittal, coronal
+/// or 3D windows, in this order. If the index is outside of the range, false is returned.
+inline bool IsWindowVisibleInLayout(int windowIndex, WindowLayout windowLayout)
+{
+  return
+      windowIndex == 0 ?
+          windowLayout == WINDOW_LAYOUT_AXIAL
+          || windowLayout == WINDOW_LAYOUT_3H
+          || windowLayout == WINDOW_LAYOUT_3V
+          || windowLayout == WINDOW_LAYOUT_ORTHO
+          || windowLayout == WINDOW_LAYOUT_ORTHO_NO_3D
+          || windowLayout == WINDOW_LAYOUT_COR_AX_H
+          || windowLayout == WINDOW_LAYOUT_COR_AX_V
+          || windowLayout == WINDOW_LAYOUT_SAG_AX_H
+          || windowLayout == WINDOW_LAYOUT_SAG_AX_V
+      : windowIndex == 1 ?
+          windowLayout == WINDOW_LAYOUT_SAGITTAL
+          || windowLayout == WINDOW_LAYOUT_3H
+          || windowLayout == WINDOW_LAYOUT_3V
+          || windowLayout == WINDOW_LAYOUT_ORTHO
+          || windowLayout == WINDOW_LAYOUT_ORTHO_NO_3D
+          || windowLayout == WINDOW_LAYOUT_COR_SAG_H
+          || windowLayout == WINDOW_LAYOUT_COR_SAG_V
+          || windowLayout == WINDOW_LAYOUT_SAG_AX_H
+          || windowLayout == WINDOW_LAYOUT_SAG_AX_V
+      : windowIndex == 2 ?
+          windowLayout == WINDOW_LAYOUT_CORONAL
+          || windowLayout == WINDOW_LAYOUT_3H
+          || windowLayout == WINDOW_LAYOUT_3V
+          || windowLayout == WINDOW_LAYOUT_ORTHO
+          || windowLayout == WINDOW_LAYOUT_ORTHO_NO_3D
+          || windowLayout == WINDOW_LAYOUT_COR_SAG_H
+          || windowLayout == WINDOW_LAYOUT_COR_SAG_V
+          || windowLayout == WINDOW_LAYOUT_COR_AX_H
+          || windowLayout == WINDOW_LAYOUT_COR_AX_V
+      : windowIndex == 3 ?
+          windowLayout == WINDOW_LAYOUT_3D
+          || windowLayout == WINDOW_LAYOUT_ORTHO
+      : false;
+}
+
+
 /// \enum DnDDisplayDropType
 /// \brief Describes the different modes that can be used when drag and dropping
 /// into the DnD Display window.
