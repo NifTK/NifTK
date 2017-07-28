@@ -1,7 +1,28 @@
 <statemachine>
   <state name="start" startstate="true">
-    <transition event_class="InteractionPositionEvent" event_variant="AddPointClick" target="start">
+    <transition event_class="MousePressEvent" event_variant="StartAddingPoint" target="addingPoint">
+      <action name="lock"/>
+      <!-- After 'addPoint' the new point will be selected. You can move it while keeping the mouse button pressed. -->
       <action name="addpoint"/>
+      <action name="initMove"/>
     </transition>
   </state>
+
+  <state name="selected">
+    <transition event_class="MouseMoveEvent" event_variant="MovingAround" target="start">
+      <condition name="isoverpoint" inverted="true"/>
+      <action name="unselectAll"/>
+    </transition>
+  </state>
+
+  <state name="addingPoint">
+    <transition event_class="MouseMoveEvent" event_variant="KeepAddingPoint" target="addingPoint">
+      <action name="movePoint"/>
+    </transition>
+    <transition event_class="MouseReleaseEvent" event_variant="StopAddingPoint" target="selected">
+      <action name="finishMovement"/>
+      <action name="unlock"/>
+    </transition>
+  </state>
+
 </statemachine>

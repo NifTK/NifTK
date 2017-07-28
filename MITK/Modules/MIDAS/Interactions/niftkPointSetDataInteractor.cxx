@@ -21,6 +21,8 @@
 #include <mitkPositionEvent.h>
 #include <mitkRenderingManager.h>
 
+#include <niftkInteractionEventObserverMutex.h>
+
 namespace niftk
 {
 
@@ -41,9 +43,28 @@ PointSetDataInteractor::~PointSetDataInteractor()
 
 
 //-----------------------------------------------------------------------------
+void PointSetDataInteractor::Notify(mitk::InteractionEvent* interactionEvent, bool isHandled)
+{
+  if (!isHandled)
+  {
+    this->HandleEvent(interactionEvent, nullptr);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
 bool PointSetDataInteractor::FilterEvents(mitk::InteractionEvent* event, mitk::DataNode* dataNode)
 {
   return FilteringStateMachine::CanHandleEvent(event);
+}
+
+
+void PointSetDataInteractor::ConnectActionsAndFunctions()
+{
+  Superclass::ConnectActionsAndFunctions();
+
+  CONNECT_FUNCTION("lock", Lock);
+  CONNECT_FUNCTION("unlock", Unlock);
 }
 
 
@@ -118,6 +139,22 @@ bool PointSetDataInteractor::ExecuteAction(mitk::StateMachineAction* action, mit
   }
 
   return Superclass::ExecuteAction(action, event);
+}
+
+
+//-----------------------------------------------------------------------------
+bool PointSetDataInteractor::Lock(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*event*/)
+{
+  InteractionEventObserverMutex::GetInstance()->Lock(this);
+  return true;
+}
+
+
+//-----------------------------------------------------------------------------
+bool PointSetDataInteractor::Unlock(mitk::StateMachineAction* /*action*/, mitk::InteractionEvent* /*event*/)
+{
+  InteractionEventObserverMutex::GetInstance()->Unlock(this);
+  return true;
 }
 
 }

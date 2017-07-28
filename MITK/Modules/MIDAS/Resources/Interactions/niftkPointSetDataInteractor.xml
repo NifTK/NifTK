@@ -1,35 +1,92 @@
 <statemachine>
   <state name="start" startstate="true">
-    <transition event_class="InteractionPositionEvent" event_variant="AddPointClick" target="start">
-       <action name="addpoint"/>
-    </transition>
-    <transition event_class="MouseMoveEvent" event_variant="CheckSelected" target="selected">
+    <transition event_class="MouseMoveEvent" event_variant="MovingAround" target="selected">
       <condition name="isoverpoint"/>
       <action name="selectpoint"/>
     </transition>
-    <transition event_class="InteractionKeyEvent" event_variant="Abort" target="start">
-      <action name="abort"/>
+    <transition event_class="MouseMoveEvent" event_variant="MovingAroundWithShift" target="selected">
+      <condition name="isoverpoint"/>
+      <action name="selectpoint"/>
+    </transition>
+    <transition event_class="MousePressEvent" event_variant="StartAddingPoint" target="addingPoint">
+      <action name="lock"/>
+      <!-- After 'addPoint' the new point will be selected. You can move it while keeping the mouse button pressed. -->
+      <action name="addpoint"/>
+      <action name="initMove"/>
+    </transition>
+    <transition event_class="MousePressEvent" event_variant="StartRemovingPoints" target="removingPoints">
+      <action name="lock"/>
+    </transition>
+    <transition event_class="MousePressEvent" event_variant="StartRemovingPointsWithShift" target="removingPoints">
+      <action name="lock"/>
     </transition>
   </state>
+
   <state name="selected">
-    <transition event_class="MouseMoveEvent" event_variant="CheckSelected" target="start">
+    <transition event_class="MouseMoveEvent" event_variant="MovingAround" target="start">
       <condition name="isoverpoint" inverted="true"/>
       <action name="unselectAll"/>
     </transition>
-    <transition event_class="MousePressEvent" event_variant="DeletePoint" target="start">
-      <action name="removePoint"/>
+    <transition event_class="MouseMoveEvent" event_variant="MovingAroundWithShift" target="start">
+      <condition name="isoverpoint" inverted="true"/>
       <action name="unselectAll"/>
     </transition>
-    <transition event_class="MousePressEvent" event_variant="StartMove" target="MovementInitalized">
+    <transition event_class="MousePressEvent" event_variant="StartMovingPoint" target="movingPoint">
+      <action name="lock"/>
       <action name="initMove"/>
     </transition>
+    <transition event_class="MousePressEvent" event_variant="StartRemovingPoints" target="removingPoints">
+      <action name="lock"/>
+      <action name="removePoint"/>
+      <!-- After 'removePoint' the selection falls back to another point, but we do not want that. -->
+      <action name="unselectAll"/>
+    </transition>
+    <transition event_class="MousePressEvent" event_variant="StartRemovingPointsWithShift" target="removingPoints">
+      <action name="lock"/>
+      <action name="removePoint"/>
+      <!-- After 'removePoint' the selection falls back to another point, but we do not want that. -->
+      <action name="unselectAll"/>
+    </transition>
   </state>
-  <state name="MovementInitalized">
-    <transition event_class="MouseMoveEvent" event_variant="PointMove" target="MovementInitalized">
+
+  <state name="addingPoint">
+    <transition event_class="MouseMoveEvent" event_variant="KeepAddingPoint" target="addingPoint">
       <action name="movePoint"/>
     </transition>
-    <transition event_class="MouseReleaseEvent" event_variant="EndMovement" target="selected">
+    <transition event_class="MouseReleaseEvent" event_variant="StopAddingPoint" target="selected">
       <action name="finishMovement"/>
+      <action name="unlock"/>
+    </transition>
+  </state>
+
+  <state name="movingPoint">
+    <transition event_class="MouseMoveEvent" event_variant="KeepMovingPoint" target="movingPoint">
+      <action name="movePoint"/>
+    </transition>
+    <transition event_class="MouseReleaseEvent" event_variant="StopMovingPoint" target="selected">
+      <action name="finishMovement"/>
+      <action name="unlock"/>
+    </transition>
+  </state>
+
+  <state name="removingPoints">
+    <transition event_class="MouseMoveEvent" event_variant="KeepRemovingPoints" target="removingPoints">
+      <condition name="isoverpoint"/>
+      <action name="removePoint"/>
+      <!-- After 'removePoint' the selection falls back to another point, but we do not want that. -->
+      <action name="unselectAll"/>
+    </transition>
+    <transition event_class="MouseMoveEvent" event_variant="KeepRemovingPointsWithShift" target="removingPoints">
+      <condition name="isoverpoint"/>
+      <action name="removePoint"/>
+      <!-- After 'removePoint' the selection falls back to another point, but we do not want that. -->
+      <action name="unselectAll"/>
+    </transition>
+    <transition event_class="InteractionPositionEvent" event_variant="StopRemovingPoints" target="start">
+      <action name="unlock"/>
+    </transition>
+    <transition event_class="MouseReleaseEvent" event_variant="StopRemovingPointsWithShift" target="start">
+      <action name="unlock"/>
     </transition>
   </state>
 </statemachine>
