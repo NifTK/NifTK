@@ -314,7 +314,7 @@ void IGIVideoOverlayEditor::OnPreferencesChanged(const berry::IBerryPreferences*
   // Enable change of logo. If no DepartmentLogo was set explicitly, MBILogo is used.
   // Set new department logo by prefs->Set("DepartmentLogo", "PathToImage");
 
-  foreach (QString key, prefs->Keys())
+  for (QString key: prefs->Keys())
   {
     if( key == "DepartmentLogo")
     {

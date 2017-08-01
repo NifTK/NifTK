@@ -77,7 +77,7 @@ private:
       /// We need to look for the focused window among every window of the editor.
       /// The MITK Display has not got the concept of 'selected' window and always
       /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
-      foreach (QmitkRenderWindow* mainWindow, renderWindowPart->GetQmitkRenderWindows().values())
+      for (QmitkRenderWindow* mainWindow: renderWindowPart->GetQmitkRenderWindows().values())
       {
         if (focusedRenderer == mainWindow->GetRenderer())
         {
@@ -224,7 +224,7 @@ SideViewerWidget::SideViewerWidget(BaseView* view, QWidget* parent, mitk::Render
     /// We need to look for the focused window among every window of the editor.
     /// The MITK Display has not got the concept of 'selected' window and always
     /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
-    foreach (QmitkRenderWindow* mainWindow, selectedEditor->GetQmitkRenderWindows().values())
+    for (QmitkRenderWindow* mainWindow: selectedEditor->GetQmitkRenderWindows().values())
     {
       if (focusedRenderer == mainWindow->GetRenderer())
       {
@@ -615,7 +615,7 @@ void SideViewerWidget::OnFocusChanged()
     /// We need to look for the focused window among every window of the editor.
     /// The MITK Display has not got the concept of 'selected' window and always
     /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
-    foreach (QmitkRenderWindow* mainWindow, selectedEditor->GetQmitkRenderWindows().values())
+    for (QmitkRenderWindow* mainWindow: selectedEditor->GetQmitkRenderWindows().values())
     {
       if (focusedRenderer == mainWindow->GetRenderer())
       {
@@ -874,7 +874,7 @@ mitk::IRenderWindowPart* SideViewerWidget::GetSelectedEditor()
   if (!renderWindowPart)
   {
     // No suitable active editor found, check visible editors
-    foreach (berry::IEditorReference::Pointer editor, page->GetEditorReferences())
+    for (berry::IEditorReference::Pointer editor: page->GetEditorReferences())
     {
       berry::IWorkbenchPart::Pointer part = editor->GetPart(false);
       if (page->IsPartVisible(part))

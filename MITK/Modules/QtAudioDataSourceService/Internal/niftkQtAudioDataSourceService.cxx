@@ -70,7 +70,7 @@ QtAudioDataSourceService::QtAudioDataSourceService(
   QAudioDeviceInfo audioDeviceInfo;
 
   QList<QAudioDeviceInfo> allDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
-  foreach(QAudioDeviceInfo d, allDevices)
+  for (QAudioDeviceInfo d: allDevices)
   {
     if (d.deviceName() == audioDeviceName)
     {

@@ -38,7 +38,7 @@ QtAudioDataDialog::QtAudioDataDialog(QWidget *parent)
   QAudioDeviceInfo  defaultDevice = QAudioDeviceInfo::defaultInputDevice();
 
   QList<QAudioDeviceInfo> allDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
-  foreach(QAudioDeviceInfo d, allDevices)
+  for (QAudioDeviceInfo d: allDevices)
   {
     m_DeviceComboBox->addItem(d.deviceName());
   }
@@ -80,17 +80,17 @@ void QtAudioDataDialog::Update()
 
   QAudioDeviceInfo selectedDevice;
   QList<QAudioDeviceInfo> allDevices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
-  foreach(QAudioDeviceInfo d, allDevices)
+  for (QAudioDeviceInfo d: allDevices)
   {
     if (d.deviceName() == m_DeviceComboBox->currentText())
     {
       selectedDevice = d;
       QList<int> channelCounts = d.supportedChannelCounts();
-      foreach(int c, channelCounts)
+      for (int c: channelCounts)
       {
         QList<int> sampleRates = d.supportedSampleRates();
         qSort(sampleRates);
-        foreach(int r, sampleRates)
+        for (int r: sampleRates)
         {
           QList<int> sampleSizes = d.supportedSampleSizes();
           qSort(sampleSizes);
@@ -102,7 +102,7 @@ void QtAudioDataDialog::Update()
 
             // FIXME: we should probably restrict the codec to pcm, in general.
             QStringList codecs = d.supportedCodecs();
-            foreach(QString m, codecs)
+            for (QString m: codecs)
             {
               QAudioFormat f;
               f.setChannelCount(c);

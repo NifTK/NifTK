@@ -31,7 +31,7 @@ QtCameraDialog::QtCameraDialog(QWidget *parent)
   m_CameraNameComboBox->clear();
 
   QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-  foreach (const QCameraInfo &cameraInfo, cameras)
+  for (const QCameraInfo &cameraInfo: cameras)
   {
     m_CameraNameComboBox->addItem(cameraInfo.description(), QVariant::fromValue(cameraInfo.deviceName()));
   }

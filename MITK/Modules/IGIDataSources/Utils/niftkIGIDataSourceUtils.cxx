@@ -54,7 +54,7 @@ void ProbeTimeStampFiles(QDir path,
   QStringList files = path.entryList();
   if (!files.empty())
   {
-    foreach (QString file, files)
+    for (QString file: files)
     {
       if (file.length() >= 19 + suffix.length())
       {
@@ -96,7 +96,7 @@ void GetPlaybackIndex(const QString& directory,
 
     if (!bufferLevelNames.isEmpty())
     {
-      foreach (QString bufferLevelName, bufferLevelNames)
+      for (QString bufferLevelName: bufferLevelNames)
       {
         QDir  bufferLevelDir(recordingDir.path() + QDir::separator() + bufferLevelName);
         assert(bufferLevelDir.exists());

@@ -118,7 +118,7 @@ private:
       /// We need to look for the focused window among every window of the editor.
       /// The MITK Display has not got the concept of 'selected' window and always
       /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
-      foreach (QmitkRenderWindow* mainWindow, renderWindowPart->GetQmitkRenderWindows().values())
+      for (QmitkRenderWindow* mainWindow: renderWindowPart->GetQmitkRenderWindows().values())
       {
         if (focusedRenderer == mainWindow->GetRenderer())
         {
@@ -151,7 +151,7 @@ private:
       /// We need to look for the tracked window among every window of the editor.
       /// The MITK Display has not got the concept of 'selected' window and always
       /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
-      foreach (QmitkRenderWindow* mainWindow, renderWindowPart->GetQmitkRenderWindows().values())
+      for (QmitkRenderWindow* mainWindow: renderWindowPart->GetQmitkRenderWindows().values())
       {
         if (mainWindow->GetRenderer() == trackedRenderer)
         {
@@ -235,7 +235,7 @@ void ThumbnailView::CreateQtPartControl(QWidget* parent)
       /// We need to look for the focused window among every window of the editor.
       /// The MITK Display has not got the concept of 'selected' window and always
       /// returns the axial window as 'active'. Therefore we cannot use GetActiveQmitkRenderWindow.
-      foreach (QmitkRenderWindow* mainWindow, selectedEditor->GetQmitkRenderWindows().values())
+      for (QmitkRenderWindow* mainWindow: selectedEditor->GetQmitkRenderWindows().values())
       {
         if (focusedRenderer == mainWindow->GetRenderer())
         {
@@ -357,7 +357,7 @@ void ThumbnailView::OnFocusChanged()
     /// enough to check if the focused renderer is that of the active window, but we have
     /// to go through all the renderers to check if the focused renderer is among them.
     bool found = false;
-    foreach (QmitkRenderWindow* mainWindow, renderWindowPart->GetQmitkRenderWindows().values())
+    for (QmitkRenderWindow* mainWindow: renderWindowPart->GetQmitkRenderWindows().values())
     {
       if (mainWindow->GetRenderer() == focusedRenderer)
       {
@@ -401,7 +401,7 @@ mitk::IRenderWindowPart* ThumbnailView::GetSelectedEditor()
   if (!renderWindowPart)
   {
     // No suitable active editor found, check visible editors
-    foreach (berry::IEditorReference::Pointer editor, page->GetEditorReferences())
+    for (berry::IEditorReference::Pointer editor: page->GetEditorReferences())
     {
       berry::IWorkbenchPart::Pointer part = editor->GetPart(false);
       if (page->IsPartVisible(part))

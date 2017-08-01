@@ -282,7 +282,7 @@ void XnatBrowserWidget::importFiles()
     //  mitk::FileReader::Pointer fileReader = mitk::FileReader::New();
     // determine reader type based on first file. For now, we are relying
     // on the user to avoid mixing file types.
-    foreach (QString filename, files)
+    for (QString filename: files)
     {
       nodeFactory->SetFileName(filename.toStdString());
       nodeFactory->Update();
@@ -301,7 +301,7 @@ void XnatBrowserWidget::collectImageFiles(const QDir& tempWorkDirectory, QString
 {
   QFileInfoList files = tempWorkDirectory.entryInfoList(QDir::AllEntries | QDir::NoDotAndDotDot, QDir::Name);
   bool first = true;
-  foreach (QFileInfo file, files)
+  for (QFileInfo file: files)
   {
     if (file.isDir())
     {

@@ -103,7 +103,7 @@ std::vector<mitk::DataNode*> DataStorageCheckableComboBox::GetSelectedNodes() co
 
   QModelIndexList indexes = this->checkedIndexes();
 
-  foreach (QModelIndex item, indexes)
+  for (QModelIndex item: indexes)
   {
     mitk::DataNode* node = this->GetNode(item.row());
     if (node != NULL)
