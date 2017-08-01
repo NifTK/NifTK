@@ -15,7 +15,7 @@
 #include "niftkBlackMagicDataSourceFactory.h"
 #include "niftkBlackMagicDataSourceService.h"
 #include <niftkLagDialog.h>
-#include <niftkIPHostPortDialog.h>
+#include <niftkIPHostPortExtensionDialog.h>
 
 namespace niftk
 {
@@ -56,7 +56,22 @@ IGIInitialisationDialog* BlackMagicDataSourceFactory::CreateInitialisationDialog
 {
   // Return a dialog box to configure things at startup.
   // This one here is provided as an example only.
-  return new niftk::IPHostPortDialog(parent);
+  QStringList names;
+  names.append("JPEG");
+  names.append("PNG");
+
+  QStringList extensions;
+  extensions.append(".jpg");
+  extensions.append(".png");
+
+  QString settings("uk.ac.ucl.cmic.niftkBlackMagicDataSourceFactory.IPHostPortExtensionDialog");
+
+  niftk::IPHostPortExtensionDialog* dialog = new niftk::IPHostPortExtensionDialog(parent, settings, names, extensions);
+  dialog->SetHostVisible(false);
+  dialog->SetPortVisible(true);
+  dialog->SetExtensionVisible(true);
+
+  return dialog;
 }
 
 

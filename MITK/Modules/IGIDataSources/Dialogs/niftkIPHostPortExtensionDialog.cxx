@@ -13,22 +13,44 @@
 =============================================================================*/
 
 #include "niftkIPHostPortExtensionDialog.h"
-
+#include <QSettings>
 #include <cassert>
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-IPHostPortExtensionDialog::IPHostPortExtensionDialog(QWidget *parent)
-:IGIInitialisationDialog(parent)
+IPHostPortExtensionDialog::IPHostPortExtensionDialog(QWidget *parent,
+                                                     const QString& settingsName,
+                                                     const QStringList& extensionNames,
+                                                     const QStringList& extensionsWithDots
+                                                     )
+: IGIInitialisationDialog(parent)
+, m_SettingsName(settingsName)
 {
   setupUi(this);
-  m_HostName->setText("localhost");
+  assert(extensionNames.size() > 0);
+  assert(extensionNames.size() == extensionsWithDots.size());
+
+  for (int i = 0; i < extensionNames.size(); i++)
+  {
+    m_FileExtensionComboBox->addItem(extensionNames[i], QVariant::fromValue(extensionsWithDots[i]));
+  }
   m_FileExtensionComboBox->setCurrentIndex(0);
 
   bool ok = QObject::connect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
+
+  QSettings settings;
+  settings.beginGroup(m_SettingsName);
+  m_HostName->setText(settings.value("host", "localhost").toString());
+  int position = m_FileExtensionComboBox->findData(QVariant(settings.value("extension", ".jpg")));
+  if (position != -1)
+  {
+    m_FileExtensionComboBox->setCurrentIndex(position);
+  }
+  m_PortNumber->setValue((settings.value("port", QVariant::fromValue(3200))).toInt());
+  settings.endGroup();
 }
 
 
@@ -37,13 +59,6 @@ IPHostPortExtensionDialog::~IPHostPortExtensionDialog()
 {
   bool ok = QObject::disconnect(m_DialogButtons, SIGNAL(accepted()), this, SLOT(OnOKClicked()));
   assert(ok);
-}
-
-
-//-----------------------------------------------------------------------------
-void IPHostPortExtensionDialog::AddFileExtension(const QString& name, const QString& extensionWithDot)
-{
-  m_FileExtensionComboBox->addItem(name, QVariant::fromValue(extensionWithDot));
 }
 
 
@@ -80,6 +95,14 @@ void IPHostPortExtensionDialog::OnOKClicked()
   props.insert("extension", QVariant::fromValue(m_FileExtensionComboBox->itemData(
                                                 m_FileExtensionComboBox->currentIndex())));
   m_Properties = props;
+
+  QSettings settings;
+  settings.beginGroup(m_SettingsName);
+  settings.setValue("host", m_HostName->text());
+  settings.setValue("port", m_PortNumber->value());
+  settings.setValue("extension", m_FileExtensionComboBox->itemData(
+                                 m_FileExtensionComboBox->currentIndex()));
+  settings.endGroup();
 }
 
 } // end namespace

@@ -18,6 +18,7 @@
 #include <niftkIGIDataSourcesExports.h>
 #include "niftkIGIInitialisationDialog.h"
 #include <ui_niftkIPHostPortExtensionDialog.h>
+#include <QStringList>
 
 namespace niftk
 {
@@ -30,18 +31,24 @@ class NIFTKIGIDATASOURCES_EXPORT IPHostPortExtensionDialog : public IGIInitialis
 
 public:
 
-  IPHostPortExtensionDialog(QWidget *parent);
+  IPHostPortExtensionDialog(QWidget *parent,
+                            const QString& settingsName,
+                            const QStringList& extensionNames,
+                            const QStringList& extensionsWithDots);
+
   ~IPHostPortExtensionDialog();
 
   void SetHostVisible(const bool& isVisible);
   void SetPortVisible(const bool& isVisible);
   void SetExtensionVisible(const bool& isVisible);
-  void AddFileExtension(const QString& name, const QString& extensionWithDot);
 
 private slots:
 
   void OnOKClicked();
 
+private:
+
+  QString m_SettingsName;
 };
 
 } // end namespace

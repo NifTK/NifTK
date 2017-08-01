@@ -15,7 +15,7 @@
 #include "niftkBKMedicalDataSourceFactory.h"
 #include "niftkBKMedicalDataSourceService.h"
 #include <niftkLagDialog.h>
-#include <niftkIPHostExtensionDialog.h>
+#include <niftkIPHostPortExtensionDialog.h>
 
 namespace niftk
 {
@@ -54,8 +54,22 @@ IGIDataSourceI::Pointer BKMedicalDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* BKMedicalDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  return new niftk::IPHostExtensionDialog(parent,
-                                          "uk.ac.ucl.cmic.niftkBKMedicalDataSourceService.IPHostExtensionDialog");
+  QStringList names;
+  names.append("JPEG");
+  names.append("PNG");
+
+  QStringList extensions;
+  extensions.append(".jpg");
+  extensions.append(".png");
+
+  QString settings("uk.ac.ucl.cmic.niftkBKMedicalDataSourceFactory.IPHostPortExtensionDialog");
+
+  niftk::IPHostPortExtensionDialog* dialog = new niftk::IPHostPortExtensionDialog(parent, settings, names, extensions);
+  dialog->SetHostVisible(false);
+  dialog->SetPortVisible(true);
+  dialog->SetExtensionVisible(true);
+
+  return dialog;
 }
 
 
