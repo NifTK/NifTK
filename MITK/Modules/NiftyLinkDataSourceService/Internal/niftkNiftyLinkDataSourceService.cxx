@@ -393,6 +393,10 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataSourceI::IGITimeT
           msg->SetOrigin(0, 0, 0);
           msg->SetSpacing(1, 1, 1);
 
+          igtl::Matrix4x4 mat;
+          igtl::IdentityMatrix(mat);
+          msg->SetMatrix(mat);
+
           delete image;
         }
 
