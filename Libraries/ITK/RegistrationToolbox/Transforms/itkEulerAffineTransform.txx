@@ -745,6 +745,8 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
     return isFileLoaded;
   }
 
+  this->InvertTransformationMatrix();
+
   if (InputSpaceDimension == 3)
   {
     this->m_Matrix[0][2] = -this->m_Matrix[0][2];
