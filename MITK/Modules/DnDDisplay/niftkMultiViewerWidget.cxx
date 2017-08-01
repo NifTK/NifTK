@@ -229,6 +229,7 @@ SingleViewerWidget* MultiViewerWidget::CreateViewer(const QString& name)
   viewer->setObjectName(name);
   viewer->setVisible(false);
 
+  viewer->SetDisplayConvention(m_DisplayConvention);
   viewer->SetBackgroundColour(m_BackgroundColour);
   viewer->SetRememberSettingsPerWindowLayout(m_RememberSettingsPerWindowLayout);
   viewer->SetDisplayInteractionsEnabled(true);
