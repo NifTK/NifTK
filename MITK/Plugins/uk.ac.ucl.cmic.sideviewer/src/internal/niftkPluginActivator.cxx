@@ -22,7 +22,7 @@
 namespace niftk
 {
 
-PluginActivator* PluginActivator::s_Instance = 0;
+PluginActivator* PluginActivator::s_Instance = nullptr;
 
 //-----------------------------------------------------------------------------
 PluginActivator::PluginActivator()

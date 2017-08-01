@@ -35,30 +35,22 @@ namespace niftk
 
 //-----------------------------------------------------------------------------
 SingleViewerWidget::SingleViewerWidget(QWidget* parent, mitk::RenderingManager* renderingManager, const QString& name)
-: QWidget(parent)
-, m_DisplayConvention(DISPLAY_CONVENTION_RADIO)
-, m_GridLayout(NULL)
-, m_MultiWidget(NULL)
-, m_IsBoundTimeGeometryActive(false)
-, m_TimeGeometry(NULL)
-, m_BoundTimeGeometry(NULL)
-, m_MinimumMagnification(-5.0)
-, m_MaximumMagnification(20.0)
-, m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
-, m_GeometryInitialised(false)
-, m_RememberSettingsPerWindowLayout(false)
-, m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL)
-, m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO)
+: QWidget(parent),
+  m_RenderingManager(renderingManager ? renderingManager : mitk::RenderingManager::GetInstance()),
+  m_DisplayConvention(DISPLAY_CONVENTION_RADIO),
+  m_GridLayout(nullptr),
+  m_MultiWidget(nullptr),
+  m_IsBoundTimeGeometryActive(false),
+  m_TimeGeometry(nullptr),
+  m_BoundTimeGeometry(nullptr),
+  m_MinimumMagnification(-5.0),
+  m_MaximumMagnification(20.0),
+  m_WindowLayout(WINDOW_LAYOUT_UNKNOWN),
+  m_GeometryInitialised(false),
+  m_RememberSettingsPerWindowLayout(false),
+  m_SingleWindowLayout(WINDOW_LAYOUT_CORONAL),
+  m_MultiWindowLayout(WINDOW_LAYOUT_ORTHO_NO_3D)
 {
-  if (renderingManager == NULL)
-  {
-    m_RenderingManager = mitk::RenderingManager::GetInstance();
-  }
-  else
-  {
-    m_RenderingManager = renderingManager;
-  }
-
   this->setAcceptDrops(true);
 
   for (int windowLayoutIndex = 0; windowLayoutIndex < WINDOW_LAYOUT_NUMBER * 2; windowLayoutIndex++)
@@ -67,7 +59,7 @@ SingleViewerWidget::SingleViewerWidget(QWidget* parent, mitk::RenderingManager* 
   }
 
   // Create the main MultiWindowWidget
-  m_MultiWidget = new MultiWindowWidget(this, NULL, m_RenderingManager, mitk::BaseRenderer::RenderingMode::Standard, name);
+  m_MultiWidget = new MultiWindowWidget(this, nullptr, m_RenderingManager, mitk::BaseRenderer::RenderingMode::Standard, name);
   m_MultiWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 

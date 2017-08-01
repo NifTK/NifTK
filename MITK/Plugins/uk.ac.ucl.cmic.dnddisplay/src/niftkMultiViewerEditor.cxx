@@ -200,13 +200,13 @@ const QString DATAMANAGERVIEW_ID;
 
 //-----------------------------------------------------------------------------
 MultiViewerEditorPrivate::MultiViewerEditorPrivate(MultiViewerEditor* q)
-: q(q)
-, m_MultiViewer(0)
-, m_RenderingManager(0)
-, m_PartListener(new MultiViewerEditorPartListener(this))
-, m_RenderingManagerInterface(0)
-, m_DataNodeItemModel(new QStandardItemModel(q))
-, m_DataNodeSelectionModel(new QItemSelectionModel(m_DataNodeItemModel))
+: q(q),
+  m_MultiViewer(nullptr),
+  m_RenderingManager(nullptr),
+  m_PartListener(new MultiViewerEditorPartListener(this)),
+  m_RenderingManagerInterface(nullptr),
+  m_DataNodeItemModel(new QStandardItemModel(q)),
+  m_DataNodeSelectionModel(new QItemSelectionModel(m_DataNodeItemModel))
 {
   /// Note:
   /// The DnD Display should use its own rendering manager, not the global one
@@ -231,7 +231,7 @@ MultiViewerEditorPrivate::MultiViewerEditorPrivate(MultiViewerEditor* q)
 //-----------------------------------------------------------------------------
 MultiViewerEditorPrivate::~MultiViewerEditorPrivate()
 {
-  if (m_RenderingManagerInterface != NULL)
+  if (m_RenderingManagerInterface)
   {
     delete m_RenderingManagerInterface;
   }
@@ -245,7 +245,7 @@ MultiViewerEditorPrivate::~MultiViewerEditorPrivate()
 void MultiViewerEditorPrivate::DisallowReinit()
 {
   berry::IPreferencesService* prefService = berry::Platform::GetPreferencesService();
-  if (prefService != nullptr)
+  if (prefService)
   {
     /// Disable global reinit after a node is added or removed.
     berry::IPreferences::Pointer prefs = prefService->GetSystemPreferences()->Node(s_DATAMANAGER_VIEW_ID);
@@ -1058,7 +1058,7 @@ MultiViewerEditor::~MultiViewerEditor()
 //-----------------------------------------------------------------------------
 void MultiViewerEditor::CreateQtPartControl(QWidget* parent)
 {
-  if (d->m_MultiViewer == NULL)
+  if (d->m_MultiViewer == nullptr)
   {
     mitk::DataStorage::Pointer dataStorage = this->GetDataStorage();
     assert(dataStorage);
@@ -1182,7 +1182,7 @@ MultiViewerWidget* MultiViewerEditor::GetMultiViewer()
 //-----------------------------------------------------------------------------
 void MultiViewerEditor::SetFocus()
 {
-  if (d->m_MultiViewer != 0)
+  if (d->m_MultiViewer)
   {
     d->m_MultiViewer->SetFocused();
   }
@@ -1192,7 +1192,7 @@ void MultiViewerEditor::SetFocus()
 //-----------------------------------------------------------------------------
 void MultiViewerEditor::OnPreferencesChanged( const berry::IBerryPreferences* prefs )
 {
-  if (d->m_MultiViewer != NULL)
+  if (d->m_MultiViewer)
   {
     QString backgroundColourName = prefs->Get(DnDDisplayPreferencePage::DNDDISPLAY_BACKGROUND_COLOUR, "black");
     QColor backgroundColour(backgroundColourName);
@@ -1298,7 +1298,7 @@ mitk::IRenderingManager* MultiViewerEditor::GetRenderingManager() const
 mitk::SlicesRotator* MultiViewerEditor::GetSlicesRotator() const
 {
   // Deliberately return nothing. ToDo - maybe get MultiViewerWidget to support it.
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1306,7 +1306,7 @@ mitk::SlicesRotator* MultiViewerEditor::GetSlicesRotator() const
 mitk::SlicesSwiveller* MultiViewerEditor::GetSlicesSwiveller() const
 {
   // Deliberately return nothing. ToDo - maybe get MultiViewerWidget to support it.
-  return NULL;
+  return nullptr;
 }
 
 

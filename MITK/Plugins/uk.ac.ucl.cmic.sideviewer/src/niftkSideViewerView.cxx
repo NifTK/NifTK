@@ -59,9 +59,9 @@ bool SideViewerViewPrivate::s_OptionsProcessed = false;
 
 //-----------------------------------------------------------------------------
 SideViewerViewPrivate::SideViewerViewPrivate(SideViewerView* q)
-: q_ptr(q)
-, m_RenderingManager(nullptr)
-, m_SideViewerWidget(nullptr)
+: q_ptr(q),
+  m_RenderingManager(nullptr),
+  m_SideViewerWidget(nullptr)
 {
 }
 

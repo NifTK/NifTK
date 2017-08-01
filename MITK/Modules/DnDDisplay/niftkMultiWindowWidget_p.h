@@ -470,9 +470,6 @@ private:
   /// are synchronised to that.
   void SynchroniseCursorPositions(int windowIndex);
 
-  /// \brief Method to update the visibility property of all nodes in 3D window.
-  void Update3DWindowVisibility();
-
   /// \brief Adds a display geometry observer to the render window. Used to synchronise panning and zooming.
   void AddDisplayGeometryModificationObserver(int windowIndex);
 

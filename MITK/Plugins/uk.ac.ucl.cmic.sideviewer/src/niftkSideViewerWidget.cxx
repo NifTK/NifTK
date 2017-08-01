@@ -105,27 +105,27 @@ private:
 
 //-----------------------------------------------------------------------------
 SideViewerWidget::SideViewerWidget(BaseView* view, QWidget* parent, mitk::RenderingManager* renderingManager)
-: QWidget(parent)
-, m_ContainingView(view)
-, m_FocusManagerObserverTag(0)
-, m_WindowLayout(WINDOW_LAYOUT_UNKNOWN)
-, m_MainRenderingManager(0)
-, m_MainWindow(0)
-, m_MainAxialWindow(0)
-, m_MainSagittalWindow(0)
-, m_MainCoronalWindow(0)
-, m_MainWindowSnc(0)
-, m_MainAxialSnc(0)
-, m_MainSagittalSnc(0)
-, m_MainCoronalSnc(0)
-, m_VisibilityTracker(0)
-, m_Magnification(0.0)
-, m_MainWindowOrientation(WINDOW_ORIENTATION_UNKNOWN)
-, m_SingleWindowLayouts()
-, m_ToolNodeNameFilter(0)
-, m_TimeGeometry(0)
-, m_EditorLifeCycleListener(new EditorLifeCycleListener(this))
-, m_RenderingManager(renderingManager)
+: QWidget(parent),
+  m_ContainingView(view),
+  m_FocusManagerObserverTag(0),
+  m_WindowLayout(WINDOW_LAYOUT_UNKNOWN),
+  m_MainRenderingManager(nullptr),
+  m_MainWindow(nullptr),
+  m_MainAxialWindow(nullptr),
+  m_MainSagittalWindow(nullptr),
+  m_MainCoronalWindow(nullptr),
+  m_MainWindowSnc(nullptr),
+  m_MainAxialSnc(nullptr),
+  m_MainSagittalSnc(nullptr),
+  m_MainCoronalSnc(nullptr),
+  m_VisibilityTracker(nullptr),
+  m_Magnification(0.0),
+  m_MainWindowOrientation(WINDOW_ORIENTATION_UNKNOWN),
+  m_SingleWindowLayouts(),
+  m_ToolNodeNameFilter(nullptr),
+  m_TimeGeometry(nullptr),
+  m_EditorLifeCycleListener(new EditorLifeCycleListener(this)),
+  m_RenderingManager(renderingManager)
 {
   this->SetupUi(parent);
 
@@ -269,11 +269,11 @@ SideViewerWidget::~SideViewerWidget()
 {
   if (m_MainRenderingManager)
   {
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
-    m_MainRenderingManager = 0;
+    for (QmitkRenderWindow* renderWindow: m_Viewer->GetVisibleRenderWindows())
+    {
+      m_MainRenderingManager->RemoveRenderWindow(renderWindow->GetRenderWindow());
+    }
+    m_MainRenderingManager = nullptr;
   }
 
   m_ContainingView->GetSite()->GetPage()->RemovePartListener(m_EditorLifeCycleListener.data());
@@ -285,8 +285,8 @@ SideViewerWidget::~SideViewerWidget()
     focusManager->RemoveObserver(m_FocusManagerObserverTag);
   }
 
-  m_VisibilityTracker->SetTrackedRenderer(0);
-  m_VisibilityTracker = 0;
+  m_VisibilityTracker->SetTrackedRenderer(nullptr);
+  m_VisibilityTracker = nullptr;
 
   m_Viewer->SetEnabled(false);
 
@@ -406,38 +406,38 @@ void SideViewerWidget::OnAMainWindowDestroyed(QObject* mainWindow)
 {
   if (m_MainRenderingManager)
   {
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
-    m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
-    m_MainRenderingManager = 0;
+    for (QmitkRenderWindow* renderWindow: m_Viewer->GetVisibleRenderWindows())
+    {
+      m_MainRenderingManager->RemoveRenderWindow(renderWindow->GetRenderWindow());
+    }
+    m_MainRenderingManager = nullptr;
   }
 
   if (mainWindow == m_MainWindow)
   {
-    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_VisibilityTracker->SetTrackedRenderer(nullptr);
     m_Viewer->SetEnabled(false);
-    m_MainWindow = 0;
-    m_MainWindowSnc = 0;
+    m_MainWindow = nullptr;
+    m_MainWindowSnc = nullptr;
   }
 
   if (mainWindow == m_MainAxialWindow)
   {
     m_Viewer->GetAxialWindow()->GetSliceNavigationController()->Disconnect(m_MainAxialSnc);
-    m_MainAxialWindow = 0;
-    m_MainAxialSnc = 0;
+    m_MainAxialWindow = nullptr;
+    m_MainAxialSnc = nullptr;
   }
   else if (mainWindow == m_MainSagittalWindow)
   {
     m_Viewer->GetSagittalWindow()->GetSliceNavigationController()->Disconnect(m_MainSagittalSnc);
-    m_MainSagittalWindow = 0;
-    m_MainSagittalSnc = 0;
+    m_MainSagittalWindow = nullptr;
+    m_MainSagittalSnc = nullptr;
   }
   else if (mainWindow == m_MainCoronalWindow)
   {
     m_Viewer->GetCoronalWindow()->GetSliceNavigationController()->Disconnect(m_MainCoronalSnc);
-    m_MainCoronalWindow = 0;
-    m_MainCoronalSnc = 0;
+    m_MainCoronalWindow = nullptr;
+    m_MainCoronalSnc = nullptr;
   }
   else
   {
@@ -658,7 +658,7 @@ void SideViewerWidget::OnViewerWindowChanged()
     m_SliceSpinBox->setEnabled(false);
     m_SliceSpinBox->blockSignals(wasBlocked);
 
-    m_Magnification = 0;
+    m_Magnification = 0.0;
 
     wasBlocked = m_MagnificationSpinBox->blockSignals(true);
     m_MagnificationSpinBox->setValue(0.0);
@@ -676,20 +676,20 @@ void SideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderWindow
   {
     if (m_MainRenderingManager)
     {
-      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
-      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
-      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
-      m_MainRenderingManager->RemoveRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+      for (QmitkRenderWindow* renderWindow: m_Viewer->GetVisibleRenderWindows())
+      {
+        m_MainRenderingManager->RemoveRenderWindow(renderWindow->GetRenderWindow());
+      }
     }
 
     m_MainRenderingManager = mainRenderingManager;
 
     if (m_MainRenderingManager)
     {
-      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetAxialWindow()->GetRenderWindow());
-      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetSagittalWindow()->GetRenderWindow());
-      m_MainRenderingManager->AddRenderWindow(m_Viewer->GetCoronalWindow()->GetRenderWindow());
-      m_MainRenderingManager->AddRenderWindow(m_Viewer->Get3DWindow()->GetRenderWindow());
+      for (QmitkRenderWindow* renderWindow: m_Viewer->GetVisibleRenderWindows())
+      {
+        m_MainRenderingManager->AddRenderWindow(renderWindow->GetRenderWindow());
+      }
     }
   }
 
@@ -738,20 +738,20 @@ void SideViewerWidget::OnMainWindowChanged(mitk::IRenderWindowPart* renderWindow
 
   if (!mainWindow)
   {
-    m_VisibilityTracker->SetTrackedRenderer(0);
+    m_VisibilityTracker->SetTrackedRenderer(nullptr);
     m_Viewer->SetEnabled(false);
 
-    m_TimeGeometry = 0;
+    m_TimeGeometry = nullptr;
 
-    m_MainWindowSnc = 0;
+    m_MainWindowSnc = nullptr;
 
-    m_MainAxialWindow = 0;
-    m_MainSagittalWindow = 0;
-    m_MainCoronalWindow = 0;
+    m_MainAxialWindow = nullptr;
+    m_MainSagittalWindow = nullptr;
+    m_MainCoronalWindow = nullptr;
 
-    m_MainAxialSnc = 0;
-    m_MainSagittalSnc = 0;
-    m_MainCoronalSnc = 0;
+    m_MainAxialSnc = nullptr;
+    m_MainSagittalSnc = nullptr;
+    m_MainCoronalSnc = nullptr;
 
     m_MainWindowOrientation = WINDOW_ORIENTATION_UNKNOWN;
 
@@ -920,6 +920,23 @@ void SideViewerWidget::OnScaleFactorChanged(WindowOrientation orientation, doubl
 //-----------------------------------------------------------------------------
 void SideViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
 {
+  std::vector<QmitkRenderWindow*> renderWindows = m_Viewer->GetRenderWindows();
+  assert(renderWindows.size() == 4);
+  for (int i = 0; i < 4; ++i)
+  {
+    bool windowWasShown = niftk::IsWindowVisibleInLayout(i, m_WindowLayout);
+    bool windowIsToShow = niftk::IsWindowVisibleInLayout(i, windowLayout);
+
+    if (windowWasShown && !windowIsToShow)
+    {
+      m_MainRenderingManager->RemoveRenderWindow(renderWindows[i]->GetRenderWindow());
+    }
+    else if (!windowWasShown && windowIsToShow)
+    {
+      m_MainRenderingManager->AddRenderWindow(renderWindows[i]->GetRenderWindow());
+    }
+  }
+
   bool axialWindowRadioButtonWasBlocked = m_AxialWindowRadioButton->blockSignals(true);
   bool sagittalWindowRadioButtonWasBlocked = m_SagittalWindowRadioButton->blockSignals(true);
   bool coronalWindowRadioButtonWasBlocked = m_CoronalWindowRadioButton->blockSignals(true);
@@ -973,11 +990,6 @@ void SideViewerWidget::OnWindowLayoutChanged(WindowLayout windowLayout)
   m_MultiWindowComboBox->blockSignals(multiWindowComboBoxWasBlocked);
 
   m_WindowLayout = windowLayout;
-
-  /// Note:
-  /// The selected window has not necessarily been changed, but it is not costly
-  /// to refresh the GUI buttons every time.
-//  this->OnViewerWindowChanged();
 }
 
 
