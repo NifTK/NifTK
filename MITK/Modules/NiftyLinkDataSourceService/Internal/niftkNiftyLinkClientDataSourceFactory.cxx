@@ -53,7 +53,7 @@ IGIInitialisationDialog* NiftyLinkClientDataSourceFactory::CreateInitialisationD
 
   QString settings("uk.ac.ucl.cmic.niftkNiftyLinkClientDataSourceFactory.IPHostPortExtensionDialog");
 
-  niftk::IPHostPortExtensionDialog* dialog = new niftk::IPHostPortExtensionDialog(parent, settings, names, extensions);
+  niftk::IPHostPortExtensionDialog* dialog = new niftk::IPHostPortExtensionDialog(parent, settings, 3200, names, extensions);
   dialog->SetHostVisible(true);
   dialog->SetPortVisible(true);
   dialog->SetExtensionVisible(true);

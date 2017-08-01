@@ -33,8 +33,10 @@ public:
 
   IPHostPortExtensionDialog(QWidget *parent,
                             const QString& settingsName,
+                            const int& defaultPortNumber,
                             const QStringList& extensionNames,
-                            const QStringList& extensionsWithDots);
+                            const QStringList& extensionsWithDots
+                           );
 
   ~IPHostPortExtensionDialog();
 
@@ -49,6 +51,7 @@ private slots:
 private:
 
   QString m_SettingsName;
+  int     m_DefaultPortNumber;
 };
 
 } // end namespace

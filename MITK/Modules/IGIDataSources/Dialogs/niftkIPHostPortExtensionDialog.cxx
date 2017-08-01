@@ -22,11 +22,13 @@ namespace niftk
 //-----------------------------------------------------------------------------
 IPHostPortExtensionDialog::IPHostPortExtensionDialog(QWidget *parent,
                                                      const QString& settingsName,
+                                                     const int& defaultPortNumber,
                                                      const QStringList& extensionNames,
                                                      const QStringList& extensionsWithDots
                                                      )
 : IGIInitialisationDialog(parent)
 , m_SettingsName(settingsName)
+, m_DefaultPortNumber(defaultPortNumber)
 {
   setupUi(this);
   assert(extensionNames.size() > 0);
@@ -49,7 +51,7 @@ IPHostPortExtensionDialog::IPHostPortExtensionDialog(QWidget *parent,
   {
     m_FileExtensionComboBox->setCurrentIndex(position);
   }
-  m_PortNumber->setValue((settings.value("port", QVariant::fromValue(3200))).toInt());
+  m_PortNumber->setValue((settings.value("port", QVariant::fromValue(m_DefaultPortNumber))).toInt());
   settings.endGroup();
 }
 

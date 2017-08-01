@@ -64,9 +64,13 @@ IGIInitialisationDialog* BKMedicalDataSourceFactory::CreateInitialisationDialog(
 
   QString settings("uk.ac.ucl.cmic.niftkBKMedicalDataSourceFactory.IPHostPortExtensionDialog");
 
-  niftk::IPHostPortExtensionDialog* dialog = new niftk::IPHostPortExtensionDialog(parent, settings, names, extensions);
-  dialog->SetHostVisible(false);
-  dialog->SetPortVisible(true);
+  niftk::IPHostPortExtensionDialog* dialog = new niftk::IPHostPortExtensionDialog(parent,
+                                                                                  settings,
+                                                                                  1000, // doesn't matter, not used.
+                                                                                  names,
+                                                                                  extensions);
+  dialog->SetHostVisible(true);
+  dialog->SetPortVisible(false);
   dialog->SetExtensionVisible(true);
 
   return dialog;
