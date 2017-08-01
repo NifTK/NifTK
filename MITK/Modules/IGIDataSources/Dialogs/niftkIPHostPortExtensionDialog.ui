@@ -19,7 +19,7 @@
      <item>
       <layout class="QFormLayout" name="formLayout">
        <item row="0" column="0">
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="m_HostNameLabel">
          <property name="toolTip">
           <string>The name of the computer, or IP address</string>
          </property>
@@ -36,7 +36,7 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="m_PortNumberLabel">
          <property name="toolTip">
           <string>The port number the server is listening on</string>
          </property>
@@ -59,7 +59,7 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_3">
+        <widget class="QLabel" name="m_FileExtensionLabel">
          <property name="text">
           <string>file extension:</string>
          </property>

@@ -33,6 +33,11 @@ public:
   IPHostPortExtensionDialog(QWidget *parent);
   ~IPHostPortExtensionDialog();
 
+  void SetHostVisible(const bool& isVisible);
+  void SetPortVisible(const bool& isVisible);
+  void SetExtensionVisible(const bool& isVisible);
+  void AddFileExtension(const QString& name, const QString& extensionWithDot);
+
 private slots:
 
   void OnOKClicked();
