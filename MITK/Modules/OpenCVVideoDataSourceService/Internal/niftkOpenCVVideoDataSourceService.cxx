@@ -51,6 +51,7 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
   }
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(nullptr, this);
+  m_DataGrabbingThread->SetUseFastPolling(true);
   m_DataGrabbingThread->SetInterval(this->GetApproximateIntervalInMilliseconds());
   m_DataGrabbingThread->start();
   if (!m_DataGrabbingThread->isRunning())
