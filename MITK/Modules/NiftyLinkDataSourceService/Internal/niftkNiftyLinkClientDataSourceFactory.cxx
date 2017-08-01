@@ -40,10 +40,10 @@ NiftyLinkClientDataSourceFactory::~NiftyLinkClientDataSourceFactory()
 IGIInitialisationDialog* NiftyLinkClientDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
   QStringList names;
-  names.append("NIfTI");
-  names.append("NIfTI");
-  names.append("JPEG");
-  names.append("PNG");
+  names.append(".nii");
+  names.append(".nii.gz");
+  names.append(".jpg");
+  names.append(".png");
 
   QStringList extensions;
   extensions.append(".nii");

@@ -56,6 +56,12 @@ NiftyLinkDataSourceService::NiftyLinkDataSourceService(
 
   this->SetStatus("Initialising");
 
+  if(!properties.contains("extension"))
+  {
+    mitkThrow() << "File extension not specified!";
+  }
+  m_FileExtension = (properties.value("extension")).toString();
+
   // In contrast with other sources, like a frame grabber, where you
   // know the expected frame rate, a network source could be anything.
   // Lets assume for now:
@@ -293,6 +299,8 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataSourceI::IGITimeT
   {
     if ((*iter).endsWith(QString(".nii"))
         || (*iter).endsWith(QString(".nii.gz"))
+        || (*iter).endsWith(QString(".png"))
+        || (*iter).endsWith(QString(".jpg"))
         )
     {
       // Outside of try block, so it propagates upwards.
@@ -306,69 +314,89 @@ void NiftyLinkDataSourceService::LoadImage(const niftk::IGIDataSourceI::IGITimeT
 
       try
       {
-        // If this loads, we have a valid 2D/3D/4D image.
-        // Im trying to use the generic MITK mechanism, so we benefit from our Fixed NifTI reader.
-        mitk::Image::Pointer image = mitk::IOUtil::LoadImage((*iter).toStdString());
 
-        // Now we load into igtl::Image.
-        int dimensionality = image->GetDimension();
-        if (dimensionality != 3)
+        if ((*iter).endsWith(QString(".nii"))
+            || (*iter).endsWith(QString(".nii.gz"))
+            )
         {
-          mitkThrow() << "Invalid image dimension " << dimensionality;
+          // If this loads, we have a valid 2D/3D/4D image.
+          // Im trying to use the generic MITK mechanism, so we benefit from our Fixed NifTI reader.
+          mitk::Image::Pointer image = mitk::IOUtil::LoadImage((*iter).toStdString());
+
+          // Now we load into igtl::Image.
+          int dimensionality = image->GetDimension();
+          if (dimensionality != 3)
+          {
+            mitkThrow() << "Invalid image dimension " << dimensionality;
+          }
+          unsigned int* numberOfVoxels = image->GetDimensions();
+          msg->SetDimensions(numberOfVoxels[0], numberOfVoxels[1], numberOfVoxels[2]);
+          size_t sizeOfBuffer = numberOfVoxels[0] * numberOfVoxels[1] * numberOfVoxels[2];
+
+          mitk::PixelType pixelType = image->GetPixelType();
+
+          if (pixelType.GetPixelType() == itk::ImageIOBase::SCALAR
+              && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+          {
+              msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
+              msg->SetNumComponents(1);
+              sizeOfBuffer *= 1;
+          }
+          else if (pixelType.GetPixelType() == itk::ImageIOBase::RGB
+                   && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+          {
+              msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
+              msg->SetNumComponents(3);
+              sizeOfBuffer *= 3;
+          }
+          else if (pixelType.GetPixelType() == itk::ImageIOBase::RGBA
+                   && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+          {
+              msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
+              msg->SetNumComponents(4);
+              sizeOfBuffer *= 4;
+          }
+          else
+          {
+            mitkThrow() << "Unsupported component type";
+          }
+
+          msg->AllocateScalars();
+          memcpy(msg->GetScalarPointer(), image->GetData(), sizeOfBuffer);
+
+          igtl::Matrix4x4 mat;
+          igtl::IdentityMatrix(mat);
+
+          for (int i = 0; i < 3; i++)
+          {
+            mitk::Vector3D axisVector = image->GetGeometry()->GetAxisVector(i);
+            mat[0][i] = axisVector[0];
+            mat[1][i] = axisVector[1];
+            mat[2][i] = axisVector[2];
+          }
+          msg->SetMatrix(mat);
+          mitk::Point3D origin = image->GetGeometry()->GetOrigin();
+          msg->SetOrigin(origin[0], origin[1], origin[2]);
+
+          mitk::Vector3D spacing = image->GetGeometry()->GetSpacing();
+          msg->SetSpacing(spacing[0], spacing[1], spacing[2]);
         }
-        unsigned int* numberOfVoxels = image->GetDimensions();
-        msg->SetDimensions(numberOfVoxels[0], numberOfVoxels[1], numberOfVoxels[2]);
-        size_t sizeOfBuffer = numberOfVoxels[0] * numberOfVoxels[1] * numberOfVoxels[2];
-
-        mitk::PixelType pixelType = image->GetPixelType();
-
-        if (pixelType.GetPixelType() == itk::ImageIOBase::SCALAR
-            && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
+        else // png or jpg
         {
-            msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
-            msg->SetNumComponents(1);
-            sizeOfBuffer *= 1;
-        }
-        else if (pixelType.GetPixelType() == itk::ImageIOBase::RGB
-                 && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
-        {
-            msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
-            msg->SetNumComponents(3);
-            sizeOfBuffer *= 3;
-        }
-        else if (pixelType.GetPixelType() == itk::ImageIOBase::RGBA
-                 && pixelType.GetComponentType() == itk::ImageIOBase::UCHAR)
-        {
-            msg->SetScalarType(igtl::ImageMessage::TYPE_UINT8);
-            msg->SetNumComponents(4);
-            sizeOfBuffer *= 4;
-        }
-        else
-        {
-          mitkThrow() << "Unsupported component type";
+          QImage *image = new QImage();
+          bool success = image->load(*iter);
+          if (!success)
+          {
+            mitkThrow() << "Failed to load image:" << (*iter).toStdString();
+          }
+          niftk::SetQImage(*image, msg);
+          msg->SetOrigin(0, 0, 0);
+          msg->SetSpacing(1, 1, 1);
+
+          delete image;
         }
 
-        msg->AllocateScalars();
-        memcpy(msg->GetScalarPointer(), image->GetData(), sizeOfBuffer);
-
-        igtl::Matrix4x4 mat;
-        igtl::IdentityMatrix(mat);
-
-        for (int i = 0; i < 3; i++)
-        {
-          mitk::Vector3D axisVector = image->GetGeometry()->GetAxisVector(i);
-          mat[0][i] = axisVector[0];
-          mat[1][i] = axisVector[1];
-          mat[2][i] = axisVector[2];
-        }
-        msg->SetMatrix(mat);
-        mitk::Point3D origin = image->GetGeometry()->GetOrigin();
-        msg->SetOrigin(origin[0], origin[1], origin[2]);
-
-        mitk::Vector3D spacing = image->GetGeometry()->GetSpacing();
-        msg->SetSpacing(spacing[0], spacing[1], spacing[2]);
-
-        // Now wrap it up, nice and warm for the winter.
+        // Now wrap the message in the appropriate NiftyLink type.
         niftk::NiftyLinkMessageContainer::Pointer container =
           (NiftyLinkMessageContainer::Pointer(new NiftyLinkMessageContainer()));
 
@@ -541,7 +569,7 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType& dataType,
   QDir directory(outputPath);
   if (directory.mkpath(outputPath))
   {
-    QString fileName = outputPath + QDir::separator() + tr("%1.nii").arg(dataType.GetTimeStampInNanoSeconds());
+    QString fileName = outputPath + QDir::separator() + tr("%1.%2").arg(dataType.GetTimeStampInNanoSeconds());
 
     int nx;
     int ny;
@@ -555,58 +583,76 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType& dataType,
       float sz;
       imageMessage->GetSpacing(sx, sy, sz);
 
-      mitk::Vector3D spacing;
-      spacing[0] = sx;
-      spacing[1] = sy;
-      spacing[2] = sz;
+      if (m_FileExtension == ".nii" || m_FileExtension == ".nii.gz")
+      {
+        mitk::Vector3D spacing;
+        spacing[0] = sx;
+        spacing[1] = sy;
+        spacing[2] = sz;
 
-      // Just in case
-      if (spacing[0] == 0)
-      {
-        spacing[0] = 1;
-      }
-      if (spacing[1] == 0)
-      {
-        spacing[1] = 1;
-      }
-      if (spacing[2] == 0)
-      {
-        spacing[2] = 1;
-      }
-
-      // Transformation matrices can be saved with the image.
-      // So, we need an image format the preserves this.
-      // I don't want to save a matrix as a separate file.
-      // If the remote end wants to send additional info such
-      // as a motor position, then this is meta data, and should
-      // be saved separately, such as via a string message.
-      igtl::Matrix4x4 matrix;
-      imageMessage->GetMatrix(matrix);
-
-      vtkSmartPointer<vtkMatrix4x4> vtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-      for (int r = 0; r < 4; r++)
-      {
-        for (int c = 0; c < 4; c++)
+        // Just in case
+        if (spacing[0] == 0)
         {
-          vtkMatrix->SetElement(r, c, matrix[r][c]);
+          spacing[0] = 1;
         }
+        if (spacing[1] == 0)
+        {
+          spacing[1] = 1;
+        }
+        if (spacing[2] == 0)
+        {
+          spacing[2] = 1;
+        }
+
+        // Transformation matrices can be saved with the image.
+        // So, we need an image format the preserves this.
+        // I don't want to save a matrix as a separate file.
+        // If the remote end wants to send additional info such
+        // as a motor position, then this is meta data, and should
+        // be saved separately, such as via a string message.
+        igtl::Matrix4x4 matrix;
+        imageMessage->GetMatrix(matrix);
+
+        vtkSmartPointer<vtkMatrix4x4> vtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+        for (int r = 0; r < 4; r++)
+        {
+          for (int c = 0; c < 4; c++)
+          {
+            vtkMatrix->SetElement(r, c, matrix[r][c]);
+          }
+        }
+
+        QImage qImage;
+        niftk::GetQImage(imageMessage, qImage);
+        qImage.detach();
+
+        unsigned int numberOfBytes = 0;
+        mitk::Image::Pointer image = niftk::CreateMitkImage(&qImage, numberOfBytes);
+
+        image->GetGeometry()->SetSpacing(spacing);
+        image->GetGeometry()->SetIndexToWorldTransformByVtkMatrixWithoutChangingSpacing(vtkMatrix);
+
+        mitk::IOUtil::Save(image, fileName.toStdString());
       }
+      else
+      {
+        // For .png or .jpg, we just save the image, without any orientation or pixel size.
+        QImage qImage;
+        niftk::GetQImage(imageMessage, qImage);
+        qImage.detach();
 
-      QImage qImage;
-      niftk::GetQImage(imageMessage, qImage);
-      qImage.detach();
-
-      unsigned int numberOfBytes = 0;
-      mitk::Image::Pointer image = niftk::CreateMitkImage(&qImage, numberOfBytes);
-
-      image->GetGeometry()->SetSpacing(spacing);
-      image->GetGeometry()->SetIndexToWorldTransformByVtkMatrixWithoutChangingSpacing(vtkMatrix);
-
-      mitk::IOUtil::Save(image, fileName.toStdString());
+        bool success = qImage.save(fileName);
+        if (!success)
+        {
+          dataType.SetIsSaved(false);
+          mitkThrow() << "Failed to save qImage to file:" << fileName.toStdString();
+        }
+        dataType.SetIsSaved(true);
+      }
     }
     else
     {
-      mitkThrow() << "3D images not yet supported, please implement me!";
+      mitkThrow() << "Saving of 3D, 4D images not yet supported, please implement me!";
     }
   }
   else
