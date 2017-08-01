@@ -570,7 +570,6 @@ void AffineTransformer::OnSaveTransform(std::string fileName)
 
     try
     {
-
       sp_writer->SetInput(_ConvertToITKTransform<3, false>(*transform));
       sp_writer->Update();
 
@@ -583,22 +582,22 @@ void AffineTransformer::OnSaveTransform(std::string fileName)
   }
   else if (fileName.find(".txt") != std::string::npos)
   {
-    // taken from reg_tool_WriteAffineFile
-    FILE *affineFile;
-    affineFile = fopen(fileName.c_str(), "w");
 
-    if (affineFile == NULL)
+    typedef itk::EulerAffineTransform<double, 3, 3> EulerAffineTransformType;
+    EulerAffineTransformType::Pointer eulerTransform = EulerAffineTransformType::New();
+
+    EulerAffineTransformType::FullAffineMatrixType affineMatrix;
+    for (unsigned int i = 0; i < 4; i++)
     {
-      MITK_ERROR << "Unable to open file " << fileName.c_str() << ".";
-      return;
+      for (unsigned int j = 0; j < 4; j++)
+      {
+        affineMatrix[i][j] = transform->GetElement(i,j);
+      }
     }
 
-    for (int i = 0; i < 4; i++)
-    {
-       fprintf(affineFile, "%.7f %.7f %.7f %.7f\n", transform->GetElement(i, 0),  transform->GetElement(i, 1),  transform->GetElement(i, 2), transform->GetElement(i, 3));
-    }
-
-    fclose(affineFile);
+    eulerTransform->SetFullAffineMatrix(affineMatrix);
+    eulerTransform->InvertTransformationMatrix();
+    eulerTransform->SaveNiftyRegAffineMatrix(fileName);
   }
   else
   {
