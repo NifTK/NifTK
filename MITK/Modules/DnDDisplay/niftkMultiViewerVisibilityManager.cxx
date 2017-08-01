@@ -672,6 +672,7 @@ void MultiViewerVisibilityManager::OnNodesDropped(const std::vector<mitk::DataNo
     {
       viewer->SetTimeGeometry(timeGeometry.GetPointer());
       viewer->SetWindowLayout(windowLayout);
+      viewer->FitToDisplay();
       viewer->SetEnabled(true);
     }
 
