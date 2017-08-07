@@ -21,6 +21,7 @@
 
 // ITK
 #include <itkAffineTransform.h>
+#include <itkEulerAffineTransform.h>
 #include <itkImage.h>
 #include <itkImageFileWriter.h>
 #include <itkImageIOBase.h>
@@ -133,7 +134,6 @@ static vtkSmartPointer<vtkMatrix4x4> _ConvertFromITKTransform(const itk::Transfo
   {
     itkGenericExceptionMacro(<< "Failed to cast input transform to ITK affine transform.\nInput transform has type " << itkTransform.GetNameOfClass() << " (" << itkTransform.GetOutputSpaceDimension() << "D)\n");
   }
-
   return sp_mat;
 }
 
@@ -570,7 +570,6 @@ void AffineTransformer::OnSaveTransform(std::string fileName)
 
     try
     {
-
       sp_writer->SetInput(_ConvertToITKTransform<3, false>(*transform));
       sp_writer->Update();
 
@@ -583,22 +582,22 @@ void AffineTransformer::OnSaveTransform(std::string fileName)
   }
   else if (fileName.find(".txt") != std::string::npos)
   {
-    // taken from reg_tool_WriteAffineFile
-    FILE *affineFile;
-    affineFile = fopen(fileName.c_str(), "w");
 
-    if (affineFile == NULL)
+    typedef itk::EulerAffineTransform<double, 3, 3> EulerAffineTransformType;
+    EulerAffineTransformType::Pointer eulerTransform = EulerAffineTransformType::New();
+
+    EulerAffineTransformType::FullAffineMatrixType affineMatrix;
+    for (unsigned int i = 0; i < 4; i++)
     {
-      MITK_ERROR << "Unable to open file " << fileName.c_str() << ".";
-      return;
+      for (unsigned int j = 0; j < 4; j++)
+      {
+        affineMatrix[i][j] = transform->GetElement(i,j);
+      }
     }
 
-    for (int i = 0; i < 4; i++)
-    {
-       fprintf(affineFile, "%.7f %.7f %.7f %.7f\n", transform->GetElement(i, 0),  transform->GetElement(i, 1),  transform->GetElement(i, 2), transform->GetElement(i, 3));
-    }
-
-    fclose(affineFile);
+    eulerTransform->SetFullAffineMatrix(affineMatrix);
+    eulerTransform->InvertTransformationMatrix();
+    eulerTransform->SaveNiftyRegAffineMatrix(fileName);
   }
   else
   {
@@ -661,10 +660,20 @@ void AffineTransformer::OnLoadTransform(std::string fileName)
       MITK_ERROR << "Transform " << fileName << " is incompatible with image.\n" << "Caught ITK exception:\n" << r_itkEx.what() << std::endl;
     }
   }
-  else
+  else // we assume this is a nifty reg
   {
-    // format take from reg_tool_ReadAffineFile
-    transformFromFile = LoadMatrix4x4FromFile(fileName, true);
+    typedef itk::EulerAffineTransform<double, 3, 3> EulerAffineTransformType;
+    EulerAffineTransformType::Pointer eulerTransform = EulerAffineTransformType::New();
+
+    eulerTransform->LoadNiftyRegAffineMatrix(fileName);
+    
+    // need to convert to itk affine transform
+    typedef itk::AffineTransform<double,3> AffineTransformType;
+    AffineTransformType::Pointer affine = AffineTransformType::New();
+    affine->SetMatrix(eulerTransform->GetMatrix());
+    affine->SetTranslation(eulerTransform->GetOffset());
+
+    transformFromFile = _ConvertFromITKTransform<3>(*(affine));
   }
 
   this->ApplyTransformToNode(transformFromFile, m_CurrentDataNode);
@@ -863,12 +872,16 @@ void AffineTransformer::ApplyTransformToNode(const vtkSmartPointer<vtkMatrix4x4>
 
   // initialize the geometry
   mitk::BaseGeometry::Pointer geometry = node->GetData()->GetGeometry();  
-  if (geometry->GetImageGeometry())
+  mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
+
+  if (geometry->GetImageGeometry() && image.IsNotNull())
   {
-    mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(node->GetData());
     mitk::SlicedGeometry3D::Pointer imageSlice = image->GetSlicedGeometry();
     mitk::PlaneGeometry::Pointer imagePlane = imageSlice->GetPlaneGeometry(0);
     imagePlane->SetIndexToWorldTransform(newGeometry->GetIndexToWorldTransform());    
+    
+    MITK_INFO << "New geometry "; newGeometry->GetIndexToWorldTransform()->Print(std::cout);
+    MITK_INFO << "imagePlane "; imagePlane->GetIndexToWorldTransform()->Print(std::cout);
 
     image->GetSlicedGeometry()->InitializeEvenlySpaced(imagePlane, newGeometry->GetSpacing()[2], image->GetSlicedGeometry()->GetSlices());
   }

@@ -733,6 +733,43 @@ EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
   return result;
 }
 
+template<class TScalarType, unsigned int NInputDimensions,
+                            unsigned int NOutputDimensions>
+bool
+EulerAffineTransform<TScalarType, NInputDimensions, NOutputDimensions>
+::LoadNiftyRegAffineMatrix(std::string filename)
+{
+  bool isFileLoaded = LoadFullAffineMatrix(filename);
+  if(!isFileLoaded)
+  {
+    return isFileLoaded;
+  }
+
+  this->InvertTransformationMatrix();
+
+  if (InputSpaceDimension == 3)
+  {
+    this->m_Matrix[0][2] = -this->m_Matrix[0][2];
+    this->m_Matrix[1][2] = -this->m_Matrix[1][2];
+    this->m_Matrix[2][0] = -this->m_Matrix[2][0];
+    this->m_Matrix[2][1] = -this->m_Matrix[2][1];
+   
+    this->m_Offset[0] = -this->m_Offset[0];
+    this->m_Offset[1] = -this->m_Offset[1];
+  }
+  else if (InputSpaceDimension == 2)
+  {
+    this->m_Offset[0] = -this->m_Offset[0];
+    this->m_Offset[1] = -this->m_Offset[1];
+  }
+  else
+  {
+    itkExceptionMacro( << "EulerAffineTransform, number of Input Dimensions, should be 2 or 3");
+  }
+
+  return true;
+}
+
 
 template<class TScalarType, unsigned int NInputDimensions,
                             unsigned int NOutputDimensions>
