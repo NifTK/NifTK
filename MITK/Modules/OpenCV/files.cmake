@@ -41,6 +41,7 @@ set(CPP_FILES
   CameraCalibration/niftkUndistortion.cxx
   CameraCalibration/mitkTriangulate2DPointPairsTo3D.cxx
   CameraCalibration/mitkEvaluateIntrinsicParametersOnNumberOfFrames.cxx
+  CameraCalibration/mitkProjectCameraRays.cxx
   UltrasoundCalibration/itkInvariantPointCalibrationCostFunction.cxx
   UltrasoundCalibration/itkUltrasoundPinCalibrationCostFunction.cxx
   UltrasoundCalibration/itkVideoHandEyeCalibrationCostFunction.cxx
