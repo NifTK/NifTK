@@ -1688,12 +1688,24 @@ std::vector< std::pair < cv::Point3d, double > > TriangulatePointPairsUsingGeome
 }
 
 //-----------------------------------------------------------------------------
-std::pair< cv::Point3d , cv::Point3d > GetRay(
-    const cv::Point2d& inputUndistortedPoint,
+std::vector < std::pair< cv::Point3d , cv::Point3d > > GetRays(
+    const cv::Mat& inputUndistortedPoints,
     const cv::Mat& cameraIntrinsicParams, const double& rayLength
     )
 {
-  std::pair< cv::Point3d, cv::Point3d > outputPoints;
+  if ( inputUndistortedPoints.type() !=  CV_64FC1 )
+  {
+    mitkThrow() << "GetRays - input matrix needs to be CV_64FC1" << std::endl;
+  }
+
+  unsigned int numberOfPoints =  inputUndistortedPoints.cols;
+
+  if ( ( numberOfPoints == 0 ) || inputUndistortedPoints.rows != 3 )
+  {
+    mitkThrow() << "GetRays - input matrix should be 3 rows by n columns" << std::endl;
+  }
+
+  std::vector < std::pair< cv::Point3d, cv::Point3d > > outputPoints ;
   cv::Mat K1       = cv::Mat(3, 3, CV_64FC1);
   cv::Mat K1Inv    = cv::Mat(3, 3, CV_64FC1);
 
@@ -1720,34 +1732,46 @@ std::pair< cv::Point3d , cv::Point3d > GetRay(
   K1Inv = K1.inv();
 
   // Set up some working matrices...
-  cv::Mat p1                = cv::Mat(3, 1, CV_64FC1);
-  cv::Mat p1normalised      = cv::Mat(3, 1, CV_64FC1);
+
+  cv::Mat p1normalised = cv::Mat(3, numberOfPoints, CV_64FC1);
 
   // Line from left camera = P0 + \lambda_1 u;
   cv::Point3d P0;
-  cv::Point3d u;
-
-  // For each point...
-
-  p1.at<double>(0,0) = inputUndistortedPoint.x;
-  p1.at<double>(1,0) = inputUndistortedPoint.y;
-  p1.at<double>(2,0) = 1;
 
   // Converting to normalised image points.
-  p1normalised = K1Inv * p1;
+  p1normalised = K1Inv * inputUndistortedPoints;
 
   // Origin in LH camera, by definition is 0,0,0.
   P0.x = 0;
   P0.y = 0;
   P0.z = 0;
 
-  u.x = p1normalised.at<double>(0,0) * rayLength;
-  u.y = p1normalised.at<double>(1,0) * rayLength;
-  u.z = p1normalised.at<double>(2,0) * rayLength;
+  for ( unsigned int point = 0 ; point < numberOfPoints ; ++ point )
+  {
+    outputPoints.push_back ( std::pair < cv::Point3d , cv::Point3d > (
+          P0, cv::Point3d ( p1normalised.at<double>(0,point) * rayLength,
+                            p1normalised.at<double>(1,point) * rayLength,
+                            p1normalised.at<double>(2,point) * rayLength )));
+  }
 
-  outputPoints.first = P0;
-  outputPoints.second = u;
   return outputPoints;
+}
+
+
+//-----------------------------------------------------------------------------
+std::pair< cv::Point3d , cv::Point3d > GetRay(
+    const cv::Point2d& inputUndistortedPoint,
+    const cv::Mat& cameraIntrinsicParams, const double& rayLength
+    )
+{
+
+  cv::Mat p1 = cv::Mat(3, 1, CV_64FC1);
+  p1.at<double>(0,0) = inputUndistortedPoint.x;
+  p1.at<double>(1,0) = inputUndistortedPoint.y;
+  p1.at<double>(2,0) = 1;
+
+  std::vector < std::pair< cv::Point3d, cv::Point3d > > outputPoints = GetRays ( p1, cameraIntrinsicParams, rayLength);
+  return outputPoints[0];
 }
 
 //-----------------------------------------------------------------------------

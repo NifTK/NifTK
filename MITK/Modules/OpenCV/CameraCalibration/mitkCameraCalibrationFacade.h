@@ -561,6 +561,17 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< std::pair < cv::Point3d , double> >
   );
 
 /**
+ * \brief Projects a ray from un-distorted (i.e. already correction for distortion) 2D points.
+ * \param Input points are 3 by n matrix defining homogeneous screen points
+ * \return a point pair defining P0 and P1 lying on the ray. ray length can be set.
+ */
+extern "C++" NIFTKOPENCV_EXPORT std::vector < std::pair< cv::Point3d, cv::Point3d > > GetRays(
+  const cv::Mat& inputUndistortedPoints,
+  const cv::Mat& cameraIntrinsicParams,
+  const double& rayLength = 1000
+  );
+
+/**
  * \brief Projects a ray from un-distorted (i.e. already correction for distortion) 2D point.
  * \return a point pair defining P0 and P1 lying on the ray. ray length can be set.
  */
