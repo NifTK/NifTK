@@ -82,8 +82,9 @@ void ProjectCameraRays::WriteOutput ( std::string filename )
   }
 
   MITK_INFO << "Writing results to " << filename;
-  for ( std::vector<std::pair<cv::Point3d, cv::Point3d> > ::iterator it = m_Rays.begin() ; it <= m_Rays.end() ; ++it )
+  for ( std::vector<std::pair<cv::Point3d, cv::Point3d> > ::iterator it = m_Rays.begin() ; it < m_Rays.end() ; ++it )
   {
+    //this works, but it would by nice to get rid of the formattig
     fout << it->first << it->second << std::endl;
   }
   fout.close();
@@ -122,7 +123,7 @@ bool ProjectCameraRays::Project()
     }
 
     unsigned int index = 0;
-    for ( std::vector<cv::Point2d>::iterator it = leftPoints_undistorted.begin() ; it <= leftPoints_undistorted.end() ;  ++it)
+    for ( std::vector<cv::Point2d>::iterator it = leftPoints_undistorted.begin() ; it < leftPoints_undistorted.end() ;  ++it)
     {
       pointsToProject.at<double>(0,index) = it->x;
       pointsToProject.at<double>(1,index) = it->y;

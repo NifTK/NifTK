@@ -40,13 +40,11 @@ int mitkProjectCameraRaysTest(int argc, char * argv[])
   int returnStatus = projector->Project();
   if ( returnStatus ) 
   {
-    projector->WriteOutput ( "/dev/shm/results.txt" );
+    projector->WriteOutput ( argv[2] );
   }
 
-  if (returnStatus != EXIT_SUCCESS)
-  {
-    return returnStatus;
-  }
+  MITK_TEST_CONDITION_REQUIRED ( returnStatus == true , "Testing that project returned true" );
+
   MITK_TEST_END();
 }
 
