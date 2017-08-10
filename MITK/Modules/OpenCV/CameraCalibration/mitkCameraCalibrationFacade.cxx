@@ -1768,7 +1768,7 @@ std::pair< cv::Point3d , cv::Point3d > GetRay(
   cv::Mat p1 = cv::Mat(3, 1, CV_64FC1);
   p1.at<double>(0,0) = inputUndistortedPoint.x;
   p1.at<double>(1,0) = inputUndistortedPoint.y;
-  p1.at<double>(2,0) = 1;
+  p1.at<double>(2,0) = 1.0;
 
   std::vector < std::pair< cv::Point3d, cv::Point3d > > outputPoints = GetRays ( p1, cameraIntrinsicParams, rayLength);
   return outputPoints[0];

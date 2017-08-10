@@ -30,6 +30,7 @@ set(MODULE_CUSTOM_TESTS
   mitkPivotCalibrationRegressionTest.cxx
   mitkIdealStereoCalibrationTest.cxx
   mitkUndistortionLoopTest.cxx
+  mitkProjectCameraRaysTest.cxx
 )
 
 if(OPENCV_WITH_NONFREE)

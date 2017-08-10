@@ -33,10 +33,10 @@ namespace mitk {
 ProjectCameraRays::ProjectCameraRays()
 : m_LensToWorldFileName("")
 , m_IntrinsicFileName("")
-, m_OutputFileName("")
 , m_UndistortBeforeProjection(true)
 , m_ScreenWidth(1920)
 , m_ScreenHeight(540)
+, m_RayLength ( 500 )
 {
 }
 
@@ -72,6 +72,23 @@ void ProjectCameraRays::InitScreenPointsVector ()
   }
 }
 
+//-----------------------------------------------------------------------------
+void ProjectCameraRays::WriteOutput ( std::string filename )
+{
+  std::ofstream fout(filename.c_str());
+  if ( !fout )
+  {
+    MITK_WARN << "Failed to open file to write projected rays " << filename;
+  }
+
+  MITK_INFO << "Writing results to " << filename;
+  for ( std::vector<std::pair<cv::Point3d, cv::Point3d> > ::iterator it = m_Rays.begin() ; it <= m_Rays.end() ; ++it )
+  {
+    fout << it->first << it->second << std::endl;
+  }
+  fout.close();
+
+}
 
 //-----------------------------------------------------------------------------
 bool ProjectCameraRays::Project()
@@ -81,6 +98,8 @@ bool ProjectCameraRays::Project()
   try
   {
     //check length of screen point vector
+    MITK_INFO << "Initialising screen points";
+
     InitScreenPointsVector();
 
     cv::Mat intrinsic = cvCreateMat (3,3,CV_64FC1);
@@ -102,7 +121,18 @@ bool ProjectCameraRays::Project()
       leftPoints_undistorted = m_ScreenPoints;
     }
 
-   // mitk::GetRays
+    unsigned int index = 0;
+    for ( std::vector<cv::Point2d>::iterator it = leftPoints_undistorted.begin() ; it <= leftPoints_undistorted.end() ;  ++it)
+    {
+      pointsToProject.at<double>(0,index) = it->x;
+      pointsToProject.at<double>(1,index) = it->y;
+      pointsToProject.at<double>(2,index) = 1.0;
+      ++index;
+    }
+
+    MITK_INFO << "Projecting rays";
+    m_Rays = mitk::GetRays ( pointsToProject , intrinsic , m_RayLength );
+
     isSuccessful = true;
   }
   catch (const std::logic_error& e)
@@ -110,6 +140,14 @@ bool ProjectCameraRays::Project()
     std::cerr << "ProjectCameraRays::Project: exception thrown e=" << e.what() << std::endl;
   }
 
+  if ( isSuccessful )
+  {
+    MITK_INFO << "Success !";
+  }
+  else
+  {
+    MITK_INFO << "Failure !";
+  }
   return isSuccessful;
 }
 

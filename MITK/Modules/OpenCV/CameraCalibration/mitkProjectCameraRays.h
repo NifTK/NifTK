@@ -27,7 +27,7 @@ namespace mitk {
 /**
  * \class ProjectCameraRays
  * \brief Takes a camera calibration (intrinsic and distorion) and projected every image pixel (default 1920 x 540)
- * to a ray from the camera origin (0,0,0) to a distance of 300 by default. Optionally include the camera to world transform.
+ * to a ray from the camera origin (0,0,0) to a distance of 500 by default. Optionally include the camera to world transform.
  * Output is 1036800 rays
  * Currently the image that you are dealing with and hence the 2D pixel coordinates are assumed to be distortion corrected.
  */
@@ -42,11 +42,12 @@ public:
   itkSetMacro (ScreenWidth, int);
   itkSetMacro (ScreenHeight, int);
   itkSetMacro (IntrinsicFileName, std::string);
-  itkSetMacro (OutputFileName, std::string);
   itkSetMacro (UndistortBeforeProjection, bool);
   itkSetMacro (LensToWorldFileName, std::string);
 
   void LoadScreenPointsFromFile ( std::string fileName );
+
+  void WriteOutput ( std::string fileName );
 
   bool Project();
 
@@ -64,8 +65,9 @@ private:
   int         m_ScreenHeight; //the height of the screen to project
   std::string m_LensToWorldFileName; // the transform to put the projected rays in world coordinates
 
+  double      m_RayLength; // the length of a ray
+
   std::string m_IntrinsicFileName; // the left camera intrinsic parameters
-  std::string m_OutputFileName; // the output file name
 
   bool m_UndistortBeforeProjection; //optionally undistort point pairs before triangulation
 
