@@ -84,8 +84,8 @@ void ProjectCameraRays::WriteOutput ( std::string filename )
   MITK_INFO << "Writing results to " << filename;
   for ( std::vector<std::pair<cv::Point3d, cv::Point3d> > ::iterator it = m_Rays.begin() ; it < m_Rays.end() ; ++it )
   {
-    //this works, but it would by nice to get rid of the formattig
-    fout << it->first << it->second << std::endl;
+    fout << std::setprecision(20) << it->first.x << " " << it->first.y << " " << it->first.z << " ";
+    fout << std::setprecision(20) << it->second.x << " " << it->second.y << " " << it->second.z  <<  std::endl;
   }
   fout.close();
 
