@@ -568,7 +568,8 @@ extern "C++" NIFTKOPENCV_EXPORT std::vector< std::pair < cv::Point3d , double> >
 extern "C++" NIFTKOPENCV_EXPORT std::vector < std::pair< cv::Point3d, cv::Point3d > > GetRays(
   const cv::Mat& inputUndistortedPoints,
   const cv::Mat& cameraIntrinsicParams,
-  const double& rayLength = 1000
+  const double& rayLength = 1000,
+  const cv::Mat& lensToWorld = cv::Mat::eye (4,4, CV_64FC1)
   );
 
 /**

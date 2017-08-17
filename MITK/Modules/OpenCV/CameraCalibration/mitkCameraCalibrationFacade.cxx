@@ -1690,8 +1690,8 @@ std::vector< std::pair < cv::Point3d, double > > TriangulatePointPairsUsingGeome
 //-----------------------------------------------------------------------------
 std::vector < std::pair< cv::Point3d , cv::Point3d > > GetRays(
     const cv::Mat& inputUndistortedPoints,
-    const cv::Mat& cameraIntrinsicParams, const double& rayLength
-    )
+    const cv::Mat& cameraIntrinsicParams, const double& rayLength,
+    const cv::Mat& lensToWorld )
 {
   if ( inputUndistortedPoints.type() !=  CV_64FC1 )
   {
@@ -1706,8 +1706,8 @@ std::vector < std::pair< cv::Point3d , cv::Point3d > > GetRays(
   }
 
   std::vector < std::pair< cv::Point3d, cv::Point3d > > outputPoints ;
-  cv::Mat K1       = cv::Mat(3, 3, CV_64FC1);
-  cv::Mat K1Inv    = cv::Mat(3, 3, CV_64FC1);
+  cv::Mat K1              = cv::Mat(3, 3, CV_64FC1);
+  cv::Mat K1Inv           = cv::Mat(3, 3, CV_64FC1);
 
   // Copy data into cv::Mat data types.
   // Camera calibration routines are 32 bit, as some drawing functions require 32 bit data.
@@ -1742,16 +1742,18 @@ std::vector < std::pair< cv::Point3d , cv::Point3d > > GetRays(
   p1normalised = K1Inv * inputUndistortedPoints;
 
   // Origin in LH camera, by definition is 0,0,0.
-  P0.x = 0;
-  P0.y = 0;
-  P0.z = 0;
+  P0.x = lensToWorld.at<double>(0,3);
+  P0.y = lensToWorld.at<double>(1,3);
+  P0.z = lensToWorld.at<double>(2,3);
 
   for ( unsigned int point = 0 ; point < numberOfPoints ; ++ point )
   {
-    outputPoints.push_back ( std::pair < cv::Point3d , cv::Point3d > (
-          P0, cv::Point3d ( p1normalised.at<double>(0,point) * rayLength,
+    cv::Point3d endpoint=  cv::Point3d ( p1normalised.at<double>(0,point) * rayLength,
                             p1normalised.at<double>(1,point) * rayLength,
-                            p1normalised.at<double>(2,point) * rayLength )));
+                            p1normalised.at<double>(2,point) * rayLength );
+
+    outputPoints.push_back ( std::pair < cv::Point3d , cv::Point3d > (
+          P0,  lensToWorld * endpoint));
   }
 
   return outputPoints;
