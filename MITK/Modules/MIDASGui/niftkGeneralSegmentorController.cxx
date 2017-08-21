@@ -738,7 +738,7 @@ void GeneralSegmentorController::OnWorkingNodesChanged()
 
   Q_D(GeneralSegmentorController);
 
-  if (this->HasWorkingNodes())
+  if (this->HasWorkingNodes() && !d->m_IsDeleting)
   {
     d->m_Orientation = this->GetOrientation();
     d->m_SelectedSliceIndex = this->GetSliceIndex();
