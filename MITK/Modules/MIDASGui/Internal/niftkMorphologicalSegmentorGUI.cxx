@@ -479,7 +479,7 @@ void MorphologicalSegmentorGUI::OnCancelButtonClicked()
   m_ThresholdingUpperThresholdSlider->setMinimum(0.0);
   m_ThresholdingUpperThresholdSlider->setMaximum(0.0);
   m_ThresholdingUpperThresholdSlider->setValue(0);
-  m_ThresholdingAxialCutOffSlider->blockSignals(wasBlocked);
+  m_ThresholdingUpperThresholdSlider->blockSignals(wasBlocked);
 
   wasBlocked = m_ThresholdingAxialCutOffSlider->blockSignals(true);
   m_ThresholdingAxialCutOffSlider->setMinimum(0.0);
@@ -487,7 +487,7 @@ void MorphologicalSegmentorGUI::OnCancelButtonClicked()
   m_ThresholdingAxialCutOffSlider->setInvertedAppearance(false);
   m_ThresholdingAxialCutOffSlider->setInvertedControls(false);
   m_ThresholdingAxialCutOffSlider->setValue(0);
-  m_ThresholdingUpperThresholdSlider->blockSignals(wasBlocked);
+  m_ThresholdingAxialCutOffSlider->blockSignals(wasBlocked);
 
   this->SetEnabled(false);
 
