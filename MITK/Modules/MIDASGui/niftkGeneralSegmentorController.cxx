@@ -912,6 +912,18 @@ void GeneralSegmentorController::OnSelectedSliceChanged(ImageOrientation orienta
 
             if (isThresholdingOn)
             {
+              /// There may be the case where the user removes a seed from a region but does not do clean, just simply changes slice.
+              /// In this case the region was not removed as it was supposed to. So, we do a region growing, with the intensity limits.
+              double lowerThreshold = d->m_GUI->GetLowerThreshold();
+              double upperThreshold = d->m_GUI->GetUpperThreshold();
+
+              this->UpdateRegionGrowing(false,
+                                        d->m_SliceAxis,
+                                        d->m_SliceIndex,
+                                        lowerThreshold,
+                                        upperThreshold,
+                                        false);
+
               OpThresholdApply::ProcessorPointer processor = OpThresholdApply::ProcessorType::New();
               doOp = new OpThresholdApply(OP_THRESHOLD_APPLY, true, outputRegion, processor, true);
               undoOp = new OpThresholdApply(OP_THRESHOLD_APPLY, false, outputRegion, processor, true);
