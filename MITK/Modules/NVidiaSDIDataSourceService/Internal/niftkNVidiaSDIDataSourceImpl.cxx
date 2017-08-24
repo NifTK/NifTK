@@ -581,6 +581,8 @@ void NVidiaSDIDataSourceImpl::run()
   assert(ok);
   ok = connect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)), Qt::BlockingQueuedConnection);
   assert(ok);
+  ok = connect(this, SIGNAL(SignalCleanupSDI()), this, SLOT(DoCleanupSDI()), Qt::BlockingQueuedConnection);
+  assert(ok);
 
 
   // current_state is reset by Reset() called above.
@@ -605,6 +607,21 @@ void NVidiaSDIDataSourceImpl::run()
   assert(ok);
   ok = disconnect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)));
   assert(ok);
+  ok = disconnect(this, SIGNAL(SignalCleanupSDI()), this, SLOT(DoCleanupSDI()));
+  assert(ok);
+}
+
+//-----------------------------------------------------------------------------
+void NVidiaSDIDataSourceImpl::CleanupSDI()
+{
+  emit SignalCleanupSDI();
+}
+
+//-----------------------------------------------------------------------------
+void NVidiaSDIDataSourceImpl::DoCleanupSDI()
+{
+  delete sdiin;
+  sdiin = 0;
 }
 
 

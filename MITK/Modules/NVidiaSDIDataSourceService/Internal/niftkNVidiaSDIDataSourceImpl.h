@@ -106,6 +106,9 @@ public:
   // use GetRGBAImage() to retrieve a frame.
   void SetPlayback(bool on, int expectedstreamcount = 0);
 
+  // Cleanup SDI properly
+  void CleanupSDI();
+
 protected:
 
   // repeatedly called by timer to check for new frames.
@@ -128,6 +131,7 @@ protected slots:
   void DoStopCompression();
   void DoGetRGBAImage(unsigned int sequencenumber, IplImage** img, unsigned int* streamcount);
   void DoTryPlayback(const char* filename, bool* ok, const char** errormsg);
+  void DoCleanupSDI();
 
 signals:
 
@@ -140,6 +144,7 @@ signals:
   void SignalStopCompression();
   void SignalGetRGBAImage(unsigned int sequencenumber, IplImage** img, unsigned int* streamcount);
   void SignalTryPlayback(const char* filename, bool* ok, const char** errormsg);
+  void SignalCleanupSDI();
 
   // emitted when capture setup dies. should be connected with a non-blocking queued connection!
   void SignalFatalError(QString msg);

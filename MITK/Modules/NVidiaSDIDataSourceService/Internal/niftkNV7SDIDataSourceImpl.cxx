@@ -165,7 +165,7 @@ namespace niftk
     // might as well fail fast
     bool wasnotlocked = lock.tryLock();
     assert(wasnotlocked);
-
+    
     QGLContext* ctx = const_cast<QGLContext*>(QGLContext::currentContext());
     try
     {
@@ -213,13 +213,13 @@ namespace niftk
   void NVidiaSDIDataSourceImpl::InitVideo()
   {		
     // make sure nobody messes around with contexts
-    assert(QGLContext::currentContext() == oglwin->context());
+    assert(QGLContext::currentContext() == oglshare->context());
 
     // we do not own the device!
     sdidev = 0;
     // but we gotta clear up this one
-    //delete sdiin;
-    //sdiin = 0;
+    delete sdiin;
+    sdiin = 0;
     format = video::StreamFormat();
     // try not to loose any still compressing info
 
@@ -584,6 +584,8 @@ namespace niftk
     assert(ok);
     ok = connect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)), Qt::DirectConnection);
     assert(ok);
+    ok = connect(this, SIGNAL(SignalCleanupSDI()), this, SLOT(DoCleanupSDI()), Qt::BlockingQueuedConnection);
+    assert(ok);
 
 
     // current_state is reset by Reset() called above.
@@ -608,8 +610,23 @@ namespace niftk
     assert(ok);
     ok = disconnect(this, SIGNAL(SignalTryPlayback(const char*, bool*, const char**)), this, SLOT(DoTryPlayback(const char*, bool*, const char**)));
     assert(ok);
+    ok = disconnect(this, SIGNAL(SignalCleanupSDI()), this, SLOT(DoCleanupSDI()));
+    assert(ok);
 
     oglshare->makeCurrent();
+  }
+
+  //-----------------------------------------------------------------------------
+  void NVidiaSDIDataSourceImpl::CleanupSDI()
+  {
+    emit SignalCleanupSDI();
+  }
+
+  //-----------------------------------------------------------------------------
+  void NVidiaSDIDataSourceImpl::DoCleanupSDI()
+  {
+    delete sdiin;
+    sdiin = 0;
   }
 
 
@@ -654,7 +671,7 @@ namespace niftk
     }
 
     // make sure nobody messes around with contexts
-    assert(QGLContext::currentContext() == oglwin->context());
+    assert(QGLContext::currentContext() == oglshare->context());
 
     if (current_state == NVidiaSDIDataSourceImpl::HW_ENUM)
     {
@@ -798,7 +815,6 @@ namespace niftk
       // dont re-setup too quickly
       SetInterval(500);
       // whatever sequence numbers we had in the ringbuffer are now obsolete.
-      // if we dont explicitly delete these then QmitkIGINVidiaDataSource::GrabData() will get mightily confused.
       sn2slot_map.clear();
       slot2sn_map.clear();
 
@@ -1088,6 +1104,8 @@ namespace niftk
   {
     emit SignalStopCompression();
   }
+
+
 
 
   //-----------------------------------------------------------------------------
