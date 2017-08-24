@@ -21,7 +21,6 @@
 
 namespace mitk
 {
-class StateEvent;
 class InteractionEvent;
 }
 
@@ -48,17 +47,8 @@ public:
   StateMachineEventFilter();
   virtual ~StateMachineEventFilter();
 
-  /// \brief Returns true if the event should be filtered, i.e. not processed,
-  /// otherwise false.
-  virtual bool EventFilter(const mitk::StateEvent* stateEvent) const
-  {
-    return false;
-  }
-
-  virtual bool EventFilter(mitk::InteractionEvent* event) const
-  {
-    return false;
-  }
+  /// \brief Returns true if the event should be filtered, i.e. not processed, otherwise false.
+  virtual bool EventFilter(mitk::InteractionEvent* event) const;
 
 };
 

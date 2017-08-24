@@ -28,4 +28,11 @@ StateMachineEventFilter::~StateMachineEventFilter()
 {
 }
 
+
+//-----------------------------------------------------------------------------
+bool StateMachineEventFilter::EventFilter(mitk::InteractionEvent* event) const
+{
+  return false;
+}
+
 }
