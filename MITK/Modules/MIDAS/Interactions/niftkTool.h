@@ -84,8 +84,7 @@ public:
     PRIOR_CONTOURS,
     NEXT_CONTOURS,
     REGION_GROWING,
-    INITIAL_SEGMENTATION,
-    INITIAL_SEEDS
+    INITIAL_SEGMENTATION
   };
 
   /// \brief Stores a seed point set name, so all classes have access to the name.
@@ -108,9 +107,6 @@ public:
 
   /// \brief Stores the name of the initial segmentation image, so all classes have access to the name.
   static const std::string INITIAL_SEGMENTATION_NAME;
-
-  /// \brief Stores the name of the initial set of seeds, so all classes have access to the name.
-  static const std::string INITIAL_SEEDS_NAME;
 
   /// \brief When called, we get a reference to the set of seeds, and set up the interactor(s).
   virtual void Activated() override;

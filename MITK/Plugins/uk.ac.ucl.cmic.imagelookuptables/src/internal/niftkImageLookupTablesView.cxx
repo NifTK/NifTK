@@ -314,7 +314,7 @@ bool ImageLookupTablesView::IsSelectionValid(const QList<mitk::DataNode::Pointer
       return false;
     }
 
-    if (!niftk::IsNodeAGreyScaleImage(node))
+    if (!niftk::IsNodeANonBinaryImage(node))
     {
       return false;
     }

@@ -78,7 +78,7 @@ public:
 protected:
 
   MIDASRetainMarksNoThresholdingProcessor();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
   virtual ~MIDASRetainMarksNoThresholdingProcessor() {}
 
   ProcessorPointer m_Processor;

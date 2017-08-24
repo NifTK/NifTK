@@ -67,11 +67,11 @@ public:
 
 protected:
   MIDASImageUpdateCopyRegionProcessor();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
   virtual ~MIDASImageUpdateCopyRegionProcessor() {}
 
   // This class
-  virtual void ApplyUpdateToAfterImage();
+  virtual void ApplyUpdateToAfterImage() override;
 
 private:
   MIDASImageUpdateCopyRegionProcessor(const Self&); //purposely not implemented

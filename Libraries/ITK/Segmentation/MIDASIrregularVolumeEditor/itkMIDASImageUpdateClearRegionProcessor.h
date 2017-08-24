@@ -25,7 +25,8 @@ namespace itk
  * \brief Class to support undo/redo of a clear operation (set value to zero), within a given region.
  */
 template <class TPixel, unsigned int VImageDimension>
-class ITK_EXPORT MIDASImageUpdateClearRegionProcessor : public MIDASImageUpdateRegionProcessor<TPixel, VImageDimension> {
+class ITK_EXPORT MIDASImageUpdateClearRegionProcessor : public MIDASImageUpdateRegionProcessor<TPixel, VImageDimension>
+{
 
 public:
 
@@ -36,10 +37,10 @@ public:
   typedef SmartPointer<const Self>                                 ConstPointer;
 
   /** Method for creation through the object factory. */
-  itkNewMacro(Self);
+  itkNewMacro(Self)
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(MIDASImageUpdateClearRegionProcessor, MIDASImageUpdateRegionProcessor);
+  itkTypeMacro(MIDASImageUpdateClearRegionProcessor, MIDASImageUpdateRegionProcessor)
 
   /** Additional typedefs */
   typedef TPixel PixelType;
@@ -50,16 +51,16 @@ public:
   typedef typename ImageType::RegionType  RegionType;
 
   /** Set the value that is used to wipe the image (normally zero). */
-  itkSetMacro(WipeValue, PixelType);
-  itkGetMacro(WipeValue, PixelType);
+  itkSetMacro(WipeValue, PixelType)
+  itkGetMacro(WipeValue, PixelType)
 
 protected:
   MIDASImageUpdateClearRegionProcessor();
-  void PrintSelf(std::ostream& os, Indent indent) const;
+  void PrintSelf(std::ostream& os, Indent indent) const override;
   virtual ~MIDASImageUpdateClearRegionProcessor() {}
 
   // This class, simply clears the image using value m_WipeValue.
-  virtual void ApplyUpdateToAfterImage();
+  virtual void ApplyUpdateToAfterImage() override;
 
 private:
   MIDASImageUpdateClearRegionProcessor(const Self&); //purposely not implemented

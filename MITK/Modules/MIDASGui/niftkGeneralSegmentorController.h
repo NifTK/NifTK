@@ -23,8 +23,6 @@
 #include <niftkToolKeyPressResponder.h>
 #include <niftkToolKeyPressStateMachine.h>
 
-#include "Internal/niftkGeneralSegmentorEventInterface.h"
-
 namespace mitk
 {
 class PointSet;
@@ -160,18 +158,26 @@ public:
 
 protected:
 
-  /// \brief For Irregular Volume Editing, a Segmentation image should have a grey
-  /// scale parent, and several children as described in the class introduction.
-  virtual bool IsASegmentationImage(const mitk::DataNode::Pointer node) override;
-
   /// \brief Assumes input is a valid segmentation node, then searches for the derived
   /// children of the node, looking for the seeds and contours  as described in the class introduction.
-  virtual std::vector<mitk::DataNode*> GetWorkingDataFromSegmentationNode(const mitk::DataNode::Pointer node) override;
+  virtual std::vector<mitk::DataNode*> GetWorkingNodesFrom(mitk::DataNode* segmentationNode) override;
+
+  virtual bool IsNodeAValidReferenceImage(const mitk::DataNode* node) override;
 
   /// \brief Creates the general segmentor widget that holds the GUI components of the view.
   virtual BaseGUI* CreateGUI(QWidget* parent) override;
 
+  /// \brief Updates the GUI controls based on the selected reference and working nodes.
+  virtual void UpdateGUI() const override;
+
   virtual void OnNodeVisibilityChanged(const mitk::DataNode* node, const mitk::BaseRenderer* renderer) override;
+
+  /// \brief Called before the working data nodes are changed.
+  /// The tool manager still stores the old working data nodes.
+  virtual void PreWorkingNodesChanged() override;
+
+  /// \brief Called after the working data nodes have changed.
+  virtual void OnWorkingNodesChanged() override;
 
   /// \brief Called when the different slice gets selected in the viewer.
   /// This happens when a different renderer is selected or when the selected slice
@@ -200,6 +206,9 @@ protected slots:
 
   /// \brief Qt slot called from "see next" checkbox to show the contour from the next slice.
   void OnSeeNextCheckBoxToggled(bool checked);
+
+  /// \brief Qt slot called from "retain marks" checkbox.
+  void OnRetainMarksCheckBoxToggled(bool checked);
 
   /// \brief Qt slot called when the Clean button is pressed, indicating the
   /// current contours on the current slice should be cleaned, see additional spec,
@@ -273,6 +282,18 @@ private slots:
 
 private:
 
+  /// \brief Returns which image coordinate corresponds to the currently selected orientation.
+  /// Retrieves the currently active QmitkRenderWindow, and the reference image registered with the ToolManager,
+  /// and returns the Image axis that the current view is looking along, or -1 if it can not be worked out.
+  int GetReferenceImageSliceAxis() const;
+
+  /// \brief Returns the slice index in the reference image that corresponds to the currently displayed slice.
+  /// This might be different to the slice displayed in the viewer, depending on the up direction.
+  int GetReferenceImageSliceIndex() const;
+
+  /// \brief Returns the "Up" direction which is the anterior, superior or right direction depending on which orientation you are interested in.
+  int GetReferenceImageSliceUpDirection();
+
   virtual void OnViewGetsVisible() override;
 
   virtual void OnViewGetsHidden() override;
@@ -304,22 +325,15 @@ private:
   /// \brief Stores the initial state of the segmentation so that the Restart button can restore it.
   void StoreInitialSegmentation();
 
-  /// \brief Looks for the Seeds registered as WorkingData[1] with the ToolManager.
-  mitk::PointSet* GetSeeds();
-
   /// \brief Initialises seeds for a given slice.
   /// Used when starting a segmentation or switching orientation, to place seeds
   /// into the regions of the current slice.
   void InitialiseSeedsForSlice(int sliceAxis, int sliceIndex);
 
-  /// \brief Retrieves the min and max of the image (cached), and sets the thresholding
-  /// intensity sliders range accordingly.
-  void RecalculateMinAndMaxOfImage();
-
   /// \brief For each seed in the list of seeds and current slice, converts to millimetre position,
   /// and looks up the pixel value in the reference image (grey scale image being segmented)
   /// at that location, and updates the min and max labels on the GUI thresholding panel.
-  void RecalculateMinAndMaxOfSeedValues();
+  void RecalculateMinAndMaxOfSeedValues() const;
 
   /// \brief Simply returns true if slice has any unenclosed seeds, and false otherwise.
   bool DoesSliceHaveUnenclosedSeeds(bool thresholdOn, int sliceAxis, int sliceIndex);
@@ -376,7 +390,7 @@ private:
   void DestroyPipeline();
 
   /// \brief Removes the images we are using for editing during segmentation.
-  void RemoveWorkingData();
+  void RemoveWorkingNodes();
 
   /// \brief Restores the initial state of the segmentation after the Restart button was pressed.
   void RestoreInitialSegmentation();
@@ -387,11 +401,11 @@ private:
   void DiscardSegmentation();
 
   /// \brief Clears both images of the working data.
-  void ClearWorkingData();
+  void ClearWorkingNodes();
 
   QScopedPointer<GeneralSegmentorControllerPrivate> d_ptr;
 
-  Q_DECLARE_PRIVATE(GeneralSegmentorController);
+  Q_DECLARE_PRIVATE(GeneralSegmentorController)
 
 };
 

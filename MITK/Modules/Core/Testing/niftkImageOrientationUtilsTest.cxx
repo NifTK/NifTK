@@ -79,11 +79,11 @@ public:
   {
     MITK_TEST_OUTPUT(<< "Starting TesttItkToMitk...");
 
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_AXIAL),     niftk::IMAGE_ORIENTATION_AXIAL),   ".. Testing axial.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_SAGITTAL),  niftk::IMAGE_ORIENTATION_SAGITTAL),".. Testing sagittal.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_CORONAL),   niftk::IMAGE_ORIENTATION_CORONAL), ".. Testing coronal.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation(itk::ORIENTATION_UNKNOWN),   niftk::IMAGE_ORIENTATION_UNKNOWN), ".. Testing unknown.");
-    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetMitkOrientation((itk::Orientation)999), niftk::IMAGE_ORIENTATION_UNKNOWN), ".. Testing garbage.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetOrientation(itk::ORIENTATION_AXIAL),     niftk::IMAGE_ORIENTATION_AXIAL),   ".. Testing axial.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetOrientation(itk::ORIENTATION_SAGITTAL),  niftk::IMAGE_ORIENTATION_SAGITTAL),".. Testing sagittal.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetOrientation(itk::ORIENTATION_CORONAL),   niftk::IMAGE_ORIENTATION_CORONAL), ".. Testing coronal.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetOrientation(itk::ORIENTATION_UNKNOWN),   niftk::IMAGE_ORIENTATION_UNKNOWN), ".. Testing unknown.");
+    MITK_TEST_CONDITION_REQUIRED(mitk::Equal(niftk::GetOrientation((itk::Orientation)999), niftk::IMAGE_ORIENTATION_UNKNOWN), ".. Testing garbage.");
 
     MITK_TEST_OUTPUT(<< "Finished TesttItkToMitk...");
   }
