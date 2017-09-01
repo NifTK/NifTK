@@ -115,5 +115,12 @@
         <label>Binarisation</label>
         <default>false</default>
         </boolean>
+     <boolean>
+		<name>isFloat</name>
+        <longflag>isFloat</longflag>
+        <description>Convert the pixel type to float.</description>
+        <label>Float Pixel Type</label>
+        <default>true</default>
+     </boolean>	 
     </parameters>
   </executable>

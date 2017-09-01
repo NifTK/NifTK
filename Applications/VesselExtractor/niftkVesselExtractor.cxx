@@ -863,6 +863,11 @@ int main(int argc, char *argv[])
     }
 
     // use the same type as the input image
+    if (isFloat)
+    {
+      CastAndSaveOutputImage<InternalPixelType, float>(outputImageName, maxImage);
+      return EXIT_SUCCESS;
+    }
     switch (itk::PeekAtComponentType(inputImageName))
     {
       case itk::ImageIOBase::CHAR:
