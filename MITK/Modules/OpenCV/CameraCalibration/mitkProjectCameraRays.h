@@ -45,6 +45,8 @@ public:
   itkSetMacro (UndistortBeforeProjection, bool);
   itkSetMacro (LensToWorldFileName, std::string);
 
+  std::vector< std::pair < cv::Point3d, cv::Point3d  > > GetRays ();
+
   void LoadScreenPointsFromFile ( std::string fileName );
 
   void WriteOutput ( std::string fileName );

@@ -92,6 +92,12 @@ void ProjectCameraRays::WriteOutput ( std::string filename )
 }
 
 //-----------------------------------------------------------------------------
+std::vector < std::pair < cv::Point3d, cv::Point3d > >  ProjectCameraRays::GetRays()
+{
+  return m_Rays;
+}
+
+//-----------------------------------------------------------------------------
 bool ProjectCameraRays::Project()
 {
   bool isSuccessful = false;
@@ -106,6 +112,11 @@ bool ProjectCameraRays::Project()
     cv::Mat intrinsic = cvCreateMat (3,3,CV_64FC1);
     cv::Mat distortion = cvCreateMat (1,4,CV_64FC1);    // not used (yet)
     cv::Mat lensToWorld = cv::Mat::eye (4,4, CV_64FC1);
+
+    if ( m_LensToWorldFileName != "" )
+    {
+      ReadTrackerMatrix ( m_LensToWorldFileName,lensToWorld );
+    }
 
     cv::Mat pointsToProject = cv::Mat ( 3, m_ScreenPoints.size(), CV_64FC1 );
 
@@ -132,7 +143,7 @@ bool ProjectCameraRays::Project()
     }
 
     MITK_INFO << "Projecting rays";
-    m_Rays = mitk::GetRays ( pointsToProject , intrinsic , m_RayLength );
+    m_Rays = mitk::GetRays ( pointsToProject , intrinsic , m_RayLength, lensToWorld );
 
     isSuccessful = true;
   }
