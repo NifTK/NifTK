@@ -29,6 +29,7 @@
 #include <niftkFileHelper.h>
 #include <niftkOpenCVImageConversion.h>
 #include <niftkCoordinateAxesData.h>
+#include <niftkUndistortion.h>
 #include <niftkMatrixUtilities.h>
 #include <niftkSystemTimeServiceRAII.h>
 #include <QmitkIGIUtils.h>
@@ -740,7 +741,19 @@ void NiftyCalVideoCalibrationManager::ConvertImage(
   }
 
   cv::Mat image = niftk::MitkImageToOpenCVMat(inputImage);
-  cv::cvtColor(image, outputImage, CV_RGB2GRAY);
+  if (image.channels() == 1)
+  {
+    image.copyTo(outputImage);
+  }
+  else if (image.channels() == 3)
+  {
+    cv::cvtColor(image, outputImage, CV_RGB2GRAY);
+  }
+  else
+  {
+    mitkThrow() << "Input image should be 1 (grey scale), or 3 (RGB) channel.";
+  }
+
   m_ImageSize.width = image.cols;
   m_ImageSize.height = image.rows;
 }
@@ -1924,11 +1937,10 @@ void NiftyCalVideoCalibrationManager::SetStereoExtrinsicsOnImage(const cv::Mat& 
     }
   }
 
-  MatrixProperty::Pointer matrixProp = MatrixProperty::New(txf);
+  niftk::Undistortion::MatrixProperty::Pointer matrixProp = niftk::Undistortion::MatrixProperty::New(txf);
   imageNode->SetProperty(propertyName.c_str(), matrixProp);
 
   mitk::Image::Pointer image = dynamic_cast<mitk::Image*>(imageNode->GetData());
-
   if (image.IsNotNull())
   {
     image->SetProperty(propertyName.c_str(), matrixProp);
@@ -2247,7 +2259,18 @@ void NiftyCalVideoCalibrationManager::SaveImages(const std::string& prefix,
   {
     std::ostringstream fileName;
     fileName << m_OutputDirName << prefix << counter++ << ".png";
-    cv::imwrite(fileName.str(), (*iter).second);
+
+    // We currently convert all input images to grey when we grab.
+    // So for now, just convert back to 3 channel image.
+    // This means, that when we save a load of images,
+    // we can load them back in and run camera calibration and undistortion manually.
+    //
+    // Otherwise - we would need to do more extensive refactoring.
+    // TODO: Tidy this up.
+    cv::Mat tmp;
+    cv::cvtColor((*iter).second, tmp, CV_GRAY2RGB);
+
+    cv::imwrite(fileName.str(), tmp);
   }
 }
 
