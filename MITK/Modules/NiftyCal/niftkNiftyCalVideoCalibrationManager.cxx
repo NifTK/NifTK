@@ -655,7 +655,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool
                                           );
 
   std::ostringstream message;
-  message << "Malti mono: " << reprojectionRMS << " pixels" << std::endl;
+  message << "Malti mono[" << imageIndex << "]:" << reprojectionRMS << " pixels" << std::endl;
   m_CalibrationResult += message.str();
 
   return handEye;
@@ -683,7 +683,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageInd
                                                  );
 
   std::ostringstream message;
-  message << "Non-Linear Ext mono: " << reprojectionRMS << " pixels" << std::endl;
+  message << "Non-Linear Ext mono[" << imageIndex << "]:" << reprojectionRMS << " pixels" << std::endl;
   m_CalibrationResult += message.str();
 
   return handEye;
@@ -1739,7 +1739,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       m_CalibrationResult += message.str();
     }
 
-    // Don't change the order of these.
+    // Don't change the order of these sections where we compute each hand-eye.
     if (m_TrackingMatrices.size() > 1)
     {
       m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, false);
@@ -1747,7 +1747,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
         m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][TSAI_1989]);
         rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
         std::ostringstream message;
-        message << "Tsai mono: " << rms << " mm" << std::endl;
+        message << "Tsai mono left: " << rms << " mm" << std::endl;
         m_CalibrationResult += message.str();
       }
     }
@@ -1757,7 +1757,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][SHAHIDI_2002]);
       rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
       std::ostringstream message;
-      message << "Shahidi mono: " << rms << " mm" << std::endl;
+      message << "Shahidi mono left: " << rms << " mm" << std::endl;
       m_CalibrationResult += message.str();
     }
 
@@ -1766,7 +1766,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][MALTI_2013]);
       rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
       std::ostringstream message;
-      message << "Malti mono: " << rms << " mm" << std::endl;
+      message << "Malti mono left: " << rms << " mm" << std::endl;
       m_CalibrationResult += message.str();
     }
 
@@ -1775,13 +1775,13 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
       rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
       std::ostringstream message;
-      message << "Non-Linear Ext mono: " << rms << " mm" << std::endl;
+      message << "Non-Linear Ext mono left: " << rms << " mm" << std::endl;
       m_CalibrationResult += message.str();
     }
 
     if (m_ImageNode[1].IsNotNull())
     {
-      // Don't change the order of these.
+      // Don't change the order of these sections where we compute each hand-eye.
       if (m_TrackingMatrices.size() > 1)
       {
         m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);
