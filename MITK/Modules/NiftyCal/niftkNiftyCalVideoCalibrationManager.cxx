@@ -741,17 +741,22 @@ void NiftyCalVideoCalibrationManager::ConvertImage(
   }
 
   cv::Mat image = niftk::MitkImageToOpenCVMat(inputImage);
-  if (image.channels() == 1)
+  int numberOfComponents = inputImage->GetPixelType().GetNumberOfComponents();
+  if (numberOfComponents == 1)
   {
     image.copyTo(outputImage);
   }
-  else if (image.channels() == 3)
+  else if (numberOfComponents == 3)
   {
     cv::cvtColor(image, outputImage, CV_RGB2GRAY);
   }
+  else if (numberOfComponents == 4)
+  {
+    cv::cvtColor(image, outputImage, CV_RGBA2GRAY);
+  }
   else
   {
-    mitkThrow() << "Input image should be 1 (grey scale), or 3 (RGB) channel.";
+    mitkThrow() << "Input image should be 1 (grey scale), 3 (RGB) channel or 4 (RGBA) channel.";
   }
 
   m_ImageSize.width = image.cols;
