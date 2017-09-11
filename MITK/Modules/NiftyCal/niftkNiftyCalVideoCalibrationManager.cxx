@@ -1971,8 +1971,8 @@ void NiftyCalVideoCalibrationManager::LoadCalibrationFromDirectory(const std::st
   std::string leftIntrinsicsFile  = dir + "calib.left.intrinsic.txt";
   std::string rightIntrinsicsFile = dir + "calib.right.intrinsic.txt";
   std::string rightToLeftFile     = dir + "calib.r2l.txt";
-  std::string leftEyeHandFile     = dir + "calib.left.handeye.txt";
-  std::string rightEyeHandFile    = dir + "calib.right.handeye.txt";
+  std::string leftEyeHandFile     = dir + "calib.left.handeye.current.txt";
+  std::string rightEyeHandFile    = dir + "calib.right.handeye.current.txt";
   std::string modelToWorldFile    = dir + "calib.model2world.txt";
 
   mitk::LoadCameraIntrinsicsFromPlainText(leftIntrinsicsFile,
