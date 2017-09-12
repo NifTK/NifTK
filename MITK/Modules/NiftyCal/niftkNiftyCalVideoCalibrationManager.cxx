@@ -372,6 +372,7 @@ void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
         handEyeMatrix->SetElement(r, c, m_HandEyeMatrices[0][m_HandeyeMethod](r, c));
       }
     }
+
     handEyeMatrix->Invert();
 
     vtkSmartPointer<vtkMatrix4x4> cameraToWorldMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -1994,6 +1995,12 @@ void NiftyCalVideoCalibrationManager::LoadCalibrationFromDirectory(const std::st
                                                                   rightToLeftTranslationVector
                                                                   );
   cv::Matx44d leftToRight = rightToLeft.inv();
+
+  // Observe: All code in NiftyCal uses 'Hand-Eye', and is consistent.
+  // In NifTK, the 4x4 'hand-eye' matrix we save to disk is in fact an 'eye-hand'.
+  // So, see here how we are calling it first a camera-to-tracker which is analagous to eye-hand.
+  // We then invert it, so in this class, anything called hand-eye really is a hand-eye.
+
   cv::Matx44d leftEyeHand(leftCameraToTracker);
   cv::Matx44d leftHandEye = leftEyeHand.inv(cv::DECOMP_SVD);
   cv::Matx44d rightEyeHand(rightCameraToTracker);
