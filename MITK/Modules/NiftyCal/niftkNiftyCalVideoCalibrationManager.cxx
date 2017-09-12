@@ -200,6 +200,7 @@ void NiftyCalVideoCalibrationManager::SetTrackingTransformNode(mitk::DataNode::P
   {
     this->UpdateDisplayNodes();
   }
+  this->UpdateCameraToWorldPosition();
   this->Modified();
 }
 
