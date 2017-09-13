@@ -87,6 +87,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_HandeyeMethod(NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)
 , m_TagFamily(NiftyCalVideoCalibrationManager::DefaultTagFamily)
 , m_UpdateNodes(NiftyCalVideoCalibrationManager::DefaultUpdateNodes)
+, m_ModelToTrackerFileName("")
 , m_MinimumNumberOfPoints(NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints)
 , m_CalibrationDirName("")
 {
@@ -332,6 +333,7 @@ void NiftyCalVideoCalibrationManager::SetModelToTrackerFileName(
   if (!fileName.empty())
   {
     m_ModelToTracker = niftk::LoadMatrix(fileName);
+    m_ModelToTrackerFileName = fileName;
     this->Modified();
   }
 }
