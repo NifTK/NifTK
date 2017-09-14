@@ -28,7 +28,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkMatrix4x4.h>
 #include <vtkMath.h>
-
+#include <highgui.h>
 
 namespace niftk
 {
@@ -688,7 +688,7 @@ mitk::Image::Pointer DoUltrasoundReconstruction(const niftk::MatrixTrackedImageD
     mitkThrow() << "Ultrasound images should be unsigned char.";
   }
 
-  if (data[0].first->GetPixelType().GetNumberOfComponents() != 1)
+  if (data[0].first->GetPixelType().GetNumberOfComponents() != 1) // Need to be changed!!!
   {
     mitkThrow() << "Ultrasound images should have 1 component (i.e. greyscale not RGB)";
   }
@@ -1160,7 +1160,7 @@ MatrixTrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string
   std::size_t found = imageFiles[0].find_last_of(".");
   std::string  ext = imageFiles[0].substr(found + 1);
 
-  if (( ext != "png") && ( ext != "nii")) // Need to include more image formats...
+  if (( ext != "png") && ( ext != "jpg" ) && ( ext != "nii")) // Need to include more image formats...
   {
     std::ostringstream errorMessage;
     errorMessage << imageFiles[0] << " is not an image file. Wrong directory?" << std::endl;
@@ -1200,18 +1200,43 @@ MatrixTrackedImageData LoadImageAndTrackingDataFromDirectories(const std::string
   }
 
   MatrixTrackedImageData outputData;
+  mitk::Convert2Dto3DImageFilter::Pointer filter = mitk::Convert2Dto3DImageFilter::New();
 
   // Load all images using mitk::IOUtil, assuming there is enough memory
   // Also load tracking data, and if in quaternion form, convert to matrices
   for (int i = 0; i < pairedFiles.size(); i++)
   {
-    // Load one image file
-    mitk::Image::Pointer tmpImage = mitk::IOUtil::LoadImage(pairedFiles[i].first);
-    mitk::Convert2Dto3DImageFilter::Pointer filter = mitk::Convert2Dto3DImageFilter::New();
-    filter->SetInput(tmpImage);
-    filter->Update();
+    found = pairedFiles[i].first.find_last_of(".");
+    ext = pairedFiles[i].first.substr(found + 1);
 
-    mitk::Image::Pointer convertedImage = filter->GetOutput();
+    mitk::Image::Pointer convertedImage = nullptr;
+
+    if (( ext == "png") || ( ext == "jpg" ))
+    {
+      // Use OpenCV/niftk routines.
+      // This creates a 3D image directly, and works with grey-scale and RGB.
+      cv::Mat tmp = cv::imread(pairedFiles[i].first);
+      
+      if (tmp.channels() == 3) // If it's a colour image, convert to grey scale
+      {
+        cv::Mat greyImage;
+        cv::cvtColor(tmp, greyImage, CV_BGR2GRAY); // If you load the image with OpenCV it will be BGR
+        convertedImage = niftk::CreateMitkImage(&greyImage);
+      }
+      else
+      {
+        convertedImage = niftk::CreateMitkImage(&tmp);
+      }
+    }
+    else
+    {
+      // Load one image file using mitk::IOUtil.
+      // This will load in as 2D, and hence requires the MITK filter to convert to 3D.
+      mitk::Image::Pointer tmpImage = mitk::IOUtil::LoadImage(pairedFiles[i].first);
+      filter->SetInput(tmpImage);
+      filter->Update();
+      convertedImage = filter->GetOutput();
+    }
 
     // Load one tracking file
     vtkSmartPointer<vtkMatrix4x4> trackingMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
