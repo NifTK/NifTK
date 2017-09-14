@@ -754,9 +754,13 @@ void NiftyCalVideoCalibrationManager::ConvertImage(
   {
     cv::cvtColor(image, outputImage, CV_RGB2GRAY);
   }
+  else if (image.channels() == 4)
+  {
+    cv::cvtColor(image, outputImage, CV_RGBA2GRAY);
+  }
   else
   {
-    mitkThrow() << "Input image should be 1 (grey scale), or 3 (RGB) channel.";
+    mitkThrow() << "Input image should be 1 (grey scale), 3 (RGB) or 4 (RGBA) channel.";
   }
 
   m_ImageSize.width = image.cols;
@@ -864,7 +868,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
   else if (m_CalibrationPattern == APRIL_TAGS)
   {
     niftk::AprilTagsPointDetector *aprilTagsDetector1 =
-      new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
+      new niftk::AprilTagsPointDetector(false, m_TagFamily, 0, 0.8);
     aprilTagsDetector1->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
     aprilTagsDetector1->SetImage(&copyOfImage1);
     aprilTagsDetector1->SetCaching(true);
@@ -882,7 +886,7 @@ bool NiftyCalVideoCalibrationManager::ExtractPoints(int imageIndex, const cv::Ma
         m_OriginalImages[imageIndex].back().first.get())->SetImage(&(m_OriginalImages[imageIndex].back().second));
 
       niftk::AprilTagsPointDetector *aprilTagsDetector2 =
-        new niftk::AprilTagsPointDetector(true, m_TagFamily, 0, 0.8);
+        new niftk::AprilTagsPointDetector(false, m_TagFamily, 0, 0.8);
       aprilTagsDetector2->SetImageScaleFactor(scaleFactors, doRescaleAfterPointExtraction);
       aprilTagsDetector2->SetImage(&copyOfImage2);
       aprilTagsDetector2->SetCaching(false);
