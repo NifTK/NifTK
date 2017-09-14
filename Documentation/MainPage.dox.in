@@ -15,17 +15,17 @@ of medical imaging algorithms from the computer science lab to every-day clinica
 
 @NIFTK_PLATFORM@ was developed with funding from the NIHR and the Comprehensive Biomedical 
 Research Centre at UCL and UCLH grant 168 and TSB grant M1638A. The principal investigator 
-is <a href="http://cmic.cs.ucl.ac.uk/staff/sebastien_ourselin/">Sebastien Ourselin</a>
-and team leader is <a href="http://cmic.cs.ucl.ac.uk/staff/matt_clarkson/">Matt Clarkson</a>.
+is <a href="http://cmictig.cs.ucl.ac.uk/people/academic-staff/sourselin">Sebastien Ourselin</a>
+and team leader is <a href="http://cmictig.cs.ucl.ac.uk/people/academic-staff/matt-clarkson">Matt Clarkson</a>.
 
 The term @NIFTK_PLATFORM@ refers to the whole collection of Nifty<Something> packages 
 developed by <a href="@NIFTK_ORIGIN_URL@">@NIFTK_ORIGIN_SHORT_TEXT@</a> and listed 
-<a href="http://cmic.cs.ucl.ac.uk/home/software/">here</a>.
+<a href="http://cmictig.cs.ucl.ac.uk/research/software/software-nifty">here</a>.
 
 In addition, there is a specific code repository called @NIFTK_PLATFORM@, which can be considered
 as a parent project, containing several graphical user interfaces (GUIs) such as NiftyView, NiftyMIDAS and
 NiftyIGI, many command line programs and assorted scripts. Furthermore, this parent project, called @NIFTK_PLATFORM@,
-can download and build all of the smaller Nifty<Something> packages, thereby providing an integrated suite
+can download and build some of the smaller Nifty<Something> packages, thereby providing an integrated suite
 of applications. So this specific page and linked pages of documentation refer specifically to the @NIFTK_PLATFORM@
 code repository.
 
@@ -42,10 +42,10 @@ and
 
 For developers it is important to read:
 
-\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/MidasPlatform">The wiki</a>
-\li <a href="https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK">The dashboard</a>
+\li <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/wikis/home">The wiki</a>
+\li <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/pipelines">The CI dashboard</a>
+\li <a href="https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK">The Nightly dashboard</a>
 \li <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/milestones">The current tasks</a>
-\li <a href="https://cmicdev.cs.ucl.ac.uk/trac/wiki/RoadMap">The roadmap</a>
 
 \section MainPageAcknowledgements Acknowledgements
 
