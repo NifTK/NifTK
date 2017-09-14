@@ -92,6 +92,7 @@
 #define NIFTK_ORIGIN_SHORT_TEXT "@NIFTK_ORIGIN_SHORT_TEXT@"
 #define NIFTK_ORIGIN_LONG_TEXT "@NIFTK_ORIGIN_LONG_TEXT@"
 #define NIFTK_USER_CONTACT "@NIFTK_USER_CONTACT@"
+#define NIFTK_DOC_LOCATION "@NIFTK_DOC_LOCATION@"
 
 /* Important software version information - see Help About Dialog. */
 #define NIFTK_QT_VERSION "@NIFTK_VERSION_QT@"
