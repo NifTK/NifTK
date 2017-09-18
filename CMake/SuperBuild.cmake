@@ -338,6 +338,10 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     list(APPEND proj_DEPENDENCIES ${Caffe_DEPENDS} ${OpenBLAS_DEPENDS} ${ProtoBuf-CMake_DEPENDS} ${ProtoBuf_DEPENDS} ${glog_DEPENDS} ${gflags_DEPENDS} ${HDF5_DEPENDS})
   endif()
 
+  if(BUILD_PYTHON)
+    list(APPEND proj_DEPENDENCIES ${ZLIB_DEPENDS} ${PCRE_DEPENDS} ${SWIG_DEPENDS} ${Numpy_DEPENDS} ${SimpleITK_DEPENDS})
+  endif()
+
   if(MSVC)
     # if we dont do this then windows headers will define all sorts of "keywords"
     # and compilation will fail with the weirdest errors.
