@@ -26,6 +26,25 @@
 #include <niftkDataStorageUtils.h>
 #include <niftkAffineTransformDataNodeProperty.h>
 
+bool CompareMatrix ( vtkMatrix4x4* matrix, double* result, double tolerance)
+{
+  double residual = 0.0;
+  for ( unsigned int i = 0 ; i < 4 ;  ++i )
+  {
+    for ( unsigned int j = 0 ; j < 4 ; ++j)
+    {
+      residual +=  std::fabs(matrix->GetElement (i,j) - result [i*4 + j]);
+    }
+  }
+
+  if ( residual <= tolerance )
+  {
+    return true;
+  }
+
+  return false;
+}
+
 namespace niftk
 {
 
@@ -68,13 +87,21 @@ void TestLoadMatrixOrCreateDefault( std::string filename )
   matrix = &affTransProp->GetTransform();
   MITK_TEST_CONDITION_REQUIRED ( matrix != NULL, "Testing that node has a matrix");
 
-  MITK_TEST_CONDITION_REQUIRED ( matrix->GetElement (0,0) == 1.0 , "Testing that element 0,0 is 1.0");
+  double result [16]={ 1.0,0.0,0.0,0.0,
+                       0.0,1.0,0.0,0.0,
+                       0.0,0.0,1.0,0.0,
+                       0.0,0.0,0.0,1.0};
+  MITK_TEST_CONDITION_REQUIRED ( CompareMatrix (matrix, result,0.0) , "Testing that element 0,0 is 1.0");
 
   niftk::LoadMatrixOrCreateDefault (filename, "TestMatrix" , helperObject, dataStorage);
   node=dataStorage->GetNamedNode("TestMatrix");
   affTransProp= static_cast<niftk::AffineTransformDataNodeProperty*>(node->GetProperty(propertyName.c_str()));
   matrix = &affTransProp->GetTransform();
-  MITK_TEST_CONDITION_REQUIRED ( matrix->GetElement (0,0) == 0.648499 , "Testing that element 0,0 is 0.648499, actual = " <<  matrix->GetElement (0,0) );
+  double actualResult[16] = {0.648499, -0.685404, 0.331165, 25.0826,
+                             0.583259, 0.167855, -0.794754, -47.6029,
+                             0.48914, 0.708553, 0.508621, -94.0804,
+                             0.0, 0.0, 0.0, 1.0};
+  MITK_TEST_CONDITION_REQUIRED ( CompareMatrix (matrix, actualResult,0.0)  , "Testing that " << filename << " was loaded." );
 
 
 }
