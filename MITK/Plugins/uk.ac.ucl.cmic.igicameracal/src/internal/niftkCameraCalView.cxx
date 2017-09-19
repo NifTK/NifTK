@@ -495,7 +495,10 @@ void CameraCalView::OnBackgroundGrabProcessFinished()
 //-----------------------------------------------------------------------------
 void CameraCalView::Calibrate()
 {
-  if (m_Manager->GetNumberOfSnapshots() == m_Manager->GetNumberOfSnapshotsForCalibrating())
+  int numberForCalibrating = m_Manager->GetNumberOfSnapshotsForCalibrating();
+  int numberAcquired = m_Manager->GetNumberOfSnapshots();
+
+  if (numberAcquired == numberForCalibrating)
   {
     if (m_Manager->GetModelFileName().empty())
     {
@@ -520,7 +523,7 @@ void CameraCalView::Calibrate()
   }
   else
   {
-    m_Controls->m_ProjectionErrorValue->setText("Too few images.");
+    m_Controls->m_ProjectionErrorValue->setText(QObject::tr("Too few images: (%1/%2).").arg(numberAcquired).arg(numberForCalibrating));
   }
 }
 

@@ -159,8 +159,10 @@ void IGIVideoOverlayWidget::OnLeftImageSelected(const mitk::DataNode* node)
   {
     m_LeftOverlayViewer->SetImageNode(const_cast<mitk::DataNode*>(node));
     m_TrackedViewer->SetImageNode(const_cast<mitk::DataNode*>(node));
+    this->Update();
+    m_LeftOverlayViewer->repaint();
+    m_TrackedViewer->repaint();
   }
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
@@ -170,8 +172,9 @@ void IGIVideoOverlayWidget::OnRightImageSelected(const mitk::DataNode* node)
   if (node != nullptr)
   {
     m_RightOverlayViewer->SetImageNode(const_cast<mitk::DataNode*>(node));
+    this->Update();
+    m_RightOverlayViewer->repaint();
   }
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 
@@ -183,8 +186,11 @@ void IGIVideoOverlayWidget::OnTransformSelected(const mitk::DataNode* node)
     m_LeftOverlayViewer->SetTransformNode(node);
     m_RightOverlayViewer->SetTransformNode(node);
     m_TrackedViewer->SetTransformNode(node);
+    this->Update();
+    m_LeftOverlayViewer->repaint();
+    m_TrackedViewer->repaint();
+    m_RightOverlayViewer->repaint();
   }
-  mitk::RenderingManager::GetInstance()->RequestUpdateAll();
 }
 
 

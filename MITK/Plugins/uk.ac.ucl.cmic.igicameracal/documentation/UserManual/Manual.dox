@@ -5,13 +5,14 @@
 
 \section CameraCalIntro Introduction
 
-The Video Camera Calibration plugin provides a multitude of different calibration methods.
+The Video Camera Calibration plugin provides a multitude of different video camera calibration methods.
 
-\li Feature detectors: OpenCV chessboard, OpenCV assymetrical circle pattern, AprilTags,
-template matching of dots and rings.
+\li Feature detectors: OpenCV chessboard, OpenCV asymmetrical circle pattern, AprilTags,
+template matching of dots and rings [1].
 \li Iterative refinement of control points [1].
 \li Optimisation: 2D (reprojection) error or 3D (reconstruction) error.
-\li Handeye calibration: Tsai 1989 [2], Shahidi 2002 [3], an adaptation of Malti 2013 [4].
+\li Handeye calibration: Tsai 1989 [2], Shahidi 2002 [3], an adaptation of Malti 2013 [4],
+and one where we optimise all extrinsic parameters.
 
 \section CameraCalPreferences Preferences
 
@@ -19,21 +20,31 @@ Before attempting to calibrate, you must set all the necessary preferences for y
 
 \image html MainPrefs.png "Figure 1: The Preference Page"
 
-\li previous calibration directory: You can specify a previous calibration directory and the files
-calib.left.intrinsic.txt, calib.right.intrinsic.txt, calib.r2l.txt, calib.left.handeye.txt,
-calib.right.handeye.txt and calib.model2world.txt are loaded into the plugin. This is a new
-and as-yet lightly tested feature, feedback is required.
-\li rescale image: Most feature detectors run in OpenCV which ignores pixel sizes. So, if you have
-anisotropic pixel sizes (in millimetres), you may want to resize the image in the x and y direction.
-\li model file: You must specifiy a model text file where each line contains the point identifier
-followed by x y and z coordinates all space separated.
-\li Minimum number of views: Once you have this many views or more, calibration is recomputed at each image grab.
-\li do 3D optimisation: If clicked, will minimise reconstruction (triangulated 3D) error, otherwise reprojection error.
-\li do iterative calibration: See [1].
-\li features to detect: See below.
-\li preferred hand-eye method: This plugin will calculate 3 hand-eye methods, so you specify your
-"preferred" one, which means when the output is saved you get that one in calib.left.handeye.txt and
+\li <b>previous calibration directory</b>: You can specify a previous calibration directory and the files
+calib.left.intrinsic.txt, calib.right.intrinsic.txt, calib.r2l.txt, calib.left.eyehand.txt,
+calib.right.eyehand.txt and calib.model2world.txt are loaded into the plugin.
+\li <b>rescale image</b>: Most feature detectors run in OpenCV which ignores pixel sizes. So, if you have
+anisotropic pixel sizes (in millimetres), or, if you require a specific aspect ratio for your feature
+detector, then you may want to resize the image in the x and y direction. For example, on the SmartLiver
+project, we take standard HD video at 1920x1080, but to avoid line interleaved movement (comb) artefacts,
+we only take the odd lines, so the image size is actually 1920x540. So, if we are detecting chessboards,
+then OpenCV can cope with this, but if we specifically want square AprilTags, the AprilTag detector will
+fail because it will only see rectangles instead of squares due to the changed aspect ratio. So using this
+feature, you can resample back up to 1920x1080, do the feature detection, and then rescale the coordinates
+of the detected features back down, such that the output calibration works properly with 1920x540.
+\li <b>model file</b>: You must specifiy a model text file where each line contains a single point
+specified by the point identifier followed by x y and z coordinates, in millimetres, all space separated.
+\li <b>number of views</b>: If you select exactly 1 view, intrinsic calibration will use Tsai's coplanar or non-coplanar method [2].
+If you select more than 1 view, intrinsic calibration will use Zhang's method from OpenCV.
+After the required number of views are taken, calibration will be launched automatically.
+\li <b>do 3D optimisation</b>: If clicked, will minimise reconstruction (triangulated 3D) error, otherwise reprojection error.
+NOTE: This still uses the same Levenberg Marquardt optimiser, so optimisation is likely to be poor.
+\li <b>do iterative calibration</b>: See [1].
+\li <b>features to detect</b>: See below.
+\li <b>preferred hand-eye method</b>: This plugin will calculate 4 hand-eye methods, so you specify your
+"preferred" one, which means when the output is saved you get that one in calib.left.eyehand.txt and
 when its visualised, you see your preferred one.
+\li <b>output directory</b>: Calibration data are saved here.
 
 \subsection CameraCalPreferencesFeatures Feature Selection
 
@@ -47,14 +58,14 @@ and AprilTags requires you to set the Tag Family identifier.
 
 \image html TemplateMatching.png "Figure 3: Chosing the template image to match."
 
-If doing template matching, you must provide a template of the correct scale to match.
+If doing template matching [3], you must provide a template of the correct scale to match.
 
 \subsection CameraCalPreferencesIterative Iterative Refinement
 
 \image html Iterative.png "Figure 4: Iterative Refinement requires a canonical image, and the 2D locations of each feature. See [1]."
 
 If selected, you can do Iterative Refinement of Control Points [1], which requires a
-canonical (face on) image, and the exact location of each feature point in 2D.
+canonical (face on) image, and the exact location of each feature point in 2D in the canonical image.
 
 \subsection CameraCalPreferencesHandEye Hand-Eye Calibration
 
@@ -72,12 +83,15 @@ Once you have set up the correct preferences, calibration is easy. Figure 6 show
 \li grab: Takes a picture, with a green tick indicating success and a red cross indicating failure.
 \li undo: Drops the most recent picture.
 \li clear: Removes all currently taken picture.
-\li save: Saves all calibration information into a folder.
 
-Once you have enough images (specified using the above preferences), calibration proceeds automatically.
-If the footswitch plugin is opened, you can use a USB footswitch.
+When the required number of views are grabbed, the calibration runs automatically, and if successful,
+all the relevant data is saved to a new folder inside the folder specified by '<b>output directory</b>'
+on the preferences page.
 
-Note: A known issue with the footswitch plugin is that it doesn't initialise if it is
+If the footswitch plugin is opened, you can use the USB footswitch in the TIG lab (right hand pedal).
+We haven't tested other footswitches.
+
+Note: A known issue with the footswitch plugin is that it doesn't correctly initialise if it is
 automatically open when the Workbench starts. You may need to stop and restart it.
 
 \section CameraCalReferences References
