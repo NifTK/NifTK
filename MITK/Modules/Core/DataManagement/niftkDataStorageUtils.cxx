@@ -142,11 +142,6 @@ void LoadMatrixOrCreateDefault(
     mitk::DataStorage* dataStorage)
 {
   vtkSmartPointer<vtkMatrix4x4> matrix = LoadVtkMatrix4x4FromFile(fileName);
-  if (matrix.GetPointer())
-  {
-    matrix = vtkSmartPointer<vtkMatrix4x4>::New();
-    matrix->Identity();
-  }
 
   mitk::DataNode::Pointer node = dataStorage->GetNamedNode(nodeName);
   if (node.IsNull())
