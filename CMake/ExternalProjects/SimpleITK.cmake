@@ -134,7 +134,7 @@ if(MITK_USE_SimpleITK)
         )
       else()
         ExternalProject_Add_Step(${proj} sitk_python_install_step
-          COMMAND ${PYTHON_EXECUTABLE} setup.py install --prefix=${_install_dir}
+          COMMAND ${PYTHON_EXECUTABLE} setup.py install ${NIFTK_SITK_FLAGS} --prefix=${_install_dir}
           DEPENDEES install
           WORKING_DIRECTORY ${_sitk_build_dir}/Wrapping/PythonPackage
         )

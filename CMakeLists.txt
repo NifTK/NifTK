@@ -621,7 +621,7 @@ mitkFunctionAddExternalProject(NAME ProtoBuf-CMake OFF ADVANCED NO_PACKAGE Proto
 mitkFunctionAddExternalProject(NAME gflags         OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME glog           OFF ADVANCED NO_PACKAGE gflags)
 
-set(_caffe_depends Boost ProtoBuf-CMake ProtoBuf glog gflags HDF5 ZLIB)
+set(_caffe_depends Boost ProtoBuf-CMake ProtoBuf glog gflags HDF5)
 if(NOT APPLE)
   list(APPEND _caffe_depends OpenBLAS)
 endif()

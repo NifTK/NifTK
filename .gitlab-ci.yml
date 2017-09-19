@@ -370,6 +370,7 @@ CentOS 7 release build:
     - cmake -DBUILD_TESTING:BOOL=OFF
           -DNIFTK_USE_CPPCHECK:BOOL=OFF
           -DNIFTK_USE_KWSTYLE:BOOL=OFF
+          -DNIFTK_SITK_FLAGS:STRING="--single-version-externally-managed;--root=/"
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
           -DBUILD_CAFFE:BOOL=ON
