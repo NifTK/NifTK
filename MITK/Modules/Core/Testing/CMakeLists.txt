@@ -52,4 +52,7 @@ if(TARGET ${TESTDRIVER})
   mitkAddCustomModuleTest(BinaryMask-AND niftkBinaryMaskTest ${NIFTK_DATA_DIR}/Input/BinaryMask/input1.png ${NIFTK_DATA_DIR}/Input/BinaryMask/input2.png 0 ${NIFTK_DATA_DIR}/Input/BinaryMask/expectedOutputAnd.png)
   mitkAddCustomModuleTest(BinaryMask-OR niftkBinaryMaskTest ${NIFTK_DATA_DIR}/Input/BinaryMask/input1.png ${NIFTK_DATA_DIR}/Input/BinaryMask/input2.png 1 ${NIFTK_DATA_DIR}/Input/BinaryMask/expectedOutputOr.png)
 
+  # Test datastorageutilts
+  mitkAddCustomModuleTest(DataStorageUtils niftkDataStorageUtilsTest  ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration/calib.left.handeye.txt)
+
 endif()
