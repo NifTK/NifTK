@@ -34,6 +34,7 @@ bool CompareMatrix ( vtkMatrix4x4* matrix, double* result, double tolerance)
     for ( unsigned int j = 0 ; j < 4 ; ++j)
     {
       residual +=  std::fabs(matrix->GetElement (i,j) - result [i*4 + j]);
+      MITK_INFO << "Element " << i << "," << j << " : " << matrix->GetElement (i,j) << " - " << result [i*4 + j] << " += " << residual;
     }
   }
 
