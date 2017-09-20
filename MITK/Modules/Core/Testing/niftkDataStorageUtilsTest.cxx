@@ -97,9 +97,9 @@ void TestLoadMatrixOrCreateDefault( std::string filename )
   node=dataStorage->GetNamedNode("TestMatrix");
   affTransProp= static_cast<niftk::AffineTransformDataNodeProperty*>(node->GetProperty(propertyName.c_str()));
   matrix = &affTransProp->GetTransform();
-  double actualResult[16] = {0.648499, -0.685404, 0.331165, 25.0826,
-                             0.583259, 0.167855, -0.794754, -47.6029,
-                             0.48914, 0.708553, 0.508621, -94.0804,
+  double actualResult[16] = {0.9835, -0.0196, 0.1796, 11.1213,
+                             0.1501, -0.4652, -0.8724, 8.0067,
+                             0.1007, 0.8850, -0.4546, -6.4524,
                              0.0, 0.0, 0.0, 1.0};
   MITK_TEST_CONDITION_REQUIRED ( CompareMatrix (matrix, actualResult,0.0)  , "Testing that " << filename << " was loaded." );
 
