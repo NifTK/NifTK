@@ -573,7 +573,7 @@ void NiftyLinkDataSourceService::SaveImage(niftk::NiftyLinkDataType& dataType,
   QDir directory(outputPath);
   if (directory.mkpath(outputPath))
   {
-    QString fileName = outputPath + QDir::separator() + tr("%1.%2").arg(dataType.GetTimeStampInNanoSeconds());
+    QString fileName = outputPath + QDir::separator() + tr("%1%2").arg(dataType.GetTimeStampInNanoSeconds()).arg(m_FileExtension);
 
     int nx;
     int ny;
