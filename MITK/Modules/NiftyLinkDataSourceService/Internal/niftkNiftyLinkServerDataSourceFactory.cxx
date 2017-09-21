@@ -14,7 +14,7 @@
 
 #include "niftkNiftyLinkServerDataSourceFactory.h"
 #include "niftkNiftyLinkServerDataSourceService.h"
-#include <niftkIPPortDialog.h>
+#include <niftkIPHostPortExtensionDialog.h>
 #include <niftkLagDialog.h>
 
 namespace niftk
@@ -39,7 +39,26 @@ NiftyLinkServerDataSourceFactory::~NiftyLinkServerDataSourceFactory()
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* NiftyLinkServerDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  return new niftk::IPPortDialog(parent);
+  QStringList names;
+  names.append(".nii");
+  names.append(".nii.gz");
+  names.append(".jpg");
+  names.append(".png");
+
+  QStringList extensions;
+  extensions.append(".nii");
+  extensions.append(".nii.gz");
+  extensions.append(".jpg");
+  extensions.append(".png");
+
+  QString settings("uk.ac.ucl.cmic.niftkNiftyLinkClientDataSourceFactory.IPHostPortExtensionDialog");
+
+  niftk::IPHostPortExtensionDialog* dialog = new niftk::IPHostPortExtensionDialog(parent, settings, 3200, names, extensions);
+  dialog->SetHostVisible(false);
+  dialog->SetPortVisible(true);
+  dialog->SetExtensionVisible(true);
+
+  return dialog;
 }
 
 

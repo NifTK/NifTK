@@ -50,6 +50,7 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
   this->SetShouldUpdate(true);
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
+  m_DataGrabbingThread->SetUseFastPolling(true);
   m_DataGrabbingThread->SetInterval(1000 / m_Tracker->GetExpectedFramesPerSecond());
   m_DataGrabbingThread->start();
 
