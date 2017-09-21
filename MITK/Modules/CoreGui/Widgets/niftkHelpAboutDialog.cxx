@@ -321,7 +321,7 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       ).arg(pclVersion).arg(pclLocation);
   #endif
 
-  #ifdef BUILD_CAFFE
+  #ifdef BUILD_Caffe
     QString glogVersion(NIFTK_VERSION_glog);
     QString glogLocation(NIFTK_LOCATION_glog);
     QString glogText = QObject::tr(
@@ -431,7 +431,7 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       .append(flannText)
       .append(pclText)
 #endif
-#ifdef BUILD_CAFFE
+#ifdef BUILD_Caffe
       .append(glogText)
       .append(gflagsText)
       .append(hdf5Text)

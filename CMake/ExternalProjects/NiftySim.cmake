@@ -26,19 +26,19 @@ if(BUILD_NiftySim)
 
   set(version "20c6ef0f04")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySim-${version}.tar.gz")
+  set(depends "")
+  if(DEFINED VTK_DIR)
+    set(USE_VTK ON)
+  else()
+    set(USE_VTK OFF)
+  endif()
+  if (USE_VTK)
+    list(APPEND depends VTK)
+  endif (USE_VTK)
 
-  niftkMacroDefineExternalProjectVariables(NiftySim ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(NiftySim ${version} ${location} "${depends}")
 
   if(NOT DEFINED NiftySim_DIR)
-    if(DEFINED VTK_DIR)
-      set(USE_VTK ON)
-    else(DEFINED VTK_DIR)
-      set(USE_VTK OFF)
-    endif(DEFINED VTK_DIR)
-
-    if (USE_VTK)
-      list(APPEND proj_DEPENDENCIES VTK)
-    endif (USE_VTK)
 
     # Run search for needed CUDA SDK components here so as to give the user the option
     # to manually set paths should they not be found by NiftySim.

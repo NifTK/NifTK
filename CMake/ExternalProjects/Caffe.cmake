@@ -26,19 +26,18 @@ if(MITK_USE_Caffe)
 
   # Microsoft Caffe Windows branch, forked from https://github.com/BVLC/caffe,
   # with Eli's mods (SPIE 2017) merged in, and fixes to get working on Windows, Linux and Mac.
+
   set(version "a7d36b0b2e")
-
   set(location "${NIFTK_EP_TARBALL_LOCATION}/caffe-${version}.tar.gz")
-
-  niftkMacroDefineExternalProjectVariables(Caffe ${version} ${location})
-
-  set(proj_DEPENDENCIES Boost gflags glog ProtoBuf-CMake ProtoBuf HDF5)
+  set(depends Boost gflags glog ProtoBuf-CMake ProtoBuf HDF5)
   if(NOT APPLE)
-    list(APPEND proj_DEPENDENCIES OpenBLAS)
+    list(APPEND depends OpenBLAS)
   endif()
   if(MITK_USE_OpenCV)
-    list(APPEND proj_DEPENDENCIES OpenCV)
+    list(APPEND depends OpenCV)
   endif()
+
+  niftkMacroDefineExternalProjectVariables(Caffe ${version} ${location} "${depends}")
 
   if(${NIFTK_USE_CUDA})
     set(CPU_ONLY OFF)

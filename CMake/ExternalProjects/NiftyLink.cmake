@@ -44,8 +44,9 @@ if(BUILD_NiftyIGI)
   else ()
     set(version "95a8d907d0")
   endif ()
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(NiftyLink ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(NiftyLink ${version} ${location} "${depends}")
 
   if(NOT DEFINED NiftyLink_DIR)
 

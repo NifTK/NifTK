@@ -26,8 +26,12 @@ if(BUILD_NiftyIGI)
 
   set(version "2.4.11")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenCV-${version}.tar.gz")
+  set(depends "")
+  if(MITK_USE_Python)
+    list(APPEND depends Python Numpy)
+  endif()
 
-  niftkMacroDefineExternalProjectVariables(OpenCV ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(OpenCV ${version} ${location} "${depends}")
 
   if(NOT DEFINED OpenCV_DIR)
 
@@ -38,7 +42,6 @@ if(BUILD_NiftyIGI)
     )
 
     if(MITK_USE_Python)
-      list(APPEND proj_DEPENDENCIES Python Numpy)
       if(NOT MITK_USE_SYSTEM_PYTHON)
         # export python home
         set(ENV{PYTHONHOME} "${Python_DIR}")

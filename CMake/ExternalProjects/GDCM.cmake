@@ -37,8 +37,9 @@ endif()
 
 set(version "2.4.1")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/gdcm-${version}.tar.gz")
+set(depends "")
 
-niftkMacroDefineExternalProjectVariables(GDCM ${version} ${location})
+niftkMacroDefineExternalProjectVariables(GDCM ${version} ${location} "${depends}")
 
 if(NOT DEFINED GDCM_DIR)
 

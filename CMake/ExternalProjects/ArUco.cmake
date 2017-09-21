@@ -26,9 +26,9 @@ if(BUILD_NiftyIGI)
 
   set(version "1.3.0")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/aruco-${version}.tar.gz")
+  set(depends OpenCV)
 
-  niftkMacroDefineExternalProjectVariables(ArUco ${version} ${location})
-  set(proj_DEPENDENCIES OpenCV)
+  niftkMacroDefineExternalProjectVariables(ArUco ${version} ${location} "${depends}")
 
   if(NOT DEFINED aruco_DIR)
 

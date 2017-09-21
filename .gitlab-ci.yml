@@ -37,7 +37,7 @@ Linux continuous build:
           -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
           -DEP_DIRECTORY_PER_VERSION:BOOL=ON
           -DBUILD_TESTING:BOOL=ON
-          -DBUILD_CAFFE:BOOL=ON
+          -DBUILD_Caffe:BOOL=ON
           -DBUILD_LEGACY_COMMAND_LINE_PROGRAMS:BOOL=ON
           -DNIFTK_USE_CPPCHECK:BOOL=ON
           -DNIFTK_USE_KWSTYLE:BOOL=ON
@@ -67,7 +67,7 @@ Mac continuous build:
           -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
           -DEP_DIRECTORY_PER_VERSION:BOOL=ON
           -DBUILD_TESTING:BOOL=ON
-          -DBUILD_CAFFE:BOOL=ON
+          -DBUILD_Caffe:BOOL=ON
           -DBUILD_LEGACY_COMMAND_LINE_PROGRAMS:BOOL=ON
           -DDESIRED_QT_VERSION:STRING=4
           -DNIFTYLINK_CHECK_COVERAGE=ON
@@ -318,7 +318,7 @@ Ubuntu 14.04 release build:
           -DNIFTK_USE_KWSTYLE:BOOL=OFF
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
-          -DBUILD_CAFFE:BOOL=ON
+          -DBUILD_Caffe:BOOL=ON
           -DNIFTK_Apps/NiftyView:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
           -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
@@ -345,7 +345,7 @@ Ubuntu 16.04 release build:
           -DNIFTK_USE_KWSTYLE:BOOL=OFF
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
-          -DBUILD_CAFFE:BOOL=ON
+          -DBUILD_Caffe:BOOL=ON
           -DNIFTK_Apps/NiftyView:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
           -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
@@ -373,7 +373,7 @@ CentOS 7 release build:
           -DNIFTK_SITK_FLAGS:STRING="--single-version-externally-managed;--root=/"
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
-          -DBUILD_CAFFE:BOOL=ON
+          -DBUILD_Caffe:BOOL=ON
           -DNIFTK_Apps/NiftyView:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
           -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
@@ -404,7 +404,7 @@ CentOS 6 release build:
           -DNIFTK_USE_KWSTYLE:BOOL=OFF
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
-          -DBUILD_CAFFE:BOOL=ON
+          -DBUILD_Caffe:BOOL=ON
           -DOPENCV_WITH_FFMPEG:BOOL=ON
           -DNIFTK_Apps/NiftyView:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
@@ -432,7 +432,7 @@ Mac release build:
           -DNIFTK_USE_KWSTYLE:BOOL=OFF
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
-          -DBUILD_CAFFE:BOOL=ON
+          -DBUILD_Caffe:BOOL=ON
           -DNIFTK_Apps/NiftyView:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
           -DNIFTK_Apps/NiftyMIDAS:BOOL=ON

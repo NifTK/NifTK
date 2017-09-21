@@ -27,8 +27,9 @@ if(MITK_USE_OpenBLAS AND NOT APPLE)
   #set(version "0.2.18")
   set(version "7daf34e")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/OpenBLAS-${version}.tar.gz")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(OpenBLAS ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(OpenBLAS ${version} ${location} "${depends}")
 
   if(NOT DEFINED OpenBLAS_DIR)
 

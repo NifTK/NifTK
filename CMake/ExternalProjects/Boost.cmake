@@ -28,14 +28,11 @@ if(MITK_USE_Boost)
 
   set(version "1_56_0")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/boost_${version}.tar.gz")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(Boost ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(Boost ${version} ${location} "${depends}")
 
   string(REPLACE "^^" ";" MITK_USE_Boost_LIBRARIES "${MITK_USE_Boost_LIBRARIES}")
-
-  set(proj Boost)
-  set(proj_DEPENDENCIES )
-  set(Boost_DEPENDS ${proj})
 
   if(NOT DEFINED BOOST_ROOT AND NOT MITK_USE_SYSTEM_Boost)
 

@@ -24,17 +24,15 @@ endif()
 
 set(version "4.7.1-20c0592")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/InsightToolkit-${version}.tar.gz")
-
-niftkMacroDefineExternalProjectVariables(ITK ${version} ${location})
-set(proj_DEPENDENCIES GDCM)
-
+set(depends GDCM)
 if(MITK_USE_OpenCV)
-  list(APPEND proj_DEPENDENCIES OpenCV)
+  list(APPEND depends OpenCV)
+endif()
+if(MITK_USE_HDF5)
+  list(APPEND depends HDF5)
 endif()
 
-if(MITK_USE_HDF5)
-  list(APPEND proj_DEPENDENCIES HDF5)
-endif()
+niftkMacroDefineExternalProjectVariables(ITK ${version} ${location} "${depends}")
 
 if(NOT DEFINED ITK_DIR)
 

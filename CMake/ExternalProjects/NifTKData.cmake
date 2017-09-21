@@ -38,8 +38,9 @@ if (BUILD_TESTING)
   set(version_sha1 "08af06d29fa8b89c5cb83bb41bc85c864807da2f")
   string(SUBSTRING ${version_sha1} 0 10 version)
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTKData.git")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(NifTKData ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(NifTKData ${version} ${location} "${depends}")
 
   if (NOT DEFINED NIFTK_DATA_DIR)
 

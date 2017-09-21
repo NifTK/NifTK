@@ -26,8 +26,9 @@ if(BUILD_VL)
 
   set(version "bcc082625d")
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/VisualizationLibrary.git")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(VL ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(VL ${version} ${location} "${depends}")
 
   if(NOT DEFINED VL_DIR)
 

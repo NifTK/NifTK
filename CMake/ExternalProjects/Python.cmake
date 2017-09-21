@@ -23,10 +23,11 @@ endif()
 
 if(MITK_USE_Python)
 
-  set(proj Python)
   set(version "47845c55")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/python-cmake-buildsystem-${version}.tar.gz")
-  niftkMacroDefineExternalProjectVariables(${proj} ${version} ${location})
+  set(depends "")
+
+  niftkMacroDefineExternalProjectVariables(Python ${version} ${location} "${depends}")
 
   if(NOT MITK_USE_SYSTEM_PYTHON)
     if(NOT DEFINED Python_DIR)
@@ -57,8 +58,9 @@ if(MITK_USE_Python)
         INSTALL_COMMAND ""
       )
 
+      list(APPEND depends ZLIB ${_pysrc_project})
 
-      set(proj_DEPENDENCIES ZLIB ${_pysrc_project})
+      niftkMacroDefineExternalProjectVariables(Python ${version} ${location} "${depends}")
 
       set(additional_cmake_cache_args )
       list(APPEND additional_cmake_cache_args
@@ -182,8 +184,7 @@ if(MITK_USE_Python)
           -DCMAKE_DEBUG_POSTFIX:STRING=
         CMAKE_CACHE_DEFAULT_ARGS
           ${EP_COMMON_CACHE_DEFAULT_ARGS}
-        DEPENDS
-          ${proj_DEPENDENCIES}
+        DEPENDS ${proj_DEPENDENCIES}
       )
 
       # set versions, override

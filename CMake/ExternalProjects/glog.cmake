@@ -26,10 +26,9 @@ if(MITK_USE_glog)
 
   set(glog_VERSION "e8ddd96")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/glog-${glog_VERSION}.tar.gz")
+  set(depends gflags)
 
-  niftkMacroDefineExternalProjectVariables(glog ${glog_VERSION} ${location})
-
-  set(proj_DEPENDENCIES gflags)
+  niftkMacroDefineExternalProjectVariables(glog ${glog_VERSION} ${location} "${depends}")
 
   if(NOT DEFINED glog_DIR)
 

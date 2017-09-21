@@ -25,8 +25,9 @@ if(MITK_USE_Python)
 
   set(version "1.9.2")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/numpy-${version}.tar.gz")
-  niftkMacroDefineExternalProjectVariables(Numpy ${version} ${location})
-  set(proj_DEPENDENCIES Python)
+  set(depends Python)
+
+  niftkMacroDefineExternalProjectVariables(Numpy ${version} ${location} "${depends}")
 
   if(NOT MITK_USE_SYSTEM_PYTHON )
 
@@ -106,8 +107,7 @@ if(MITK_USE_Python)
         CONFIGURE_COMMAND ${CMAKE_COMMAND} -P ${_configure_step}
         BUILD_COMMAND   ${CMAKE_COMMAND} -P ${_build_step}
         INSTALL_COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -P ${_install_step}
-        DEPENDS
-          ${proj_DEPENDENCIES}
+        DEPENDS ${proj_DEPENDENCIES}
       )
 
       set(Numpy_DIR ${MITK_PYTHON_SITE_DIR}/numpy)
