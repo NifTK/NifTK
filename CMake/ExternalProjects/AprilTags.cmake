@@ -26,9 +26,9 @@ if(BUILD_NiftyIGI)
 
   set(version "3c6af59723")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-apriltags-${version}.tar.gz")
+  set(depends OpenCV Eigen)
 
-  niftkMacroDefineExternalProjectVariables(AprilTags ${version} ${location})
-  set(proj_DEPENDENCIES OpenCV Eigen)
+  niftkMacroDefineExternalProjectVariables(AprilTags ${version} ${location} "${depends}")
 
   if(NOT DEFINED AprilTags_DIR)
 

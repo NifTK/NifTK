@@ -24,12 +24,15 @@ endif()
 
 set(version "6.2.0")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/VTK-${version}.tar.gz")
-
-niftkMacroDefineExternalProjectVariables(VTK ${version} ${location})
-
+set(depends "")
 if(MITK_USE_HDF5)
-  list(APPEND proj_DEPENDENCIES HDF5)
+  list(APPEND depends HDF5)
 endif()
+if(MITK_USE_Python)
+  list(APPEND depends Python)
+endif()
+
+niftkMacroDefineExternalProjectVariables(VTK ${version} ${location} "${depends}")
 
 if(NOT DEFINED VTK_DIR)
 
@@ -66,7 +69,6 @@ if(NOT DEFINED VTK_DIR)
       )
 
   if(MITK_USE_Python)
-    list(APPEND proj_DEPENDENCIES Python)
     if(NOT MITK_USE_SYSTEM_PYTHON)
      set(_vtk_install_python_dir -DVTK_INSTALL_PYTHON_MODULE_DIR:FILEPATH=${MITK_PYTHON_SITE_DIR})
     else()

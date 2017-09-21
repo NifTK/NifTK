@@ -30,6 +30,13 @@ if(MITK_USE_Qt4 OR MITK_USE_Qt5)
   # or change the deploy path by changing the patch level.
   set(version "910cec7415")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-CTK-${version}.tar.gz")
+  set(depends VTK ITK DCMTK)
+  if(MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON)
+    list(APPEND depends Python)
+  endif()
+  if(MITK_USE_DCMTK)
+    list(APPEND depends DCMTK)
+  endif()
 
   set(qRestAPI_version "5f3a03b15d")
   set(qRestAPI_location "${NIFTK_EP_TARBALL_LOCATION}/commontk-qRestAPI-${qRestAPI_version}.tar.gz")
@@ -37,16 +44,12 @@ if(MITK_USE_Qt4 OR MITK_USE_Qt5)
   set(PythonQt_version "0b3cd63675")
   set(PythonQt_location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-PythonQt-${PythonQt_version}.tar.gz")
 
-  niftkMacroDefineExternalProjectVariables(CTK ${version} ${location})
-  set(proj_DEPENDENCIES VTK ITK DCMTK)
+  niftkMacroDefineExternalProjectVariables(CTK ${version} ${location} "${depends}")
 
   if(NOT DEFINED CTK_DIR)
 
     set(ctk_optional_cache_args )
     if(MITK_USE_Python)
-      if(NOT MITK_USE_SYSTEM_PYTHON)
-        list(APPEND proj_DEPENDENCIES Python)
-      endif()
       list(APPEND ctk_optional_cache_args
            -DCTK_LIB_Scripting/Python/Widgets:BOOL=ON
            -DCTK_ENABLE_Python_Wrapping:BOOL=ON
@@ -73,7 +76,6 @@ if(MITK_USE_Qt4 OR MITK_USE_Qt5)
             -DDCMTK_CMAKE_DEBUG_POSTFIX:STRING=d
             )
       endif()
-      list(APPEND proj_DEPENDENCIES DCMTK)
     endif()
 
     if(CTEST_USE_LAUNCHERS)

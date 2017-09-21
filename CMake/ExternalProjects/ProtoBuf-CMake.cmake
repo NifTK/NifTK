@@ -26,10 +26,9 @@ if(MITK_USE_ProtoBuf-CMake)
 
   set(version "9c19a2e")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/protobuf-cmake-${version}.tar.gz")
+  set(depends ProtoBuf)
 
-  niftkMacroDefineExternalProjectVariables(ProtoBuf-CMake ${version} ${location})
-
-  set(proj_DEPENDENCIES ProtoBuf)
+  niftkMacroDefineExternalProjectVariables(ProtoBuf-CMake ${version} ${location} "${depends}")
 
   if(NOT DEFINED ProtoBuf-CMake_DIR)
 

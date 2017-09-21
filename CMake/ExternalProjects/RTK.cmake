@@ -26,9 +26,9 @@ if(BUILD_RTK)
 
   set(version "196aec7d3b")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-RTK-${version}.tar.gz")
+  set(depends GDCM ITK)
 
-  niftkMacroDefineExternalProjectVariables(RTK ${version} ${location})
-  set(proj_DEPENDENCIES GDCM ITK)
+  niftkMacroDefineExternalProjectVariables(RTK ${version} ${location} "${depends}")
 
   if(NOT DEFINED RTK_DIR)
 

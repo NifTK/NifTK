@@ -19,7 +19,9 @@ if(MITK_USE_ZLIB)
 
   set(version "66a75305")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/zlib-${version}.tar.gz")
-  niftkMacroDefineExternalProjectVariables(ZLIB ${version} ${location})
+  set(depends "")
+
+  niftkMacroDefineExternalProjectVariables(ZLIB ${version} ${location} "${depends}")
 
   if(NOT DEFINED ZLIB_DIR)
 

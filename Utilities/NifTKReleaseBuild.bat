@@ -85,7 +85,7 @@ call cmake.exe ^
     -DBUILD_COMMAND_LINE_SCRIPTS:BOOL=ON ^
     -DNIFTK_GENERATE_DOXYGEN_HELP:BOOL=ON ^
     -DBUILD_Python:BOOL=ON ^
-    -DBUILD_CAFFE:BOOL=ON ^
+    -DBUILD_Caffe:BOOL=ON ^
     -DNIFTK_Apps/NiftyView:BOOL=ON ^
     -DNIFTK_Apps/NiftyIGI:BOOL=ON ^
     -DNIFTK_Apps/NiftyMIDAS:BOOL=ON ^

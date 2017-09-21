@@ -49,7 +49,7 @@ endmacro()
 #
 #########################################################################################
 
-macro(niftkMacroDefineExternalProjectVariables project version location)
+macro(niftkMacroDefineExternalProjectVariables project version location dependencies)
 
   if (EP_DIRECTORY_PER_VERSION)
 
@@ -73,7 +73,9 @@ macro(niftkMacroDefineExternalProjectVariables project version location)
   set(proj_BUILD ${proj_DIR}/build)
   set(proj_INSTALL ${proj_DIR}/install)
   set(proj_DEPENDENCIES "")
-  set(${project}_DEPENDS ${project})
+  list(APPEND proj_DEPENDENCIES ${dependencies})
+  set(${project}_DEPENDS ${dependencies})
+  list(APPEND ${project}_DEPENDS ${proj})
 
   if (${location} MATCHES "^.*(\\.tar\\.gz|\\.tar\\.bz2)$")
     niftkMacroGetChecksum(proj_CHECKSUM ${proj_LOCATION})

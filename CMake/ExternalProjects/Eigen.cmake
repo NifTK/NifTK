@@ -24,8 +24,9 @@ endif()
 
 set(version "3.2.2.1")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/eigen-eigen-${version}.tar.bz2")
+set(depends "")
 
-niftkMacroDefineExternalProjectVariables(Eigen ${version} ${location})
+niftkMacroDefineExternalProjectVariables(Eigen ${version} ${location} "${depends}")
 
 if(NOT DEFINED Eigen_DIR)
 

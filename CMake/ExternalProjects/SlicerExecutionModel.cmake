@@ -23,9 +23,9 @@ endif()
 
 set(version "11ea15b81e")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/Slicer-SlicerExecutionModel-${version}.tar.gz")
+set(depends ITK)
 
-niftkMacroDefineExternalProjectVariables(SlicerExecutionModel ${version} ${location})
-set(proj_DEPENDENCIES ITK)
+niftkMacroDefineExternalProjectVariables(SlicerExecutionModel ${version} ${location} ${depends})
 
 if(NOT DEFINED SlicerExecutionModel_DIR)
 

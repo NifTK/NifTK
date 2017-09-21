@@ -92,7 +92,7 @@ else()
   )
 endif()
 
-if (BUILD_CAFFE)
+if (BUILD_Caffe)
   set(_include_plugins
     ${_include_plugins}
     uk.ac.ucl.cmic.caffesegmentor

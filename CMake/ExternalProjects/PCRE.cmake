@@ -23,8 +23,9 @@ if(MITK_USE_PCRE)
 
   set(version "8.35")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/pcre-${version}.tar.gz")
-  niftkMacroDefineExternalProjectVariables(PCRE ${version} ${location})
-  set(proj_DEPENDENCIES)
+  set(depends "")
+
+  niftkMacroDefineExternalProjectVariables(PCRE ${version} ${location} "${depends}")
 
   if(NOT DEFINED PCRE_DIR)
 

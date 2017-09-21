@@ -23,14 +23,17 @@ endif()
 
 set(version "0.8.1")
 set(location "${NIFTK_EP_TARBALL_LOCATION}/SimpleITK-${version}.tar.gz")
-niftkMacroDefineExternalProjectVariables(SimpleITK ${version} ${location})
+set(depends ITK GDCM SWIG)
+if(MITK_USE_OpenCV)
+  list(APPEND depends OpenCV)
+endif()
+if(MITK_USE_Python)
+  list(APPEND depends Python)
+endif()
+
+niftkMacroDefineExternalProjectVariables(SimpleITK ${version} ${location} "${depends}")
 
 if(MITK_USE_SimpleITK)
-
-  set(proj_DEPENDENCIES ITK GDCM SWIG)
-  if(MITK_USE_OpenCV)
-    list(APPEND proj_DEPENDENCIES OpenCV)
-  endif()
 
   if(NOT DEFINED SimpleITK_DIR)
 
@@ -47,7 +50,6 @@ if(MITK_USE_SimpleITK)
         )
 
     if(MITK_USE_Python)
-      list(APPEND proj_DEPENDENCIES Python)
       list(APPEND additional_cmake_args
            -DWRAP_PYTHON:BOOL=ON
            -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}

@@ -20,9 +20,9 @@ if(BUILD_MESHING)
 
   set(version "4.4-patched")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/CGAL-${version}.tar.gz")
+  set(depends Boost)
 
-  niftkMacroDefineExternalProjectVariables(CGAL ${version} ${location})
-  set(proj_DEPENDENCIES Boost)
+  niftkMacroDefineExternalProjectVariables(CGAL ${version} ${location} "${depends}")
 
   if(NOT DEFINED CGAL_DIR)
     ######################################################################

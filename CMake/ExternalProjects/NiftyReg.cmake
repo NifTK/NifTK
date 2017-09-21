@@ -26,8 +26,9 @@ if(BUILD_NiftyReg)
 
   set(version "97383b06b9")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftyReg-${version}.tar.gz")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(NiftyReg ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(NiftyReg ${version} ${location} "${depends}")
 
   if(NOT DEFINED NiftyReg_DIR)
 
