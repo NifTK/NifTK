@@ -49,6 +49,9 @@ public:
 
   void LoadScreenPointsFromFile ( std::string fileName );
 
+  /**
+   * \brief writes rays to file. Throws an exception if file can't be written. If fileName is empty writes to std::out
+   */
   void WriteOutput ( std::string fileName );
 
   bool Project();

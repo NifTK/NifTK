@@ -75,19 +75,34 @@ void ProjectCameraRays::InitScreenPointsVector ()
 //-----------------------------------------------------------------------------
 void ProjectCameraRays::WriteOutput ( std::string filename )
 {
-  std::ofstream fout(filename.c_str());
-  if ( !fout )
+  std::streambuf * buf;
+  std::ofstream of;
+
+  if( filename.length() != 0 )
   {
-    MITK_WARN << "Failed to open file to write projected rays " << filename;
+
+    of.open(filename);
+    if ( ! of )
+    {
+      mitkThrow() << "Failed to open file to write projected rays " << filename;
+    }
+    buf = of.rdbuf();
   }
+  else
+  {
+    MITK_WARN << "ProjectCameraRays: No output file specified, writing to standard out.";
+    buf = std::cout.rdbuf();
+  }
+
+  std::ostream out(buf);
 
   MITK_INFO << "Writing results to " << filename;
   for ( std::vector<std::pair<cv::Point3d, cv::Point3d> > ::iterator it = m_Rays.begin() ; it < m_Rays.end() ; ++it )
   {
-    fout << std::setprecision(20) << it->first.x << " " << it->first.y << " " << it->first.z << " ";
-    fout << std::setprecision(20) << it->second.x << " " << it->second.y << " " << it->second.z  <<  std::endl;
+    out << std::setprecision(20) << it->first.x << " " << it->first.y << " " << it->first.z << " ";
+    out << std::setprecision(20) << it->second.x << " " << it->second.y << " " << it->second.z  <<  std::endl;
   }
-  fout.close();
+  of.close();
 
 }
 
