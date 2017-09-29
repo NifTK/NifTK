@@ -23,8 +23,8 @@ endif()
 
 if(BUILD_NiftyIGI)
 
-  set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyCal.git")
-  set(version "80a979ea46")
+  set(version "512020ba4f")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftyCal-${version}.tar.gz")
   set(depends OpenCV Eigen AprilTags ITK VTK)
 
   niftkMacroDefineExternalProjectVariables(NiftyCal ${version} ${location} "${depends}")
@@ -37,8 +37,8 @@ if(BUILD_NiftyIGI)
       SOURCE_DIR ${proj_SOURCE}
       BINARY_DIR ${proj_BUILD}
       INSTALL_DIR ${proj_INSTALL}
-      GIT_REPOSITORY ${proj_LOCATION}
-      GIT_TAG ${proj_VERSION}
+      URL ${proj_LOCATION}
+      URL_MD5 ${proj_CHECKSUM}
       UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${gen}
