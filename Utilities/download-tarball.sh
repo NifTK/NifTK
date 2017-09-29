@@ -61,6 +61,7 @@ Supported projects:
     NiftySeg
     NiftySim
     NiftyLink
+    NiftyCal
     NifTKData
     IGSTK
     NifTK
@@ -415,7 +416,7 @@ then
 elif [ $project = camino ]
 then
   download_from_sourceforge_git $project $version git
-elif [ $project = NiftyLink ]
+elif [[ $project = NiftyLink || $project = NiftyCal ]]
 then
   download_from_cmiclab CMIC $project $version
 elif [ $project = NifTKData ]
