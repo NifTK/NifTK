@@ -1863,6 +1863,16 @@ if(OPENCV_WITH_FFMPEG)
 endif()
 
 ######################################################################
+# Python packaging hacks.
+######################################################################
+if(MITK_USE_Python)
+  get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+  list(APPEND _additional_search_paths ${CTK_DIR}/CMakeExternals/Install/lib)
+  set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
+  message("Python MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS=${_additional_search_paths}")
+endif()
+
+######################################################################
 # Caffe packaging hacks.
 ######################################################################
 if(BUILD_Caffe)
