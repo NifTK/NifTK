@@ -45,11 +45,19 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   // This stuff gets generated during CMake into NifTKConfigure.h
   QString platformName(NIFTK_PLATFORM);
   QString versionNumber(NIFTK_VERSION_STRING);
+  int versionNumberMajor(NIFTK_VERSION_MAJOR);
+  int versionNumberMinor(NIFTK_VERSION_MINOR);
+  int versionNumberPatch(NIFTK_VERSION_PATCH);
   QString copyrightText(NIFTK_COPYRIGHT);
   QString originURL(NIFTK_ORIGIN_URL);
   QString originShortText(NIFTK_ORIGIN_SHORT_TEXT);
   QString originLongText(NIFTK_ORIGIN_LONG_TEXT);
-  QString documentationLocation(NIFTK_DOC_LOCATION);
+  QString documentationLocation(NIFTK_DOC_LOCATION
+                                + QString("/v")
+                                + QObject::tr("%1.").arg(versionNumberMajor)
+                                + QObject::tr("%1.").arg(versionNumberMinor, 2, 10, QChar('0'))
+                                + QObject::tr("%1").arg(versionNumberPatch)
+                                );
   QString userContact(NIFTK_USER_CONTACT);
   QString qtVersion(NIFTK_QT_VERSION);
   QString boostVersion(NIFTK_BOOST_VERSION);

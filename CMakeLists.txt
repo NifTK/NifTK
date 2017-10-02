@@ -253,7 +253,7 @@ else(WIN32)
 endif(WIN32)
 set(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" CACHE STRING "String to describe fully named version" FORCE)
 set(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
-set(NIFTK_DOC_LOCATION "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs/v${NIFTK_VERSION_STRING}/" CACHE STRING "String to describe online documentation location for released versions only." FORCE)
+set(NIFTK_DOC_LOCATION "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs/" CACHE STRING "String to describe online documentation location for released versions only." FORCE)
 
 # Further variables for the external project names and locations are defined
 # in the external project CMake files under CMake/ExternalProjects.
