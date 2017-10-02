@@ -100,7 +100,7 @@ std::vector<cv::Point3d> PointSetToVector(const mitk::PointSet::Pointer& pointSe
 //-----------------------------------------------------------------------------
 void MakeIdentity(cv::Matx44d& outputMatrix)
 {
-  outputMatrix = cv::Matx44d::eye(4, 4, CV_64F);
+  outputMatrix = cv::Matx44d::eye();
 }
 
 
