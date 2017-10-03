@@ -306,37 +306,15 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
     list(APPEND proj_DEPENDENCIES ${NiftyLink_DEPENDS} ${OpenCV_DEPENDS} ${ArUco_DEPENDS} ${Eigen_DEPENDS} ${AprilTags_DEPENDS} ${NiftyCal_DEPENDS})
   endif()
 
-  if(BUILD_NiftyIGI AND BUILD_PCL)
-    list(APPEND proj_DEPENDENCIES ${FLANN_DEPENDS} ${PCL_DEPENDS})
-  endif()
-
-  if(BUILD_NiftyReg)
-    list(APPEND proj_DEPENDENCIES ${NiftyReg_DEPENDS})
-  endif()
-
-  if(BUILD_NiftySeg)
-    list(APPEND proj_DEPENDENCIES ${Eigen_DEPENDS} ${NiftySeg_DEPENDS})
-  endif()
-
-  if(BUILD_NiftySim)
-    list(APPEND proj_DEPENDENCIES ${NiftySim_DEPENDS})
-  endif()
-
-  if(BUILD_NiftyRec)
-    list(APPEND proj_DEPENDENCIES ${NiftyRec_DEPENDS})
-  endif()
-
-  if(BUILD_RTK)
-    list(APPEND proj_DEPENDENCIES ${RTK_DEPENDS})
-  endif()
-  
-  if(BUILD_VL)
-    list(APPEND proj_DEPENDENCIES ${VL_DEPENDS})
-  endif()
-
-  if(BUILD_CAFFE)
-    list(APPEND proj_DEPENDENCIES ${Caffe_DEPENDS} ${OpenBLAS_DEPENDS} ${ProtoBuf-CMake_DEPENDS} ${ProtoBuf_DEPENDS} ${glog_DEPENDS} ${gflags_DEPENDS} ${HDF5_DEPENDS} ${ZLIB_DEPENDS})
-  endif()
+  # Case-sensitive: Must match case in top level CMake.
+  foreach(p PCL NiftyReg NiftySeg NiftySim NiftyRec RTK VL Caffe Python)
+    if (BUILD_${p})
+      list(APPEND proj_DEPENDENCIES ${${p}_DEPENDS})
+      message("Adding ${proj} dependencies: ${${p}_DEPENDS} as BUILD_${p} is ON.")
+    endif()
+  endforeach()
+  list(REMOVE_DUPLICATES proj_DEPENDENCIES)
+  message("Project ${proj} depends on projects: ${proj_DEPENDENCIES}")
 
   if(MSVC)
     # if we dont do this then windows headers will define all sorts of "keywords"
@@ -395,7 +373,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DBUILD_RTK:BOOL=${BUILD_RTK}
       -DBUILD_VL:BOOL=${BUILD_VL}
       -DBUILD_ITKFFTW:BOOL=${BUILD_ITKFFTW}
-      -DBUILD_CAFFE:BOOL=${BUILD_CAFFE}
+      -DBUILD_Caffe:BOOL=${BUILD_Caffe}
       -DBUILD_CAMINO:BOOL=${BUILD_CAMINO}
       -DBUILD_LEGACY_COMMAND_LINE_PROGRAMS:BOOL=${BUILD_LEGACY_COMMAND_LINE_PROGRAMS}
       -DBUILD_COMMAND_LINE_PROGRAMS:BOOL=${BUILD_COMMAND_LINE_PROGRAMS}

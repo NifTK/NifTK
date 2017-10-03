@@ -135,7 +135,7 @@ if(NIFTK_Apps/NiftyIGI)
     )
   endif()
 
-  if(BUILD_CAFFE)
+  if(BUILD_Caffe)
     list(APPEND PROJECT_PLUGINS
       Plugins/uk.ac.ucl.cmic.caffesegmentor:ON
     )

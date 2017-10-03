@@ -750,7 +750,8 @@ void NVidiaSDIDataSourceService::StopCapturing()
 
   m_ExpectedCookie = 0;
   if (m_Pimpl)
-  {
+  { 
+    m_Pimpl->CleanupSDI();
     m_Pimpl->ForciblyStop();
   }
 }

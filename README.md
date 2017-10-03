@@ -33,7 +33,7 @@ without the prior permission of [Prof. Sebastien Ourselin][seb].
 Funding
 -------------
 
-This project was funded by the [NIHR Biomedical
+This project was originally funded by the [NIHR Biomedical
 Research Centre][nihr] at [University College London][ucl] (UCL) and
 [University College London Hospitals][uclh] (UCLH), 
 [Innovate UK][innovateuk] and the [Engineering And

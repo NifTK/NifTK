@@ -24,10 +24,11 @@ endif()
 
 if(BUILD_NiftyReg)
 
-  set(version "97383b06b9")
-  set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftyReg-${version}.tar.gz")
+  set(version "810a02e829")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/niftyreg-${version}.tar.gz")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(NiftyReg ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(NiftyReg ${version} ${location} "${depends}")
 
   if(NOT DEFINED NiftyReg_DIR)
 
@@ -39,6 +40,7 @@ if(BUILD_NiftyReg)
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
+      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}

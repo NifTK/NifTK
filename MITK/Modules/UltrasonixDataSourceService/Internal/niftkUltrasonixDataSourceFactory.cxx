@@ -15,7 +15,7 @@
 #include "niftkUltrasonixDataSourceFactory.h"
 #include "niftkUltrasonixDataSourceService.h"
 #include "niftkUltrasonixConfigDialog.h"
-#include <niftkIPHostExtensionDialog.h>
+#include <niftkIPHostPortExtensionDialog.h>
 
 namespace niftk
 {
@@ -54,8 +54,26 @@ IGIDataSourceI::Pointer UltrasonixDataSourceFactory::CreateService(
 //-----------------------------------------------------------------------------
 IGIInitialisationDialog* UltrasonixDataSourceFactory::CreateInitialisationDialog(QWidget *parent) const
 {
-  return new niftk::IPHostExtensionDialog(parent,
-                                          "uk.ac.ucl.cmic.niftkUltrasonixDataSourceService.IPHostExtensionDialog");
+  QStringList names;
+  names.append("JPEG");
+  names.append("PNG");
+
+  QStringList extensions;
+  extensions.append(".jpg");
+  extensions.append(".png");
+
+  QString settings("uk.ac.ucl.cmic.niftkUltrasonixDataSourceFactory.IPHostPortExtensionDialog");
+
+  niftk::IPHostPortExtensionDialog* dialog = new niftk::IPHostPortExtensionDialog(parent,
+                                                                                  settings,
+                                                                                  1000, // doesn't matter, not used.
+                                                                                  names,
+                                                                                  extensions);
+  dialog->SetHostVisible(true);
+  dialog->SetPortVisible(false);
+  dialog->SetExtensionVisible(true);
+
+  return dialog;
 }
 
 

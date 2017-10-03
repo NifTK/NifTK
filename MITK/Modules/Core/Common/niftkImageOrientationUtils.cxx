@@ -22,44 +22,22 @@ namespace niftk {
 //-----------------------------------------------------------------------------
 itk::Orientation GetItkOrientation(ImageOrientation orientation)
 {
-  if (orientation == IMAGE_ORIENTATION_AXIAL)
-  {
-    return itk::ORIENTATION_AXIAL;
-  }
-  else if (orientation == IMAGE_ORIENTATION_SAGITTAL)
-  {
-    return itk::ORIENTATION_SAGITTAL;
-  }
-  else if (orientation == IMAGE_ORIENTATION_CORONAL)
-  {
-    return itk::ORIENTATION_CORONAL;
-  }
-  else
-  {
-    return itk::ORIENTATION_UNKNOWN;
-  }
+  return
+      orientation == IMAGE_ORIENTATION_AXIAL ? itk::ORIENTATION_AXIAL :
+      orientation == IMAGE_ORIENTATION_SAGITTAL ? itk::ORIENTATION_SAGITTAL :
+      orientation == IMAGE_ORIENTATION_CORONAL ? itk::ORIENTATION_CORONAL :
+      itk::ORIENTATION_UNKNOWN;
 }
 
 
 //-----------------------------------------------------------------------------
-ImageOrientation GetMitkOrientation(itk::Orientation orientation)
+ImageOrientation GetOrientation(itk::Orientation itkOrientation)
 {
-  if (orientation == itk::ORIENTATION_AXIAL)
-  {
-    return IMAGE_ORIENTATION_AXIAL;
-  }
-  else if (orientation == itk::ORIENTATION_SAGITTAL)
-  {
-    return IMAGE_ORIENTATION_SAGITTAL;
-  }
-  else if (orientation == itk::ORIENTATION_CORONAL)
-  {
-    return IMAGE_ORIENTATION_CORONAL;
-  }
-  else
-  {
-    return IMAGE_ORIENTATION_UNKNOWN;
-  }
+  return
+      itkOrientation == itk::ORIENTATION_AXIAL ? IMAGE_ORIENTATION_AXIAL :
+      itkOrientation == itk::ORIENTATION_SAGITTAL ? IMAGE_ORIENTATION_SAGITTAL :
+      itkOrientation == itk::ORIENTATION_CORONAL ? IMAGE_ORIENTATION_CORONAL :
+      IMAGE_ORIENTATION_UNKNOWN;
 }
 
 
@@ -75,11 +53,11 @@ std::string GetOrientationName(ImageOrientation orientation)
 
 
 //-----------------------------------------------------------------------------
-int GetUpDirection(const mitk::BaseGeometry* geometry, itk::Orientation orientation)
+int GetUpDirection(const mitk::BaseGeometry* geometry, itk::Orientation itkOrientation)
 {
 
   int result = 0;
-  if (geometry != NULL && orientation != itk::ORIENTATION_UNKNOWN)
+  if (geometry && itkOrientation != itk::ORIENTATION_UNKNOWN)
   {
     itk::Matrix<double, 3, 3> directionMatrix;
     mitk::VnlVector axis0 = geometry->GetMatrixColumn(0);
@@ -105,7 +83,7 @@ int GetUpDirection(const mitk::BaseGeometry* geometry, itk::Orientation orientat
 
     if (orientationString != "UNKNOWN")
     {
-      int axisOfInterest = itk::GetAxisFromOrientationString(orientationString, orientation);
+      int axisOfInterest = itk::GetAxisFromOrientationString(orientationString, itkOrientation);
 
       if (axisOfInterest >= 0)
       {
@@ -123,7 +101,7 @@ int GetUpDirection(const mitk::Image* image, ImageOrientation orientation)
   int result = 0;
 
   itk::Orientation itkOrientation = GetItkOrientation(orientation);
-  if (image != NULL && itkOrientation != itk::ORIENTATION_UNKNOWN)
+  if (image && itkOrientation != itk::ORIENTATION_UNKNOWN)
   {
     try
     {
@@ -193,7 +171,7 @@ std::string GetOrientationString(const mitk::Image* image)
 {
   std::string result = "UNKNOWN";
 
-  if (image != NULL)
+  if (image)
   {
     try
     {

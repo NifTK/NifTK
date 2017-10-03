@@ -543,7 +543,9 @@ void Undistortion::Run(const mitk::DataNode::Pointer& output)
   }
 
   mitk::Image::Pointer outputImage = dynamic_cast<mitk::Image*>(output->GetData());
+
   PrepareOutput(outputImage);
+
   // we may have reallocated a new image so make sure we set it on the node.
   output->SetData(outputImage);
 
@@ -551,6 +553,7 @@ void Undistortion::Run(const mitk::DataNode::Pointer& output)
 
   output->SetProperty(s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(m_Intrinsics));
   output->SetProperty(s_ImageIsUndistortedPropertyName, mitk::BoolProperty::New(true));
+
   // this will kick off itk listeners. not a good idea in multi-threaded situations.
   //output->Modified();
 }
@@ -604,6 +607,16 @@ void Undistortion::Run(const mitk::Image::Pointer& outputImage)
   // copy relevant props to output image
   outputImage->SetProperty(s_CameraCalibrationPropertyName, mitk::CameraIntrinsicsProperty::New(m_Intrinsics));
   outputImage->SetProperty(s_ImageIsUndistortedPropertyName, mitk::BoolProperty::New(true));
+
+  niftk::Undistortion::MatrixProperty::Pointer prop
+    = dynamic_cast<niftk::Undistortion::MatrixProperty*>(
+      m_Image->GetProperty(niftk::Undistortion::s_StereoRigTransformationPropertyName).GetPointer());
+  if (prop.IsNotNull())
+  {
+    outputImage->SetProperty(s_StereoRigTransformationPropertyName,
+                             niftk::Undistortion::MatrixProperty::New(prop->GetValue())
+                            );
+  }
   // this will kick off itk listeners. not a good idea in multi-threaded situations.
   //outputImage->Modified();
 }

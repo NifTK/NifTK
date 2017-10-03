@@ -26,8 +26,9 @@ if(MITK_USE_HDF5)
 
   set(HDF5_VERSION "1.10.0-patch1")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/hdf5-${HDF5_VERSION}.tar.gz")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(HDF5 ${HDF5_VERSION} ${location})
+  niftkMacroDefineExternalProjectVariables(HDF5 ${HDF5_VERSION} ${location} "${depends}")
 
   if(NOT DEFINED HDF5_DIR)
 

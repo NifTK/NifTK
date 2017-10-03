@@ -69,7 +69,7 @@ else()
   # Our version number. Edit this to generate a new version.
   # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
   # Also, Trac 1592, version number must change if CTK changes significantly.
-  project(NIFTK VERSION 17.05.1)
+  project(NIFTK VERSION 17.09.3)
 endif()
 
 ######################################################################
@@ -178,7 +178,7 @@ option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
-option(BUILD_CAFFE "Build Caffe." OFF)
+option(BUILD_Caffe "Build Caffe." OFF)
 option(NIFTK_CHECK_COVERAGE "Enable/Disable code coverage checking." OFF)
 # the console window is normally shown only for debug builds. but can be explicitly enabled.
 #if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -241,8 +241,8 @@ endif(BUILD_MESHING)
 ######################################################################
 set(NIFTK_PLATFORM "NifTK" CACHE STRING "Full name of platform." FORCE )
 set(NIFTK_LICENSE_SHORT_STRING "Not licensed for use outside of UCL." CACHE STRING "Short description of license" FORCE )
-set(NIFTK_COPYRIGHT "Copyright (C) 2008-2016 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
-set(NIFTK_ORIGIN_URL "http://cmic.cs.ucl.ac.uk/" CACHE STRING "URL of originating institution." FORCE )
+set(NIFTK_COPYRIGHT "Copyright (C) 2008-2017 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
+set(NIFTK_ORIGIN_URL "http://www.ucl.ac.uk/medical-image-computing" CACHE STRING "URL of originating institution." FORCE )
 set(NIFTK_ORIGIN_SHORT_TEXT "CMIC" CACHE STRING "Short name of originating institution." FORCE)
 set(NIFTK_ORIGIN_LONG_TEXT "Centre For Medical Image Computing" CACHE STRING "Full name of originating institution." FORCE)
 set(NIFTK_USER_CONTACT "https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users" CACHE STRING "Contact address for users." FORCE )
@@ -253,6 +253,7 @@ else(WIN32)
 endif(WIN32)
 set(NIFTK_VERSION_STRING "${NIFTK_VERSION_MAJOR}.${NIFTK_VERSION_MINOR}.${NIFTK_VERSION_PATCH}" CACHE STRING "String to describe fully named version" FORCE)
 set(NIFTK_DEPLOY_NAME "${NIFTK_BASE_NAME}-${NIFTK_VERSION_STRING}" CACHE STRING "String to describe deployed name" FORCE)
+set(NIFTK_DOC_LOCATION "https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs/" CACHE STRING "String to describe online documentation location for released versions only." FORCE)
 
 # Further variables for the external project names and locations are defined
 # in the external project CMake files under CMake/ExternalProjects.
@@ -620,7 +621,7 @@ mitkFunctionAddExternalProject(NAME ProtoBuf-CMake OFF ADVANCED NO_PACKAGE Proto
 mitkFunctionAddExternalProject(NAME gflags         OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME glog           OFF ADVANCED NO_PACKAGE gflags)
 
-set(_caffe_depends Boost ProtoBuf-CMake ProtoBuf glog gflags HDF5 ZLIB)
+set(_caffe_depends Boost ProtoBuf-CMake ProtoBuf glog gflags HDF5)
 if(NOT APPLE)
   list(APPEND _caffe_depends OpenBLAS)
 endif()
@@ -689,7 +690,7 @@ else()
   set(MITK_USE_RTK OFF CACHE BOOL "" FORCE)
 endif()
 
-if (BUILD_CAFFE)
+if (BUILD_Caffe)
   set(MITK_USE_Caffe          ON CACHE BOOL "" FORCE)
   if (NOT APPLE)
     set(MITK_USE_OpenBLAS     ON CACHE BOOL "" FORCE)
@@ -1140,8 +1141,8 @@ endif()
 if(BUILD_PCL)
   add_definitions(-DBUILD_PCL)
 endif()
-if(BUILD_CAFFE)
-  add_definitions(-DBUILD_CAFFE)
+if(BUILD_Caffe)
+  add_definitions(-DBUILD_Caffe)
 endif()
 
 ######################################################################
@@ -1690,7 +1691,7 @@ if(BUILD_NiftyIGI)
   configure_file(${NiftyLink_OIGT_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt @ONLY)
   configure_file(${NiftyLink_QSLOG_LICENSE_FILE} ${CMAKE_BINARY_DIR}/ExternalLicenses/QsLog.txt @ONLY)
 endif()
-if(BUILD_CAFFE)
+if(BUILD_Caffe)
   configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/GLog.txt ${CMAKE_BINARY_DIR}/LICENSE_GLog.txt)
   configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/GFlags.txt ${CMAKE_BINARY_DIR}/LICENSE_GFlags.txt)
   configure_file(${CMAKE_SOURCE_DIR}/Documentation/Licenses/HDF5.txt ${CMAKE_BINARY_DIR}/LICENSE_HDF5.txt)
@@ -1737,7 +1738,7 @@ if(BUILD_NiftyIGI)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/OpenIGTLink.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/ExternalLicenses/QsLog.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 endif()
-if(BUILD_CAFFE)
+if(BUILD_Caffe)
   install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/GLog.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
   install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/GFlags.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
   install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/HDF5.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
@@ -1862,9 +1863,19 @@ if(OPENCV_WITH_FFMPEG)
 endif()
 
 ######################################################################
+# Python packaging hacks.
+######################################################################
+if(MITK_USE_Python)
+  get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
+  list(APPEND _additional_search_paths ${CTK_DIR}/CMakeExternals/Install/lib)
+  set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
+  message("Python MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS=${_additional_search_paths}")
+endif()
+
+######################################################################
 # Caffe packaging hacks.
 ######################################################################
-if(BUILD_CAFFE)
+if(BUILD_Caffe)
 
   if(WIN32)
     set(_library_sub_dir "/bin")

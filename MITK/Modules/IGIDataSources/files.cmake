@@ -39,10 +39,7 @@ set(CPP_FILES
   Threads/niftkIGIDataSourceBackgroundDeleteThread.cxx
   Dialogs/niftkIGIInitialisationDialog.cxx
   Dialogs/niftkIGIConfigurationDialog.cxx
-  Dialogs/niftkIPPortDialog.cxx
-  Dialogs/niftkIPHostPortDialog.cxx
   Dialogs/niftkIPHostPortExtensionDialog.cxx
-  Dialogs/niftkIPHostExtensionDialog.cxx
   Dialogs/niftkLagDialog.cxx
   Dialogs/niftkConfigFileDialog.cxx
   Conversion/niftkQImageToMitkImageFilter.cxx
@@ -53,19 +50,13 @@ set(MOC_H_FILES
   Threads/niftkIGITimerBasedThread.h
   Dialogs/niftkIGIInitialisationDialog.h
   Dialogs/niftkIGIConfigurationDialog.h
-  Dialogs/niftkIPPortDialog.h
-  Dialogs/niftkIPHostPortDialog.h
   Dialogs/niftkIPHostPortExtensionDialog.h
-  Dialogs/niftkIPHostExtensionDialog.h
   Dialogs/niftkLagDialog.h
   Dialogs/niftkConfigFileDialog.h
 )
 
 set(UI_FILES
-  Dialogs/niftkIPPortDialog.ui
-  Dialogs/niftkIPHostPortDialog.ui
   Dialogs/niftkIPHostPortExtensionDialog.ui
-  Dialogs/niftkIPHostExtensionDialog.ui
   Dialogs/niftkLagDialog.ui
   Dialogs/niftkConfigFileDialog.ui
 )

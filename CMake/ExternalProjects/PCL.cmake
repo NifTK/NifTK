@@ -26,9 +26,9 @@ if(BUILD_NiftyIGI AND BUILD_PCL)
 
   set(version "83c02003a2")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/PointCloudLibrary-pcl-${version}.tar.gz")
+  set(depends Boost Eigen FLANN VTK)
 
-  niftkMacroDefineExternalProjectVariables(PCL ${version} ${location})
-  set(proj_DEPENDENCIES Boost Eigen FLANN VTK)
+  niftkMacroDefineExternalProjectVariables(PCL ${version} ${location} "${depends}")
 
   if(NOT DEFINED PCL_DIR)
 

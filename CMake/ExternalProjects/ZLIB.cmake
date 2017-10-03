@@ -19,7 +19,9 @@ if(MITK_USE_ZLIB)
 
   set(version "66a75305")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/zlib-${version}.tar.gz")
-  niftkMacroDefineExternalProjectVariables(ZLIB ${version} ${location})
+  set(depends "")
+
+  niftkMacroDefineExternalProjectVariables(ZLIB ${version} ${location} "${depends}")
 
   if(NOT DEFINED ZLIB_DIR)
 
@@ -55,40 +57,14 @@ if(MITK_USE_ZLIB)
 
     set(ZLIB_DIR ${proj_INSTALL})
     set(ZLIB_INCLUDE_DIR ${ZLIB_DIR}/include/mitk_zlib)
-
-    install(DIRECTORY ${ZLIB_INCLUDE_DIR}
-            DESTINATION include
-            COMPONENT dev)
-
-    find_library(ZLIB_LIBRARY_RELEASE NAMES zlib
-                 PATHS ${ZLIB_DIR}
-                 PATH_SUFFIXES lib lib/Release
-                 NO_DEFAULT_PATH)
-    find_library(ZLIB_LIBRARY_DEBUG NAMES zlibd
-                 PATHS ${ZLIB_DIR}
-                 PATH_SUFFIXES lib lib/Debug
-                 NO_DEFAULT_PATH)
-
-    set(ZLIB_LIBRARY )
-    if(ZLIB_LIBRARY_RELEASE)
-      list(APPEND ZLIB_LIBRARY ${ZLIB_LIBRARY_RELEASE})
-      install(FILES ${ZLIB_LIBRARY_RELEASE}
-              DESTINATION lib
-              CONFIGURATIONS Release
-              COMPONENT dev)
-    endif()
-    if(ZLIB_LIBRARY_DEBUG)
-      list(APPEND ZLIB_LIBRARY ${ZLIB_LIBRARY_DEBUG})
-      install(FILES ${ZLIB_LIBRARY_DEBUG}
-              DESTINATION lib
-              CONFIGURATIONS Debug
-              COMPONENT dev)
+    if(WIN32)
+      set(ZLIB_LIBRARY ${ZLIB_DIR}/lib/zlib.lib)
+    else()
+      set(ZLIB_LIBRARY ${ZLIB_DIR}/lib/libzlib.a)
     endif()
 
     mitkFunctionInstallExternalCMakeProject(${proj})
     message("SuperBuild loading ZLIB from ${ZLIB_DIR}")
-    mark_as_advanced(ZLIB_LIBRARY_DEBUG)
-    mark_as_advanced(ZLIB_LIBRARY_RELEASE)
     mark_as_advanced(ZLIB_LIBRARY)
   else()
     mitkMacroEmptyExternalProject(${proj} "${proj_DEPENDENCIES}")

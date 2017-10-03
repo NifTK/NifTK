@@ -52,6 +52,7 @@ const std::string PaintbrushTool::EROSIONS_ADDITIONS_NAME = "MIDAS_EDITS_EROSION
 const std::string PaintbrushTool::EROSIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_EROSIONS_SUBTRACTIONS";
 const std::string PaintbrushTool::DILATIONS_ADDITIONS_NAME = "MIDAS_EDITS_DILATIONS_ADDITIONS";
 const std::string PaintbrushTool::DILATIONS_SUBTRACTIONS_NAME = "MIDAS_EDITS_DILATIONS_SUBTRACTIONS";
+const std::string PaintbrushTool::AXIAL_CUT_OFF_PLANE_NAME = "MIDAS_EDITS_AXIAL_CUT_OFF_PLANE";
 
 const std::string PaintbrushTool::REGION_PROPERTY_NAME = std::string("midas.morph.editing.region");
 const mitk::OperationType PaintbrushTool::MIDAS_PAINTBRUSH_TOOL_OP_EDIT_IMAGE = 320410;

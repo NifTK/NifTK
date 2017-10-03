@@ -26,8 +26,9 @@ if(BUILD_NiftyIGI AND BUILD_PCL)
 
   set(version "1.8.4.1")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/flann-${version}-src.tar.gz")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(FLANN ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(FLANN ${version} ${location} "${depends}")
 
   if(NOT DEFINED FLANN_DIR)
 

@@ -42,18 +42,6 @@ FilteringStateMachine::~FilteringStateMachine()
 
 
 //-----------------------------------------------------------------------------
-float FilteringStateMachine::CanHandleEvent(const mitk::StateEvent* stateEvent) const
-{
-  if (this->IsFiltered(stateEvent))
-  {
-    return 0.0;
-  }
-
-  return this->CanHandle(stateEvent);
-}
-
-
-//-----------------------------------------------------------------------------
 bool FilteringStateMachine::CanHandleEvent(mitk::InteractionEvent* event)
 {
   if (this->IsFiltered(event))
@@ -95,30 +83,6 @@ void FilteringStateMachine::RemoveEventFilter(StateMachineEventFilter* eventFilt
 std::vector<StateMachineEventFilter*> FilteringStateMachine::GetEventFilters() const
 {
   return m_EventFilters;
-}
-
-
-//-----------------------------------------------------------------------------
-bool FilteringStateMachine::IsFiltered(const mitk::StateEvent* stateEvent) const
-{
-  /// Sanity check.
-  if (!stateEvent || !stateEvent->GetEvent()->GetSender())
-  {
-    return true;
-  }
-
-  std::vector<StateMachineEventFilter*>::const_iterator it = m_EventFilters.begin();
-  std::vector<StateMachineEventFilter*>::const_iterator itEnd = m_EventFilters.end();
-
-  for ( ; it != itEnd; ++it)
-  {
-    if ((*it)->EventFilter(stateEvent))
-    {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 

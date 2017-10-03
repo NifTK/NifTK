@@ -120,6 +120,7 @@ signals:
   void ThresholdingCheckBoxToggled(bool);
   void SeePriorCheckBoxToggled(bool);
   void SeeNextCheckBoxToggled(bool);
+  void RetainMarksCheckBoxToggled(bool);
   void ThresholdValueChanged();
 
 private:

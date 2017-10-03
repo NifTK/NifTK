@@ -188,6 +188,9 @@ private:
   igtl::TimeStamp::Pointer                                                   m_MessageCreatedTimeStamp;
   niftk::NiftyLinkDataType                                                   m_CachedDataType;
 
+  // As of #5183, we support .nii, jpg and .png.
+  QString                                                                    m_FileExtension;
+
 }; // end class
 
 } // end namespace

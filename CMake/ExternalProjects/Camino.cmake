@@ -30,8 +30,9 @@ if(BUILD_CAMINO AND NOT WIN32)
 
     set(version "4612bee5fa")
     set(location "${NIFTK_EP_TARBALL_LOCATION}/camino-${version}.tar.gz")
+    set(depends "")
 
-    niftkMacroDefineExternalProjectVariables(Camino ${version} ${location})
+    niftkMacroDefineExternalProjectVariables(Camino ${version} ${location} "${depends}")
 
     if(NOT DEFINED camino_DIR)
 

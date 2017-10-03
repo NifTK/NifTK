@@ -45,10 +45,19 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   // This stuff gets generated during CMake into NifTKConfigure.h
   QString platformName(NIFTK_PLATFORM);
   QString versionNumber(NIFTK_VERSION_STRING);
+  int versionNumberMajor(NIFTK_VERSION_MAJOR);
+  int versionNumberMinor(NIFTK_VERSION_MINOR);
+  int versionNumberPatch(NIFTK_VERSION_PATCH);
   QString copyrightText(NIFTK_COPYRIGHT);
   QString originURL(NIFTK_ORIGIN_URL);
   QString originShortText(NIFTK_ORIGIN_SHORT_TEXT);
   QString originLongText(NIFTK_ORIGIN_LONG_TEXT);
+  QString documentationLocation(NIFTK_DOC_LOCATION
+                                + QString("/v")
+                                + QObject::tr("%1.").arg(versionNumberMajor)
+                                + QObject::tr("%1.").arg(versionNumberMinor, 2, 10, QChar('0'))
+                                + QObject::tr("%1").arg(versionNumberPatch)
+                                );
   QString userContact(NIFTK_USER_CONTACT);
   QString qtVersion(NIFTK_QT_VERSION);
   QString boostVersion(NIFTK_BOOST_VERSION);
@@ -79,18 +88,27 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<h1>About %1 - %2</h1>"
       "(git hash %3, at %4, from <a href=\"https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK\">here</a>)"
       "</p>"
-      "<p>%5 Please go to the installation folder for a full license description "
+      "<p>%5 Please go to the installation folder or "
+      "<a href=\"%6\">online documentation</a> for a full license description "
       "for this product and dependencies.</p>"
-      ).arg(applicationName).arg(versionNumber).arg(niftkVersion).arg(niftkDateTime).arg(copyrightText);
+      )
+      .arg(applicationName)
+      .arg(versionNumber)
+      .arg(niftkVersion)
+      .arg(niftkDateTime)
+      .arg(copyrightText)
+      .arg(documentationLocation)
+      ;
 
   // Short introduction.
   QString introduction = QObject::tr(
       "<p>"
-      "%1 is the user interface for the <a href=\"%2\">%3 (%4)</a>"
-      "translational imaging platform called <a href=\"http://cmic.cs.ucl.ac.uk/home/software/\">%5</a>."
+      "%1 is on of the the user interfaces for the <a href=\"%2\">%3 (%4) </a>"
+      "translational imaging platform called "
+      "<a href=\"http://cmictig.cs.ucl.ac.uk/research/software/software-nifty/\">%5</a>."
       "</p>"
       "<p>"
-      "%1 was developed with funding from the NIHR and the Comprehensive Biomedical Research Centre "
+      "%1 was launched with funding from the NIHR and the Comprehensive Biomedical Research Centre "
       "at UCL and UCLH grant 168 and TSB grant M1638A. "
       "The principal investigator is <a href=\"http://cmictig.cs.ucl.ac.uk/people/academic-staff/1-sourselin\">"
       "Sebastien Ourselin</a> "
@@ -311,7 +329,7 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       ).arg(pclVersion).arg(pclLocation);
   #endif
 
-  #ifdef BUILD_CAFFE
+  #ifdef BUILD_Caffe
     QString glogVersion(NIFTK_VERSION_glog);
     QString glogLocation(NIFTK_LOCATION_glog);
     QString glogText = QObject::tr(
@@ -421,7 +439,7 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       .append(flannText)
       .append(pclText)
 #endif
-#ifdef BUILD_CAFFE
+#ifdef BUILD_Caffe
       .append(glogText)
       .append(gflagsText)
       .append(hdf5Text)

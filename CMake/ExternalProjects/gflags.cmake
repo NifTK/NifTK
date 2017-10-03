@@ -25,8 +25,9 @@ if(MITK_USE_gflags)
 
   set(gflags_VERSION "3476433")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/gflags-${gflags_VERSION}.tar.gz")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(gflags ${gflags_VERSION} ${location})
+  niftkMacroDefineExternalProjectVariables(gflags ${gflags_VERSION} ${location} "${depends}")
 
   if(NOT DEFINED gflags_DIR)
 

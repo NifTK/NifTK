@@ -28,8 +28,9 @@ if(MITK_USE_DCMTK)
 
   set(version "3.6.1_20121102")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/dcmtk-${version}.tar.gz")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(DCMTK ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(DCMTK ${version} ${location} "${depends}")
 
   if(NOT DEFINED DCMTK_DIR)
     if(DCMTK_DICOM_ROOT_ID)

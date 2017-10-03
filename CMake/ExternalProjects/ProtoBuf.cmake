@@ -26,8 +26,9 @@ if(MITK_USE_ProtoBuf)
 
   set(version "2.6.1")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/protobuf-${version}.tar.gz")
+  set(depends "")
 
-  niftkMacroDefineExternalProjectVariables(ProtoBuf ${version} ${location})
+  niftkMacroDefineExternalProjectVariables(ProtoBuf ${version} ${location} "${depends}")
 
   if(NOT DEFINED ProtoBuf_DIR)
 

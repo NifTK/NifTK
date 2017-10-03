@@ -35,8 +35,8 @@ SegmentationSelectorWidget::~SegmentationSelectorWidget()
 {
   if (m_ToolManager)
   {
-    m_ToolManager->ReferenceDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnReferenceDataChanged);
-    m_ToolManager->WorkingDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnWorkingDataChanged);
+    m_ToolManager->ReferenceDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::UpdateWidgets);
+    m_ToolManager->WorkingDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::UpdateWidgets);
   }
 }
 
@@ -55,106 +55,85 @@ void SegmentationSelectorWidget::SetToolManager(mitk::ToolManager* toolManager)
   {
     if (m_ToolManager)
     {
-      m_ToolManager->ReferenceDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnReferenceDataChanged);
-      m_ToolManager->WorkingDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnWorkingDataChanged);
+      m_ToolManager->ReferenceDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::UpdateWidgets);
+      m_ToolManager->WorkingDataChanged -= mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::UpdateWidgets);
     }
 
     if (toolManager)
     {
-      toolManager->ReferenceDataChanged += mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnReferenceDataChanged);
-      toolManager->WorkingDataChanged += mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::OnWorkingDataChanged);
+      toolManager->ReferenceDataChanged += mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::UpdateWidgets);
+      toolManager->WorkingDataChanged += mitk::MessageDelegate<SegmentationSelectorWidget>(this, &SegmentationSelectorWidget::UpdateWidgets);
     }
 
     m_ToolManager = toolManager;
 
-    this->OnReferenceDataChanged();
-    this->OnWorkingDataChanged();
+    this->UpdateWidgets();
   }
 }
 
 
 //-----------------------------------------------------------------------------
-void SegmentationSelectorWidget::OnReferenceDataChanged()
+void SegmentationSelectorWidget::UpdateWidgets()
 {
-  bool hasReferenceData = m_ToolManager && !m_ToolManager->GetReferenceData().empty();
-  bool hasWorkingData = m_ToolManager && !m_ToolManager->GetWorkingData().empty();
+  bool hasReferenceNode = m_ToolManager && !m_ToolManager->GetReferenceData().empty();
+  bool hasWorkingNode = m_ToolManager && !m_ToolManager->GetWorkingData().empty();
 
-  if (hasReferenceData)
+  if (!hasReferenceNode && !hasWorkingNode)
+  {
+    QString toolTip = "Choose a reference or segmentation image from the Data Manager\n"
+                      "that has the same geometry as the selected viewer.";
+
+    m_ReferenceNodeNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+    m_ReferenceNodeNameLabel->setToolTip(toolTip);
+
+    m_SegmentationNodeNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+    m_SegmentationNodeNameLabel->setToolTip(toolTip);
+
+    m_NewSegmentationButton->setEnabled(false);
+    m_NewSegmentationButton->setToolTip(toolTip);
+  }
+  else if (hasReferenceNode && !hasWorkingNode)
   {
     QString referenceImageName = QString::fromStdString(m_ToolManager->GetReferenceData(0)->GetName());
-    m_ReferenceImageNameLabel->setText(referenceImageName);
-    m_ReferenceImageNameLabel->setToolTip(referenceImageName);
+    m_ReferenceNodeNameLabel->setText(QString("<font color='black'>%1</font>").arg(referenceImageName));
+    m_ReferenceNodeNameLabel->setToolTip(referenceImageName);
+
+    m_SegmentationNodeNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+    m_SegmentationNodeNameLabel->setToolTip("Hit the 'Start/restart segmentation' button to create\n"
+                                            "a new segmentation, or select a segmentation image\n"
+                                            "whose parent is a reference image with the same\n"
+                                            "geometry as the selected viewer.");
+
+    m_NewSegmentationButton->setEnabled(true);
+    m_NewSegmentationButton->setToolTip("Creates a new segmentation.");
+  }
+  else if (!hasReferenceNode && hasWorkingNode)
+  {
+    /// This should not happen, really.
+    m_ReferenceNodeNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+    m_ReferenceNodeNameLabel->setToolTip("");
+
+    m_SegmentationNodeNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
+    m_SegmentationNodeNameLabel->setToolTip("");
+
+    m_NewSegmentationButton->setEnabled(false);
+    m_NewSegmentationButton->setToolTip("");
   }
   else
   {
-    m_ReferenceImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
-    m_ReferenceImageNameLabel->setToolTip("Choose a reference image from the Data Manager.");
-  }
+    QString referenceImageName = QString::fromStdString(m_ToolManager->GetReferenceData(0)->GetName());
+    m_ReferenceNodeNameLabel->setText(QString("<font color='black'>%1</font>").arg(referenceImageName));
+    m_ReferenceNodeNameLabel->setToolTip(referenceImageName);
 
-  if (!hasReferenceData)
-  {
-    m_NewSegmentationButton->setToolTip(
-          "Choose a reference image from the Data Manager.");
-  }
-  else if (!hasWorkingData)
-  {
-    m_NewSegmentationButton->setToolTip(
-          "Hit the 'Start/restart segmentation' button after selecting\n"
-          "a reference image or a segmentation image in the Data Manager.");
-  }
-  else
-  {
-    m_NewSegmentationButton->setToolTip(
-          "Only one segmentation can be edited at a time. You need to finalise (OK)\n"
-          "or discard (Cancel) the current segmentation to start a new one.");
-  }
-  m_NewSegmentationButton->setEnabled(hasReferenceData && !hasWorkingData);
-}
+    QString segmentationNodeName = QString::fromStdString(m_ToolManager->GetWorkingData(0)->GetName());
+    m_SegmentationNodeNameLabel->setText(QString("<font color='black'>%1</font>").arg(segmentationNodeName));
+    m_SegmentationNodeNameLabel->setToolTip(segmentationNodeName);
 
-
-//-----------------------------------------------------------------------------
-void SegmentationSelectorWidget::OnWorkingDataChanged()
-{
-  bool hasReferenceData = m_ToolManager && !m_ToolManager->GetReferenceData().empty();
-  bool hasWorkingData = m_ToolManager && !m_ToolManager->GetWorkingData().empty();
-
-  if (hasWorkingData)
-  {
-    QString segmentationImageName = QString::fromStdString(m_ToolManager->GetWorkingData(0)->GetName());
-    m_SegmentationImageNameLabel->setText(QString("<font color='black'>%1</font>").arg(segmentationImageName));
-    m_SegmentationImageNameLabel->setToolTip(QString("<font color='black'>%1</font>").arg(segmentationImageName));
-    m_SegmentationImageNameLabel->setToolTip(
-          QString("The segmentation '%1' is being edited. Only one segmentation can be\n"
-                  "edited at a time. You need to finalise (OK) or discard (Cancel) the\n"
-                  "current segmentation to start a new one.").arg(segmentationImageName));
+    m_NewSegmentationButton->setEnabled(false);
+    m_NewSegmentationButton->setToolTip("A segmentation is already in progress. Choose a different\n"
+                                        "image or finalise (OK) or discard (Cancel) the current\n"
+                                        "segmentation to start a new one.");
   }
-  else
-  {
-    m_SegmentationImageNameLabel->setText("<font color='red'>&lt;not selected&gt;</font>");
-    m_SegmentationImageNameLabel->setToolTip(
-          "There is no segmentation in progress. Choose a reference image\n"
-          "or a segmentation from the Data Manager and hit the 'Start/restart\n"
-          "segmentation' button.");
-  }
-
-  if (!hasReferenceData)
-  {
-    m_NewSegmentationButton->setToolTip(
-          "Choose a reference image from the Data Manager.");
-  }
-  else if (!hasWorkingData)
-  {
-    m_NewSegmentationButton->setToolTip(
-          "Hit the 'Start/restart segmentation' button after selecting\n"
-          "a reference image or a segmentation image in the Data Manager.");
-  }
-  else
-  {
-    m_NewSegmentationButton->setToolTip(
-          "Only one segmentation can be edited at a time. You need to finalise (OK)\n"
-          "or discard (Cancel) the current segmentation to start a new one.");
-  }
-  m_NewSegmentationButton->setEnabled(hasReferenceData && !hasWorkingData);
 }
 
 }

@@ -27,8 +27,9 @@ if(MITK_USE_SWIG)
   else()
     set(location "${NIFTK_EP_TARBALL_LOCATION}/swig-${version}.tar.gz")
   endif()
-  niftkMacroDefineExternalProjectVariables(SWIG ${version} ${location})
-  set(proj_DEPENDENCIES PCRE)
+  set(depends PCRE)
+
+  niftkMacroDefineExternalProjectVariables(SWIG ${version} ${location} "${depends}")
 
   if(NOT DEFINED SWIG_DIR)
 
@@ -56,7 +57,7 @@ if(MITK_USE_SWIG)
       ExternalProject_Get_Property(${proj} source_dir)
       set(SWIG_DIR ${proj_SOURCE})
       set(SWIG_EXECUTABLE ${proj_SOURCE}/swig.exe)
-	  set(NifTK_PREFIX_PATH ${SWIG_DIR}^^${NifTK_PREFIX_PATH})
+      set(NifTK_PREFIX_PATH ${SWIG_DIR}^^${NifTK_PREFIX_PATH})
 
     else()
 

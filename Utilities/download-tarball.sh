@@ -56,11 +56,12 @@ Supported projects:
     commontk/PythonQt
     NifTK/PythonQt
     NiftyRec
-    NiftyReg
+    niftyreg
     EpiNav-NiftyReg
     NiftySeg
     NiftySim
     NiftyLink
+    NiftyCal
     NifTKData
     IGSTK
     NifTK
@@ -212,14 +213,15 @@ function download_from_github() {
 }
 
 function download_from_cmiclab() {
-  project=$1
-  version=$2
+  repository=$1
+  project=$2
+  version=$3
   directory=$project-$version
   tarball=$directory.tar.gz
   if [[ $keep_history || ! $keep_repository ]]
   then
     mkdir $directory
-    git clone --bare git@cmiclab.cs.ucl.ac.uk:CMIC/$project $directory/.git
+    git clone --bare git@cmiclab.cs.ucl.ac.uk:$repository/$project $directory/.git
     cd $directory
     if ! git cat-file -e $version 2> /dev/null
     then
@@ -230,7 +232,7 @@ function download_from_cmiclab() {
     fi
     git config --local --bool core.bare false
     mkdir -p .git/logs/refs
-    git remote add origin git@cmiclab.cs.ucl.ac.uk:CMIC/$project
+    git remote add origin git@cmiclab.cs.ucl.ac.uk:$repository/$project
     if [[ $keep_sources ]]
     then
       git checkout $version
@@ -242,7 +244,7 @@ function download_from_cmiclab() {
     cd ..
   else
     mkdir $directory
-    git clone --bare git@cmiclab.cs.ucl.ac.uk:CMIC/$project $directory/.git
+    git clone --bare git@cmiclab.cs.ucl.ac.uk:$repository/$project $directory/.git
     cd $directory
     if ! git cat-file -e $version 2> /dev/null
     then
@@ -260,7 +262,7 @@ function download_from_cmiclab() {
     git fetch --depth=1 ../$directory $version_sha1
     git config --local --bool core.bare false
     mkdir -p .git/logs/refs
-    git remote add origin git@cmiclab.cs.ucl.ac.uk:CMIC/$project
+    git remote add origin git@cmiclab.cs.ucl.ac.uk:$repository/$project
     if [[ $keep_sources ]]
     then
         git checkout $version_sha1
@@ -371,7 +373,7 @@ then
   download_from_github NifTK $project $version
 elif [[ $project = "EpiNav-MITK" ]]
 then
-  download_from_cmiclab $project $version
+  download_from_cmiclab CMIC $project $version
 elif [ $project = commontk/CTK ]
 then
   download_from_github commontk CTK $version
@@ -399,12 +401,12 @@ then
 elif [ $project = NiftySeg ]
 then
   download_from_sourceforge_git $project $version git
-elif [ $project = NiftyReg ]
+elif [ $project = niftyreg ]
 then
-  download_from_sourceforge_git $project $version git
+  download_from_cmiclab mmodat $project $version git
 elif [ $project = "EpiNav-NiftyReg" ]
 then
-  download_from_cmiclab $project $version
+  download_from_cmiclab CMIC $project $version
 elif [ $project = NiftySim ]
 then
   download_from_sourceforge_git $project $version code
@@ -414,15 +416,15 @@ then
 elif [ $project = camino ]
 then
   download_from_sourceforge_git $project $version git
-elif [ $project = NiftyLink ]
+elif [[ $project = NiftyLink || $project = NiftyCal ]]
 then
-  download_from_cmiclab $project $version
+  download_from_cmiclab CMIC $project $version
 elif [ $project = NifTKData ]
 then
-  download_from_cmiclab $project $version
+  download_from_cmiclab CMIC $project $version
 elif [ $project = NifTK ]
 then
-  download_from_cmiclab $project $version
+  download_from_cmiclab CMIC $project $version
 elif [ $project = IGSTK ]
 then
   if [[ $version = IGSTK-* ]]

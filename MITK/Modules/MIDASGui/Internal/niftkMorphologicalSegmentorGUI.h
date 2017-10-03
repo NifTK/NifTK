@@ -22,6 +22,11 @@
 
 class QAbstractButton;
 
+namespace mitk
+{
+class DataNode;
+}
+
 namespace niftk
 {
 
@@ -57,14 +62,15 @@ public:
   void SetEnabled(bool enabled);
 
   /// \brief Set the dialog according to relevant image data.
-  void SetControlsByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
+  void UpdateByReferenceImage(double lowestValue, double highestValue, int numberOfAxialSlices, int upDirection);
 
   /// \brief Set the dialog according to current parameter values
-  void SetControlsByPipelineParams(MorphologicalSegmentorPipelineParams& params);
+  void UpdateBySegmentationNode(mitk::DataNode* segmentationNode);
 
 signals:
 
-  void ThresholdingValuesChanged(double lowerThreshold, double upperThreshold, int axialSlicerNumber);
+  void ThresholdingValuesChanged(double lowerThreshold, double upperThreshold);
+  void AxialCutOffSliceNumberChanged(int axialSliceNumber);
   void ErosionsValuesChanged(double upperThreshold, int numberOfErosions);
   void DilationsValuesChanged(double lowerPercentage, double upperPercentage, int numberOfDilations);
   void RethresholdingValuesChanged(int boxSize);
@@ -88,13 +94,6 @@ protected slots:
   void OnRethresholdingSliderChanged();
   void OnRestartButtonClicked();
   void OnCancelButtonClicked();
-
-private:
-
-  void EmitThresholdingValues();
-  void EmitErosionValues();
-  void EmitDilationValues();
-  void EmitRethresholdingValues();
 
 };
 

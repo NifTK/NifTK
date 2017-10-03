@@ -103,7 +103,7 @@ if(BUILD_NiftyIGI)
     AtracsysDataSourceService
   )
 
-  if(BUILD_CAFFE)
+  if(BUILD_Caffe)
     set(MODULE_DIRS
       ${MODULE_DIRS}
       Caffe

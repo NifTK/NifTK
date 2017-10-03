@@ -26,9 +26,9 @@ if(BUILD_NiftySeg)
 
   set(version "ce235017b7")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySeg-${version}.tar.gz")
+  set(depends Eigen)
 
-  niftkMacroDefineExternalProjectVariables(NiftySeg ${version} ${location})
-  set(proj_DEPENDENCIES Eigen)
+  niftkMacroDefineExternalProjectVariables(NiftySeg ${version} ${location} "${depends}")
 
   if(NOT DEFINED NiftySeg_DIR)
 
