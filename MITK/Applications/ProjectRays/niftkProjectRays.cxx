@@ -37,6 +37,11 @@ int main(int argc, char** argv)
       projector->SetLensToWorldFileName(lensToWorld);
     }
 
+    if ( quick )
+    {
+      projector->SetProjectAllScreenPoints(false);
+    }
+
     returnStatus = projector->Project();
 
     if ( returnStatus )

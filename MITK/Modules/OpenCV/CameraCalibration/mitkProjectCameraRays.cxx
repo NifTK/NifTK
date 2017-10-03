@@ -37,6 +37,7 @@ ProjectCameraRays::ProjectCameraRays()
 , m_ScreenWidth(1920)
 , m_ScreenHeight(540)
 , m_RayLength ( 500 )
+, m_ProjectAllScreenPoints ( true )
 {
 }
 
@@ -65,7 +66,10 @@ void ProjectCameraRays::InitScreenPointsVector ()
     {
       for ( int y = 0 ; y < m_ScreenHeight ; ++y )
       {
-        m_ScreenPoints.push_back ( cv::Point2d ( static_cast<double>(x), static_cast<double>(y) ) );
+        if ( m_ProjectAllScreenPoints || ( ( ( x == 0 ) || ( x == m_ScreenWidth -1 ) ) || ( ( y == 0 ) || ( y == m_ScreenHeight - 1 ) ) ) )
+        {
+          m_ScreenPoints.push_back ( cv::Point2d ( static_cast<double>(x), static_cast<double>(y) ) );
+        }
       }
     }
     return;

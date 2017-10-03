@@ -34,6 +34,14 @@
       <label>Output file</label>
     </file>
 
+    <boolean>
+      <name>quick</name>
+      <longflag>quick</longflag>
+      <description>Only project a subset of rays to speed things up</description>
+      <label>quick</label>
+      <default>true</default>
+    </boolean>
+
   </parameters>
 
 </executable>

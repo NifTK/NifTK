@@ -43,6 +43,7 @@ public:
   itkSetMacro (ScreenHeight, int);
   itkSetMacro (IntrinsicFileName, std::string);
   itkSetMacro (UndistortBeforeProjection, bool);
+  itkSetMacro (ProjectAllScreenPoints, bool);
   itkSetMacro (LensToWorldFileName, std::string);
 
   std::vector< std::pair < cv::Point3d, cv::Point3d  > > GetRays ();
@@ -75,6 +76,7 @@ private:
   std::string m_IntrinsicFileName; // the left camera intrinsic parameters
 
   bool m_UndistortBeforeProjection; //optionally undistort point pairs before triangulation
+  bool m_ProjectAllScreenPoints; //is set to false we only project the screen edges, to speed things up
 
   std::vector< cv::Point2d > m_ScreenPoints; //a container for the pixel coordinates
   std::vector< std::pair < cv::Point3d, cv::Point3d  > > m_Rays;
