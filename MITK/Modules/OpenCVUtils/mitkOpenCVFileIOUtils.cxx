@@ -133,6 +133,10 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
   {
     mitkThrow() << "ReadTrackerMatrix: Matrix does not have 4 columns" << std::endl;
   }
+  if (outputMatrix.type() != CV_64FC1)
+  {
+    mitkThrow() << "ReadTrackerMatrix: Matrix is not single channel 64 bit float (64FC1) " << std::endl;
+  }
 
   cv::Matx44d matrix;
   isSuccessful = ReadTrackerMatrix(filename, matrix);
