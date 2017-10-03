@@ -188,6 +188,8 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix)
   }
   catch ( std::exception& e )
   {
+    MITK_WARN << "ReadTrackerMatrix: Failed to read full file " << filename << " with exception " << e.what() ;
+    isSuccessful = false;
     return isSuccessful;
   }
   isSuccessful = true;
