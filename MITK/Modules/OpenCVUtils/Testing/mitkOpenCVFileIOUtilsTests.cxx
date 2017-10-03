@@ -415,6 +415,82 @@ void TestCreateVideoWriter ()
   }
 }
 
+void TestReadTrackerMatrix (char * filename )
+{
+  cv::Mat test = cvCreateMat (4,4,CV_64FC1);
+
+  bool returnStatus = mitk::ReadTrackerMatrix ( filename,test);
+
+  MITK_TEST_CONDITION ( returnStatus , "Testing that ReadTrackerMatrix returns true for good file." );
+
+  MITK_TEST_CONDITION ( test.at<double>( 0,0 ) == 0.6201384068 , "Testing that first element of matrix = 0.6201384068" );
+
+  cv::Matx44d test44d;
+
+  returnStatus = mitk::ReadTrackerMatrix ( filename, test44d );
+
+  MITK_TEST_CONDITION ( returnStatus , "Testing that ReadTrackerMatrix (44d) returns true for good file." );
+
+  MITK_TEST_CONDITION ( test44d( 0,0 ) == 0.6201384068 , "Testing that first element of matrix (44d) = 0.6201384068" );
+
+  cv::Mat testBad1 = cvCreateMat (3,4,CV_64FC1);
+  cv::Mat testBad2 = cvCreateMat (4,3,CV_64FC1);
+  cv::Mat testBad3 = cvCreateMat (4,4,CV_32FC1);
+
+  try
+  {
+    returnStatus = mitk::ReadTrackerMatrix ( filename, testBad1 );
+    MITK_TEST_CONDITION ( false, "ReadTrackerMatrix did not throw an exception when matrix did not have 4 rows" );
+  }
+  catch ( std::exception e )
+  {
+    MITK_TEST_CONDITION ( true, "ReadTrackerMatrix threw an exception when matrix did not have 4 rows: " << e.what() );
+  }
+
+  try
+  {
+    returnStatus = mitk::ReadTrackerMatrix ( filename, testBad2 );
+    MITK_TEST_CONDITION ( false, "ReadTrackerMatrix did not throw an exception when matrix did not have 4 columns" );
+  }
+  catch ( std::exception e )
+  {
+    MITK_TEST_CONDITION ( true, "ReadTrackerMatrix threw an exception when matrix did not have 4 columns: " << e.what() );
+  }
+
+  try
+  {
+    returnStatus = mitk::ReadTrackerMatrix ( filename, testBad3 );
+    MITK_TEST_CONDITION ( false, "ReadTrackerMatrix did not throw an exception when matrix was not 64 bit float (64FC1)" );
+  }
+  catch ( std::exception e )
+  {
+    MITK_TEST_CONDITION ( true, "ReadTrackerMatrix threw an exception when matrix was noy 64 bit float (64FC1) " << e.what() );
+  }
+
+  try
+  {
+    returnStatus = mitk::ReadTrackerMatrix ( "nonsence.nonsense" , test );
+    MITK_TEST_CONDITION ( ! returnStatus , "Testing that ReadTrackerMatrix returns false for bad file." );
+    MITK_TEST_CONDITION ( test.at<double>( 0,0 ) == 0.6201384068 , "Testing that first element of matrix was not altered by failed call to ReadTrackerMatrix." );
+  }
+  catch ( std::exception e )
+  {
+    MITK_TEST_CONDITION ( false, "ReadTrackerMatrix threw an exception when file IO error: " << e.what() );
+  }
+
+  try
+  {
+    returnStatus = mitk::ReadTrackerMatrix ( "nonsence.nonsense" , test44d );
+    MITK_TEST_CONDITION ( ! returnStatus , "Testing that ReadTrackerMatrix(44d) returns false for bad file." );
+    MITK_TEST_CONDITION ( test44d( 0,0 ) == 0.6201384068 , "Testing that first element of matrix was not altered by failed call to ReadTrackerMatrix (44d)." );
+  }
+  catch ( std::exception e )
+  {
+    MITK_TEST_CONDITION ( false, "ReadTrackerMatrix (44d) threw an exception when file IO error: " << e.what() );
+  }
+
+}
+
 int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
 {
   // always start with this!
@@ -427,6 +503,7 @@ int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
   TestLoadMPSAndConvertToOpenCVVectorWithIndexFilling ( argv[3] );
   TestInitialiseVideoCapture ( argv[4], argv[5] );
   TestCreateVideoWriter ( );
+  TestReadTrackerMatrix(argv[6]);
   MITK_TEST_END();
 }
 
