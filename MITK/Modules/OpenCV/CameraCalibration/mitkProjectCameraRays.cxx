@@ -130,7 +130,12 @@ bool ProjectCameraRays::Project()
 
     if ( m_LensToWorldFileName != "" )
     {
-      ReadTrackerMatrix ( m_LensToWorldFileName,lensToWorld );
+      if ( ! ( ReadTrackerMatrix ( m_LensToWorldFileName,lensToWorld ) ) )
+      {
+        MITK_ERROR << "ProjectCameraRays: Failed to read matrix from " << m_LensToWorldFileName;
+        isSuccessful = false;
+        return isSuccessful;
+      }
     }
 
     cv::Mat pointsToProject = cv::Mat ( 3, m_ScreenPoints.size(), CV_64FC1 );

@@ -59,6 +59,10 @@ int mitkProjectCameraRaysTest(int argc, char * argv[])
     projector->WriteOutput ( argv[3] );
   }
 
+  projector->SetLensToWorldFileName("nonsense.nonsense");
+  returnStatus = projector->Project();
+  MITK_TEST_CONDITION_REQUIRED ( returnStatus == false , "Testing that project returned false when nonsense lens to world given." );
+
   MITK_TEST_END();
 }
 
