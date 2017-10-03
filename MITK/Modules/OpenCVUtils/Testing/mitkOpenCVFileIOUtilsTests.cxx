@@ -415,7 +415,7 @@ void TestCreateVideoWriter ()
   }
 }
 
-void TestReadTrackerMatrix (char * filename )
+void TestReadTrackerMatrix (char * filename , char * badfilename)
 {
   cv::Mat test = cvCreateMat (4,4,CV_64FC1);
 
@@ -489,6 +489,17 @@ void TestReadTrackerMatrix (char * filename )
     MITK_TEST_CONDITION ( false, "ReadTrackerMatrix (44d) threw an exception when file IO error: " << e.what() );
   }
 
+  try
+  {
+    returnStatus = mitk::ReadTrackerMatrix ( badfilename , test );
+    MITK_TEST_CONDITION ( ! returnStatus , "Testing that ReadTrackerMatrix returns false for bad file format" );
+    MITK_TEST_CONDITION ( test.at<double>( 0,0 ) == 0.6201384068 , "Testing that first element of matrix was not altered by failed call to ReadTrackerMatrix." );
+  }
+  catch ( std::exception e )
+  {
+    MITK_TEST_CONDITION ( false, "ReadTrackerMatrix threw an exception when file was badly formatted: " << e.what() );
+  }
+
 }
 
 int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
@@ -503,7 +514,7 @@ int mitkOpenCVFileIOUtilsTests(int argc, char * argv[])
   TestLoadMPSAndConvertToOpenCVVectorWithIndexFilling ( argv[3] );
   TestInitialiseVideoCapture ( argv[4], argv[5] );
   TestCreateVideoWriter ( );
-  TestReadTrackerMatrix(argv[6]);
+  TestReadTrackerMatrix(argv[6], argv[2]);
   MITK_TEST_END();
 }
 
