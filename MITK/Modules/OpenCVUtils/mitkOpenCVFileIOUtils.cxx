@@ -133,6 +133,10 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
   {
     mitkThrow() << "ReadTrackerMatrix: Matrix does not have 4 columns" << std::endl;
   }
+  if (outputMatrix.type() != CV_64FC1)
+  {
+    mitkThrow() << "ReadTrackerMatrix: Matrix is not single channel 64 bit float (64FC1) " << std::endl;
+  }
 
   cv::Matx44d matrix;
   isSuccessful = ReadTrackerMatrix(filename, matrix);
@@ -154,13 +158,18 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix)
 bool ReadTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix)
 {
   bool isSuccessful = false;
-  std::ifstream fin(filename.c_str());
+  std::ifstream fin;
 
   fin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
-  if ( !fin )
+  try
   {
-    MITK_WARN << "ReadTrackerMatrix: Failed to open matrix file " << filename;
+    fin.open(filename);
+  }
+  catch ( std::exception e )
+  {
+    MITK_WARN << "ReadTrackerMatrix: Failed to open matrix file " << filename << " with exception " << e.what() ;
+    isSuccessful = false;
     return isSuccessful;
   }
 
@@ -179,6 +188,8 @@ bool ReadTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix)
   }
   catch ( std::exception& e )
   {
+    MITK_WARN << "ReadTrackerMatrix: Failed to read full file " << filename << " with exception " << e.what() ;
+    isSuccessful = false;
     return isSuccessful;
   }
   isSuccessful = true;

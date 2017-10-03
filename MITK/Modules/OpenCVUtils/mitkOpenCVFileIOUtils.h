@@ -47,14 +47,15 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT mitk::TimeStampsContainer FindTrackingTimeS
 extern "C++" NIFTKOPENCVUTILS_EXPORT std::vector<std::string> FindVideoFrameMapFiles(const std::string directory);
 
 /**
- * \brief Extracted from mitkVideoTrackerMatching, reads a 4x4 matrix into a cv::Mat, and if the matrix can't
- * be read, will return a new matrix thats initialised according to the default OpenCV macros (i.e. unitinitialised).
+ * \brief Reads a 4x4 matrix into a cv::Mat.
+ * Throws an exception if outputMatrix is not 4x4 CV64FC1
  * @return true if successful and false otherwise
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
 
 /**
- * \see ReadTrackerMatrix(const std::string& filename, cv::Mat& outputMatrix);
+ * \brief Reads a 4x4 matrix into a cv::Mat44d
+ * @return true if successful and false otherwise
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT bool ReadTrackerMatrix(const std::string& filename, cv::Matx44d& outputMatrix);
 

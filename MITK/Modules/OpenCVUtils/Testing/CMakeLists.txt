@@ -22,5 +22,6 @@ mitkAddCustomModuleTest(mitkOpenCVFileIOUtilsTests mitkOpenCVFileIOUtilsTests
 	${NIFTK_DATA_DIR}/Input/IGI/PickedPointLists
 	${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy/2013-07-26-17-00-36-631/QmitkIGINVidiaDataSource_5/capture-2013_7_26-16_0_36.264
 	${NIFTK_DATA_DIR}/Input/LapTrackingAccuracy/2013-07-26-17-00-36-631/dummyVideoFile02.264
+	${NIFTK_DATA_DIR}/Input/CameraCalibration/TrackerMatrices/1359466034091194000.txt
 	)
 
