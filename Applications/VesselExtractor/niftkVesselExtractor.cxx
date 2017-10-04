@@ -25,7 +25,7 @@ See LICENSE.txt in the top level directory for details.
 #include <itkBinaryDilateImageFilter.h>
 #include <itkBinaryBallStructuringElement.h>
 #include <itkBinaryErodeImageFilter.h>
-#include <itkMultiplyImageFilter.h>
+#include <itkMaskImageFilter.h>
 
 #include <niftkVesselExtractorCLP.h>
 #include <itkNifTKImageIOFactory.h>
@@ -218,9 +218,13 @@ const unsigned int InternalDimension = 3;
 typedef float InternalPixelType;
 typedef itk::Image<InternalPixelType, InternalDimension> InternalImageType;
 
+typedef unsigned char MaskPixelType;
+typedef itk::Image<MaskPixelType, InternalDimension> MaskImageType;
+
 // function to cast and crop the input image to the internal type
-template<int Dimension, class PixelType>
-InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int sliceToKeep)
+template<int Dimension, class PixelType, class OutputPixelType = float>
+typename itk::Image<OutputPixelType, InternalDimension>::Pointer 
+CastAndCropInputImage(std::string fileInputImage, int sliceToKeep)
 {
   typedef itk::Image<PixelType, Dimension> InputImageType;   
   typedef itk::ImageFileReader<InputImageType>  InputImageReaderType;
@@ -239,13 +243,14 @@ InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int
     return NULL;
   }      
 
-  typename InternalImageType::Pointer outImage = NULL;
+  typedef itk::Image<OutputPixelType, InternalDimension> OutputImageType;
+  typename OutputImageType::Pointer outImage = NULL;
 
   typename InputImageType::Pointer inImage = imageReader->GetOutput();
   typename InputImageType::RegionType inRegion = inImage->GetLargestPossibleRegion();  
   if (Dimension > InternalDimension)
   {
-    typedef itk::ExtractImageFilter<InputImageType, InternalImageType> ExtractImageFilter;
+    typedef itk::ExtractImageFilter<InputImageType, OutputImageType> ExtractImageFilter;
     typename ExtractImageFilter::Pointer extractImage = ExtractImageFilter::New();
     extractImage->SetInput(inImage);
  
@@ -268,7 +273,7 @@ InternalImageType::Pointer CastAndCropInputImage(std::string fileInputImage, int
   }
   else
   {
-    typedef itk::CastImageFilter<InputImageType, InternalImageType> CastFilterType;
+    typedef itk::CastImageFilter<InputImageType, OutputImageType> CastFilterType;
     typename CastFilterType::Pointer castFilter = CastFilterType::New();
     castFilter->SetInput(inImage);
     castFilter->Update();
@@ -386,7 +391,6 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-
   switch (itk::PeekAtComponentType(inputImageName))
   {
     case itk::ImageIOBase::CHAR:
@@ -465,7 +469,7 @@ int main(int argc, char *argv[])
   InternalImageType::SizeType size_in = inImage->GetLargestPossibleRegion().GetSize();
   InternalImageType::SpacingType spacing = inImage->GetSpacing();
 
-  InternalImageType::Pointer inMask = NULL;
+  MaskImageType::Pointer inMask = NULL;
   if (!brainImageName.empty())
   {
     dims = itk::PeekAtImageDimension(brainImageName);
@@ -480,71 +484,71 @@ int main(int argc, char *argv[])
       case itk::ImageIOBase::CHAR:
         if (dims == 3)
         {
-          inMask = CastAndCropInputImage<3, char>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<3, char, unsigned char>(brainImageName, extractedSlice);
         }
         else if (dims == 4)
         {
-          inMask = CastAndCropInputImage<4, char>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<4, char, unsigned char>(brainImageName, extractedSlice);
         }
         break;
       case itk::ImageIOBase::UCHAR:
         if (dims == 3)
         {
-          inMask = CastAndCropInputImage<3, unsigned char>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<3, unsigned char, unsigned char>(brainImageName, extractedSlice);
         }
         else if (dims == 4)
         {
-          inMask = CastAndCropInputImage<4, unsigned char>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<4, unsigned char, unsigned char>(brainImageName, extractedSlice);
         }
         break;
       case itk::ImageIOBase::SHORT:
         if (dims == 3)
         {
-          inMask = CastAndCropInputImage<3, short>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<3, short, unsigned char>(brainImageName, extractedSlice);
         }
         else if (dims == 4)
         {
-          inMask = CastAndCropInputImage<4, short>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<4, short, unsigned char>(brainImageName, extractedSlice);
         }
         break;
       case itk::ImageIOBase::INT:
         if (dims == 3)
         {
-          inMask = CastAndCropInputImage<3, int>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<3, int, unsigned char>(brainImageName, extractedSlice);
         }
         else if (dims == 4)
         {
-          inMask = CastAndCropInputImage<4, int>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<4, int, unsigned char>(brainImageName, extractedSlice);
         }
         break;
       case itk::ImageIOBase::LONG:
         if (dims == 3)
         {
-          inMask = CastAndCropInputImage<3, long>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<3, long, unsigned char>(brainImageName, extractedSlice);
         }
         else if (dims == 4)
         {
-          inMask = CastAndCropInputImage<4, long>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<4, long, unsigned char>(brainImageName, extractedSlice);
         }
         break;
       case itk::ImageIOBase::FLOAT:
         if (dims == 3)
         {
-          inMask = CastAndCropInputImage<3, float>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<3, float, unsigned char>(brainImageName, extractedSlice);
         }
         else if (dims == 4)
         {
-          inMask = CastAndCropInputImage<4, float>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<4, float, unsigned char>(brainImageName, extractedSlice);
         }
         break;
       case itk::ImageIOBase::DOUBLE:
         if (dims == 3)
         {
-          inMask = CastAndCropInputImage<3, double>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<3, double, unsigned char>(brainImageName, extractedSlice);
         }
         else if (dims == 4)
         {
-          inMask = CastAndCropInputImage<4, double>(brainImageName, extractedSlice);
+          inMask = CastAndCropInputImage<4, double, unsigned char>(brainImageName, extractedSlice);
         }
         break;
       default:
@@ -558,11 +562,18 @@ int main(int argc, char *argv[])
       progressXML(0, "Unsupported mask type. Ignoring mask...");
     }
 
-    InternalImageType::SizeType size_mask = inMask->GetLargestPossibleRegion().GetSize();
+    MaskImageType::SizeType size_mask = inMask->GetLargestPossibleRegion().GetSize();
 
     if (size_mask[0] != size_in[0] || size_mask[1] != size_in[1] || size_mask[2] != size_in[2])
     {
       progressXML(0, "Warning: Mask and input image have different dimensions. Ignoring mask...");
+      inMask = NULL;
+    }
+    MaskImageType::PointType maskOri = inMask->GetOrigin();
+    InternalImageType::PointType imgOri = inImage->GetOrigin();
+    if (maskOri[0] != imgOri[0] || maskOri[1] != imgOri[1] || maskOri[2] != imgOri[2])
+    {
+      progressXML(0, "Warning: Mask and input image have different origins. Ignoring mask...");
       inMask = NULL;
     }
   }
@@ -632,15 +643,17 @@ int main(int argc, char *argv[])
 
     if (inMask.IsNotNull())
     {
-      in_resample->SetInput(inMask);
-      in_resample->Update();
-      inMask = in_resample->GetOutput();
+      typedef itk::ResampleImage<MaskImageType> MaskResampleType;
+      MaskResampleType::Pointer mask_resample = MaskResampleType::New();
+
+      mask_resample->SetInput(inMask);
+      mask_resample->Update();
+      inMask = mask_resample->GetOutput();
       inMask->DisconnectPipeline();
     }
   }
 
   typedef itk::StatisticsImageFilter<InternalImageType> ImageStatisticsFilter;
-
   bool negImage = false;
   if (isCT)
   {
@@ -669,12 +682,8 @@ int main(int argc, char *argv[])
     maskfilter->SetIsHU(negImage);
     maskfilter->Update();
 
-    typedef itk::CastImageFilter<MaskImageType, InternalImageType> CastFilterType;
-    CastFilterType::Pointer castFilter = CastFilterType::New();
-
-    castFilter->SetInput(maskfilter->GetOutput());
-    castFilter->Update();
-    inMask = castFilter->GetOutput();
+    inMask = maskfilter->GetOutput();
+    inMask->DisconnectPipeline();
   }
 
   // Erode for CT, dilate for other modalities!
@@ -689,24 +698,24 @@ int main(int argc, char *argv[])
     structuringElement.CreateStructuringElement();
 
     typedef itk::BinaryMorphologyImageFilter<
-      InternalImageType, 
-      InternalImageType,
+      MaskImageType, 
+      MaskImageType,
       StructuringElementType> MorphFilterType;
 
     MorphFilterType::Pointer morphFilter;
     if (isCT) 
     {
       typedef itk::BinaryErodeImageFilter<
-        InternalImageType, 
-        InternalImageType, 
+        MaskImageType, 
+        MaskImageType, 
         StructuringElementType> ErodeFilter;
       morphFilter = ErodeFilter::New();
     }
     else
     {
       typedef itk::BinaryDilateImageFilter<
-        InternalImageType, 
-        InternalImageType, 
+        MaskImageType, 
+        MaskImageType, 
         StructuringElementType> DilateFilter;
       morphFilter = DilateFilter::New();
     }
@@ -747,9 +756,9 @@ int main(int argc, char *argv[])
 
       typedef Functor::CreateCTMask<InternalPixelType> CreateCTMaskFunctor;
       typedef itk::BinaryFunctorImageFilter<
+        MaskImageType, 
         InternalImageType, 
-        InternalImageType, 
-        InternalImageType,
+        MaskImageType,
         CreateCTMaskFunctor> CreateMaskFilterType;
 
       CreateMaskFilterType::Pointer createMaskFilter = CreateMaskFilterType::New();
@@ -773,14 +782,15 @@ int main(int argc, char *argv[])
     progressXML(progresscounter, "Applying mask...");
     progresscounter += progress_unit;
 
-    typedef itk::MultiplyImageFilter<InternalImageType> MultiplyFilterType;
-    MultiplyFilterType::Pointer multiplyFilter = MultiplyFilterType::New();
-    multiplyFilter->SetInput1(maxImage);
-    multiplyFilter->SetInput2(inMask);
-    multiplyFilter->Update();
-
-    maxImage = multiplyFilter->GetOutput();
-  } // end of vesselextractor.cpp
+    typedef itk::MaskImageFilter<InternalImageType, MaskImageType> MaskFilterType;
+    MaskFilterType::Pointer maskFilter = MaskFilterType::New();
+    maskFilter->SetInput1(maxImage);
+    maskFilter->SetInput2(inMask);
+    maskFilter->Update();
+    
+    maxImage = maskFilter->GetOutput();
+    maxImage->DisconnectPipeline();
+  } 
 
   if (doIntensity)
   {
