@@ -43,18 +43,18 @@ if(NOT (CUDA_VERSION_MAJOR LESS 7))
 	include_directories(${CMAKE_BINARY_DIR})
 	include_directories(${CUDA_TOOLKIT_INCLUDE})
 
-  add_definitions(-DNIFTK_NVAPI_STATIC)
+    add_definitions(-DNIFTK_NVAPI_STATIC)
 	CUDA_ADD_LIBRARY(niftknvapi STATIC ${niftknvapi_SRCS})
 
-	foreach(cuda_dll nvcuda)
-	  if(WIN32)
-	    set(CMAKE_FIND_LIBRARY_SUFFIXES ".dll")
-      endif()
-	  find_library(cuda_dll_location
-	    NAMES ${cuda_dll}
-	  )
-	  install(PROGRAMS ${cuda_dll_location} DESTINATION bin)
-	endforeach()
+#	foreach(cuda_dll nvcuda)
+#	  if(WIN32)
+#	    set(CMAKE_FIND_LIBRARY_SUFFIXES ".dll")
+#      endif()
+#	  find_library(cuda_dll_location
+#	    NAMES ${cuda_dll}
+#	  )
+#	  install(PROGRAMS ${cuda_dll_location} DESTINATION bin)
+#	endforeach()
 
 	target_link_libraries(niftknvapi ${CMAKE_DL_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${NVAPI_LIBRARY}
 		${OPENGL_gl_LIBRARY})
