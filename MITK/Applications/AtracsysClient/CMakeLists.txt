@@ -22,7 +22,6 @@ if(Atracsys_FOUND)
     niftkCore
     niftkAtracsys
     niftkOpenCVUtils
-    ${Atracsys_LIBRARY}
   )
 endif()
 
