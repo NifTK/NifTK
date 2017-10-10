@@ -128,7 +128,7 @@ screenshots from a Mac.
 
 Minimum required version is CMake 3.2.0. NifTK is currently regularly tested with CMake 3.3.2.
 
-Pre-compiled binaries of CMake are available for Windows, Linux and Mac. You can safely choose
+Pre-compiled binaries of CMake are available for Windows, Linux and Mac. You can generally choose
 the 32bit version on a 64bit Windows.
 
 \verbatim
@@ -137,6 +137,9 @@ http://www.cmake.org
 
 Please install the downloaded binary distribution to a convenient location and make sure to add
 the bin folder to your system PATH (e.g. "c:\Program Files\CMake_3.3.2\bin" or "/opt/cmake-3.3.2/bin").
+
+If you intend to use an Atracsys tracker, and to package your application, then on 64 bit Windows,
+you must use a 64 bit CMake, otherwise the build will succeed and the packaging will fail.
 
 \section BuildInstructionsDownloadQt 3. Installing Qt
 
@@ -430,19 +433,17 @@ on Linux and Mac only. Below you can find screenshots about using the CMake GUI 
     \image html niftk-build-snapshot2.png "Figure 2. Select the correct generator."
   </li>
   <li>
-    If you want a GUI, turn on variables NIFTK_Apps/<whatever>
-  </li>
-  <li>
     Set the CMAKE_BUILD_TYPE. Select either Release or Debug.
   </li>
   <li>
-    Set the CMAKE_INSTALL_PREFIX.  In general, this is not widely used. This is because
+    Set the CMAKE_INSTALL_PREFIX.  In general, this is not widely used or tested. This is because
     developers just run all applications from their build folder. To distribute we use
     "make package" which creates an installer, which is then installed to a given folder.
-    However, if you want to run "make install", set this variable.
+    However, if you want to try "make install", set this variable.
   </li>
   <li>
-    If you want CUDA, turn on NIFTK_USE_CUDA. This is an advanced option. You need to ensure NVAPI, CUDA SDK (version 4.0) is installed. 
+    If you want CUDA, turn on NIFTK_USE_CUDA. This is an advanced option. You need to ensure CUDA SDK (version 7.5) is installed.
+    If you want to use the NVIDIA SDI driver, you need nvapi installed, and to set NVAPI_INCLUDE_DIR and NVAPI_LIBRARY.
   </li>
   <li>
     Similar to the Qt build, on Mac OS X El Capitan (10.11), you have to use the system
@@ -461,11 +462,30 @@ on Linux and Mac only. Below you can find screenshots about using the CMake GUI 
     \endverbatim
   </li>
   <li>
-    Select which options you want building. These variables start with BUILD_
+    Select which options you want building. These variables mostly with BUILD_
 
-    \image html niftk-build-snapshot3.png "Figure 3. Select the build options."
+    \image html niftk-build-snapshot3.png "Figure 3. Example screen, with some build options."
 
   </li>
+  <li>
+    The most common build options to choose are:
+
+    \verbatim
+      BUILD_COMMAND_LINE_PROGRAMS:BOOL - if you want command line apps. There are 150+, so if you know you just want the GUIs, you can leave this off.
+      BUILD_Caffe:BOOL - to build the Caffe deep learning framework (Experimental, feedback needed).
+      BUILD_Python:BOOL - builds a Python shell into the NiftyView and NiftyIGI GUI, along with bindings for VTK, ITK and OpenCV.
+      NIFTK_Apps/NiftyView:BOOL - to build NiftyView, a basic viewer with MITK and UCL plugins.
+      NIFTK_APPS/NiftyMIDAS:BOOL - to build NiftyMIDAS, developed with the UCL Dementia Research Centre for image segmentation.
+      NIFTK_APPS/NiftyIGI:BOOL - to build NiftyIGI, developed for image guided surgery.
+      DESIRED_QT_VERSION:STRING - must be 4 or 5, and then CMake will search for a suitable version.
+    \endverbatim
+
+    None of these options require CMake's advanced mode. If you turn on Advanced mode, and edit ANYTHING - you are on your own.
+
+    REALLY check that the correct version of Qt installed. CMake may pick up a different version from your environment.
+    For example, on Matt's Mac, CMake finds Qt version 5 in an Anaconda Python distribution!! So, if you see a different Qt,
+    and you do not know how that Qt was built, you are probably better off compiling your own, and using that, than you
+    are fighting with a Qt of unknown provenance.
   <li>
     Press configure repeatedly, setting variables as appropriate until the generate option is available. 
   </li>
