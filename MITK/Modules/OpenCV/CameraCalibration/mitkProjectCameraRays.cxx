@@ -62,14 +62,37 @@ void ProjectCameraRays::InitScreenPointsVector ()
   }
   else
   {
-    for ( int x = 0 ; x < m_ScreenWidth ; ++x )
+    if ( m_ProjectAllScreenPoints )
     {
-      for ( int y = 0 ; y < m_ScreenHeight ; ++y )
+      //this should go back and forth, i.e every second row goes --x
+      for ( int x = 0 ; x < m_ScreenWidth ; ++x )
       {
-        if ( m_ProjectAllScreenPoints || ( ( ( x == 0 ) || ( x == m_ScreenWidth -1 ) ) || ( ( y == 0 ) || ( y == m_ScreenHeight - 1 ) ) ) )
+        for ( int y = 0 ; y < m_ScreenHeight ; ++y )
         {
           m_ScreenPoints.push_back ( cv::Point2d ( static_cast<double>(x), static_cast<double>(y) ) );
         }
+      }
+    }
+    else
+    {
+      int x = 0;
+      int y = 0;
+
+      for ( x=0 ; x < m_ScreenWidth ; ++x )
+      {
+        m_ScreenPoints.push_back ( cv::Point2d ( static_cast<double>(x), static_cast<double>(y) ) );
+      }
+      for ( y = 1 ; y < m_ScreenHeight ; ++y )
+      {
+        m_ScreenPoints.push_back ( cv::Point2d ( static_cast<double>(x), static_cast<double>(y) ) );
+      }
+      for ( x = m_ScreenWidth - 2 ; x >= 0 ; --x )
+      {
+        m_ScreenPoints.push_back ( cv::Point2d ( static_cast<double>(x), static_cast<double>(y) ) );
+      }
+      for ( y = m_ScreenHeight -2  ; y > 0 ; --y )
+      {
+        m_ScreenPoints.push_back ( cv::Point2d ( static_cast<double>(x), static_cast<double>(y) ) );
       }
     }
     return;
