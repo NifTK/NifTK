@@ -13,15 +13,20 @@
 #============================================================================*/
 
 if(Atracsys_FOUND)
+
+  set(_libraries niftkCore niftkAtracsys niftkOpenCVUtils)
+  if(NOT WIN32)
+    list(APPEND _libraries ${Atracsys_LIBRARY})
+  endif()
+
   include_directories(${Atracsys_INCLUDE_DIR})
   NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     NAME niftkAtracsysClient
     BUILD_SLICER
     INSTALL_SCRIPT
     TARGET_LIBRARIES
-    niftkCore
-    niftkAtracsys
-    niftkOpenCVUtils
+    ${_libraries}
   )
+
 endif()
 
