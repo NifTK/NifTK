@@ -44,7 +44,7 @@ For developers it is important to read:
 
 \li <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/wikis/home">The wiki</a>
 \li <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/pipelines">The CI dashboard</a>
-\li <a href="https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK">The Nightly dashboard</a>
+\li <a href="https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK">The CDash dashboard</a>
 \li <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/milestones">The current tasks</a>
 
 \section MainPageAcknowledgements Acknowledgements

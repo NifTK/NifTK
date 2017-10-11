@@ -38,6 +38,8 @@ endforeach()
 ###########################################################################
 
 option(NIFTK_USE_COTIRE "Use Cotire for compilation speed-up." OFF)
+mark_as_advanced(NIFTK_USE_COTIRE)
+
 if(NIFTK_USE_COTIRE)
   set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake ${CMAKE_MODULE_PATH})
   include(cotire)
@@ -60,6 +62,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ######################################################################
 
 option(BUILD_SUPERBUILD "Build NIFTK and the projects it depends on via SuperBuild.cmake." ON)
+mark_as_advanced(BUILD_SUPERBUILD)
 
 if (BUILD_SUPERBUILD)
   project(NIFTK-superbuild)
@@ -175,6 +178,7 @@ else()
 endif()
 
 option(BUILD_PROTOTYPE "Build prototype code in NifTK/Prototype." OFF)
+mark_as_advanced(BUILD_PROTOTYPE)
 option(BUILD_SHARED_LIBS "Build NifTK with shared libraries." ON)
 option(BUILD_TESTING "Build Unit tests." OFF)
 option(BUILD_UTILITIES "Build NifTK/Utilities." OFF)
@@ -293,6 +297,7 @@ mark_as_advanced(BUILD_PCL)
 mark_as_advanced(BUILD_VL)
 mark_as_advanced(BUILD_RTK)
 mark_as_advanced(BUILD_MESHING)
+mark_as_advanced(NIFTK_DOC_LOCATION)
 
 ######################################################################
 # Make sure Git is available.
@@ -516,7 +521,9 @@ else()
 endif()
 
 env_option(MITK_USE_QT "Use the Qt Company's Qt library" ON)
+mark_as_advanced(MITK_USE_QT)
 env_option(MITK_USE_BLUEBERRY "Use MITK's GUI plugin framework." ON)
+mark_as_advanced(MITK_USE_BLUEBERRY)
 
 set(MITK_DESIRED_QT_VERSION ${DESIRED_QT_VERSION})
 
@@ -544,6 +551,7 @@ if(MITK_USE_QT)
     set(MITK_USE_Qt4 FALSE)
     set(MITK_USE_Qt5 TRUE)
     set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" CACHE PATH "")
+    mark_as_advanced(CMAKE_PREFIX_PATH)
     set(MITK_QT5_COMPONENTS Concurrent OpenGL PrintSupport Script Sql Svg Widgets WebKitWidgets Xml XmlPatterns UiTools Help)
     find_package(Qt5 ${MITK_QT5_MINIMUM_VERSION} COMPONENTS ${MITK_QT5_COMPONENTS} REQUIRED)
     if(Qt5_DIR)

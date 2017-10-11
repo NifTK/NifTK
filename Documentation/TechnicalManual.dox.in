@@ -22,15 +22,11 @@ the design decisions will be explained in detail. It is however assumed that the
 \li \subpage ArchitectureDragAndDropDisplay
 \li \subpage ArchitectureMIDASMorphEditor
 \li \subpage ArchitectureMIDASGeneralEditor
-\li \subpage ArchitectureSurgicalGuidanceView
 \li \subpage UnderstandingFileIO
 \li \subpage UnderstandingGeometry
-\li \subpage HowToContributeToThePlatform
 \li \subpage HowToErasePluginCache
 \li \subpage HowToWritePlugins
 \li \subpage HowToDoUltrasoundCalibration
-\li \subpage TechnicalCheckListPreRelease
-\li \subpage TechnicalCheckListPostRelease
 \li \subpage BuildInstructionsKelvin
 \li \subpage TestingApplications
 \li \subpage TestingReportsGenerated
