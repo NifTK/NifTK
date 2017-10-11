@@ -36,6 +36,8 @@ ProjectCameraRays::ProjectCameraRays()
 , m_UndistortBeforeProjection(true)
 , m_ScreenWidth(1920)
 , m_ScreenHeight(540)
+, m_WidthDivider(20)
+, m_HeightDivider(10)
 , m_RayLength ( 500 )
 , m_ProjectAllScreenPoints ( true )
 {
@@ -64,12 +66,37 @@ void ProjectCameraRays::InitScreenPointsVector ()
   {
     if ( m_ProjectAllScreenPoints )
     {
-      //this should go back and forth, i.e every second row goes --x
-      for ( int x = 0 ; x < m_ScreenWidth ; ++x )
+      if ( ( m_ScreenWidth % m_WidthDivider != 0 ) || (m_ScreenHeight % m_HeightDivider != 0 ) )
       {
-        for ( int y = 0 ; y < m_ScreenHeight ; ++y )
+        mitkThrow() << "Screen width / widthdivider or Screen height / height divider not an integer. ";
+      }
+      int xPixelPerParcel =  m_ScreenWidth / m_WidthDivider;
+      int yPixelPerParcel =  m_ScreenHeight / m_HeightDivider;
+
+      for ( int xparcel = 0 ; xparcel < m_WidthDivider ; ++ xparcel )
+      {
+        for ( int yparcel = 0 ; yparcel < m_HeightDivider ; ++ yparcel )
         {
-          m_ScreenPoints.push_back ( cv::Point2d ( static_cast<double>(x), static_cast<double>(y) ) );
+          int y = 0;
+          int x = 0;
+          int xPixelBase = xparcel * xPixelPerParcel;
+          int yPixelBase = yparcel * yPixelPerParcel;
+
+          int pixelsAdded = 0;
+          for ( y=0 ; y < yPixelPerParcel ; ++y )
+          {
+            for ( x=0 ; x < xPixelPerParcel ; ++x )
+            {
+              m_ScreenPoints.push_back ( cv::Point2d ( static_cast<double>(x + xPixelBase), static_cast<double>(y + yPixelBase) ) );
+              pixelsAdded++;
+            }
+            ++y;
+            for ( x = xPixelPerParcel - 1; x >= 0 ; --x )
+            {
+              m_ScreenPoints.push_back ( cv::Point2d ( static_cast<double>(x + xPixelBase), static_cast<double>(y + yPixelBase ) ) );
+              pixelsAdded++;
+            }
+          }
         }
       }
     }
