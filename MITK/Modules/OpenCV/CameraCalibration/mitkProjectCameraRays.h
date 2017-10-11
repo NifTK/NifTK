@@ -28,7 +28,8 @@ namespace mitk {
  * \class ProjectCameraRays
  * \brief Takes a camera calibration (intrinsic and distorion) and projected every image pixel (default 1920 x 540)
  * to a ray from the camera origin (0,0,0) to a distance of 500 by default. Optionally include the camera to world transform.
- * Output is 1036800 rays
+ * Output is 1036800 rays. The output rays are ordered in such a ray as to minimise run time when using a separate
+ * intersect find algorithm
  * Currently the image that you are dealing with and hence the 2D pixel coordinates are assumed to be distortion corrected.
  */
 class NIFTKOPENCV_EXPORT ProjectCameraRays : public itk::Object
@@ -41,6 +42,8 @@ public:
 
   itkSetMacro (ScreenWidth, int);
   itkSetMacro (ScreenHeight, int);
+  itkSetMacro (WidthDivider, int);
+  itkSetMacro (HeightDivider, int);
   itkSetMacro (IntrinsicFileName, std::string);
   itkSetMacro (UndistortBeforeProjection, bool);
   itkSetMacro (ProjectAllScreenPoints, bool);
@@ -69,6 +72,8 @@ private:
 
   int         m_ScreenWidth;  //the width of the screen to project
   int         m_ScreenHeight; //the height of the screen to project
+  int         m_WidthDivider;  //parcel the output rays into this many columns, to speed subsequent intersect finding
+  int         m_HeightDivider; //parcel the output rays into this many rows, to speed subsequent intersect finding
   std::string m_LensToWorldFileName; // the transform to put the projected rays in world coordinates
 
   double      m_RayLength; // the length of a ray
