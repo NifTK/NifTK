@@ -56,10 +56,6 @@ int mitkProjectCameraRaysTest(int argc, char * argv[])
   MITK_TEST_CONDITION_REQUIRED ( mitk::NearlyEqual ( rays[0].first, cv::Point3d ( -129.59307861 , 461.2430114746, -1999.4892578 )
         ,1e-6 ) , "Testing first ray origin is at origin of transform" );
   MITK_TEST_CONDITION_REQUIRED ( mitk::NearlyEqual ( rays[4913].second , cv::Point3d (-4.67841779e+02, 1.35454289e+01, -1.88484736e+03 ), 5e-1 ), "Testing 4913th ray tip position after transformation" <<  rays[4913].second );
-  if ( returnStatus )
-  {
-    projector->WriteOutput ( argv[3] );
-  }
 
   projector->SetLensToWorldFileName("nonsense.nonsense");
   returnStatus = projector->Project();
