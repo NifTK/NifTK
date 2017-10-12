@@ -18,7 +18,6 @@ NIFTK_CREATE_COMMAND_LINE_APPLICATION(
   INSTALL_SCRIPT
   TARGET_LIBRARIES
     niftkcommon
-    niftkITKIO
-    MitkSceneSerialization
     ${Boost_LIBRARIES}
+    niftkCore
 )
