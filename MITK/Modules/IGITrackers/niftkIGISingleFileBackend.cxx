@@ -23,6 +23,8 @@ namespace niftk
 //-----------------------------------------------------------------------------
 IGISingleFileBackend::IGISingleFileBackend(QString name, mitk::DataStorage::Pointer dataStorage)
 : IGITrackerBackend(name, dataStorage)
+, m_FileHeaderSize (256) //make the header largish so we can cope with later additions
+, m_FileHeader ( "NifTK TRQT") //keep it simple for the minute
 {
 }
 
@@ -156,6 +158,14 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
   std::ifstream ifs(fileName.toStdString(), std::ios::binary | std::ios::in);
   if (ifs.is_open())
   {
+    try
+    {
+      this->CheckFileHeader(ifs);
+    }
+    catch ( std::exception e )
+    {
+      mitkThrow() << fileName.toStdString() << "Does not appear to be a valid tracking data file." << e.what();
+    }
     niftk::IGIDataSourceI::IGITimeType time;
     std::pair<mitk::Point4D, mitk::Vector3D> transform;
     while (ifs.good())
@@ -177,6 +187,25 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
   return std::move(result);
 }
 
+//-----------------------------------------------------------------------------
+void IGISingleFileBackend::CheckFileHeader ( std::ifstream& ifs )
+{
+  std::string header;
+  ifs.read (reinterpret_cast<char*>(&header),m_FileHeaderSize);
+  if ( ! ifs.good () )
+  {
+    mitkThrow() << "Problem checking file header.";
+  }
+  if ( header.compare ( 0, m_FileHeader.length(), m_FileHeader ) != 0 )
+  {
+    mitkThrow() << "Not a valid tracking file";
+  }
+}
+
+//-----------------------------------------------------------------------------
+void IGISingleFileBackend::WriteFileHeader ( std::ofstream *ofs )
+{
+}
 
 //-----------------------------------------------------------------------------
 bool IGISingleFileBackend::ProbeRecordedData(const QString& directoryName,
@@ -287,6 +316,7 @@ void IGISingleFileBackend::SaveItem(const QString& directoryName,
     {
       mitkThrow() << "Failed to open file:" << fileNameAsString << " for saving data.";
     }
+    ofs->write(reinterpret_cast<char*>(&m_FileHeader), m_FileHeaderSize);
     m_OpenFiles.insert(std::move(std::make_pair(toolName, std::move(ofs))));
   }
 

@@ -103,6 +103,11 @@ private:
   PlaybackIndexType                                  m_PlaybackIndex;
   std::map<std::string, std::unique_ptr<ofstream> >  m_OpenFiles;
 
+  int                                                m_FileHeaderSize; //a fixed length header
+  std::string                                        m_FileHeader; //some text for the header
+
+  void CheckFileHeader (std::ifstream& ifs);
+
 };
 
 } // end namespace
