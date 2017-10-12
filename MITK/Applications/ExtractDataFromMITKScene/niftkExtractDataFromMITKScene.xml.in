@@ -18,6 +18,7 @@
       <longflag>input</longflag>
       <description>The file name of the MITK Scene file to process.</description>
       <label>MITK Scene file</label>
+      <channel>input</channel>
     </file>
 
     <file>
