@@ -203,11 +203,6 @@ void IGISingleFileBackend::CheckFileHeader ( std::ifstream& ifs )
 }
 
 //-----------------------------------------------------------------------------
-void IGISingleFileBackend::WriteFileHeader ( std::ofstream *ofs )
-{
-}
-
-//-----------------------------------------------------------------------------
 bool IGISingleFileBackend::ProbeRecordedData(const QString& directoryName,
                                              niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
                                              niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)

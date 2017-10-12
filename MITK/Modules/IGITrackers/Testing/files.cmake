@@ -12,7 +12,11 @@
 #
 #============================================================================*/
 
-MITK_CREATE_MODULE_TESTS(LABELS niftkIGITrackers)
+# tests with no extra command line parameter
+set(MODULE_TESTS
+	niftkIGISingleFileBackendTest.cxx
+)
 
-mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES Qt4|QtTest Qt5|Test)
+set(MODULE_CUSTOM_TESTS
+)
 
