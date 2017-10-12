@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Smart Liver.Video</category>
+  <title>niftk Project Rays</title>
+  <description><![CDATA[Create a test file of rays projected from each pixel of a virtual camera]]></description>
+  <version>@NIFTK_VERSION_STRING@</version>
+  <documentation-url>http://cmic.cs.ucl.ac.uk/platform/niftk/current/html/index.html</documentation-url>
+  <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
+  <contributor>Stephen Thompson</contributor>
+  <acknowledgements><![CDATA[]]></acknowledgements>
+
+  <parameters>
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <file>
+      <name>calibration</name>
+      <longflag>calib</longflag>
+      <description>A file defining the camera calibration.</description>
+      <label>The camera calibration.</label>
+    </file>
+
+    <file>
+      <name>lensToWorld</name>
+      <longflag>lensToWorld</longflag>
+      <description>A file defining the position of the camera lens</description>
+      <label>Lens to World file</label>
+    </file>
+
+    <file>
+      <name>outFile</name>
+      <longflag>out</longflag>
+      <description>The output file</description>
+      <label>Output file</label>
+    </file>
+
+    <boolean>
+      <name>quick</name>
+      <longflag>quick</longflag>
+      <description>Only project a subset of rays to speed things up</description>
+      <label>quick</label>
+      <default>true</default>
+    </boolean>
+
+  </parameters>
+
+</executable>

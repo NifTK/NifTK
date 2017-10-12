@@ -44,6 +44,8 @@ mitkAddCustomModuleTest(IdealCalibration-Test mitkIdealStereoCalibrationTest --c
 
 mitkAddCustomModuleTest(Stereo-Point-Projection mitkProjectPointsOnStereoVideoTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration ${TEMP})
 
+mitkAddCustomModuleTest(Project-Rays-Test mitkProjectCameraRaysTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory/CertusCalibration/calib.left.intrinsic.txt ${NIFTK_DATA_DIR}/Input/CameraCalibration/TrackerMatrices/1359466034091194000.txt)
+
 #Trac 2669 turning off the following tests as they are not very good unit tests, they take a long time to run and open up additional windows.
 if(OPENCV_WITH_FFMPEG)
 #  mitkAddCustomModuleTest(Handeye-from-Directory mitkHandeyeFromDirectoryTest ${NIFTK_DATA_DIR}/Input/CameraCalibration/HandeyeFromDirectory)
