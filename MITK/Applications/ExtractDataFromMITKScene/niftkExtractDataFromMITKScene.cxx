@@ -11,8 +11,6 @@ int main(int argc, char **argv)
 {
    PARSE_ARGS;
 
-   itk::NifTKImageIOFactory::Initialize();
-
    int returnStatus = EXIT_FAILURE;
 
    try
