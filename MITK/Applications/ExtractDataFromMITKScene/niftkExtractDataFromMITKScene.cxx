@@ -1,3 +1,17 @@
+/*=============================================================================
+
+  NifTK: A software platform for medical image computing.
+
+  Copyright (c) University College London (UCL). All rights reserved.
+
+  This software is distributed WITHOUT ANY WARRANTY; without even
+  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+  PURPOSE.
+
+  See LICENSE.txt in the top level directory for details.
+
+=============================================================================*/
+
 #include <iostream>
 #include <fstream>
 #include <typeinfo>
@@ -30,12 +44,12 @@ int main(int argc, char **argv)
             mitk::PointSet::Pointer ps = dynamic_cast<mitk::PointSet *>(nodes->at(i)->GetData());
             if (ps.IsNull())
             {
-               continue;
+              continue;
             }
             std::string nodeName = nodes->at(i)->GetName();
             std::cout << "Saving the point set named: " << nodeName << std::endl;
 
-            mitk::IOUtil::Save(ps, output + "_" + nodeName + ".mps");
+            mitk::IOUtil::Save(ps,  output + "/" + prefix + "_" + nodeName + ".mps");
          }
          else if(datatype.compare("image")==0)
          {
@@ -47,7 +61,7 @@ int main(int argc, char **argv)
             std::string nodeName = nodes->at(i)->GetName();
             std::cout << "Saving the image named: " << nodeName << std::endl;
 
-            mitk::IOUtil::Save(img, output + "_" + nodeName + ".nii.gz");
+            mitk::IOUtil::Save(img, output + "/" + prefix + "_" + nodeName + ".nii.gz");
          }
          else
          {
