@@ -57,6 +57,5 @@ int main(int argc, char** argv)
     MITK_ERROR << "Caught unknown exception:" << std::endl;
     returnStatus = EXIT_FAILURE + 3;
   }
-
   return returnStatus;
 }

@@ -27,7 +27,6 @@
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
- 
   int returnStatus = EXIT_FAILURE;
 
   if ( input.length() == 0 || outputPointSet.length() == 0 )
@@ -74,25 +73,23 @@ int main(int argc, char** argv)
       writer->Update();
 
     }
-    // Done
+
     returnStatus = EXIT_SUCCESS;
   }
-  catch (const mitk::Exception& e)
+  catch (mitk::Exception& e)
   {
-    std::cerr << "Caught MITK Exception:" << e.GetDescription() << std::endl
-                 << "in:" << e.GetFile() << std::endl
-                 << "at line:" << e.GetLine() << std::endl;
-    returnStatus = -1;
+    MITK_ERROR << "Caught mitk::Exception: " << e.GetDescription() << ", from:" << e.GetFile() << "::" << e.GetLine() << std::endl;
+    returnStatus = EXIT_FAILURE + 100;
   }
   catch (std::exception& e)
   {
-    std::cerr << "Caught std::exception:" << e.what();
-    returnStatus = -2;
+    MITK_ERROR << "Caught std::exception: " << e.what() << std::endl;
+    returnStatus = EXIT_FAILURE + 101;
   }
   catch (...)
   {
-    std::cerr << "Caught unknown exception:";
-    returnStatus = -3;
+    MITK_ERROR << "Caught unknown exception:" << std::endl;
+    returnStatus = EXIT_FAILURE + 102;
   }
   return returnStatus;
 } 

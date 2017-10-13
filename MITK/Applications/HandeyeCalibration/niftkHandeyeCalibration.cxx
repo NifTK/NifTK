@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
+
   std::vector<double> ReprojectionError;
 
   if ( trackingInputDirectory.length() == 0 ||
@@ -41,15 +42,20 @@ int main(int argc, char** argv)
         mitk::GenerateFullHandeyeMatrices(fullHandeyeInputDirectory);
         returnStatus = EXIT_SUCCESS;
       }
+      catch (mitk::Exception& e)
+      {
+        MITK_ERROR << "Caught mitk::Exception: " << e.GetDescription() << ", from:" << e.GetFile() << "::" << e.GetLine() << std::endl;
+        returnStatus = EXIT_FAILURE + 100;
+      }
       catch (std::exception& e)
       {
-        MITK_ERROR << "Caught std::exception:" << e.what();
-        returnStatus = -1;
+        MITK_ERROR << "Caught std::exception: " << e.what() << std::endl;
+        returnStatus = EXIT_FAILURE + 101;
       }
       catch (...)
       {
-        MITK_ERROR << "Caught unknown exception:";
-        returnStatus = -2;
+        MITK_ERROR << "Caught unknown exception:" << std::endl;
+        returnStatus = EXIT_FAILURE + 102;
       }
       return returnStatus;
     } 
@@ -85,15 +91,20 @@ int main(int argc, char** argv)
     } 
     returnStatus = EXIT_SUCCESS;
   }
+  catch (mitk::Exception& e)
+  {
+    MITK_ERROR << "Caught mitk::Exception: " << e.GetDescription() << ", from:" << e.GetFile() << "::" << e.GetLine() << std::endl;
+    returnStatus = EXIT_FAILURE + 100;
+  }
   catch (std::exception& e)
   {
-    MITK_ERROR << "Caught std::exception:" << e.what();
-    returnStatus = -1;
+    MITK_ERROR << "Caught std::exception: " << e.what() << std::endl;
+    returnStatus = EXIT_FAILURE + 101;
   }
   catch (...)
   {
-    MITK_ERROR << "Caught unknown exception:";
-    returnStatus = -2;
+    MITK_ERROR << "Caught unknown exception:" << std::endl;
+    returnStatus = EXIT_FAILURE + 102;
   }
 
   std::cout << "Reprojection error=" << ReprojectionError[0] << ", return status = " << returnStatus << std::endl;

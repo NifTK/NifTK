@@ -30,6 +30,7 @@ int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
+
   bool geomOK = false;
   //mitk::Surface::Pointer surface = mitk::Surface::New();
   mitk::Surface::Pointer surface = NULL;
@@ -155,9 +156,5 @@ int main(int argc, char** argv)
     // Render and interact
     renderWindow->Render();
     renderWindowInteractor->Start();
-     
   }
-
-
-
 }

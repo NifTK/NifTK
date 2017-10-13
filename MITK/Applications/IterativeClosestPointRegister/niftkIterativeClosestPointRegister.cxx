@@ -31,7 +31,6 @@ int main(int argc, char** argv)
 {
   PARSE_ARGS;
  
-
   niftk::ICPBasedRegistration::Pointer registerer = niftk::ICPBasedRegistration::New();
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();
