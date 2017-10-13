@@ -358,6 +358,7 @@ namespace niftk
 
       cvSetData(&subimgInput, (void*)&(data[m_CaptureHeight * (m_CaptureWidth * 4) * i]), m_CaptureWidth * 4);
       cvSetData(&subimgOutput, (void*)&(buffer[m_CaptureHeight * (m_CaptureWidth * 4) * i]), bufferpitch);
+      cvFlip(&subimgInput, &subimgOutput);
     }
 
     glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
