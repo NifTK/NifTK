@@ -17,6 +17,7 @@
 #endif
 
 #include <niftkIGISingleFileBackend.h>
+#include <niftkFileHelper.h>
 #include <mitkTestingMacros.h>
 #include <mitkLogMacros.h>
 #include <mitkStandaloneDataStorage.h>
@@ -26,12 +27,14 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
   // always start with this!
   MITK_TEST_BEGIN("niftkIGISingelFileBackendTest");
 
-  QString directoryName = "/dev/shm";
+  std::string uid = niftk::CreateUniqueTempFileName ("tool");
+  QString dirName = argv[1] + QString::fromStdString(uid);
   bool isRecording = true;
   niftk::IGIDataSourceI::IGITimeType duration;
   niftk::IGIDataSourceI::IGITimeType timeStamp;
   std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > data;
   mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
+  //give a name, not sure why. Let's make it an individual.
   QString name = "Mark Jackson";
 
   niftk::IGISingleFileBackend::Pointer backend = niftk::IGISingleFileBackend::New(name,dataStorage.GetPointer());
@@ -39,7 +42,7 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
 
   try
   {
-    backend->AddData (directoryName, isRecording, duration, timeStamp, data);
+    backend->AddData (dirName, isRecording, duration, timeStamp, data);
     MITK_TEST_CONDITION_REQUIRED ( true , "Adding empty data OK.");
   }
   catch ( std::exception e )
@@ -53,10 +56,12 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
   std::pair < mitk::Point4D, mitk::Vector3D > pair = std::pair < mitk::Point4D, mitk::Vector3D >(point,vector);
 
   data.insert ( std::pair < std::string , std::pair<mitk::Point4D, mitk::Vector3D> > ( toolName, pair ) );
-  backend->AddData (directoryName, isRecording, duration, timeStamp, data);
+
   try
   {
-    backend->AddData (directoryName, isRecording, duration, timeStamp, data);
+    //unless you set expected frames per second prior to calling it, AddData throws an exception.
+    backend->SetExpectedFramesPerSecond (1);
+    backend->AddData ( dirName, isRecording, duration, timeStamp, data);
     MITK_TEST_CONDITION_REQUIRED ( true , "Adding one data OK.");
   }
   catch ( std::exception e )

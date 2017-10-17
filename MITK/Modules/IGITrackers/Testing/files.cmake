@@ -14,9 +14,9 @@
 
 # tests with no extra command line parameter
 set(MODULE_TESTS
-	niftkIGISingleFileBackendTest.cxx
 )
 
 set(MODULE_CUSTOM_TESTS
+  niftkIGISingleFileBackendTest.cxx
 )
 
