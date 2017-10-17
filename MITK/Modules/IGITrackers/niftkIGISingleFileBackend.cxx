@@ -162,7 +162,7 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
     {
       this->CheckFileHeader(ifs);
     }
-    catch ( std::exception e )
+    catch ( std::exception& e )
     {
       mitkThrow() << fileName.toStdString() << "Does not appear to be a valid tracking data file." << e.what();
     }
