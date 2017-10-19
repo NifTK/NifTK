@@ -19,7 +19,7 @@
 #include <opencv2/core/types_c.h>
 #include <opencv/highgui.h>
 #include <mitkLogMacros.h>
-
+#include <mitkException.h>
 
 int main(int argc, char** argv)
 {
@@ -124,18 +124,25 @@ int main(int argc, char** argv)
     disparityfile.close();
 #endif
   }
-  catch (const std::exception& e)
+  catch (mitk::Exception& e)
   {
-    MITK_ERROR << "Caught exception: " << e.what();
+    MITK_ERROR << "Caught mitk::Exception: " << e.GetDescription() << ", from:" << e.GetFile() << "::" << e.GetLine() << std::endl;
+    returnStatus = EXIT_FAILURE + 100;
+  }
+  catch (std::exception& e)
+  {
+    MITK_ERROR << "Caught std::exception: " << e.what() << std::endl;
+    returnStatus = EXIT_FAILURE + 101;
   }
   catch (...)
   {
-    MITK_ERROR << "Caught unknown exception!";
+    MITK_ERROR << "Caught unknown exception:" << std::endl;
+    returnStatus = EXIT_FAILURE + 102;
   }
 
   cvReleaseImage(&left);
   cvReleaseImage(&right);
 
-  return 0;
+  return returnStatus;
 }
 

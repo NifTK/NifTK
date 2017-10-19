@@ -25,8 +25,10 @@ if(NOT APPLE)
 
   if("${CMAKE_SIZEOF_VOID_P}" EQUAL 8)
     set(_lib_name fusionTrack64)
+    set(_device_lib_name device64)
   else()
     set(_lib_name fusionTrack32)
+    set(_device_lib_name device32)
   endif()
 
   if(WIN32)
@@ -35,10 +37,16 @@ if(NOT APPLE)
     find_library(Atracsys_DLL
       NAMES ${_lib_name}
       PATHS "C:/Windows/System32"
-	        "C:/Windows/SysWOW64"
+            "C:/Windows/SysWOW64"
+    )
+    find_library(Atracsys_DEVICE_DLL
+      NAMES ${_device_lib_name}
+      PATHS "C:/Windows/System32"
+            "C:/Windows/SysWOW64"
     )
     set(CMAKE_FIND_LIBRARY_SUFFIXES ${_previous_suffix})
-	message("Found Atracsys: name=${_lib_name}, dll=${Atracsys_DLL}")
+    message("Found Atracsys: dll=${Atracsys_DLL}")
+    message("Found Atracsys: device=${Atracsys_DEVICE_DLL}")
   endif()
 
   find_library(Atracsys_LIBRARY
@@ -52,10 +60,11 @@ if(NOT APPLE)
 
   if(Atracsys_INCLUDE_DIR AND Atracsys_LIBRARY)
     if(WIN32)
-      if(Atracsys_DLL)
+      if(Atracsys_DLL AND Atracsys_DEVICE_DLL)
         set(Atracsys_FOUND 1)
         set(_atracsys_lib ${Atracsys_DLL})
         list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${Atracsys_DLL})
+        list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${Atracsys_DEVICE_DLL})
       endif()
     else()
       set(Atracsys_FOUND 1)

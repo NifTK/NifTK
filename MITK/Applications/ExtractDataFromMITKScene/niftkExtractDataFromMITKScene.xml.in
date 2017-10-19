@@ -18,21 +18,32 @@
       <longflag>input</longflag>
       <description>The file name of the MITK Scene file to process.</description>
       <label>MITK Scene file</label>
+      <channel>input</channel>
     </file>
 
-    <file>
+    <directory>
       <name>output</name>
       <flag>o</flag>
       <longflag>output</longflag>
-      <description>Prefix of the files containing the point set(s).</description>
-      <label>Output file prefix for point set(s)</label>
+      <description>Output directory for the files containing the point set(s).</description>
+      <label>Output directory for point set(s)</label>
       <channel>output</channel>
-    </file>
+    </directory>
+
   </parameters>
 
   <parameters>
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control type of data to extract]]></description>
+
+    <string>
+      <name>prefix</name>
+      <flag>p</flag>
+      <longflag>prefix</longflag>
+      <description>Prefix to add to all saved objects</description>
+      <label>File prefix</label>
+      <default>file</default>
+    </string>
 
     <string>
       <name>datatype</name>
@@ -42,6 +53,7 @@
       <label>Type of data to extract</label>
       <default>image</default>
     </string>
+
   </parameters>
 
 </executable>

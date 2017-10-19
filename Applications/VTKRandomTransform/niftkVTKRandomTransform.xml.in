@@ -97,7 +97,6 @@
       <longflag>useUniformRNG</longflag>
       <description>By default we use a random number generator returning normally distributed numbers, we can use a uniform distribution by setting this flag</description>
       <label>useUnformRNG</label>
-      <default>0</default>
       <channel>input</channel>
     </boolean>
 

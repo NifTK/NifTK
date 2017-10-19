@@ -30,7 +30,6 @@ int main(int argc, char** argv)
 {
   PARSE_ARGS;
  
-
   niftk::PointBasedRegistration::Pointer registerer = niftk::PointBasedRegistration::New();
   mitk::DataNode::Pointer fixednode = mitk::DataNode::New();
   mitk::DataNode::Pointer movingnode = mitk::DataNode::New();

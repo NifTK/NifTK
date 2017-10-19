@@ -20,13 +20,6 @@
       <label>Input point set</label>
       <channel>input</channel>
     </file>
-   
-  </parameters>
-  
-  <parameters>
-    <label>Mandatory Parameters</label>
-    <description><![CDATA[Parameters that control the calibration]]></description>
-
   </parameters>
   
 </executable>
