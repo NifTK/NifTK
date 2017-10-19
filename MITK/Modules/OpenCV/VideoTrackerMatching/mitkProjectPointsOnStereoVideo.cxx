@@ -1136,8 +1136,9 @@ void ProjectPointsOnStereoVideo::CalculateProjectionErrors (const std::string& o
   for ( unsigned int i = 0 ; i < m_GoldStandardPoints.size() ; i ++ )
   {
     bool left = true;
+    bool useLegacyAlgorithm = false;
     this->CalculateProjectionError( m_GoldStandardPoints[i]);
-    this->CalculateReProjectionError ( m_GoldStandardPoints[i]);
+    this->CalculateReProjectionError ( m_GoldStandardPoints[i], useLegacyAlgorithm);
   }
   if ( ! useNewOutputFormat )
   {
@@ -1360,7 +1361,7 @@ void ProjectPointsOnStereoVideo::WriteProjectionErrorsInNewFormat (const std::st
 }
 
 //-----------------------------------------------------------------------------
-void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject GSPoint )
+void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject GSPoint , bool useLegacyAlgorithm )
 {
   mitk::PickedObject toMatch = GSPoint.CopyByHeader();
   toMatch.m_Channel = "left_lens";
@@ -1406,12 +1407,15 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   }
 
   mitk::PickedObject undistortedObject = UndistortPickedObject ( GSPoint );
-  mitk::PickedObject reprojectedObject = ReprojectPickedObject ( undistortedObject, matchingObject );
+  mitk::PickedObject reprojectionError;
+  mitk::PickedObject reprojectedObject = ReprojectPickedObject ( undistortedObject, matchingObject, reprojectionError );
 
   reprojectedObject.m_Channel = "left_lens";
 
-  mitk::PickedObject reprojectionError;
-  reprojectedObject.DistanceTo ( matchingObject, reprojectionError, m_AllowableTimingError);
+  if ( useLegacyAlgorithm ) // before #5280
+  {
+    reprojectedObject.DistanceTo ( matchingObject, reprojectionError, m_AllowableTimingError);
+  }
 
   //crispin would like points in lens coordinates as well as world, so lets copy the points in
   //lens coordinates to the back of the vector, before multiplying them to put them in world.
@@ -1450,6 +1454,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
         " as z component error is too high : " << reprojectionError.m_Points[0].z;
     }
   }
+
 }
 
 //-----------------------------------------------------------------------------
@@ -1576,11 +1581,17 @@ mitk::PickedObject ProjectPointsOnStereoVideo::UndistortPickedObject ( const mit
 }
 
 //-----------------------------------------------------------------------------
-mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mitk::PickedObject& po, const mitk::PickedObject& reference )
+mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mitk::PickedObject& po, const mitk::PickedObject& reference,
+    mitk::PickedObject& pickedObjectDeltas )
 {
+
+  pickedObjectDeltas = po.CopyByHeader();
+  pickedObjectDeltas.m_Points.clear();
+
   assert ( po.m_Channel == "left" || po.m_Channel == "right" );
   mitk::PickedObject reprojectedObject = po.CopyByHeader();
 
+  std::vector <cv::Point3d> deltas;
   for ( unsigned int i = 0 ; i < po.m_Points.size () ; i ++ )
   {
     assert ( po.m_Points[i].z == 0 );
@@ -1597,18 +1608,20 @@ mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mit
 
     double depth = mitk::GetCentroid ( reference.m_Points ).z;
     double shortestDistance = std::numeric_limits<double>::infinity();
+    cv::Point3d closestPointOnReference = reference.m_Points[0];
     if ( reference.m_IsLine )
     {
       if ( reference.m_Points.size () > 1 )
       {
         for ( std::vector<cv::Point3d>::const_iterator it = reference.m_Points.begin() + 1 ; it < reference.m_Points.end() ; ++ it )
         {
-          cv::Point3d closestPointOnReference;
-          double distance = mitk::DistanceBetweenLineAndSegment ( cv::Point3d (0.0, 0.0, 0.0), out , *(it-1), *(it), closestPointOnReference);
+          cv::Point3d closestPointOnSegment;
+          double distance = mitk::DistanceBetweenLineAndSegment ( cv::Point3d (0.0, 0.0, 0.0), out , *(it-1), *(it), closestPointOnSegment);
           if ( distance < shortestDistance )
           {
             shortestDistance = distance;
-            depth = closestPointOnReference.z;
+            depth = closestPointOnSegment.z;
+            closestPointOnReference = closestPointOnSegment;
           }
         }
       }
@@ -1616,8 +1629,14 @@ mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mit
     out.x *= depth;
     out.y *= depth;
     out.z *= depth;
+    cv::Point3d delta;
+    mitk::DistanceBetweenTwoPoints ( closestPointOnReference, out , &delta);
+    deltas.push_back(delta);
     reprojectedObject.m_Points.push_back(out);
   }
+  pickedObjectDeltas.m_Points.push_back(mitk::GetCentroid ( deltas ));
+  pickedObjectDeltas.m_Points.push_back(mitk::GetCentroid ( reprojectedObject.m_Points, false, NULL  ));
+  pickedObjectDeltas.m_Points.push_back(mitk::GetCentroid ( reference.m_Points, false, NULL ));
   return reprojectedObject;
 }
 
