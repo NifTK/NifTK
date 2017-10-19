@@ -64,6 +64,25 @@ int main(int argc, char** argv)
       }
     }
 
+    std::string header;
+    std::string headerTarget = "NIFTK_TRQT";
+    unsigned int fileHeaderSize = 25;
+    MITK_INFO << "REading " << header << " -ne " << headerTarget;
+
+    ifs.read (reinterpret_cast<char*>(&header),fileHeaderSize);
+
+    MITK_INFO << "Read" << header << " -ne " << headerTarget;
+    if ( ! ifs.good () )
+    {
+      mitkThrow() << "Problem checking file header.";
+    }
+    if ( header.compare ( 0, headerTarget.length(), headerTarget ) != 0 )
+    {
+      MITK_ERROR << header << " -ne " << headerTarget;
+      mitkThrow() << "Not a valid tracking file";
+    }
+
+
     unsigned long int counter = 0;
     int modulo = skip + 1;
     vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();

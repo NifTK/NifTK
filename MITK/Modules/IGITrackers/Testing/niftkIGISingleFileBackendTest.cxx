@@ -69,6 +69,9 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
     MITK_TEST_CONDITION_REQUIRED ( false , "Adding one data called exception:" << e.what());
   }
 
+  backend->StartPlayback(dirName, 0, 1 );
+  backend->PlaybackData(1,0);
+
   // always end with this!
   MITK_TEST_END();
 }
