@@ -1630,7 +1630,7 @@ mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mit
     out.y *= depth;
     out.z *= depth;
     cv::Point3d delta;
-    mitk::DistanceBetweenTwoPoints ( closestPointOnReference, out , &delta);
+    mitk::DistanceBetweenTwoPoints (out, closestPointOnReference, &delta);
     deltas.push_back(delta);
     reprojectedObject.m_Points.push_back(out);
   }
