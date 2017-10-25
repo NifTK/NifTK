@@ -16,6 +16,7 @@
 #include <niftkIGIDataSourceUtils.h>
 #include <niftkMITKMathsUtils.h>
 #include <niftkFileHelper.h>
+#include <H5Cpp.h>
 
 namespace niftk
 {
