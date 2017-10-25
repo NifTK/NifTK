@@ -64,12 +64,13 @@ int main(int argc, char** argv)
       }
     }
 
-    std::string header;
+    std::string header (256,'-');
+    //std::vector<char> header;
     std::string headerTarget = "NIFTK_TRQT";
     unsigned int fileHeaderSize = 25;
     MITK_INFO << "REading " << header << " -ne " << headerTarget;
 
-    ifs.read (reinterpret_cast<char*>(&header),fileHeaderSize);
+    ifs.read (reinterpret_cast<char*>(&header[0]),fileHeaderSize);
 
     MITK_INFO << "Read" << header << " -ne " << headerTarget;
     if ( ! ifs.good () )
