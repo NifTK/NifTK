@@ -17,9 +17,9 @@ MITK_CREATE_MODULE(
   PACKAGE_DEPENDS Qt4|QtGui Qt5|Widgets
 )
 
-target_link_libraries(niftkIGITrackers PRIVATE niftkcommon ${HDF5_LIBRARY_DEBUG_hdf5_cpp})
+target_link_libraries(niftkIGITrackers PRIVATE niftkcommon)
 
-include_directories(${HDF5_INCLUDE_DIR})
+include_directories()
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkIGITrackers)
