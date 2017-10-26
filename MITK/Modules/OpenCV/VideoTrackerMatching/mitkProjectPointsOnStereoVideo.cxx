@@ -1411,6 +1411,7 @@ void ProjectPointsOnStereoVideo::CalculateReProjectionError ( mitk::PickedObject
   mitk::PickedObject reprojectedObject = ReprojectPickedObject ( undistortedObject, matchingObject, reprojectionError );
 
   reprojectedObject.m_Channel = "left_lens";
+  reprojectionError.m_Channel = "left_lens";
 
   if ( useLegacyAlgorithm ) // before #5280
   {
