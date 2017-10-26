@@ -16,6 +16,8 @@
 #include <niftkIGIDataSourceUtils.h>
 #include <niftkMITKMathsUtils.h>
 #include <niftkFileHelper.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 
 namespace niftk
 {
@@ -24,7 +26,6 @@ namespace niftk
 IGISingleFileBackend::IGISingleFileBackend(QString name, mitk::DataStorage::Pointer dataStorage)
 : IGITrackerBackend(name, dataStorage)
 , m_FileHeaderSize (256) //make the header largish so we can cope with later additions
-, m_FileHeader ( "NifTK TRQT") //keep it simple for the minute
 {
 }
 
@@ -191,15 +192,29 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
 void IGISingleFileBackend::CheckFileHeader ( std::ifstream& ifs )
 {
   std::string header;
-  ifs.read (reinterpret_cast<char*>(&header),m_FileHeaderSize);
+  ifs.read (reinterpret_cast<char*>(&header[0]),m_FileHeaderSize);
   if ( ! ifs.good () )
   {
     mitkThrow() << "Problem checking file header.";
   }
-  if ( header.compare ( 0, m_FileHeader.length(), m_FileHeader ) != 0 )
+  std::string expectedHeader = this->GetFileHeader();
+  if ( header.compare ( 0, expectedHeader.length(), expectedHeader ) != 0 )
   {
     mitkThrow() << "Not a valid tracking file";
   }
+}
+
+//-----------------------------------------------------------------------------
+std::string IGISingleFileBackend::GetFileHeader ( )
+{
+  std::string header;
+  std::stringstream toHeader;
+  boost::property_tree::ptree pt;
+  pt.add ("NifTK_TRQD.version", 0.0);
+  boost::property_tree::xml_writer_settings<std::string> settings(' ',2);
+  boost::property_tree::write_xml (toHeader, pt, settings);
+  header = toHeader.str();
+  return header;
 }
 
 //-----------------------------------------------------------------------------
@@ -311,7 +326,10 @@ void IGISingleFileBackend::SaveItem(const QString& directoryName,
     {
       mitkThrow() << "Failed to open file:" << fileNameAsString << " for saving data.";
     }
-    ofs->write(reinterpret_cast<char*>(&m_FileHeader), m_FileHeaderSize);
+    std::string header = this->GetFileHeader();
+    MITK_INFO << "Writing header " << header;
+    //ofs->write(reinterpret_cast<char*>(&header), m_FileHeaderSize);
+    *ofs << header;
     m_OpenFiles.insert(std::move(std::make_pair(toolName, std::move(ofs))));
   }
 

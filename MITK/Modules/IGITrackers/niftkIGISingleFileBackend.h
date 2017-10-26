@@ -104,10 +104,12 @@ private:
   std::map<std::string, std::unique_ptr<ofstream> >  m_OpenFiles;
 
   int                                                m_FileHeaderSize; //a fixed length header
-  std::string                                        m_FileHeader; //some text for the header
 
   // throws an exception if the file header does not match the expected file type
   void CheckFileHeader (std::ifstream& ifs);
+
+  // Returns the file header
+  std::string GetFileHeader ();
 
 };
 
