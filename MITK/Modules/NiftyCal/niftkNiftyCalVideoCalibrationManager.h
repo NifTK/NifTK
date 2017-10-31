@@ -67,6 +67,7 @@ public:
 
   const static bool                DefaultDoIterative;
   const static bool                DefaultDo3DOptimisation;
+  const static bool                DefaultDoClustering;
   const static unsigned int        DefaultNumberOfSnapshotsForCalibrating;
   const static double              DefaultScaleFactorX;
   const static double              DefaultScaleFactorY;
@@ -103,6 +104,9 @@ public:
 
   itkSetMacro(Do3DOptimisation, bool);
   itkGetMacro(Do3DOptimisation, bool);
+
+  itkSetMacro(DoClustering, bool);
+  itkGetMacro(DoClustering, bool);
 
   itkSetMacro(UpdateNodes, bool);
   itkGetMacro(UpdateNodes, bool);
@@ -330,6 +334,7 @@ private:
   // Data from preferences.
   bool                                           m_DoIterative;
   bool                                           m_Do3DOptimisation;
+  bool                                           m_DoClustering;
   unsigned int                                   m_NumberOfSnapshotsForCalibrating;
   std::string                                    m_ModelFileName;
   double                                         m_ScaleFactorX;

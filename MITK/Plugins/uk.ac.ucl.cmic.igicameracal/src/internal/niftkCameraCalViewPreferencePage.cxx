@@ -29,6 +29,7 @@ namespace niftk
 {
 const QString CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME("iterative");
 const QString CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME("optimise in 3D");
+const QString CameraCalViewPreferencePage::DO_CLUSTERING_NODE_NAME("clustering");
 const QString CameraCalViewPreferencePage::NUMBER_VIEWS_NODE_NAME("required number of views");
 const QString CameraCalViewPreferencePage::MODEL_NODE_NAME("3D model points");
 const QString CameraCalViewPreferencePage::SCALEX_NODE_NAME("scale factor in x to resize image");
@@ -90,7 +91,7 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
 
   m_Ui->m_FeaturesComboBox->addItem("OpenCV chess board (planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD));
   m_Ui->m_FeaturesComboBox->addItem("OpenCV asymmetric circle grid (planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::CIRCLE_GRID));
-  m_Ui->m_FeaturesComboBox->addItem("April Tags (planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS));
+  m_Ui->m_FeaturesComboBox->addItem("April Tags (planar or non-planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS));
   m_Ui->m_FeaturesComboBox->addItem("Template matching asymmetric circles (planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_CIRCLES));
   m_Ui->m_FeaturesComboBox->addItem("Template matching asymmetric rings (planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_RINGS));
   m_Ui->m_FeaturesComboBox->addItem("Symmetric template matching asymmetric circles (non-planar)", QVariant(niftk::NiftyCalVideoCalibrationManager::TEMPLATE_MATCHING_NON_COPLANAR_CIRCLES));
@@ -132,6 +133,7 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(1);
   m_Ui->m_IterativeCheckBox->setChecked(false);
   m_Ui->m_Do3DOptimisationCheckBox->setChecked(false);
+  m_Ui->m_ClusteringCheckBox->setChecked(false);
   m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
   this->OnDoIterativeChecked(false);
   this->OnFeaturesComboSelected();
@@ -229,6 +231,19 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
       m_Ui->m_TemplateImagePushButton->setVisible(false);
     break;
   }
+  switch(m_Ui->m_FeaturesComboBox->currentIndex())
+  {
+    case niftk::NiftyCalVideoCalibrationManager::CHESS_BOARD:
+    case niftk::NiftyCalVideoCalibrationManager::APRIL_TAGS:
+      m_Ui->m_ClusteringLabel->setVisible(false);
+      m_Ui->m_ClusteringCheckBox->setVisible(false);
+    break;
+    default:
+      m_Ui->m_ClusteringLabel->setVisible(true);
+      m_Ui->m_ClusteringCheckBox->setVisible(true);
+    break;
+  }
+
   this->UpdateReferenceImageVisibility();
 }
 
@@ -351,6 +366,7 @@ bool CameraCalViewPreferencePage::PerformOk()
 {
   m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME, m_Ui->m_IterativeCheckBox->isChecked());
   m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME, m_Ui->m_Do3DOptimisationCheckBox->isChecked());
+  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::DO_CLUSTERING_NODE_NAME, m_Ui->m_ClusteringCheckBox->isChecked());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_NODE_NAME, m_Ui->m_3DModelLineEdit->text());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::NUMBER_VIEWS_NODE_NAME, m_Ui->m_NumberViewsSpinBox->value());
   m_CameraCalViewPreferencesNode->PutDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, m_Ui->m_ScaleImageInXSpinBox->value());
@@ -382,6 +398,7 @@ void CameraCalViewPreferencePage::Update()
 {
   m_Ui->m_IterativeCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::DO_ITERATIVE_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoIterative));
   m_Ui->m_Do3DOptimisationCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation));
+  m_Ui->m_ClusteringCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::DO_CLUSTERING_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoClustering));
   m_Ui->m_3DModelLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_NODE_NAME, ""));
   m_Ui->m_NumberViewsSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::NUMBER_VIEWS_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating));
   m_Ui->m_ScaleImageInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetDouble(CameraCalViewPreferencePage::SCALEX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorX));
