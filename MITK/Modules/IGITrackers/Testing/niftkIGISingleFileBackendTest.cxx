@@ -30,8 +30,8 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
   std::string uid = niftk::CreateUniqueTempFileName ("tool");
   QString dirName = argv[1] + QString::fromStdString(uid);
   bool isRecording = true;
-  niftk::IGIDataSourceI::IGITimeType duration;
-  niftk::IGIDataSourceI::IGITimeType timeStamp;
+  niftk::IGIDataSourceI::IGITimeType duration = 10;
+  niftk::IGIDataSourceI::IGITimeType timeStamp = 100;
   std::map<std::string, std::pair<mitk::Point4D, mitk::Vector3D> > data;
   mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
   //give a name, not sure why. Let's make it an individual.
@@ -51,7 +51,14 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
   }
 
   mitk::Point4D point;
+  point[0] = 4;
+  point[1] = 44;
+  point[2] = 44.4;
+  point[3] = 44.44;
   mitk::Vector3D vector;
+  vector[0] = -5;
+  vector[1] = -55;
+  vector[2] = -55.5;
   std::string toolName = "tool";
   std::pair < mitk::Point4D, mitk::Vector3D > pair = std::pair < mitk::Point4D, mitk::Vector3D >(point,vector);
 
@@ -68,6 +75,9 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
   {
     MITK_TEST_CONDITION_REQUIRED ( false , "Adding one data called exception:" << e.what());
   }
+
+  //must do this to release file for reading.
+  backend->StopRecording();
 
   backend->StartPlayback(dirName, 0, 1 );
   backend->PlaybackData(1,0);
