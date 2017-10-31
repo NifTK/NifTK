@@ -192,14 +192,33 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
 //-----------------------------------------------------------------------------
 void IGISingleFileBackend::CheckFileHeader ( std::ifstream& ifs )
 {
-  boost::property_tree::ptree pt;
-  boost::property_tree::read_xml (ifs, pt);
+  std::stringstream headerstream;
 
+  std::vector<char> headerChar (m_FileHeaderSize);
+  for ( unsigned int i = 0 ; i < m_FileHeaderSize ; ++ i )
+  {
+    ifs.read (reinterpret_cast<char*>(&headerChar[i]),sizeof(headerChar[i]));
+    headerstream << headerChar[i];
+  }
+
+  boost::property_tree::ptree pt;
   try
   {
-    BOOST_FOREACH ( boost::property_tree::ptree::value_type const& v , pt.get_child("NifTK_TRQD") )
+    boost::property_tree::read_xml (headerstream, pt);
+  }
+  catch ( std::exception e )
+  {
+    MITK_INFO << "Read xml failed after " << ifs.gcount() << " bytes. : " << e.what();
+  }
+
+  bool ok = false;
+  try
+  {
+    int version = pt.get<int>("NifTK_TRQD.version");
+    if ( version >= 0 )
     {
-      MITK_INFO << "Got " << v.first;// << " = " << v.second;
+      MITK_INFO << "Version OK: " << version;
+      ok = true;
     }
   }
   catch ( ... )
@@ -207,7 +226,7 @@ void IGISingleFileBackend::CheckFileHeader ( std::ifstream& ifs )
     mitkThrow() << "Problem checking header.";
   }
 
-  if ( ! ifs.good () )
+  if ( ! ifs.good () || ! ok )
   {
     mitkThrow() << "Problem checking file header.";
   }
@@ -340,9 +359,12 @@ void IGISingleFileBackend::SaveItem(const QString& directoryName,
       mitkThrow() << "Failed to open file:" << fileNameAsString << " for saving data.";
     }
     std::string header = this->GetFileHeader();
-    MITK_INFO << "Writing header " << header;
-    //ofs->write(reinterpret_cast<char*>(&header), m_FileHeaderSize);
     *ofs << header;
+    MITK_INFO << "Header fills " << header.length() << " characters out of " << m_FileHeaderSize << " filling with blanks";
+    for ( unsigned int i = 0 ; i < m_FileHeaderSize - header.length() ; ++ i )
+    {
+      *ofs << " " ;
+    }
     m_OpenFiles.insert(std::move(std::make_pair(toolName, std::move(ofs))));
   }
 
