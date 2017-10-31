@@ -18,6 +18,7 @@
 #include <niftkFileHelper.h>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/foreach.hpp>
 
 namespace niftk
 {
@@ -165,7 +166,7 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
     }
     catch ( std::exception& e )
     {
-      mitkThrow() << fileName.toStdString() << "Does not appear to be a valid tracking data file." << e.what();
+      mitkThrow() << fileName.toStdString() << "Does not appear to be a valid tracking data file : " << e.what();
     }
     niftk::IGIDataSourceI::IGITimeType time;
     std::pair<mitk::Point4D, mitk::Vector3D> transform;
@@ -191,16 +192,28 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
 //-----------------------------------------------------------------------------
 void IGISingleFileBackend::CheckFileHeader ( std::ifstream& ifs )
 {
-  std::string header;
-  ifs.read (reinterpret_cast<char*>(&header[0]),m_FileHeaderSize);
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_xml (ifs, pt);
+
+  try
+  {
+    BOOST_FOREACH ( boost::property_tree::ptree::value_type const& v , pt.get_child("NifTK_TRQD") )
+    {
+      MITK_INFO << "Got " << v.first;// << " = " << v.second;
+    }
+  }
+  catch ( ... )
+  {
+    mitkThrow() << "Problem checking header.";
+  }
+
   if ( ! ifs.good () )
   {
     mitkThrow() << "Problem checking file header.";
   }
-  std::string expectedHeader = this->GetFileHeader();
-  if ( header.compare ( 0, expectedHeader.length(), expectedHeader ) != 0 )
+  if ( ifs.eof () )
   {
-    mitkThrow() << "Not a valid tracking file";
+    mitkThrow() << "No data in file.";
   }
 }
 
