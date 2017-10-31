@@ -56,7 +56,7 @@ namespace niftk
 
 const bool                NiftyCalVideoCalibrationManager::DefaultDoIterative(false);
 const bool                NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation(false);
-const bool                NiftyCalVideoCalibrationManager::DefaultDoClustering(false);
+const bool                NiftyCalVideoCalibrationManager::DefaultDoClustering(true);
 const unsigned int        NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating(10);
 const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorX(1);
 const double              NiftyCalVideoCalibrationManager::DefaultScaleFactorY(1);
