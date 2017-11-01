@@ -207,6 +207,9 @@ void CameraCalView::RetrievePreferenceValues()
     bool do3DOptimisation = prefs->GetBool(CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation);
     m_Manager->SetDo3DOptimisation(do3DOptimisation);
 
+    bool doClustering = prefs->GetBool(CameraCalViewPreferencePage::DO_CLUSTERING_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoClustering);
+    m_Manager->SetDoClustering(doClustering);
+
     std::string refImage = prefs->Get(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, "").toStdString();
     std::string refPoints = prefs->Get(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, "").toStdString();
 
