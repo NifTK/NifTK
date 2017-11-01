@@ -166,7 +166,7 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
     }
     catch ( std::exception& e )
     {
-      mitkThrow() << fileName.toStdString() << "Does not appear to be a valid tracking data file : " << e.what();
+      mitkThrow() << fileName.toStdString() << " does not appear to be a valid tracking data file : " << e.what();
     }
     niftk::IGIDataSourceI::IGITimeType time;
     std::pair<mitk::Point4D, mitk::Vector3D> transform;
@@ -202,19 +202,12 @@ void IGISingleFileBackend::CheckFileHeader ( std::ifstream& ifs )
   }
 
   boost::property_tree::ptree pt;
-  try
-  {
-    boost::property_tree::read_xml (headerstream, pt);
-  }
-  catch ( std::exception e )
-  {
-    MITK_INFO << "Read xml failed after " << ifs.gcount() << " bytes. : " << e.what();
-  }
+  boost::property_tree::read_xml (headerstream, pt);
 
   bool ok = false;
   try
   {
-    int version = pt.get<int>("NifTK_TRQD.version");
+    int version = pt.get<float>("NifTK.TQRD_version");
     if ( version >= 0 )
     {
       MITK_INFO << "Version OK: " << version;
@@ -242,7 +235,11 @@ std::string IGISingleFileBackend::GetFileHeader ( )
   std::string header;
   std::stringstream toHeader;
   boost::property_tree::ptree pt;
-  pt.add ("NifTK_TRQD.version", 0.0);
+  pt.add ("NifTK.Version",  NIFTK_VERSION_STRING);
+  pt.add ("NifTK.TQRD_version", 0.0);
+  pt.add ("NifTK.revision", NIFTK_VERSION);
+  pt.add ("NifTK.Build_Date", NIFTK_DATE_TIME);
+
   boost::property_tree::xml_writer_settings<std::string> settings(' ',2);
   boost::property_tree::write_xml (toHeader, pt, settings);
   header = toHeader.str();
