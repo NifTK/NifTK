@@ -205,18 +205,12 @@ void IGISingleFileBackend::CheckFileHeader ( std::ifstream& ifs )
   boost::property_tree::read_xml (headerstream, pt);
 
   bool ok = false;
-  try
+
+  int version = pt.get<float>("NifTK.TQRD_version");
+  if ( version >= 0 )
   {
-    int version = pt.get<float>("NifTK.TQRD_version");
-    if ( version >= 0 )
-    {
-      MITK_INFO << "Version OK: " << version;
-      ok = true;
-    }
-  }
-  catch ( ... )
-  {
-    mitkThrow() << "Problem checking header.";
+    MITK_INFO << "Version OK: " << version;
+    ok = true;
   }
 
   if ( ! ifs.good () || ! ok )
