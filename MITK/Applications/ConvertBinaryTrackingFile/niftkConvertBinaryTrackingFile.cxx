@@ -64,25 +64,11 @@ int main(int argc, char** argv)
       }
     }
 
-    std::string header (256,'-');
-    //std::vector<char> header;
-    std::string headerTarget = "NIFTK_TRQT";
-    unsigned int fileHeaderSize = 25;
-    MITK_INFO << "REading " << header << " -ne " << headerTarget;
-
-    ifs.read (reinterpret_cast<char*>(&header[0]),fileHeaderSize);
-
-    MITK_INFO << "Read" << header << " -ne " << headerTarget;
-    if ( ! ifs.good () )
-    {
-      mitkThrow() << "Problem checking file header.";
-    }
-    if ( header.compare ( 0, headerTarget.length(), headerTarget ) != 0 )
-    {
-      MITK_ERROR << header << " -ne " << headerTarget;
-      mitkThrow() << "Not a valid tracking file";
-    }
-
+    //mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
+    //QString name = "TQRT Converter";
+    //niftk::IGISingleFileBackend::Pointer backend = niftk::IGISingleFileBackend::New("TQRT Conerter", dataStorage.GetPointer());
+    //backend->CheckFileHeader (ifs);
+    // Let's put getfileheader checkfile header into niftkFileHelper. It will give a smaller app
 
     unsigned long int counter = 0;
     int modulo = skip + 1;

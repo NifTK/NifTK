@@ -28,6 +28,5 @@ NIFTK_CREATE_COMMAND_LINE_APPLICATION(
     niftkcommon
     niftkVTK
     niftkIGIDataSources
-    ${Boost_LIBRARIES}
     ${Qt5_LIBS}
 )
