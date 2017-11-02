@@ -614,38 +614,31 @@ int TestFileExists(std::string regularFile, std::string nonExistentFile, std::st
 //-----------------------------------------------------------------------------
 int TestGetTQRDFileHeader()
 {
-  unsigned int headerSize = 0;
+  unsigned int headerSize[] = {0,100,256,1024};
   std::string header;
 
-  header = niftk::GetTQRDFileHeader ( headerSize );
-  if ( header.length() != headerSize )
+  for ( unsigned int i = 0; i < sizeof(headerSize)/sizeof(headerSize[0]); ++i )
   {
-    std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize << " failed.";
-    return EXIT_FAILURE;
-  }
+    std::cerr << "Testing header size " << headerSize[i] << std::endl;
+    try
+    {
+      header = niftk::GetTQRDFileHeader ( headerSize[i] );
+      if ( header.length() != headerSize[i] )
+      {
+        std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize << " failed.";
+        return EXIT_FAILURE;
+      }
+    }
+    catch ( niftk::IOException e )
+    {
+      int strcmpret = strncmp( "Target header size", e.what(), 18);
+      if ( ( strcmpret != 0 ) )
+      {
+        std::cerr << strcmpret << ": Calling niftk::GetTQRDFileHeader with header size " << headerSize << " got unknown exception: " << e.what() ;
+        return EXIT_FAILURE;
+      }
+    }
 
-  headerSize = 100;
-  header = niftk::GetTQRDFileHeader ( headerSize );
-  if ( header.length() != headerSize )
-  {
-    std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize << " failed.";
-    return EXIT_FAILURE;
-  }
-
-  headerSize = 256;
-  header = niftk::GetTQRDFileHeader ( headerSize );
-  if ( header.length() != headerSize )
-  {
-    std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize << " failed.";
-    return EXIT_FAILURE;
-  }
-
-  headerSize = 1024;
-  header = niftk::GetTQRDFileHeader ( headerSize );
-  if ( header.length() != headerSize )
-  {
-    std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize << " failed.";
-    return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }

@@ -685,11 +685,20 @@ std::string GetTQRDFileHeader ( const unsigned int& headerSize )
   boost::property_tree::xml_writer_settings<std::string> settings(' ',2);
   boost::property_tree::write_xml (toHeader, pt, settings);
 
-  unsigned int extrabits = headerSize - toHeader.str().length();
-
-  for ( unsigned int i = 0; i < extrabits; ++ i )
+  unsigned int length = toHeader.str().length();
+  if ( headerSize < length )
   {
-    toHeader << " ";
+    std::stringstream errorMessage;
+    errorMessage << "Target header size " << headerSize << " is insufficient for a TQRD header. Need at least " << length << ".";
+    throw niftk::IOException(errorMessage.str());
+  }
+  else
+  {
+    unsigned int extrabits = headerSize - length;
+    for ( unsigned int i = 0; i < extrabits; ++ i )
+    {
+      toHeader << " ";
+    }
   }
   header = toHeader.str();
   return header;
