@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <niftkFileHelper.h>
 #include <niftkEnvironmentHelper.h>
@@ -610,6 +611,57 @@ int TestFileExists(std::string regularFile, std::string nonExistentFile, std::st
   return EXIT_SUCCESS;
 }
 
+int TestGetTQRDFileHeader()
+{
+  unsigned int headerSize = 0;
+  headerSize = 100;
+  headerSize = 256;
+  headerSize = 1024;
+  return EXIT_SUCCESS;
+}
+
+int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string garbage)
+{
+  std::ifstream ifs;
+
+  ifs.open(valid, std::ios::binary | std::ios::in);
+
+  unsigned int fileHeaderSize = 256;
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+  }
+  catch ( ... )
+  {
+  }
+  ifs.close();
+
+  ifs.open(invalid, std::ios::binary | std::ios::in);
+
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+  }
+  catch ( ... )
+  {
+  }
+  ifs.close();
+
+  ifs.open(garbage, std::ios::binary | std::ios::in);
+
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+  }
+  catch ( ... )
+  {
+  }
+  ifs.close();
+
+  return EXIT_SUCCESS;
+}
+
+
 /**
  * \brief Basic test harness for FileHelper.h
  */
@@ -698,6 +750,14 @@ int niftkFileHelperTest(int argc, char * argv[])
    else if (testNumber == 19)
   {
     return TestFileExists(argv[2], argv[3], argv[4]);
+  }
+   else if (testNumber == 20)
+  {
+    return TestGetTQRDFileHeader();
+  }
+   else if (testNumber == 21)
+  {
+    return TestCheckTQRDFileHeader(argv[2], argv[3], argv[4]);
   }
 
   else
