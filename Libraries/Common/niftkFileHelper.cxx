@@ -64,7 +64,7 @@ std::string ConcatenatePath(const std::string& path, const std::string& name)
        ( path.substr( path.length() - 1 ) != GetFileSeparator() ) &&
        ( name.length() > 0 ) &&
        ( name.substr( 0, 1 ) != GetFileSeparator() ) )
-    
+
   {
     return path + GetFileSeparator() + name;
   }
@@ -124,7 +124,7 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
 #else
   tmpDirName = "/tmp";
 #endif
-  
+
   fileNameTemplate = (fs::path(tmpDirName)/fs::path(prefix + "XXXXXX" + suffix)).string();
 
 #if defined HAVE_MKSTEMPS
@@ -289,11 +289,11 @@ bool FilenameHasPrefixAndExtension(
     const std::string& extension)
 {
   bool result = false;
-  
+
   size_t prefixIndex = filename.find(prefix);
   size_t extensionIndex = filename.rfind(extension);
   size_t extensionLength = extension.length();
-  
+
   if ( prefixIndex == 0 &&
       ( ( ( extension.length() > 0 ) && ( extensionIndex == (filename.length() - extensionLength) ) )
         || (extension.length() == 0)))
@@ -314,7 +314,7 @@ bool FilenameMatches(
 
   bool result = false;
   std::string tmp;
-  
+
   // If extension is empty, then you wouldnt expect the "." either.
   if (extension.length() == 0)
   {
@@ -324,12 +324,12 @@ bool FilenameMatches(
   {
     tmp = prefix + middle + "." + extension;
   }
-    
+
   if (filename.compare(tmp) == 0)
   {
     result = true;
   }
-  
+
   return result;
 }
 
@@ -500,7 +500,7 @@ std::string FindVideoFile(const std::string& directory, const std::string& mask)
     else
     {
       std::cout << "Found multiple video files, seeing which one matches mask " << mask;
-    
+
       unsigned int matches = 0;
       for ( std::vector<std::string>::iterator it = videoFiles.begin (); it < videoFiles.end(); ++ it )
       {
@@ -689,7 +689,6 @@ std::string GetTQRDFileHeader ( const unsigned int& headerSize )
 
   for ( unsigned int i = 0 ; i < extrabits ; ++ i )
   {
-    std::cout << i << ":";
     toHeader << " " ;
   }
   header = toHeader.str();
