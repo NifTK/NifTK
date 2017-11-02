@@ -611,15 +611,46 @@ int TestFileExists(std::string regularFile, std::string nonExistentFile, std::st
   return EXIT_SUCCESS;
 }
 
+//-----------------------------------------------------------------------------
 int TestGetTQRDFileHeader()
 {
   unsigned int headerSize = 0;
+  std::string header;
+
+  header = niftk::GetTQRDFileHeader ( headerSize );
+  if ( header.length() != headerSize )
+  {
+    std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize << " failed.";
+    return EXIT_FAILURE;
+  }
+
   headerSize = 100;
+  header = niftk::GetTQRDFileHeader ( headerSize );
+  if ( header.length() != headerSize )
+  {
+    std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize << " failed.";
+    return EXIT_FAILURE;
+  }
+
   headerSize = 256;
+  header = niftk::GetTQRDFileHeader ( headerSize );
+  if ( header.length() != headerSize )
+  {
+    std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize << " failed.";
+    return EXIT_FAILURE;
+  }
+
   headerSize = 1024;
+  header = niftk::GetTQRDFileHeader ( headerSize );
+  if ( header.length() != headerSize )
+  {
+    std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize << " failed.";
+    return EXIT_FAILURE;
+  }
   return EXIT_SUCCESS;
 }
 
+//-----------------------------------------------------------------------------
 int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string garbage)
 {
   std::ifstream ifs;
