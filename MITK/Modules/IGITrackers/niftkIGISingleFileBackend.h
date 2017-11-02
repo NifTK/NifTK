@@ -105,12 +105,6 @@ private:
 
   int                                                m_FileHeaderSize; //a fixed length header
 
-  // throws an exception if the file header does not match the expected file type
-  void CheckFileHeader (std::ifstream& ifs);
-
-  // Returns the file header
-  std::string GetFileHeader ();
-
 };
 
 } // end namespace

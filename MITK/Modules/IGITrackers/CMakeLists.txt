@@ -13,11 +13,11 @@
 #============================================================================*/
 
 MITK_CREATE_MODULE(
-  DEPENDS MitkIGT niftkIGIDataSources
+  DEPENDS MitkIGT niftkIGIDataSources niftkcommon
   PACKAGE_DEPENDS Qt4|QtGui Qt5|Widgets
 )
 
-target_link_libraries(niftkIGITrackers PRIVATE niftkcommon)
+target_link_libraries(niftkIGITrackers)
 
 include_directories()
 

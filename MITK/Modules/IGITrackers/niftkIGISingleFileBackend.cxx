@@ -16,8 +16,6 @@
 #include <niftkIGIDataSourceUtils.h>
 #include <niftkMITKMathsUtils.h>
 #include <niftkFileHelper.h>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 #include <boost/foreach.hpp>
 
 namespace niftk
@@ -162,7 +160,7 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
   {
     try
     {
-      this->CheckFileHeader(ifs);
+      niftk::CheckTQRDFileHeader(ifs, m_FileHeaderSize);
     }
     catch ( std::exception& e )
     {
@@ -187,57 +185,6 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
     }
   }
   return std::move(result);
-}
-
-//-----------------------------------------------------------------------------
-void IGISingleFileBackend::CheckFileHeader ( std::ifstream& ifs )
-{
-  std::stringstream headerstream;
-
-  std::vector<char> headerChar (m_FileHeaderSize);
-  for ( unsigned int i = 0 ; i < m_FileHeaderSize ; ++ i )
-  {
-    ifs.read (reinterpret_cast<char*>(&headerChar[i]),sizeof(headerChar[i]));
-    headerstream << headerChar[i];
-  }
-
-  boost::property_tree::ptree pt;
-  boost::property_tree::read_xml (headerstream, pt);
-
-  bool ok = false;
-
-  int version = pt.get<float>("NifTK.TQRD_version");
-  if ( version >= 0 )
-  {
-    MITK_INFO << "Version OK: " << version;
-    ok = true;
-  }
-
-  if ( ! ifs.good () || ! ok )
-  {
-    mitkThrow() << "Problem checking file header.";
-  }
-  if ( ifs.eof () )
-  {
-    mitkThrow() << "No data in file.";
-  }
-}
-
-//-----------------------------------------------------------------------------
-std::string IGISingleFileBackend::GetFileHeader ( )
-{
-  std::string header;
-  std::stringstream toHeader;
-  boost::property_tree::ptree pt;
-  pt.add ("NifTK.Version",  NIFTK_VERSION_STRING);
-  pt.add ("NifTK.TQRD_version", 0.0);
-  pt.add ("NifTK.revision", NIFTK_VERSION);
-  pt.add ("NifTK.Build_Date", NIFTK_DATE_TIME);
-
-  boost::property_tree::xml_writer_settings<std::string> settings(' ',2);
-  boost::property_tree::write_xml (toHeader, pt, settings);
-  header = toHeader.str();
-  return header;
 }
 
 //-----------------------------------------------------------------------------
@@ -349,13 +296,8 @@ void IGISingleFileBackend::SaveItem(const QString& directoryName,
     {
       mitkThrow() << "Failed to open file:" << fileNameAsString << " for saving data.";
     }
-    std::string header = this->GetFileHeader();
+    std::string header = niftk::GetTQRDFileHeader(m_FileHeaderSize);
     *ofs << header;
-    MITK_INFO << "Header fills " << header.length() << " characters out of " << m_FileHeaderSize << " filling with blanks";
-    for ( unsigned int i = 0 ; i < m_FileHeaderSize - header.length() ; ++ i )
-    {
-      *ofs << " " ;
-    }
     m_OpenFiles.insert(std::move(std::make_pair(toolName, std::move(ofs))));
   }
 

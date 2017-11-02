@@ -25,6 +25,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include "Exceptions/niftkIOException.h"
 
 #include <NifTKConfigure.h>
@@ -666,6 +668,64 @@ std::string ModifyFileSuffix(const std::string& fileName,
   else
   {
     return stem + newSuffix;
+  }
+}
+
+//-----------------------------------------------------------------------------
+std::string GetTQRDFileHeader ( const unsigned int& headerSize )
+{
+  std::string header;
+  std::stringstream toHeader;
+  boost::property_tree::ptree pt;
+  pt.add ("NifTK.Version",  NIFTK_VERSION_STRING);
+  pt.add ("NifTK.TQRD_version", 0.0);
+  pt.add ("NifTK.revision", NIFTK_VERSION);
+  pt.add ("NifTK.Build_Date", NIFTK_DATE_TIME);
+
+  boost::property_tree::xml_writer_settings<std::string> settings(' ',2);
+  boost::property_tree::write_xml (toHeader, pt, settings);
+
+  unsigned int extrabits = headerSize - toHeader.str().length();
+
+  for ( unsigned int i = 0 ; i < extrabits ; ++ i )
+  {
+    std::cout << i << ":";
+    toHeader << " " ;
+  }
+  header = toHeader.str();
+  return header;
+}
+
+//-----------------------------------------------------------------------------
+void CheckTQRDFileHeader ( std::ifstream& ifs, const unsigned int& headerSize )
+{
+  std::stringstream headerstream;
+
+  std::vector<char> headerChar (headerSize);
+  for ( unsigned int i = 0 ; i < headerSize ; ++ i )
+  {
+    ifs.read (reinterpret_cast<char*>(&headerChar[i]),sizeof(headerChar[i]));
+    headerstream << headerChar[i];
+  }
+
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_xml (headerstream, pt);
+
+  bool ok = false;
+
+  int version = pt.get<float>("NifTK.TQRD_version");
+  if ( version >= 0 )
+  {
+    ok = true;
+  }
+
+  if ( ! ifs.good () || ! ok )
+  {
+   throw niftk::IOException(" Problem checking TQRD file header. ");
+  }
+  if ( ifs.eof () )
+  {
+   throw niftk::IOException(" No data in TQRD file. ");
   }
 }
 
