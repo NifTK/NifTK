@@ -64,17 +64,17 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
 
   data.insert ( std::pair < std::string , std::pair<mitk::Point4D, mitk::Vector3D> > ( toolName, pair ) );
 
-  try
-  {
+//  try
+//  {
     //unless you set expected frames per second prior to calling it, AddData throws an exception.
     backend->SetExpectedFramesPerSecond (1);
     backend->AddData ( dirName, isRecording, duration, timeStamp, data);
     MITK_TEST_CONDITION_REQUIRED ( true , "Adding one data OK.");
-  }
-  catch ( std::exception e )
-  {
-    MITK_TEST_CONDITION_REQUIRED ( false , "Adding one data called exception:" << e.what());
-  }
+//  }
+//  catch ( std::exception e )
+//  {
+//    MITK_TEST_CONDITION_REQUIRED ( false , "Adding one data called exception:" << e.what());
+//  }
 
   //must do this to release file for reading.
   backend->StopRecording();
