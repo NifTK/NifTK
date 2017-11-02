@@ -73,6 +73,11 @@ int main(int argc, char** argv)
     unsigned long int counter = 0;
     int modulo = skip + 1;
     vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
+
+    if ( headerSize > 0 )
+    {
+      niftk::CheckTQRDFileHeader ( ifs, headerSize );
+    }
     while(ifs.good())
     {
       niftk::IGIDataSourceI::IGITimeType time;
