@@ -680,7 +680,7 @@ std::string GetTQRDFileHeader ( const unsigned int& headerSize )
   pt.add ("NifTK.Version",  NIFTK_VERSION_STRING);
   pt.add ("NifTK.TQRD_version", 0.0);
   pt.add ("NifTK.revision", NIFTK_VERSION);
-  pt.add ("NifTK.Build_Date", NIFTK_DATE_TIME);
+  pt.add ("NifTK.Create_Time", time(NULL));
 
   boost::property_tree::xml_writer_settings<std::string> settings(' ',2);
   boost::property_tree::write_xml (toHeader, pt, settings);
