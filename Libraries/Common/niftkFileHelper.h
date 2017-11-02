@@ -262,12 +262,12 @@ NIFTKCOMMON_WINEXPORT std::string CreateUniqueTempFileName(const std::string &pr
 /**
 * Creates a file header for TQRD files (used by IGITrackers).
 */
-NIFTKCOMMON_WINEXPORT std::string GetTQRDFileHeader(const unsigned int &headerLength = 256);
+NIFTKCOMMON_WINEXPORT std::string GetTQRDFileHeader(const unsigned int &headerLength);
 /**
 * Checks the header of a TQRD files (used by IGITrackers).
 * Throws an exception if header is not as expected.
 */
-NIFTKCOMMON_WINEXPORT void CheckTQRDFileHeader(std::ifstream& ifs, const unsigned int &headerLength = 256);
+NIFTKCOMMON_WINEXPORT void CheckTQRDFileHeader(std::ifstream& ifs, const unsigned int &headerLength);
 
 } // end namespace
 
