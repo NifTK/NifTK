@@ -687,9 +687,9 @@ std::string GetTQRDFileHeader ( const unsigned int& headerSize )
 
   unsigned int extrabits = headerSize - toHeader.str().length();
 
-  for ( unsigned int i = 0 ; i < extrabits ; ++ i )
+  for ( unsigned int i = 0; i < extrabits; ++ i )
   {
-    toHeader << " " ;
+    toHeader << " ";
   }
   header = toHeader.str();
   return header;
@@ -701,7 +701,7 @@ void CheckTQRDFileHeader ( std::ifstream& ifs, const unsigned int& headerSize )
   std::stringstream headerstream;
 
   std::vector<char> headerChar (headerSize);
-  for ( unsigned int i = 0 ; i < headerSize ; ++ i )
+  for ( unsigned int i = 0; i < headerSize; ++ i )
   {
     ifs.read (reinterpret_cast<char*>(&headerChar[i]),sizeof(headerChar[i]));
     headerstream << headerChar[i];
