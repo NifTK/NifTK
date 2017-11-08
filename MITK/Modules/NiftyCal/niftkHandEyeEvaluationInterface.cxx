@@ -12,7 +12,7 @@
 
 =============================================================================*/
 
-#include "niftkTimingCalibrationInterface.h"
+#include "niftkHandEyeEvaluationInterface.h"
 #include <niftkNiftyCalTypes.h>
 #include <niftkIOUtilities.h>
 #include <niftkMatrixUtilities.h>
