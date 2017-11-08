@@ -103,6 +103,10 @@ int EvaluateHandeyeFromPoints(const std::string& trackingDir,
       time = imagePointsTimeStamps[pointSetCounter] - lag;
 
       cv::Matx44d trackingMatrix = trackingContainer.GetNearestMatrix(time, timingError, isInBounds);
+      if (std::fabs(timingError) > 100)
+      {
+        continue;
+      }
       cv::Matx44d modelToWorldViaHandEye = trackingMatrix * handeyeMatrix * modelToCamera;
 
       cv::Matx41d modelPoint;
@@ -137,10 +141,13 @@ int EvaluateHandeyeFromPoints(const std::string& trackingDir,
         pointCounter++;
       }
     }
-    if (pointCounter > 0)
+    if (pointCounter == 0)
     {
-      rms = squaredError / static_cast<double>(pointCounter);
+      MITK_WARN << "For lag=" << lag << ", there were no points." << std::endl;
+      continue;
     }
+    rms = squaredError / static_cast<double>(pointCounter);
+    rms = std::sqrt(rms);
 
     std::cout << "EvaluateHandeyeFromPoints: lag=" << lag << ", rms=" << rms << std::endl;
     if (rms < bestRMSSoFar)
@@ -149,7 +156,7 @@ int EvaluateHandeyeFromPoints(const std::string& trackingDir,
       bestLag = lag;
       rmsError = rms;
     }
-  }
+  } // end outer loop on lag.
 
   return -bestLag;
 }
