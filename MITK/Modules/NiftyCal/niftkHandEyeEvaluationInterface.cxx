@@ -102,7 +102,7 @@ double EvaluateHandeyeFromPoints(const std::string& trackingDir,
     time = imagePointsTimeStamps[pointSetCounter] - (lagInMilliseconds * 1000000);
     cv::Matx44d trackingMatrix = trackingContainer.GetNearestMatrix(time, timingError, isInBounds);
 
-    if (std::fabs(timingError) < 100 * 1000000 && isInBounds) // timing error in milliseconds
+    if (std::fabs(static_cast<double>(timingError)) < 100 * 1000000 && isInBounds) // timing error in milliseconds
     {
       cv::Matx44d modelToWorldViaHandEye = trackingMatrix * handeyeMatrix * modelToCamera;
 
