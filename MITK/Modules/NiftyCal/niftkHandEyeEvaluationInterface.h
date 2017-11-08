@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkHandeyeEvaluationInterface_h
-#define niftkHandeyeEvaluationInterface_h
+#ifndef niftkHandEyeEvaluationInterface_h
+#define niftkHandEyeEvaluationInterface_h
 
 #include "niftkNiftyCalExports.h"
 #include <string>

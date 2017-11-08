@@ -90,7 +90,6 @@ double EvaluateHandeyeFromPoints(const std::string& trackingDir,
   bool isInBounds = false;
   unsigned int pointSetCounter = 0;
   unsigned long long pointCounter = 0;
-  unsigned long long time = 0;
 
   std::list<PointSet>::const_iterator pointSetIter;
   for (pointSetIter = imagePoints.begin(); pointSetIter != imagePoints.end(); ++pointSetIter)
@@ -99,7 +98,7 @@ double EvaluateHandeyeFromPoints(const std::string& trackingDir,
     cv::transpose(tvecs[pointSetCounter], tmpT);
     cv::Matx44d modelToCamera = niftk::RodriguesToMatrix(tmpR, tmpT);
 
-    time = imagePointsTimeStamps[pointSetCounter] - (lagInMilliseconds * 1000000);
+    unsigned long long time = imagePointsTimeStamps[pointSetCounter] - (lagInMilliseconds * 1000000);
     cv::Matx44d trackingMatrix = trackingContainer.GetNearestMatrix(time, timingError, isInBounds);
 
     if (std::fabs(static_cast<double>(timingError)) < 100 * 1000000 && isInBounds) // timing error in milliseconds
@@ -146,8 +145,10 @@ double EvaluateHandeyeFromPoints(const std::string& trackingDir,
   {
     mitkThrow() << "No points found.";
   }
-
-  rmsError = squaredError / static_cast<double>(pointCounter);
+  else
+  {
+    rmsError = squaredError / static_cast<double>(pointCounter);
+  }
   rmsError = std::sqrt(rmsError);
 
   return rmsError;
