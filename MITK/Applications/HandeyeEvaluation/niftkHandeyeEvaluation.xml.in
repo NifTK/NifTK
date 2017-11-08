@@ -63,4 +63,19 @@
 
   </parameters>
 
+  <parameters>
+    <label>Mandatory Parameters</label>
+    <description><![CDATA[Parameters that control the evaluation]]></description>
+
+    <integer>
+      <name>lag</name>
+      <flag>l</flag>
+      <longflag>lag</longflag>
+      <description>Video lag in milliseconds</description>
+      <label>Lag (ms)</label>
+      <default>0</default>
+    </integer>
+
+  </parameters>
+
 </executable>

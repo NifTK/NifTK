@@ -25,18 +25,16 @@ int main(int argc, char** argv)
 
   try
   {
-    double rms = std::numeric_limits<double>::max();
+    double rms = niftk::EvaluateHandeyeFromPoints(trackingInputDirectory,
+                                                  pointsInputDirectory,
+                                                  modelFile,
+                                                  intrinsicsFile,
+                                                  handeyeFile,
+                                                  registrationFile,
+                                                  lag
+                                                 );
 
-    int lag = niftk::EvaluateHandeyeFromPoints(trackingInputDirectory,
-                                               pointsInputDirectory,
-                                               modelFile,
-                                               intrinsicsFile,
-                                               handeyeFile,
-                                               registrationFile,
-                                               rms
-                                              );
-
-    std::cout << "niftkHandeyeEvaluation: Lag:" << lag << ", rms:" << rms << std::endl;
+    std::cout << "niftkHandeyeEvaluation: RMS:" << rms << std::endl;
 
     returnStatus = EXIT_SUCCESS;
   }

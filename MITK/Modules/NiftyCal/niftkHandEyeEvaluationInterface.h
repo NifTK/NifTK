@@ -21,14 +21,14 @@
 namespace niftk
 {
 
-NIFTKNIFTYCAL_EXPORT int EvaluateHandeyeFromPoints(const std::string& trackingDir,
-                                                   const std::string& pointsDir,
-                                                   const std::string& modelFile,
-                                                   const std::string& intrinsicsFile,
-                                                   const std::string& handeyeFile,
-                                                   const std::string& registrationFile,
-                                                   double &rmsError
-                                                  );
+NIFTKNIFTYCAL_EXPORT double EvaluateHandeyeFromPoints(const std::string& trackingDir,
+                                                      const std::string& pointsDir,
+                                                      const std::string& modelFile,
+                                                      const std::string& intrinsicsFile,
+                                                      const std::string& handeyeFile,
+                                                      const std::string& registrationFile,
+                                                      const unsigned int& lagInMilliseconds
+                                                     );
 } // end namespace
 
 #endif

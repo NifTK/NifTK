@@ -28,17 +28,15 @@ namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-int EvaluateHandeyeFromPoints(const std::string& trackingDir,
-                              const std::string& pointsDir,
-                              const std::string& modelFile,
-                              const std::string& intrinsicsFile,
-                              const std::string& handeyeFile,
-                              const std::string& registrationFile,
-                              double &rmsError
-                             )
+double EvaluateHandeyeFromPoints(const std::string& trackingDir,
+                                 const std::string& pointsDir,
+                                 const std::string& modelFile,
+                                 const std::string& intrinsicsFile,
+                                 const std::string& handeyeFile,
+                                 const std::string& registrationFile,
+                                 const unsigned int& lagInMilliseconds
+                                )
 {
-  rmsError = 0;
-
   mitk::TrackingAndTimeStampsContainer trackingContainer;
   trackingContainer.LoadFromDirectory(trackingDir, false);
   if (trackingContainer.GetSize() == 0)
@@ -47,11 +45,11 @@ int EvaluateHandeyeFromPoints(const std::string& trackingDir,
   }
 
   std::vector<std::string> pointFiles = niftk::GetFilesInDirectory(pointsDir);
-  std::sort(pointFiles.begin(), pointFiles.end(), niftk::NumericStringCompare);
+  std::sort(pointFiles.begin(), pointFiles.end());
 
   std::list<PointSet> imagePoints;
   std::vector<unsigned long long> imagePointsTimeStamps;
-
+  
   for (std::vector<std::string>::size_type i = 0; i < pointFiles.size(); i++)
   {
     niftk::PointSet p = niftk::LoadPointSet(pointFiles[i]);
@@ -59,7 +57,8 @@ int EvaluateHandeyeFromPoints(const std::string& trackingDir,
     {
       mitkThrow() << "Empty file, or failed to read points from:" << pointFiles[i] << std::endl;
     }
-    unsigned long long t = mitk::ExtractTimeStampOrThrow(pointFiles[i]);
+
+    unsigned long long t = mitk::ExtractTimeStampOrThrow(niftk::Basename(pointFiles[i]).substr(0,19));
 
     imagePoints.push_back(p);
     imagePointsTimeStamps.push_back(t);
@@ -77,36 +76,34 @@ int EvaluateHandeyeFromPoints(const std::string& trackingDir,
   cv::Matx44d modelToWorldViaRegistration = cv::Matx44d::eye();
   mitk::ReadTrackerMatrix(registrationFile, modelToWorldViaRegistration);
 
+  cv::Mat tmpR;
+  cv::Mat tmpT;
+
   std::vector<cv::Mat> rvecs;
   std::vector<cv::Mat> tvecs;
   niftk::PoseFromPoints(model, imagePoints, cameraIntrinsic, cameraDistortion, rvecs, tvecs);
 
-  int bestLag = 0;
-  double rms = 0;
+  niftk::Point3D p3;
+  long long timingError = 0;
+  double rmsError = 0;
+  double squaredError = 0;
   bool isInBounds = false;
-  double bestRMSSoFar = std::numeric_limits<double>::max();
-  double squaredError;
-  long long timingError;
+  unsigned int pointSetCounter = 0;
+  unsigned long long pointCounter = 0;
+  unsigned long long time = 0;
 
-  for (int lag = 0; lag <= 100; lag++)
+  std::list<PointSet>::const_iterator pointSetIter;
+  for (pointSetIter = imagePoints.begin(); pointSetIter != imagePoints.end(); ++pointSetIter)
   {
-    niftk::Point3D p3;
-    unsigned int pointSetCounter = 0;
-    unsigned long long pointCounter = 0;
+    cv::transpose(rvecs[pointSetCounter], tmpR);
+    cv::transpose(tvecs[pointSetCounter], tmpT);
+    cv::Matx44d modelToCamera = niftk::RodriguesToMatrix(tmpR, tmpT);
 
-    unsigned long long time = 0;
+    time = imagePointsTimeStamps[pointSetCounter] - (lagInMilliseconds * 1000000);
+    cv::Matx44d trackingMatrix = trackingContainer.GetNearestMatrix(time, timingError, isInBounds);
 
-    std::list<PointSet>::const_iterator pointSetIter;
-    for (pointSetIter = imagePoints.begin(); pointSetIter != imagePoints.end(); ++pointSetIter)
+    if (std::fabs(timingError) < 100 * 1000000 && isInBounds) // timing error in milliseconds
     {
-      cv::Matx44d modelToCamera = niftk::RotationAndTranslationToMatrix(rvecs[pointSetCounter], tvecs[pointSetCounter]);
-      time = imagePointsTimeStamps[pointSetCounter] - lag;
-
-      cv::Matx44d trackingMatrix = trackingContainer.GetNearestMatrix(time, timingError, isInBounds);
-      if (std::fabs(timingError) > 100)
-      {
-        continue;
-      }
       cv::Matx44d modelToWorldViaHandEye = trackingMatrix * handeyeMatrix * modelToCamera;
 
       cv::Matx41d modelPoint;
@@ -138,27 +135,22 @@ int EvaluateHandeyeFromPoints(const std::string& trackingDir,
                         (worldPointViaHandEye(2, 0) - worldPointViaRegistration(2, 0))
                         *
                         (worldPointViaHandEye(2, 0) - worldPointViaRegistration(2, 0));
+
         pointCounter++;
       }
     }
-    if (pointCounter == 0)
-    {
-      MITK_WARN << "For lag=" << lag << ", there were no points." << std::endl;
-      continue;
-    }
-    rms = squaredError / static_cast<double>(pointCounter);
-    rms = std::sqrt(rms);
+    pointSetCounter++;
+  }
 
-    std::cout << "EvaluateHandeyeFromPoints: lag=" << lag << ", rms=" << rms << std::endl;
-    if (rms < bestRMSSoFar)
-    {
-      bestRMSSoFar = rms;
-      bestLag = lag;
-      rmsError = rms;
-    }
-  } // end outer loop on lag.
+  if (pointCounter == 0)
+  {
+    mitkThrow() << "No points found.";
+  }
 
-  return -bestLag;
+  rmsError = squaredError / static_cast<double>(pointCounter);
+  rmsError = std::sqrt(rmsError);
+
+  return rmsError;
 }
 
 } // end namespace
