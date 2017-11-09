@@ -187,25 +187,25 @@ bool BaseApplicationPreferencePage::PerformOk()
 
   if (m_UseMidasInitialisationRadioButton->isChecked())
   {
-    method = IMAGE_INITIALISATION_MIDAS;
+    method = niftk::PluginActivator::IMAGE_INITIALISATION_MIDAS;
   }
   else if (m_UseLevelWindowRadioButton->isChecked())
   {
-    method = IMAGE_INITIALISATION_LEVELWINDOW;
+    method = niftk::PluginActivator::IMAGE_INITIALISATION_LEVELWINDOW;
   }
   else if (m_UseImageDataRadioButton->isChecked())
   {
-    method = IMAGE_INITIALISATION_PERCENTAGE;
+    method = niftk::PluginActivator::IMAGE_INITIALISATION_PERCENTAGE;
   }
   else if (m_UseSetRange->isChecked())
   {
-    method = IMAGE_INITIALISATION_RANGE;
+    method = niftk::PluginActivator::IMAGE_INITIALISATION_RANGE;
   }
 
-  m_PreferencesNode->Put(IMAGE_INITIALISATION_METHOD_NAME, method);
-  m_PreferencesNode->PutDouble(IMAGE_INITIALISATION_PERCENTAGE_NAME, m_PercentageOfDataRangeDoubleSpinBox->value());
-  m_PreferencesNode->PutInt(IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, m_RangeLowerBound->value());
-  m_PreferencesNode->PutInt(IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, m_RangeUpperBound->value());
+  m_PreferencesNode->Put(niftk::PluginActivator::IMAGE_INITIALISATION_METHOD_NAME, method);
+  m_PreferencesNode->PutDouble(niftk::PluginActivator::IMAGE_INITIALISATION_PERCENTAGE, m_PercentageOfDataRangeDoubleSpinBox->value());
+  m_PreferencesNode->PutInt(niftk::PluginActivator::IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, m_RangeLowerBound->value());
+  m_PreferencesNode->PutInt(niftk::PluginActivator::IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, m_RangeUpperBound->value());
 
   return true;
 }
@@ -226,16 +226,16 @@ void BaseApplicationPreferencePage::Update()
   m_HighestValueOpacity->setValue(m_PreferencesNode->GetDouble(HIGHEST_VALUE_OPACITY, 1));
   m_BinaryOpacity->setValue(m_PreferencesNode->GetDouble(BINARY_OPACITY_NAME, BaseApplicationPreferencePage::BINARY_OPACITY_VALUE));
 
-  QString method = m_PreferencesNode->Get(IMAGE_INITIALISATION_METHOD_NAME, IMAGE_INITIALISATION_PERCENTAGE);
-  if (method == IMAGE_INITIALISATION_LEVELWINDOW)
+  QString method = m_PreferencesNode->Get(niftk::PluginActivator::IMAGE_INITIALISATION_METHOD_NAME, niftk::PluginActivator::IMAGE_INITIALISATION_PERCENTAGE);
+  if (method == niftk::PluginActivator::IMAGE_INITIALISATION_LEVELWINDOW)
   {
     m_UseLevelWindowRadioButton->setChecked(true);
   }
-  else if (method == IMAGE_INITIALISATION_PERCENTAGE)
+  else if (method == niftk::PluginActivator::IMAGE_INITIALISATION_PERCENTAGE)
   {
     m_UseImageDataRadioButton->setChecked(true);
   }
-  else if (method == IMAGE_INITIALISATION_RANGE)
+  else if (method == niftk::PluginActivator::IMAGE_INITIALISATION_RANGE)
   {
     m_UseSetRange->setChecked(true);
   }
@@ -244,9 +244,9 @@ void BaseApplicationPreferencePage::Update()
     m_UseMidasInitialisationRadioButton->setChecked(true);
   }
 
-  m_PercentageOfDataRangeDoubleSpinBox->setValue(m_PreferencesNode->GetDouble(IMAGE_INITIALISATION_PERCENTAGE_NAME, 50));
-  m_RangeLowerBound->setValue(m_PreferencesNode->GetInt(IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, 0));
-  m_RangeUpperBound->setValue(m_PreferencesNode->GetInt(IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, 255));
+  m_PercentageOfDataRangeDoubleSpinBox->setValue(m_PreferencesNode->GetDouble(niftk::PluginActivator::IMAGE_INITIALISATION_PERCENTAGE, 50));
+  m_RangeLowerBound->setValue(m_PreferencesNode->GetInt(niftk::PluginActivator::IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, 0));
+  m_RangeUpperBound->setValue(m_PreferencesNode->GetInt(niftk::PluginActivator::IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, 255));
 }
 
 
@@ -278,4 +278,4 @@ void BaseApplicationPreferencePage::UpdateSpinBoxes()
   }
 }
 
-}
+} // end namespace
