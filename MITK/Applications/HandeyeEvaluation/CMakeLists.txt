@@ -12,9 +12,12 @@
 #
 #============================================================================*/
 
-set(CPP_FILES
-  niftkNiftyCalVideoCalibrationManager.cxx
-  niftkTimingCalibrationInterface.cxx
-  niftkHandEyeEvaluationInterface.cxx
+NIFTK_CREATE_COMMAND_LINE_APPLICATION(
+  NAME niftkHandeyeEvaluation
+  BUILD_SLICER
+  INSTALL_SCRIPT
+  TARGET_LIBRARIES
+    ${Boost_LIBRARIES}
+    niftkOpenCVUtils
+    niftkNiftyCal
 )
-
