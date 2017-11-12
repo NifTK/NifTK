@@ -34,6 +34,7 @@
       <flag>m</flag>
       <longflag>model</longflag>
       <description>Calibration model file</description>
+      <label>Calibration model</label>
       <channel>Input</channel>
     </file>
 
@@ -42,6 +43,7 @@
       <flag>i</flag>
       <longflag>intrinsics</longflag>
       <description>Camera intrinsic parameters</description>
+      <label>Intrinsic parameters</label>
       <channel>Input</channel>
     </file>
 
@@ -50,6 +52,7 @@
       <flag>c</flag>
       <longflag>handeye</longflag>
       <description>Hand-eye calibration matrix</description>
+      <label>Hand-eye matrix</label>
       <channel>Input</channel>
     </file>
 
@@ -58,6 +61,7 @@
       <flag>r</flag>
       <longflag>registration</longflag>
       <description>Registration matrix (model to world).</description>
+      <label>Registration matrix</label>
       <channel>Input</channel>
     </file>
 
