@@ -70,6 +70,7 @@ int main(int argc, char** argv)
     }
     projector->SetAnnotateWithGoldStandards(annotateWithGS);
     projector->SetWriteAnnotatedGoldStandards(saveAnnotateWithGS);
+    projector->SetFlipVideo(flipVideo);
     
     if ( outputVideo ) 
     {
