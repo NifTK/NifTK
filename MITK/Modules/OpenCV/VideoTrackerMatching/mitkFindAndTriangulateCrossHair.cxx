@@ -48,6 +48,7 @@ FindAndTriangulateCrossHair::FindAndTriangulateCrossHair()
 , m_FramesToProcess (-1)
 , m_LeftCameraToTracker (new cv::Mat(4,4,CV_64FC1))
 , m_Capture(NULL)
+, m_FlipVideo(false)
 , m_HaltOnVideoReadFail(true)
 , m_Writer(NULL)
 , m_BlurKernel (cv::Size (3,3))
@@ -201,10 +202,27 @@ void FindAndTriangulateCrossHair::Triangulate()
   {
     cv::Mat videoImage;
     bool leftSuccess = m_Capture->read(videoImage);
+    if ( m_FlipVideo )
+    {
+      int flipMode = 0 ; // flip around the x axis
+      cv::flip(videoImage,leftFrame,flipMode);
+    }
+    else
+    {
+      leftFrame = videoImage.clone();
+    }
 
-    leftFrame = videoImage.clone();
     bool rightSuccess = m_Capture->read(videoImage);
-    rightFrame = videoImage.clone();
+    if ( m_FlipVideo )
+    {
+      int flipMode = 0 ; // flip around the x axis
+      cv::flip(videoImage,rightFrame,flipMode);
+    }
+    else
+    {
+      rightFrame = videoImage.clone();
+    }
+
     m_TrackerMatcher->GetVideoFrame(framenumber, &timeStamp);
 
     mitk::ProjectedPointPair screenPoints;
