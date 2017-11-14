@@ -41,6 +41,7 @@ int main(int argc, char** argv)
     projector->SetAllowableTimingError(maxTimingError * 1e6);
     projector->SetDontProject(true);
     projector->SetVisualiseTrackingStatus(true);
+    projector->SetFlipVideo(flipVideo);
     
     if ( outputVideo ) 
     {
