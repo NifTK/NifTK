@@ -619,14 +619,17 @@ int TestGetTQRDFileHeader()
 
   for ( unsigned int i = 0; i < sizeof(headerSize)/sizeof(headerSize[0]); ++i )
   {
-    std::cerr << "Testing header size " << headerSize[i] << std::endl;
     try
     {
       header = niftk::GetTQRDFileHeader ( headerSize[i] );
       if ( header.length() != headerSize[i] )
       {
-        std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize << " failed.";
+        std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize[i] << " failed." << std::endl;
         return EXIT_FAILURE;
+      }
+      else
+      {
+        std::cout << "Calling niftk::GetTQRDFileHeader with header size " << headerSize[i] << " OK." << std::endl;
       }
     }
     catch ( niftk::IOException e )
@@ -634,11 +637,15 @@ int TestGetTQRDFileHeader()
       int strcmpret = strncmp( "Target header size", e.what(), 18);
       if ( ( strcmpret != 0 ) )
       {
-        std::cerr << strcmpret << ": Calling niftk::GetTQRDFileHeader with header size " << headerSize << " got unknown exception: " << e.what() ;
+        std::cerr << strcmpret << ": Calling niftk::GetTQRDFileHeader with header size " << headerSize[i] <<
+          " got unknown exception: " << e.what() << std::endl ;
         return EXIT_FAILURE;
       }
+      else
+      {
+        std::cout << "Calling niftk::GetTQRDFileHeader with header size " << headerSize[i] << " threw correct exception OK." << std::endl;
+      }
     }
-
   }
   return EXIT_SUCCESS;
 }
@@ -654,9 +661,12 @@ int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string 
   try
   {
     niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cout << "Calling niftk::CheckTQRDFileHeader for " << valid << " OK." << std::endl;
   }
-  catch ( ... )
+  catch ( niftk::IOException e )
   {
+    std::cerr << "Calling niftk::CheckTQRDFileHeader for " << valid << " failed." << std::endl;
+    return EXIT_FAILURE;
   }
   ifs.close();
 
@@ -665,9 +675,12 @@ int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string 
   try
   {
     niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cerr << "Calling niftk::CheckTQRDFileHeader for " << invalid << " succeeded, but should have failed." << std::endl;
+    return EXIT_FAILURE;
   }
-  catch ( ... )
+  catch ( niftk::IOException e )
   {
+    std::cerr << "Calling niftk::CheckTQRDFileHeader for " << invalid << " failed, as it should. OK." << std::endl;
   }
   ifs.close();
 
@@ -676,10 +689,58 @@ int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string 
   try
   {
     niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cerr << "Calling niftk::CheckTQRDFileHeader for " << garbage << " succeeded, but should have failed." << std::endl;
+    return EXIT_FAILURE;
   }
-  catch ( ... )
+  catch ( niftk::IOException e )
   {
+    std::cerr << "Calling niftk::CheckTQRDFileHeader for " << garbage << " failed, as it should. OK." << std::endl;
   }
+
+  fileHeaderSize = 0;
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cerr << "Calling niftk::CheckTQRDFileHeader with zero length header should fail." << std::endl;
+    return EXIT_FAILURE;
+  }
+  catch ( niftk::IOException e )
+  {
+    std::cout << "Calling niftk::CheckTQRDFileHeader with zero length header failed, OK." << std::endl;
+  }
+
+  ifs.close();
+
+  ifs.open(valid, std::ios::binary | std::ios::in);
+
+  fileHeaderSize = 100;
+  //This might not fail for larger values of fileHeaderSize - as long the length is long enough to get to the padding.
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cout << "Calling niftk::CheckTQRDFileHeader with short header length ("<< fileHeaderSize << ") should fail." << std::endl;
+    return EXIT_FAILURE;
+  }
+  catch ( niftk::IOException e )
+  {
+    std::cerr << "Calling niftk::CheckTQRDFileHeader with short header length ("<< fileHeaderSize << ") fail. OK." << std::endl;
+  }
+  ifs.close();
+
+  ifs.open(valid, std::ios::binary | std::ios::in);
+
+  fileHeaderSize = 257;
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cout << "Calling niftk::CheckTQRDFileHeader with long header length ("<< fileHeaderSize << ") should fail." << std::endl;
+    return EXIT_FAILURE;
+  }
+  catch ( niftk::IOException e )
+  {
+    std::cerr << "Calling niftk::CheckTQRDFileHeader with long header length ("<< fileHeaderSize << ") should fail. OK." << std::endl;
+  }
+
   ifs.close();
 
   return EXIT_SUCCESS;

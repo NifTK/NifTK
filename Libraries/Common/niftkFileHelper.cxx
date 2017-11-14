@@ -717,14 +717,28 @@ void CheckTQRDFileHeader ( std::ifstream& ifs, const unsigned int& headerSize )
   }
 
   boost::property_tree::ptree pt;
-  boost::property_tree::read_xml (headerstream, pt);
+  try
+  {
+    boost::property_tree::read_xml (headerstream, pt);
+  }
+  catch ( std::exception e )
+  {
+    throw niftk::IOException(" Problem parsing xml in TRQD header, in valid XML. ");
+  }
 
   bool ok = false;
 
-  int version = pt.get<float>("NifTK.TQRD_version");
-  if ( version >= 0 )
+  try
   {
-    ok = true;
+    int version = pt.get<float>("NifTK.TQRD_version");
+    if ( version >= 0 )
+    {
+      ok = true;
+    }
+  }
+  catch ( std::exception e )
+  {
+    throw niftk::IOException(" Problem parsing xml in TRQD header, did not find NifTK.TQRD_version.");
   }
 
   if ( ! ifs.good () || ! ok )
