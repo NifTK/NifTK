@@ -37,6 +37,7 @@ VideoToSurface::VideoToSurface()
 , m_ReferenceIndex(-1)
 , m_InitOK(false)
 , m_HaltOnVideoReadFail(true)
+, m_FlipVideo(false)
 , m_VisualiseTrackingStatus(false)
 , m_LeftIntrinsicMatrix (new cv::Mat(3,3,CV_64FC1))
 , m_LeftDistortionVector (new cv::Mat(1,4,CV_64FC1))
@@ -194,6 +195,13 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
     cv::Mat rightImage;
     m_Capture->read(leftImage);
     m_Capture->read(rightImage);
+    if ( m_FlipVideo )
+    {
+      int flipMode = 0 ; // flip around the x axis
+      cv::flip(leftImage,leftImage,flipMode);
+      cv::flip(rightImage,rightImage,flipMode);
+    }
+
     if ( ( m_StartFrame < m_EndFrame ) && ( framenumber < m_StartFrame || framenumber > m_EndFrame ) )
     {
       MITK_INFO << "Skipping frames " << framenumber << " and " << framenumber + 1;
