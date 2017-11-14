@@ -154,6 +154,14 @@
     </boolean>
 
     <boolean>
+      <name>flipVideo</name>
+      <longflag>flipVideo</longflag>
+      <description>Flip the video around the x axis</description>
+      <label>Flip Video</label>
+      <default>0</default>
+    </boolean>
+
+    <boolean>
       <name>showTrackingStatus</name>
       <longflag>showTrackingStatus</longflag>
       <description>Show the status of attached trackers</description>

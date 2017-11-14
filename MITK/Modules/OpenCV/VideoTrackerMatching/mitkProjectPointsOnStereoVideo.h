@@ -101,6 +101,7 @@ public:
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( HaltOnVideoReadFail, bool);
+  itkSetMacro ( FlipVideo, bool);
   itkSetMacro ( DontProject, bool);
   itkSetMacro ( VisualiseTrackingStatus, bool);
   itkSetMacro ( AnnotateWithGoldStandards, bool );
@@ -260,6 +261,7 @@ private:
   std::vector < mitk::PickedObject >                           m_TriangulationErrors; // the triangulation errors
 
   cv::VideoCapture*             m_Capture;
+  bool                          m_FlipVideo; // flip the video (follows #5271)
   cv::VideoWriter*              m_LeftWriter;
   cv::VideoWriter*              m_RightWriter;
 

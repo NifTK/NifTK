@@ -75,6 +75,7 @@ public:
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( EndFrame, unsigned int);
   itkSetMacro ( HaltOnVideoReadFail, bool);
+  itkSetMacro ( FlipVideo, bool);
   itkSetMacro ( VisualiseTrackingStatus, bool);
   itkSetMacro ( AllowableTimingError, long long);
 
@@ -133,6 +134,7 @@ private:
   std::vector < cv::Mat >       m_WorldToLeftCameraMatrices;    // the saved camera positions
 
   cv::VideoCapture*             m_Capture;
+  bool                          m_FlipVideo; // flip the video (follows #5271)
   cv::VideoWriter*              m_LeftWriter;
 
   long long                     m_AllowableTimingError; // the maximum permisable timing error when setting points or calculating projection errors;

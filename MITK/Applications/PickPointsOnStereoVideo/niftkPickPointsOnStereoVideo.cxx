@@ -41,6 +41,7 @@ int main(int argc, char** argv)
     projector->SetAskOverWrite(queryOverWrite);
     projector->SetWriteAnnotatedImages(saveAnnotatedImages);
     projector->SetHalfImageWidth(halfImageWidth);
+    projector->SetFlipVideo(flipVideo);
     
     projector->Initialise(trackingInputDirectory);
     mitk::VideoTrackerMatching::Pointer matcher = mitk::VideoTrackerMatching::New();

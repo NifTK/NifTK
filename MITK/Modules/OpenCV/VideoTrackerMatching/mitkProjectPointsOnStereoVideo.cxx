@@ -44,6 +44,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_TriangulateOK(false)
 , m_DrawAxes(false)
 , m_HaltOnVideoReadFail(true)
+, m_FlipVideo(false)
 , m_DontProject(false)
 , m_VisualiseTrackingStatus(false)
 , m_AnnotateWithGoldStandards(false)
@@ -459,6 +460,12 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       {
         cv::Mat videoImage;
         m_Capture->read(videoImage);
+        if ( m_FlipVideo )
+        {
+          int flipMode = 0 ; // flip around the x axis
+          cv::flip(videoImage,videoImage,flipMode);
+        }
+
         if ( drawProjection )
         {
           m_ProjectedPointLists.back()->AnnotateImage(videoImage);

@@ -44,6 +44,7 @@ m_VideoIn("")
 , m_PickingLine(false)
 , m_AskOverWrite(false)
 , m_HaltOnVideoReadFail(true)
+, m_FlipVideo(false)
 , m_WriteAnnotatedImages(false)
 , m_StartFrame(0)
 , m_EndFrame(0)
@@ -140,10 +141,28 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
       }
       cv::Mat tempMat;
       cv::Mat leftVideoImage;
+      cv::Mat rightVideoImage;
       m_Capture->read(tempMat);
-      leftVideoImage = tempMat.clone();
+      if ( m_FlipVideo )
+      {
+        int flipMode = 0 ; // flip around the x axis
+        cv::flip(tempMat,leftVideoImage,flipMode);
+      }
+      else
+      {
+        leftVideoImage = tempMat.clone();
+      }
+
       m_Capture->read(tempMat);
-      cv::Mat rightVideoImage = tempMat.clone();
+      if ( m_FlipVideo )
+      {
+        int flipMode = 0 ; // flip around the x axis
+        cv::flip(tempMat,rightVideoImage,flipMode);
+      }
+      else
+      {
+        rightVideoImage = tempMat.clone();
+      }
 
       if ( std::abs(timingError) <  m_AllowableTimingError )
       {

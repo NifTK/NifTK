@@ -63,6 +63,7 @@ public:
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( FramesToProcess, int);
   itkSetMacro ( HaltOnVideoReadFail, bool);
+  itkSetMacro ( FlipVideo, bool);
   itkGetMacro ( PointsInLeftLensCS, std::vector<mitk::WorldPoint> );
   itkGetMacro ( WorldPoints, std::vector<mitk::WorldPoint> );
   itkGetMacro ( ScreenPoints, std::vector<mitk::ProjectedPointPair> );
@@ -73,6 +74,7 @@ public:
    * \brief Set the matrix flip state for the VideoTracker matcher
    */
   void SetFlipMatrices (bool);
+
 
   /** 
   * \brief set the video lag parameters for the tracker matcher
@@ -124,6 +126,7 @@ private:
                                 m_ScreenPoints; // the projected points
 
   cv::VideoCapture*             m_Capture;
+  bool                          m_FlipVideo; // flip the video (follows #5271)
   bool                          m_HaltOnVideoReadFail;
   CvVideoWriter*                m_Writer;
 
