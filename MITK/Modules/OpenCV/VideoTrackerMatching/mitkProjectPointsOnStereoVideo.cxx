@@ -1543,13 +1543,10 @@ mitk::PickedObject ProjectPointsOnStereoVideo::GetMatchingPickedObject ( const m
       matches++;
     }
   }
-  if ( matches == 0 )
+  if ( matches != 1 )
   {
-    MITK_ERROR << "Called get matching picked object but got not matches.";
-  }
-  if ( matches > 1 )
-  {
-    MITK_ERROR << "Called get matching picked object but multiple matches " << matches;
+    mitkThrow() << "Called get matching picked object but got " << matches << " matches. ID:" << PickedObject.m_Id
+      << " Frame number:" << PickedObject.m_FrameNumber;
   }
 
   return match;
