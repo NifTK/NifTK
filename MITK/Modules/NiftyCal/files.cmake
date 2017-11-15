@@ -15,5 +15,6 @@
 set(CPP_FILES
   niftkNiftyCalVideoCalibrationManager.cxx
   niftkTimingCalibrationInterface.cxx
+  niftkHandEyeEvaluationInterface.cxx
 )
 

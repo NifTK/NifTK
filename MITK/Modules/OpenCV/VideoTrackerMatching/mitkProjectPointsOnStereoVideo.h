@@ -101,6 +101,7 @@ public:
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( DrawAxes, bool);
   itkSetMacro ( HaltOnVideoReadFail, bool);
+  itkSetMacro ( FlipVideo, bool);
   itkSetMacro ( DontProject, bool);
   itkSetMacro ( VisualiseTrackingStatus, bool);
   itkSetMacro ( AnnotateWithGoldStandards, bool );
@@ -260,6 +261,7 @@ private:
   std::vector < mitk::PickedObject >                           m_TriangulationErrors; // the triangulation errors
 
   cv::VideoCapture*             m_Capture;
+  bool                          m_FlipVideo; // flip the video (follows #5271)
   cv::VideoWriter*              m_LeftWriter;
   cv::VideoWriter*              m_RightWriter;
 
@@ -278,8 +280,9 @@ private:
    * calculates the x,y, and z error between the passed point and the nearest point in
    * m_ProjectedPoints when projected onto a plane distant from the camera
    * appends result to m_LeftReProjectionErrors or m_RightReProjectionErrors
+   * bool to use legacy algorithm for lines (before #5280)
    */
-  void CalculateReProjectionError ( mitk::PickedObject GSPoint );
+  void CalculateReProjectionError ( mitk::PickedObject GSPoint, bool useLegacyAlgorithm );
 
   /* \brief
    * Finds  the nearest point in
@@ -301,7 +304,8 @@ private:
   /* \brief
    * Reprojects a picked object
    */
-  mitk::PickedObject ReprojectPickedObject ( const mitk::PickedObject& po, const mitk::PickedObject& depthReference );
+  mitk::PickedObject ReprojectPickedObject ( const mitk::PickedObject& po, const mitk::PickedObject& depthReference,
+      mitk::PickedObject& deltas );
 
   /* \brief
    * Projects a picked point list from left lens space to screen space. Uses the framenumber to

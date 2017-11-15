@@ -10,11 +10,13 @@
 void copy_ARGB_with_pitch(unsigned char * dst, unsigned char * src, int width,
                           int height, int dst_stride)
 {
-    for (int y = 0; y < height; ++y) {
-        std::memcpy(dst, src, width * 4);
-        src += width * 4;
-        dst += dst_stride;
-    }
+  // Issue #5271 flip the source rows as we write out.
+  unsigned char *tmp = src + (width * 4 * (height - 1));
+  for (int y = 0; y < height; ++y) {
+    std::memcpy(dst, tmp, width * 4);
+    tmp -= width * 4;
+    dst += dst_stride;
+  }
 }
 
 //------------------------------------------------------------------------------

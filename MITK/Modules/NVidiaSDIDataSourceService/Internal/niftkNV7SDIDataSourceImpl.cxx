@@ -358,7 +358,6 @@ namespace niftk
 
       cvSetData(&subimgInput, (void*)&(data[m_CaptureHeight * (m_CaptureWidth * 4) * i]), m_CaptureWidth * 4);
       cvSetData(&subimgOutput, (void*)&(buffer[m_CaptureHeight * (m_CaptureWidth * 4) * i]), bufferpitch);
-
       cvFlip(&subimgInput, &subimgOutput);
     }
 
@@ -886,7 +885,6 @@ namespace niftk
           IplImage  subimgInput;
           cvInitImageHeader(&subimgInput, cvSize((*img)->widthStep, h), IPL_DEPTH_1U, 1);
           cvSetData(&subimgInput, (void*)subimg, (*img)->widthStep);
-          cvFlip(&subimgInput, NULL);
         }				
       }
       catch (const std::exception& e)

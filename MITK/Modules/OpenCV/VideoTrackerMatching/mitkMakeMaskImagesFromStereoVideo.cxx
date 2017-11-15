@@ -47,6 +47,7 @@ m_VideoIn("")
 , m_AllowableTimingError (20e6) // 20 milliseconds 
 , m_AskOverWrite(false)
 , m_HaltOnVideoReadFail(true)
+, m_FlipVideo(false)
 , m_StartFrame(12) //by default we select different frames than mitkPickPointsOnStereoVideo
 , m_EndFrame(0)
 , m_Frequency(150)
@@ -140,11 +141,29 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
 
       cv::Mat tempMat;
 
+      cv::Mat leftVideoImage;
+      cv::Mat rightVideoImage;
       m_Capture->read(tempMat);
-      cv::Mat leftVideoImage = tempMat.clone();
+      if ( m_FlipVideo )
+      {
+        int flipMode = 0 ; // flip around the x axis
+        cv::flip(tempMat,leftVideoImage,flipMode);
+      }
+      else
+      {
+        leftVideoImage = tempMat.clone();
+      }
 
       m_Capture->read(tempMat);
-      cv::Mat rightVideoImage = tempMat.clone();
+      if ( m_FlipVideo )
+      {
+        int flipMode = 0 ; // flip around the x axis
+        cv::flip(tempMat,rightVideoImage,flipMode);
+      }
+      else
+      {
+        rightVideoImage = tempMat.clone();
+      }
 
       if ( std::abs(timingError) <  m_AllowableTimingError )
       {

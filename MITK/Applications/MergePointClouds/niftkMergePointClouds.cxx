@@ -25,7 +25,6 @@ int main(int argc, char* argv[])
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-
   try
   {
     niftk::MergePointClouds::Pointer   merger = niftk::MergePointClouds::New();
@@ -61,18 +60,20 @@ int main(int argc, char* argv[])
     mpsfile << "</time_series></point_set></point_set_file>" << std::endl;
     mpsfile.close();
   }
-  catch (const mitk::Exception& e)
+  catch (mitk::Exception& e)
   {
-    MITK_ERROR << "Caught '" << typeid(e).name() << "': " << e.what();
+    MITK_ERROR << "Caught mitk::Exception: " << e.GetDescription() << ", from:" << e.GetFile() << "::" << e.GetLine() << std::endl;
+    returnStatus = EXIT_FAILURE + 100;
   }
-  catch (const std::exception& e)
+  catch (std::exception& e)
   {
-    MITK_ERROR << "Caught '" << typeid(e).name() << "': " << e.what();
+    MITK_ERROR << "Caught std::exception: " << e.what() << std::endl;
+    returnStatus = EXIT_FAILURE + 101;
   }
   catch (...)
   {
-    MITK_ERROR << "Caught exception!";
+    MITK_ERROR << "Caught unknown exception:" << std::endl;
+    returnStatus = EXIT_FAILURE + 102;
   }
-
   return returnStatus;
 }

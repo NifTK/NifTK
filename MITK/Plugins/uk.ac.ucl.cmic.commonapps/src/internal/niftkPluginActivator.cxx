@@ -78,6 +78,15 @@ namespace niftk
 
 PluginActivator* PluginActivator::s_Instance = nullptr;
 
+const QString PluginActivator::IMAGE_INITIALISATION_METHOD_NAME("image initialisation method name");
+const QString PluginActivator::IMAGE_INITIALISATION_MIDAS("image initialisation by midas");
+const QString PluginActivator::IMAGE_INITIALISATION_LEVELWINDOW("image initialisation by level window");
+const QString PluginActivator::IMAGE_INITIALISATION_PERCENTAGE("image initialisation by percentage");
+const QString PluginActivator::IMAGE_INITIALISATION_RANGE("image initialisation by range");
+const QString PluginActivator::IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME("image initialisation range lower bound");
+const QString PluginActivator::IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME("image initialisation range upper bound");
+
+
 //-----------------------------------------------------------------------------
 PluginActivator::PluginActivator()
 : m_DataStorageServiceTracker(nullptr)
@@ -332,7 +341,7 @@ void PluginActivator::RegisterLevelWindowProperty(mitk::DataNode* node)
     {
       int minRange = systemPreferences->GetDouble(IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME, 0);
       int maxRange = systemPreferences->GetDouble(IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME, 0);
-      double percentageOfRange = systemPreferences->GetDouble(IMAGE_INITIALISATION_PERCENTAGE_NAME, 50);
+      double percentageOfRange = systemPreferences->GetDouble(IMAGE_INITIALISATION_PERCENTAGE, 50);
       QString initialisationMethod = systemPreferences->Get(IMAGE_INITIALISATION_METHOD_NAME, IMAGE_INITIALISATION_PERCENTAGE);
 
       float minDataLimit(0);

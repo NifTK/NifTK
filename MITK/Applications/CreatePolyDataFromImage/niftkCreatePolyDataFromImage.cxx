@@ -21,7 +21,6 @@
 #include <itkCommandLineHelper.h>
 #include <niftkCommandLineParser.h>
 
-#include <itkNifTKImageIOFactory.h>
 #include <mitkIOUtil.h>
 
 #include <niftkImageToSurfaceFilter.h>
@@ -92,8 +91,6 @@ enum {
 
 int main( int argc, char *argv[] )
 {
-  itk::NifTKImageIOFactory::Initialize();
- 
   std::string fileInputImage;
   std::string fileOutputPolyData;
   double threshold = 100.0;
@@ -265,12 +262,8 @@ int main( int argc, char *argv[] )
     return EXIT_FAILURE;
   }
 
-  bool isSaved = mitk::IOUtil::SaveSurface(surf, fileOutputPolyData);
-  if (!isSaved)
-  {
-    std::cerr << "Unable to save surface to file " << fileOutputPolyData.c_str() << "." << std::endl;
-    return EXIT_FAILURE;
-  }
+  // Will throw on failure.
+  mitk::IOUtil::Save(surf, fileOutputPolyData);
 
   return EXIT_SUCCESS;
 }

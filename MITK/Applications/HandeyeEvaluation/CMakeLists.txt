@@ -13,11 +13,11 @@
 #============================================================================*/
 
 NIFTK_CREATE_COMMAND_LINE_APPLICATION(
-  NAME niftkExtractDataFromMITKScene
+  NAME niftkHandeyeEvaluation
   BUILD_SLICER
   INSTALL_SCRIPT
   TARGET_LIBRARIES
-    niftkcommon
     ${Boost_LIBRARIES}
-    niftkCore
+    niftkOpenCVUtils
+    niftkNiftyCal
 )

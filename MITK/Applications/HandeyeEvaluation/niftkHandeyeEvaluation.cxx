@@ -14,48 +14,45 @@
 
 #include <cstdlib>
 #include <limits>
-#include <mitkVector.h>
-#include <QApplication>
-
-#include <mitkUltrasoundTransformAndImageMerger.h>
-#include <niftkUltrasoundTransformAndImageMergerCLP.h>
+#include <mitkExceptionMacro.h>
+#include <niftkHandeyeEvaluationCLP.h>
+#include <niftkHandEyeEvaluationInterface.h>
 
 int main(int argc, char** argv)
 {
   PARSE_ARGS;
   int returnStatus = EXIT_FAILURE;
 
-  if (   inputMatrixDirectory.length() == 0
-      || inputImageDirectory.length() == 0
-      || outputImageFile.length() == 0
-     )
-  {
-    commandLine.getOutput()->usage(commandLine);
-    return returnStatus;
-  }
-
   try
   {
+    double rms = niftk::EvaluateHandeyeFromPoints(trackingInputDirectory,
+                                                  pointsInputDirectory,
+                                                  modelFile,
+                                                  intrinsicsFile,
+                                                  handeyeFile,
+                                                  registrationFile,
+                                                  lag
+                                                 );
 
-    mitk::UltrasoundTransformAndImageMerger::Pointer merger = mitk::UltrasoundTransformAndImageMerger::New();
-    merger->Merge(inputMatrixDirectory, inputImageDirectory, outputImageFile, orientation);
+    std::cout << "niftkHandeyeEvaluation: RMS:" << rms << std::endl;
 
     returnStatus = EXIT_SUCCESS;
   }
   catch (mitk::Exception& e)
   {
     MITK_ERROR << "Caught mitk::Exception: " << e.GetDescription() << ", from:" << e.GetFile() << "::" << e.GetLine() << std::endl;
-    returnStatus = EXIT_FAILURE + 1;
+    returnStatus = EXIT_FAILURE + 100;
   }
   catch (std::exception& e)
   {
     MITK_ERROR << "Caught std::exception: " << e.what() << std::endl;
-    returnStatus = EXIT_FAILURE + 2;
+    returnStatus = EXIT_FAILURE + 101;
   }
   catch (...)
   {
     MITK_ERROR << "Caught unknown exception:" << std::endl;
-    returnStatus = EXIT_FAILURE + 3;
+    returnStatus = EXIT_FAILURE + 102;
   }
+
   return returnStatus;
 }

@@ -355,7 +355,7 @@ double VTKIterativeClosestPoint::InternalGetRMSResidual(vtkPolyData& source,
   vtkIdType cellId;
   vtkIdType numberOfPointsUsed = 0;
   int subId;
-  double distance;
+  double distanceSquared;
 
   int step = this->GetStepSize(&source);
   vtkIdType numberSourcePoints = source.GetNumberOfPoints();
@@ -370,11 +370,11 @@ double VTKIterativeClosestPoint::InternalGetRMSResidual(vtkPolyData& source,
                              closestTargetPoint,
                              cellId,
                              subId,
-                             distance);
+                             distanceSquared);
 
     numberOfPointsUsed++;
 
-    residual += (distance*distance);
+    residual += distanceSquared;
   }
   if (numberOfPointsUsed > 0)
   {

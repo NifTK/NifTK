@@ -38,15 +38,6 @@ class DataStorage;
 namespace niftk
 {
 
-const QString IMAGE_INITIALISATION_METHOD_NAME;
-const QString IMAGE_INITIALISATION_MIDAS;
-const QString IMAGE_INITIALISATION_LEVELWINDOW;
-const QString IMAGE_INITIALISATION_PERCENTAGE;
-const QString IMAGE_INITIALISATION_PERCENTAGE_NAME;
-const QString IMAGE_INITIALISATION_RANGE;
-const QString IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME;
-const QString IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME;
-
 /**
  * \class PluginActivator
  * \brief Plugin activator for the uk.ac.ucl.cmic.commonapps plugin.
@@ -64,6 +55,14 @@ public:
 
   PluginActivator();
   virtual ~PluginActivator();
+
+  static const QString IMAGE_INITIALISATION_METHOD_NAME;
+  static const QString IMAGE_INITIALISATION_MIDAS;
+  static const QString IMAGE_INITIALISATION_LEVELWINDOW;
+  static const QString IMAGE_INITIALISATION_PERCENTAGE;
+  static const QString IMAGE_INITIALISATION_RANGE;
+  static const QString IMAGE_INITIALISATION_RANGE_LOWER_BOUND_NAME;
+  static const QString IMAGE_INITIALISATION_RANGE_UPPER_BOUND_NAME;
 
   static PluginActivator* GetInstance();
 
