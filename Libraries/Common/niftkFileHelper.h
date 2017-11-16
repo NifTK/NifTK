@@ -265,7 +265,7 @@ NIFTKCOMMON_WINEXPORT std::string CreateUniqueTempFileName(const std::string &pr
 * @param the number of characters in the string
 * @return a unique string
 */
-NIFTKCOMMON_WINEXPORT std::string CreateUniqueString(const unsigned int &length);
+NIFTKCOMMON_WINEXPORT std::string CreateUniqueString(const unsigned int &length , const unsigned int &seed);
 
 /**
 * Creates a file header for TQRD files (used by IGITrackers).

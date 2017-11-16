@@ -148,10 +148,9 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
   }
 #else
   {
-    srand(time(NULL));
-    const int maxTries = 10;
+    const unsigned int maxTries = 10;
 
-    int currTry;
+    unsigned int currTry;
 
     /*
      * Custom implementation of mkstemps
@@ -164,7 +163,8 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
       assert(*(fileNameTemplate.end() - suffix.length() - 6) == 'X'
              && *(fileNameTemplate.end() - suffix.length() - 1) == 'X');
       tmpPath = fileNameTemplate;
-      std::string = CreateUniqueString ( 6 );
+      unsigned int seed = time (NULL) + currTry;
+      std::string = CreateUniqueString ( 6, seed );
       unsigned int c = 0;
       for (i_char = tmpPath.end() - suffix.length() - 6; i_char < tmpPath.end() - suffix.length(); i_char++)
       {
@@ -193,9 +193,10 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
 }
 
 //-----------------------------------------------------------------------------
-std::string CreateUniqueString ( const unsigned int& stringLength )
+std::string CreateUniqueString ( const unsigned int& stringLength, const unsigned int& seed )
 {
   std::string tmpPath = "";
+  srand(seed);
 
   for (unsigned int i = 0 ; i < stringLength ; ++i)
   {

@@ -752,10 +752,12 @@ int TestCreateUniqueString()
   std::string filename;
   try
   {
-    unsigned int targetLength[3] = {6,0,3};
-    for ( unsigned int i = 0 ; i < 3 ; ++i )
+    unsigned int targetLength[4] = {6,6,0,3};
+    std::string laststring;
+    for ( unsigned int i = 0 ; i < 4 ; ++i )
     {
-      filename = niftk::CreateUniqueString(targetLength[i]);
+      unsigned int seed = time(NULL) + i;
+      filename = niftk::CreateUniqueString(targetLength[i], seed);
       if ( filename.length() != targetLength[i] )
       {
         std::cerr << "The method niftk::CreateUniqueString returned string of wrong length: "
@@ -764,8 +766,18 @@ int TestCreateUniqueString()
       }
       else
       {
-        std::cout << "niftk::CreateUniqueString length " << targetLength[i] << " OK." << std::endl;
+        std::cout << "niftk::CreateUniqueString length " << targetLength[i] << " OK: " << filename << std::endl;
+        if ( i == 1 )
+        {
+          if ( laststring == filename )
+          {
+            std::cerr << "The method niftk::CreateUniqueString returned non unique strings "
+                  << filename << " == " << laststring << std::endl;
+            return EXIT_FAILURE;
+          }
+        }
       }
+      laststring = filename;
     }
   }
   catch (std::exception e)
