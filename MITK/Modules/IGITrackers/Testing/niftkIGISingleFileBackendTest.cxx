@@ -27,8 +27,8 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
   // always start with this!
   MITK_TEST_BEGIN("niftkIGISingelFileBackendTest");
 
-  std::string uid = niftk::CreateUniqueTempFileName ("tool");
-  QString dirName = argv[1] + QString::fromStdString(uid);
+  std::string uid = niftk::CreateUniqueString ( 6 , time(NULL));
+  std::string dirName = std::string(argv[1]) + "tool" +  uid;
   bool isRecording = true;
   niftk::IGIDataSourceI::IGITimeType duration = 10;
   niftk::IGIDataSourceI::IGITimeType timeStamp = 100;
@@ -42,7 +42,7 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
 
   try
   {
-    backend->AddData (dirName, isRecording, duration, timeStamp, data);
+    backend->AddData ( QString::fromStdString(dirName), isRecording, duration, timeStamp, data);
     MITK_TEST_CONDITION_REQUIRED ( true , "Adding empty data OK.");
   }
   catch ( std::exception e )
@@ -68,7 +68,7 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
 //  {
     //unless you set expected frames per second prior to calling it, AddData throws an exception.
     backend->SetExpectedFramesPerSecond (1);
-    backend->AddData ( dirName, isRecording, duration, timeStamp, data);
+    backend->AddData ( QString::fromStdString(dirName), isRecording, duration, timeStamp, data);
     MITK_TEST_CONDITION_REQUIRED ( true , "Adding one data OK.");
 //  }
 //  catch ( std::exception e )
@@ -79,7 +79,7 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
   //must do this to release file for reading.
   backend->StopRecording();
 
-  backend->StartPlayback(dirName, 0, 1 );
+  backend->StartPlayback( QString::fromStdString(dirName), 0, 1 );
   backend->PlaybackData(1,0);
 
   // always end with this!
