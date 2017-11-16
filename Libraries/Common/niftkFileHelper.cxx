@@ -156,29 +156,20 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
     /*
      * Custom implementation of mkstemps
      */
-    for (currTry = 0; currTry < maxTries; currTry++) {
+    for (currTry = 0; currTry < maxTries; currTry++)
+    {
       std::string tmpPath;
       std::string::iterator i_char;
 
       assert(*(fileNameTemplate.end() - suffix.length() - 6) == 'X'
              && *(fileNameTemplate.end() - suffix.length() - 1) == 'X');
       tmpPath = fileNameTemplate;
+      std::string = CreateUniqueString ( 6 );
+      unsigned int c = 0;
       for (i_char = tmpPath.end() - suffix.length() - 6; i_char < tmpPath.end() - suffix.length(); i_char++)
       {
         assert(*i_char == 'X');
-        switch (rand()%3)
-        {
-          case 0:
-            *i_char = rand()%('z' - 'a') + 'a';
-            break;
-
-          case 1:
-            *i_char = rand()%('Z' - 'A') + 'A';
-            break;
-
-          default:
-            *i_char = rand()%('9' - '0') + '0';
-          }
+        *i_char = tmpPath[c++];
       }
       std::cout << "Trying unique name : " << fs::path(tmpPath).string() << std::endl;
       if (!fs::exists(tmpPath)) {
@@ -190,7 +181,6 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
       {
         std::cout << fs::path(tmpPath).string() << "Exists" << std::endl;
       }
-
     }
 
     if (currTry == maxTries) {
@@ -202,6 +192,27 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
 #endif
 }
 
+//-----------------------------------------------------------------------------
+std::string CreateUniqueString ( const unsigned int& stringLength )
+{
+  std::string tmpPath = "";
+
+  for (unsigned int i = 0 ; i < stringLength ; ++i)
+  {
+    switch (rand()%3)
+    {
+      case 0:
+        tmpPath += rand()%('z' - 'a') + 'a';
+        break;
+      case 1:
+        tmpPath += rand()%('Z' - 'A') + 'A';
+        break;
+      default:
+        tmpPath += rand()%('9' - '0') + '0';
+     }
+   }
+  return tmpPath;
+}
 
 //-----------------------------------------------------------------------------
 bool DirectoryExists(const std::string& directoryPath)
@@ -730,7 +741,7 @@ void CheckTQRDFileHeader ( std::ifstream& ifs, const unsigned int& headerSize )
 
   try
   {
-    int version = pt.get<float>("NifTK.TQRD_version");
+    float version = pt.get<float>("NifTK.TQRD_version");
     if ( version >= 0 )
     {
       ok = true;

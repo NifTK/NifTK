@@ -746,6 +746,37 @@ int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string 
   return EXIT_SUCCESS;
 }
 
+//-----------------------------------------------------------------------------
+int TestCreateUniqueString()
+{
+  std::string filename;
+  try
+  {
+    unsigned int targetLength[3] = {6,0,3};
+    for ( unsigned int i = 0 ; i < 3 ; ++i )
+    {
+      filename = niftk::CreateUniqueString(targetLength[i]);
+      if ( filename.length() != targetLength[i] )
+      {
+        std::cerr << "The method niftk::CreateUniqueString returned string of wrong length: "
+                  << filename.length() << " -ne " << targetLength[i] << std::endl;
+        return EXIT_FAILURE;
+      }
+      else
+      {
+        std::cout << "niftk::CreateUniqueString length " << targetLength[i] << " OK." << std::endl;
+      }
+    }
+  }
+  catch (std::exception e)
+  {
+    std::cerr << "The method niftk::CreateUniqueString threw an exception "
+              << " : " << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
 
 /**
  * \brief Basic test harness for FileHelper.h
@@ -844,6 +875,11 @@ int niftkFileHelperTest(int argc, char * argv[])
   {
     return TestCheckTQRDFileHeader(argv[2], argv[3], argv[4]);
   }
+   else if (testNumber == 22)
+  {
+    return TestCreateUniqueString();
+  }
+
 
   else
   {

@@ -83,6 +83,7 @@ add_test(File-Helper-18 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHe
 add_test(File-Helper-19 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 19 ${INPUT_DATA}/LapTrackingAccuracy/previous3DResult.txt ${INPUT_DATA}/LapTrackingAccuracy/nonExistentFile.txt ${INPUT_DATA}/LapTrackingAccuracy )
 add_test(File-Helper-20 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 20)
 add_test(File-Helper-21 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 21 ${INPUT_DATA}/IGI/valid.tqrt ${INPUT_DATA}/IGI/invalid.tqrt ${INPUT_DATA}/IGI/not.tqrt )
+add_test(File-Helper-22 ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFileHelperTest 22)
 add_test(FixedLengthFileReader ${EXECUTABLE_OUTPUT_PATH}/niftkFileUnitTests niftkFixedLengthFileReaderTest ${INPUT_DATA}/AprilTagUnitTest/idmat.4x4)
 
 set(FileUnitTests_SRCS
