@@ -164,12 +164,12 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
              && *(fileNameTemplate.end() - suffix.length() - 1) == 'X');
       tmpPath = fileNameTemplate;
       unsigned int seed = time (NULL) + currTry;
-      std::string = CreateUniqueString ( 6, seed );
+      std::string uniquestr = CreateUniqueString ( 6, seed );
       unsigned int c = 0;
       for (i_char = tmpPath.end() - suffix.length() - 6; i_char < tmpPath.end() - suffix.length(); i_char++)
       {
         assert(*i_char == 'X');
-        *i_char = tmpPath[c++];
+        *i_char = uniquestr[c++];
       }
       std::cout << "Trying unique name : " << fs::path(tmpPath).string() << std::endl;
       if (!fs::exists(tmpPath)) {
