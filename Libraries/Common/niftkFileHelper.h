@@ -260,6 +260,14 @@ NIFTKCOMMON_WINEXPORT std::string ModifyFileSuffix(const std::string& fileName,
 NIFTKCOMMON_WINEXPORT std::string CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix = "");
 
 /**
+* Creates a unique string
+* Throws a niftk::IOException on failure.
+* @param the number of characters in the string
+* @return a unique string
+*/
+NIFTKCOMMON_WINEXPORT std::string CreateUniqueString(const unsigned int &length);
+
+/**
 * Creates a file header for TQRD files (used by IGITrackers).
 */
 NIFTKCOMMON_WINEXPORT std::string GetTQRDFileHeader(const unsigned int &headerLength);
