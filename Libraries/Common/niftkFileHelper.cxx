@@ -166,7 +166,7 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
       unsigned int seed = time (NULL) + currTry;
       std::string uniquestr = CreateUniqueString ( 6, seed );
       unsigned int c = 0;
-      for (i_char = tmpPath.end() - suffix.length() - 6; i_char < tmpPath.end() - suffix.length(); i_char++)
+      for (i_char = tmpPath.end() - suffix.length() - 6; i_char < tmpPath.end() - suffix.length(); ++i_char)
       {
         assert(*i_char == 'X');
         *i_char = uniquestr[c++];
