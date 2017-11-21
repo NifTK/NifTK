@@ -635,7 +635,7 @@ std::string ExtractImageFileSuffix(const std::string& fileName,
 
 //-----------------------------------------------------------------------------
 std::string AddStringToImageFileSuffix(const std::string& fileName,
-                                       std::string stringToAdd )
+                                       const std::string& stringToAdd )
 {
   std::string fileNameWithoutSuffix;
   std::string suffix = ExtractImageFileSuffix( fileName,
@@ -646,7 +646,7 @@ std::string AddStringToImageFileSuffix(const std::string& fileName,
 
 //-----------------------------------------------------------------------------
 std::string ModifyImageFileSuffix(const std::string& fileName,
-                                  std::string newSuffix )
+                                  const std::string& newSuffix )
 {
   std::string fileNameWithoutSuffix;
   niftk::ExtractImageFileSuffix( fileName, fileNameWithoutSuffix );
@@ -664,7 +664,7 @@ std::string GetFilenameStem(const std::string& fileName )
 
 //-----------------------------------------------------------------------------
 std::string ModifyFileSuffix(const std::string& fileName,
-                             std::string newSuffix )
+                             const std::string& newSuffix )
 {
   fs::path filePath( fileName );
 
@@ -734,7 +734,7 @@ void CheckTQRDFileHeader ( std::ifstream& ifs, const unsigned int& headerSize )
   {
     boost::property_tree::read_xml (headerstream, pt);
   }
-  catch ( std::exception e )
+  catch ( std::exception& e )
   {
     throw niftk::IOException(" Problem parsing xml in TRQD header, in valid XML. ");
   }
@@ -749,7 +749,7 @@ void CheckTQRDFileHeader ( std::ifstream& ifs, const unsigned int& headerSize )
       ok = true;
     }
   }
-  catch ( std::exception e )
+  catch ( std::exception& e )
   {
     throw niftk::IOException(" Problem parsing xml in TRQD header, did not find NifTK.TQRD_version.");
   }

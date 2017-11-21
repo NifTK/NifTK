@@ -498,7 +498,7 @@ int TestCreateAndDeleteUniqueFile()
   {
     filename = niftk::CreateUniqueTempFileName("video",".avi");
   }
-  catch (niftk::IOException e)
+  catch (niftk::IOException& e)
   {
     std::cerr << "The method niftk::CreateUniqueTempFileName did not return a "
               << "unique file name " << filename
@@ -632,7 +632,7 @@ int TestGetTQRDFileHeader()
         std::cout << "Calling niftk::GetTQRDFileHeader with header size " << headerSize[i] << " OK." << std::endl;
       }
     }
-    catch ( niftk::IOException e )
+    catch ( niftk::IOException& e )
     {
       int strcmpret = strncmp( "Target header size", e.what(), 18);
       if ( ( strcmpret != 0 ) )
@@ -663,7 +663,7 @@ int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string 
     niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
     std::cout << "Calling niftk::CheckTQRDFileHeader for " << valid << " OK." << std::endl;
   }
-  catch ( niftk::IOException e )
+  catch ( niftk::IOException& e )
   {
     std::cerr << "Calling niftk::CheckTQRDFileHeader for " << valid << " failed." << std::endl;
     return EXIT_FAILURE;
@@ -678,7 +678,7 @@ int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string 
     std::cerr << "Calling niftk::CheckTQRDFileHeader for " << invalid << " succeeded, but should have failed." << std::endl;
     return EXIT_FAILURE;
   }
-  catch ( niftk::IOException e )
+  catch ( niftk::IOException& e )
   {
     std::cerr << "Calling niftk::CheckTQRDFileHeader for " << invalid << " failed, as it should. OK." << std::endl;
   }
@@ -692,7 +692,7 @@ int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string 
     std::cerr << "Calling niftk::CheckTQRDFileHeader for " << garbage << " succeeded, but should have failed." << std::endl;
     return EXIT_FAILURE;
   }
-  catch ( niftk::IOException e )
+  catch ( niftk::IOException& e )
   {
     std::cerr << "Calling niftk::CheckTQRDFileHeader for " << garbage << " failed, as it should. OK." << std::endl;
   }
@@ -704,7 +704,7 @@ int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string 
     std::cerr << "Calling niftk::CheckTQRDFileHeader with zero length header should fail." << std::endl;
     return EXIT_FAILURE;
   }
-  catch ( niftk::IOException e )
+  catch ( niftk::IOException& e )
   {
     std::cout << "Calling niftk::CheckTQRDFileHeader with zero length header failed, OK." << std::endl;
   }
@@ -721,7 +721,7 @@ int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string 
     std::cout << "Calling niftk::CheckTQRDFileHeader with short header length ("<< fileHeaderSize << ") should fail." << std::endl;
     return EXIT_FAILURE;
   }
-  catch ( niftk::IOException e )
+  catch ( niftk::IOException& e )
   {
     std::cerr << "Calling niftk::CheckTQRDFileHeader with short header length ("<< fileHeaderSize << ") fail. OK." << std::endl;
   }
@@ -736,7 +736,7 @@ int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string 
     std::cout << "Calling niftk::CheckTQRDFileHeader with long header length ("<< fileHeaderSize << ") should fail." << std::endl;
     return EXIT_FAILURE;
   }
-  catch ( niftk::IOException e )
+  catch ( niftk::IOException& e )
   {
     std::cerr << "Calling niftk::CheckTQRDFileHeader with long header length ("<< fileHeaderSize << ") should fail. OK." << std::endl;
   }
@@ -780,7 +780,7 @@ int TestCreateUniqueString()
       laststring = filename;
     }
   }
-  catch (std::exception e)
+  catch (std::exception& e)
   {
     std::cerr << "The method niftk::CreateUniqueString threw an exception "
               << " : " << e.what() << std::endl;

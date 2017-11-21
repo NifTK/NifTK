@@ -45,7 +45,7 @@ int niftkIGISingleFileBackendTest ( int argc, char * argv[] )
     backend->AddData ( QString::fromStdString(dirName), isRecording, duration, timeStamp, data);
     MITK_TEST_CONDITION_REQUIRED ( true , "Adding empty data OK.");
   }
-  catch ( std::exception e )
+  catch ( std::exception& e )
   {
     MITK_TEST_CONDITION_REQUIRED ( false , "Adding empty data called exception:" << e.what());
   }

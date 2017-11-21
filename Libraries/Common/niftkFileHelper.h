@@ -227,7 +227,7 @@ NIFTKCOMMON_WINEXPORT std::string ExtractImageFileSuffix(const std::string& file
 * @return The image file name with the text added just before the image suffix.
 */
 NIFTKCOMMON_WINEXPORT std::string AddStringToImageFileSuffix(const std::string& fileName,
-                                                             std::string stringToAdd);
+                                                             const std::string& stringToAdd);
 
 
 /**
@@ -237,7 +237,7 @@ NIFTKCOMMON_WINEXPORT std::string AddStringToImageFileSuffix(const std::string& 
 * @return The image file name with the modified, or appended, image suffix.
 */
 NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix(const std::string& fileName,
-                                                        std::string newSuffix );
+                                                        const std::string& newSuffix );
 
 
 /**
@@ -249,7 +249,7 @@ NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix(const std::string& fileN
 * @return The file name with the modified or appended suffix.
 */
 NIFTKCOMMON_WINEXPORT std::string ModifyFileSuffix(const std::string& fileName,
-                                                   std::string newSuffix );
+                                                   const std::string& newSuffix );
 /**
 * Creates a unique file name (and empty file) for a file located in the O/S temporary directory.
 * Throws a niftk::IOException on failure.
