@@ -198,7 +198,7 @@ std::string CreateUniqueString ( const unsigned int& stringLength, const unsigne
   std::string tmpPath = "";
   srand(seed);
 
-  for (unsigned int i = 0 ; i < stringLength ; ++i)
+  for (unsigned int i = 0; i < stringLength; ++i)
   {
     switch (rand()%3)
     {
@@ -701,7 +701,8 @@ std::string GetTQRDFileHeader ( const unsigned int& headerSize )
   if ( headerSize < length )
   {
     std::stringstream errorMessage;
-    errorMessage << "Target header size " << headerSize << " is insufficient for a TQRD header. Need at least " << length << ".";
+    errorMessage << "Target header size " << headerSize
+      << " is insufficient for a TQRD header. Need at least " << length << ".";
     throw niftk::IOException(errorMessage.str());
   }
   else
