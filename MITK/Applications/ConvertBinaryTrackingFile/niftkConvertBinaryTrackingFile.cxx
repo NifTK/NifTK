@@ -64,12 +64,6 @@ int main(int argc, char** argv)
       }
     }
 
-    //mitk::StandaloneDataStorage::Pointer dataStorage = mitk::StandaloneDataStorage::New();
-    //QString name = "TQRT Converter";
-    //niftk::IGISingleFileBackend::Pointer backend = niftk::IGISingleFileBackend::New("TQRT Conerter", dataStorage.GetPointer());
-    //backend->CheckFileHeader (ifs);
-    // Let's put getfileheader checkfile header into niftkFileHelper. It will give a smaller app
-
     unsigned long int counter = 0;
     int modulo = skip + 1;
     vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
