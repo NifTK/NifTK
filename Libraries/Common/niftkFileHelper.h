@@ -227,7 +227,7 @@ NIFTKCOMMON_WINEXPORT std::string ExtractImageFileSuffix(const std::string& file
 * @return The image file name with the text added just before the image suffix.
 */
 NIFTKCOMMON_WINEXPORT std::string AddStringToImageFileSuffix(const std::string& fileName,
-                                                             std::string stringToAdd);
+                                                             const std::string& stringToAdd);
 
 
 /**
@@ -237,7 +237,7 @@ NIFTKCOMMON_WINEXPORT std::string AddStringToImageFileSuffix(const std::string& 
 * @return The image file name with the modified, or appended, image suffix.
 */
 NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix(const std::string& fileName,
-                                                        std::string newSuffix );
+                                                        const std::string& newSuffix );
 
 
 /**
@@ -249,7 +249,7 @@ NIFTKCOMMON_WINEXPORT std::string ModifyImageFileSuffix(const std::string& fileN
 * @return The file name with the modified or appended suffix.
 */
 NIFTKCOMMON_WINEXPORT std::string ModifyFileSuffix(const std::string& fileName,
-                                                   std::string newSuffix );
+                                                   const std::string& newSuffix );
 /**
 * Creates a unique file name (and empty file) for a file located in the O/S temporary directory.
 * Throws a niftk::IOException on failure.
@@ -258,6 +258,24 @@ NIFTKCOMMON_WINEXPORT std::string ModifyFileSuffix(const std::string& fileName,
 * @return a unique file name
 */
 NIFTKCOMMON_WINEXPORT std::string CreateUniqueTempFileName(const std::string &prefix, const std::string &suffix = "");
+
+/**
+* Creates a unique string
+* Throws a niftk::IOException on failure.
+* @param the number of characters in the string
+* @return a unique string
+*/
+NIFTKCOMMON_WINEXPORT std::string CreateUniqueString(const unsigned int &length , const unsigned int &seed);
+
+/**
+* Creates a file header for TQRD files (used by IGITrackers).
+*/
+NIFTKCOMMON_WINEXPORT std::string GetTQRDFileHeader(const unsigned int &headerLength);
+/**
+* Checks the header of a TQRD files (used by IGITrackers).
+* Throws an exception if header is not as expected.
+*/
+NIFTKCOMMON_WINEXPORT void CheckTQRDFileHeader(std::ifstream& ifs, const unsigned int &headerLength);
 
 } // end namespace
 

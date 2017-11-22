@@ -46,6 +46,15 @@
       <default>0</default>
     </integer>
 
+    <integer>
+      <name>headerSize</name>
+      <flag>b</flag>
+      <longflag>headerSize</longflag>
+      <description>The size of the file header in bytes..</description>
+      <label>If greater than zero, will check that file is valid TQRD.</label>
+      <default>256</default>
+    </integer>
+
     <file fileExtensions=".tqrt">
       <name>outputFile</name>
       <flag>f</flag>

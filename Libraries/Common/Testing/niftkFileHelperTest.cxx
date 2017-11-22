@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <niftkFileHelper.h>
 #include <niftkEnvironmentHelper.h>
@@ -497,7 +498,7 @@ int TestCreateAndDeleteUniqueFile()
   {
     filename = niftk::CreateUniqueTempFileName("video",".avi");
   }
-  catch (niftk::IOException e)
+  catch (niftk::IOException& e)
   {
     std::cerr << "The method niftk::CreateUniqueTempFileName did not return a "
               << "unique file name " << filename
@@ -610,6 +611,185 @@ int TestFileExists(std::string regularFile, std::string nonExistentFile, std::st
   return EXIT_SUCCESS;
 }
 
+//-----------------------------------------------------------------------------
+int TestGetTQRDFileHeader()
+{
+  unsigned int headerSize[] = {0,100,256,1024};
+  std::string header;
+
+  for ( unsigned int i = 0; i < sizeof(headerSize)/sizeof(headerSize[0]); ++i )
+  {
+    try
+    {
+      header = niftk::GetTQRDFileHeader ( headerSize[i] );
+      if ( header.length() != headerSize[i] )
+      {
+        std::cerr << "Calling niftk::GetTQRDFileHeader with header size " << headerSize[i] << " failed." << std::endl;
+        return EXIT_FAILURE;
+      }
+      else
+      {
+        std::cout << "Calling niftk::GetTQRDFileHeader with header size " << headerSize[i] << " OK." << std::endl;
+      }
+    }
+    catch ( niftk::IOException& e )
+    {
+      int strcmpret = strncmp( "Target header size", e.what(), 18);
+      if ( ( strcmpret != 0 ) )
+      {
+        std::cerr << strcmpret << ": Calling niftk::GetTQRDFileHeader with header size " << headerSize[i] <<
+          " got unknown exception: " << e.what() << std::endl ;
+        return EXIT_FAILURE;
+      }
+      else
+      {
+        std::cout << "Calling niftk::GetTQRDFileHeader with header size " << headerSize[i] << " threw correct exception OK." << std::endl;
+      }
+    }
+  }
+  return EXIT_SUCCESS;
+}
+
+//-----------------------------------------------------------------------------
+int TestCheckTQRDFileHeader(std::string valid, std::string invalid, std::string garbage)
+{
+  std::ifstream ifs;
+
+  ifs.open(valid, std::ios::binary | std::ios::in);
+
+  unsigned int fileHeaderSize = 256;
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cout << "Calling niftk::CheckTQRDFileHeader for " << valid << " OK." << std::endl;
+  }
+  catch ( niftk::IOException& e )
+  {
+    std::cerr << "Calling niftk::CheckTQRDFileHeader for " << valid << " failed." << std::endl;
+    return EXIT_FAILURE;
+  }
+  ifs.close();
+
+  ifs.open(invalid, std::ios::binary | std::ios::in);
+
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cerr << "Calling niftk::CheckTQRDFileHeader for " << invalid << " succeeded, but should have failed." << std::endl;
+    return EXIT_FAILURE;
+  }
+  catch ( niftk::IOException& e )
+  {
+    std::cerr << "Calling niftk::CheckTQRDFileHeader for " << invalid << " failed, as it should. OK." << std::endl;
+  }
+  ifs.close();
+
+  ifs.open(garbage, std::ios::binary | std::ios::in);
+
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cerr << "Calling niftk::CheckTQRDFileHeader for " << garbage << " succeeded, but should have failed." << std::endl;
+    return EXIT_FAILURE;
+  }
+  catch ( niftk::IOException& e )
+  {
+    std::cerr << "Calling niftk::CheckTQRDFileHeader for " << garbage << " failed, as it should. OK." << std::endl;
+  }
+
+  fileHeaderSize = 0;
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cerr << "Calling niftk::CheckTQRDFileHeader with zero length header should fail." << std::endl;
+    return EXIT_FAILURE;
+  }
+  catch ( niftk::IOException& e )
+  {
+    std::cout << "Calling niftk::CheckTQRDFileHeader with zero length header failed, OK." << std::endl;
+  }
+
+  ifs.close();
+
+  ifs.open(valid, std::ios::binary | std::ios::in);
+
+  fileHeaderSize = 100;
+  //This might not fail for larger values of fileHeaderSize - as long the length is long enough to get to the padding.
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cout << "Calling niftk::CheckTQRDFileHeader with short header length ("<< fileHeaderSize << ") should fail." << std::endl;
+    return EXIT_FAILURE;
+  }
+  catch ( niftk::IOException& e )
+  {
+    std::cerr << "Calling niftk::CheckTQRDFileHeader with short header length ("<< fileHeaderSize << ") fail. OK." << std::endl;
+  }
+  ifs.close();
+
+  ifs.open(valid, std::ios::binary | std::ios::in);
+
+  fileHeaderSize = 257;
+  try
+  {
+    niftk::CheckTQRDFileHeader(ifs, fileHeaderSize);
+    std::cout << "Calling niftk::CheckTQRDFileHeader with long header length ("<< fileHeaderSize << ") should fail." << std::endl;
+    return EXIT_FAILURE;
+  }
+  catch ( niftk::IOException& e )
+  {
+    std::cerr << "Calling niftk::CheckTQRDFileHeader with long header length ("<< fileHeaderSize << ") should fail. OK." << std::endl;
+  }
+
+  ifs.close();
+
+  return EXIT_SUCCESS;
+}
+
+//-----------------------------------------------------------------------------
+int TestCreateUniqueString()
+{
+  std::string filename;
+  try
+  {
+    unsigned int targetLength[4] = {6,6,0,3};
+    std::string laststring;
+    for ( unsigned int i = 0 ; i < 4 ; ++i )
+    {
+      unsigned int seed = time(NULL) + i;
+      filename = niftk::CreateUniqueString(targetLength[i], seed);
+      if ( filename.length() != targetLength[i] )
+      {
+        std::cerr << "The method niftk::CreateUniqueString returned string of wrong length: "
+                  << filename.length() << " -ne " << targetLength[i] << std::endl;
+        return EXIT_FAILURE;
+      }
+      else
+      {
+        std::cout << "niftk::CreateUniqueString length " << targetLength[i] << " OK: " << filename << std::endl;
+        if ( i == 1 )
+        {
+          if ( laststring == filename )
+          {
+            std::cerr << "The method niftk::CreateUniqueString returned non unique strings "
+                  << filename << " == " << laststring << std::endl;
+            return EXIT_FAILURE;
+          }
+        }
+      }
+      laststring = filename;
+    }
+  }
+  catch (std::exception& e)
+  {
+    std::cerr << "The method niftk::CreateUniqueString threw an exception "
+              << " : " << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  return EXIT_SUCCESS;
+}
+
 /**
  * \brief Basic test harness for FileHelper.h
  */
@@ -699,6 +879,19 @@ int niftkFileHelperTest(int argc, char * argv[])
   {
     return TestFileExists(argv[2], argv[3], argv[4]);
   }
+   else if (testNumber == 20)
+  {
+    return TestGetTQRDFileHeader();
+  }
+   else if (testNumber == 21)
+  {
+    return TestCheckTQRDFileHeader(argv[2], argv[3], argv[4]);
+  }
+   else if (testNumber == 22)
+  {
+    return TestCreateUniqueString();
+  }
+
 
   else
   {

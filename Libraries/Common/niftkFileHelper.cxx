@@ -25,6 +25,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
 #include "Exceptions/niftkIOException.h"
 
 #include <NifTKConfigure.h>
@@ -62,7 +64,7 @@ std::string ConcatenatePath(const std::string& path, const std::string& name)
        ( path.substr( path.length() - 1 ) != GetFileSeparator() ) &&
        ( name.length() > 0 ) &&
        ( name.substr( 0, 1 ) != GetFileSeparator() ) )
-    
+
   {
     return path + GetFileSeparator() + name;
   }
@@ -122,7 +124,7 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
 #else
   tmpDirName = "/tmp";
 #endif
-  
+
   fileNameTemplate = (fs::path(tmpDirName)/fs::path(prefix + "XXXXXX" + suffix)).string();
 
 #if defined HAVE_MKSTEMPS
@@ -146,37 +148,28 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
   }
 #else
   {
-    srand(time(NULL));
-    const int maxTries = 10;
+    const unsigned int maxTries = 10;
 
-    int currTry;
+    unsigned int currTry;
 
     /*
      * Custom implementation of mkstemps
      */
-    for (currTry = 0; currTry < maxTries; currTry++) {
+    for (currTry = 0; currTry < maxTries; currTry++)
+    {
       std::string tmpPath;
       std::string::iterator i_char;
 
       assert(*(fileNameTemplate.end() - suffix.length() - 6) == 'X'
              && *(fileNameTemplate.end() - suffix.length() - 1) == 'X');
       tmpPath = fileNameTemplate;
-      for (i_char = tmpPath.end() - suffix.length() - 6; i_char < tmpPath.end() - suffix.length(); i_char++)
+      unsigned int seed = time (NULL) + currTry;
+      std::string uniquestr = CreateUniqueString ( 6, seed );
+      unsigned int c = 0;
+      for (i_char = tmpPath.end() - suffix.length() - 6; i_char < tmpPath.end() - suffix.length(); ++i_char)
       {
         assert(*i_char == 'X');
-        switch (rand()%3)
-        {
-          case 0:
-            *i_char = rand()%('z' - 'a') + 'a';
-            break;
-
-          case 1:
-            *i_char = rand()%('Z' - 'A') + 'A';
-            break;
-
-          default:
-            *i_char = rand()%('9' - '0') + '0';
-          }
+        *i_char = uniquestr[c++];
       }
       std::cout << "Trying unique name : " << fs::path(tmpPath).string() << std::endl;
       if (!fs::exists(tmpPath)) {
@@ -188,7 +181,6 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
       {
         std::cout << fs::path(tmpPath).string() << "Exists" << std::endl;
       }
-
     }
 
     if (currTry == maxTries) {
@@ -200,6 +192,28 @@ std::string CreateUniqueTempFileName(const std::string &prefix, const std::strin
 #endif
 }
 
+//-----------------------------------------------------------------------------
+std::string CreateUniqueString ( const unsigned int& stringLength, const unsigned int& seed )
+{
+  std::string tmpPath = "";
+  srand(seed);
+
+  for (unsigned int i = 0; i < stringLength; ++i)
+  {
+    switch (rand()%3)
+    {
+      case 0:
+        tmpPath += rand()%('z' - 'a') + 'a';
+        break;
+      case 1:
+        tmpPath += rand()%('Z' - 'A') + 'A';
+        break;
+      default:
+        tmpPath += rand()%('9' - '0') + '0';
+     }
+   }
+  return tmpPath;
+}
 
 //-----------------------------------------------------------------------------
 bool DirectoryExists(const std::string& directoryPath)
@@ -287,11 +301,11 @@ bool FilenameHasPrefixAndExtension(
     const std::string& extension)
 {
   bool result = false;
-  
+
   size_t prefixIndex = filename.find(prefix);
   size_t extensionIndex = filename.rfind(extension);
   size_t extensionLength = extension.length();
-  
+
   if ( prefixIndex == 0 &&
       ( ( ( extension.length() > 0 ) && ( extensionIndex == (filename.length() - extensionLength) ) )
         || (extension.length() == 0)))
@@ -312,7 +326,7 @@ bool FilenameMatches(
 
   bool result = false;
   std::string tmp;
-  
+
   // If extension is empty, then you wouldnt expect the "." either.
   if (extension.length() == 0)
   {
@@ -322,12 +336,12 @@ bool FilenameMatches(
   {
     tmp = prefix + middle + "." + extension;
   }
-    
+
   if (filename.compare(tmp) == 0)
   {
     result = true;
   }
-  
+
   return result;
 }
 
@@ -498,7 +512,7 @@ std::string FindVideoFile(const std::string& directory, const std::string& mask)
     else
     {
       std::cout << "Found multiple video files, seeing which one matches mask " << mask;
-    
+
       unsigned int matches = 0;
       for ( std::vector<std::string>::iterator it = videoFiles.begin (); it < videoFiles.end(); ++ it )
       {
@@ -621,7 +635,7 @@ std::string ExtractImageFileSuffix(const std::string& fileName,
 
 //-----------------------------------------------------------------------------
 std::string AddStringToImageFileSuffix(const std::string& fileName,
-                                       std::string stringToAdd )
+                                       const std::string& stringToAdd )
 {
   std::string fileNameWithoutSuffix;
   std::string suffix = ExtractImageFileSuffix( fileName,
@@ -632,7 +646,7 @@ std::string AddStringToImageFileSuffix(const std::string& fileName,
 
 //-----------------------------------------------------------------------------
 std::string ModifyImageFileSuffix(const std::string& fileName,
-                                  std::string newSuffix )
+                                  const std::string& newSuffix )
 {
   std::string fileNameWithoutSuffix;
   niftk::ExtractImageFileSuffix( fileName, fileNameWithoutSuffix );
@@ -650,7 +664,7 @@ std::string GetFilenameStem(const std::string& fileName )
 
 //-----------------------------------------------------------------------------
 std::string ModifyFileSuffix(const std::string& fileName,
-                             std::string newSuffix )
+                             const std::string& newSuffix )
 {
   fs::path filePath( fileName );
 
@@ -666,6 +680,87 @@ std::string ModifyFileSuffix(const std::string& fileName,
   else
   {
     return stem + newSuffix;
+  }
+}
+
+//-----------------------------------------------------------------------------
+std::string GetTQRDFileHeader ( const unsigned int& headerSize )
+{
+  std::string header;
+  std::stringstream toHeader;
+  boost::property_tree::ptree pt;
+  pt.add ("NifTK.Version",  NIFTK_VERSION_STRING);
+  pt.add ("NifTK.TQRD_version", 0.0);
+  pt.add ("NifTK.revision", NIFTK_VERSION);
+  pt.add ("NifTK.Create_Time", time(NULL));
+
+  boost::property_tree::xml_writer_settings<std::string> settings(' ',2);
+  boost::property_tree::write_xml (toHeader, pt, settings);
+
+  unsigned int length = toHeader.str().length();
+  if ( headerSize < length )
+  {
+    std::stringstream errorMessage;
+    errorMessage << "Target header size " << headerSize
+      << " is insufficient for a TQRD header. Need at least " << length << ".";
+    throw niftk::IOException(errorMessage.str());
+  }
+  else
+  {
+    unsigned int extrabits = headerSize - length;
+    for ( unsigned int i = 0; i < extrabits; ++ i )
+    {
+      toHeader << " ";
+    }
+  }
+  header = toHeader.str();
+  return header;
+}
+
+//-----------------------------------------------------------------------------
+void CheckTQRDFileHeader ( std::ifstream& ifs, const unsigned int& headerSize )
+{
+  std::stringstream headerstream;
+
+  std::vector<char> headerChar (headerSize);
+  for ( unsigned int i = 0; i < headerSize; ++ i )
+  {
+    ifs.read (reinterpret_cast<char*>(&headerChar[i]),sizeof(headerChar[i]));
+    headerstream << headerChar[i];
+  }
+
+  boost::property_tree::ptree pt;
+  try
+  {
+    boost::property_tree::read_xml (headerstream, pt);
+  }
+  catch ( std::exception& e )
+  {
+    throw niftk::IOException(" Problem parsing xml in TRQD header, in valid XML. ");
+  }
+
+  bool ok = false;
+
+  try
+  {
+    float version = pt.get<float>("NifTK.TQRD_version");
+    if ( version >= 0 )
+    {
+      ok = true;
+    }
+  }
+  catch ( std::exception& e )
+  {
+    throw niftk::IOException(" Problem parsing xml in TRQD header, did not find NifTK.TQRD_version.");
+  }
+
+  if ( ! ifs.good () || ! ok )
+  {
+   throw niftk::IOException(" Problem checking TQRD file header. ");
+  }
+  if ( ifs.eof () )
+  {
+   throw niftk::IOException(" No data in TQRD file. ");
   }
 }
 

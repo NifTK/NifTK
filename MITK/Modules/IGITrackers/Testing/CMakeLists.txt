@@ -12,3 +12,11 @@
 #
 #============================================================================*/
 
+MITK_CREATE_MODULE_TESTS(LABELS niftkIGITrackers)
+
+mitk_use_modules(TARGET ${TESTDRIVER}
+  MODULES niftkcommon
+  PACKAGES Qt4|QtTest Qt5|Test)
+
+mitkAddCustomModuleTest(SingleFileBackendTest niftkIGISingleFileBackendTest ${TEMP})
+

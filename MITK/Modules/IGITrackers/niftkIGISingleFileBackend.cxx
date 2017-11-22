@@ -23,6 +23,7 @@ namespace niftk
 //-----------------------------------------------------------------------------
 IGISingleFileBackend::IGISingleFileBackend(QString name, mitk::DataStorage::Pointer dataStorage)
 : IGITrackerBackend(name, dataStorage)
+, m_FileHeaderSize (256) //make the header largish so we can cope with later additions
 {
 }
 
@@ -156,6 +157,14 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
   std::ifstream ifs(fileName.toStdString(), std::ios::binary | std::ios::in);
   if (ifs.is_open())
   {
+    try
+    {
+      niftk::CheckTQRDFileHeader(ifs, m_FileHeaderSize);
+    }
+    catch ( std::exception& e )
+    {
+      mitkThrow() << fileName.toStdString() << " does not appear to be a valid tracking data file : " << e.what();
+    }
     niftk::IGIDataSourceI::IGITimeType time;
     std::pair<mitk::Point4D, mitk::Vector3D> transform;
     while (ifs.good())
@@ -176,7 +185,6 @@ IGISingleFileBackend::ParseFile(const QString& fileName)
   }
   return std::move(result);
 }
-
 
 //-----------------------------------------------------------------------------
 bool IGISingleFileBackend::ProbeRecordedData(const QString& directoryName,
@@ -287,6 +295,8 @@ void IGISingleFileBackend::SaveItem(const QString& directoryName,
     {
       mitkThrow() << "Failed to open file:" << fileNameAsString << " for saving data.";
     }
+    std::string header = niftk::GetTQRDFileHeader(m_FileHeaderSize);
+    *ofs << header;
     m_OpenFiles.insert(std::move(std::make_pair(toolName, std::move(ofs))));
   }
 
