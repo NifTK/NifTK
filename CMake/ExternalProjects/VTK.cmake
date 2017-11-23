@@ -117,6 +117,10 @@ if(NOT DEFINED VTK_DIR)
     )
   endif()
 
+    set(delaunay2D_patch
+      COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/VTK-6.2.0-Delaunay2D.patch
+    )
+
   ExternalProject_Add(${proj}
     LIST_SEPARATOR ^^
     PREFIX ${proj_CONFIG}
@@ -126,6 +130,7 @@ if(NOT DEFINED VTK_DIR)
     URL ${proj_LOCATION}
     URL_MD5 ${proj_CHECKSUM}
     PATCH_COMMAND ${PATCH_COMMAND} -N -p1 -i ${CMAKE_CURRENT_LIST_DIR}/VTK-6.2.0.patch
+                  ${delaunay2D_patch}
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
         ${EP_COMMON_ARGS}
