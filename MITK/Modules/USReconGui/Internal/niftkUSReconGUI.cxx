@@ -118,4 +118,11 @@ mitk::DataNode::Pointer USReconGUI::GetTrackingNode() const
   return m_TrackingComboBox->GetSelectedNode();
 }
 
+
+//-----------------------------------------------------------------------------
+int USReconGUI::GetBallSize() const
+{
+  return m_BallSize->value();
+}
+
 } // end namespace

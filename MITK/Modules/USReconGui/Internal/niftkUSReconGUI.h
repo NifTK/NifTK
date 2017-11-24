@@ -46,6 +46,7 @@ public:
   vtkSmartPointer<vtkMatrix4x4> GetRigidMatrix() const;
   mitk::DataNode::Pointer GetImageNode() const;
   mitk::DataNode::Pointer GetTrackingNode() const;
+  int GetBallSize() const;
 
 signals:
 

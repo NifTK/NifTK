@@ -542,7 +542,7 @@ cv::Mat UltrasoundCalibration(const QuaternionTrackedPointData& trackedPoints)
     t3[3] = a.at<double>(11);
   }//end for times
 
-  double residual =  norm(F) / sqrt(3 * number_of_scans);
+  double residual =  norm(F) / sqrt(number_of_scans);
 
   cout << "Mean Residual: " << residual << std::endl;
   return a;
