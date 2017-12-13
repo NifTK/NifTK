@@ -1613,7 +1613,10 @@ mitk::PickedObject ProjectPointsOnStereoVideo::ReprojectPickedObject ( const mit
 
     double depth = mitk::GetCentroid ( reference.m_Points ).z;
     double shortestDistance = std::numeric_limits<double>::infinity();
-    cv::Point3d closestPointOnReference = reference.m_Points[0];
+    cv::Point3d closestPointOnReference = cv::Point3d (std::numeric_limits<double>::quiet_NaN(),
+                                                       std::numeric_limits<double>::quiet_NaN(),
+                                                       std::numeric_limits<double>::quiet_NaN());
+
     if ( reference.m_IsLine )
     {
       if ( reference.m_Points.size () > 1 )
