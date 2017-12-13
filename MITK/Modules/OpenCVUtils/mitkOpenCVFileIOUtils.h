@@ -136,12 +136,14 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT void SavePickedObjects ( const std::vector 
 /**
  * \brief Loads a vector of picked objects
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is );
+extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is ,
+    const double& yScale );
 
 /**
  * \brief Loads a vector of picked objects from a directory containing time stamped xml files
  */
-extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedObjectsFromDirectory ( std::vector < mitk::PickedObject > & points, const std::string& fullDirectoryName );
+extern "C++" NIFTKOPENCVUTILS_EXPORT void LoadPickedObjectsFromDirectory ( std::vector < mitk::PickedObject > & points,
+    const std::string& fullDirectoryName, const double& yScale );
 
 /**
  * \brief Read a set of matrices, stored as plain text, 4x4 matrices from a directory and
