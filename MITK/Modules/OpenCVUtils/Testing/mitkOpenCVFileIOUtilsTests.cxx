@@ -48,11 +48,12 @@ void TestLoadPickedObject ( char * filename )
 {
   MITK_INFO << "Attemting to open " << filename;
   std::vector <mitk::PickedObject> p1;
+  double yScale = 1.0;
   std::ifstream stream;
   stream.open(filename);
   if ( stream )
   {
-    LoadPickedObjects ( p1, stream );
+    LoadPickedObjects ( p1, stream, yScale );
   }
   else
   {
