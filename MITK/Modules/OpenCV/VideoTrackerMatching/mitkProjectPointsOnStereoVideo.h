@@ -173,6 +173,8 @@ public:
   itkSetMacro ( ProjectorScreenBuffer, double);
 
   itkSetMacro ( ClassifierScreenBuffer, double);
+  itkSetMacro ( VideoHeight, double);
+  itkSetMacro ( VideoWidth, double);
   itkSetMacro ( TriangulatedPointsOutName, std::string );
   itkSetMacro ( WorldPoints, mitk::PickedPointList::Pointer );
   itkSetMacro ( ModelPoints, mitk::PickedPointList::Pointer );

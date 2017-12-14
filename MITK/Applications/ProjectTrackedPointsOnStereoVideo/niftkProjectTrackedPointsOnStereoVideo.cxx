@@ -64,6 +64,8 @@ int main(int argc, char** argv)
     projector->SetProjectorScreenBuffer(projectorScreenBuffer);
     projector->SetClassifierScreenBuffer(classifierScreenBuffer);
     projector->SetVisualiseTrackingStatus(showTrackingStatus);
+    projector->SetVideoHeight(540.0 * goldStandardYScale );
+    projector->SetVideoWidth(1920.0);
     if ( saveAnnotateWithGS )
     {
       annotateWithGS = true;
