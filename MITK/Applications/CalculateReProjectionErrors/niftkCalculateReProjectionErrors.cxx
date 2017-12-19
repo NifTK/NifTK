@@ -134,7 +134,7 @@ int main(int argc, char** argv)
     if ( goldStandardDirectory.length() != 0 )
     {
       std::vector < mitk::PickedObject > pickedObjects;
-      mitk::LoadPickedObjectsFromDirectory ( pickedObjects, goldStandardDirectory );
+      mitk::LoadPickedObjectsFromDirectory ( pickedObjects, goldStandardDirectory, goldStandardYScale );
       projector->SetGoldStandardObjects (pickedObjects);
     }
 
