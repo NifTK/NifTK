@@ -643,7 +643,8 @@ void SavePickedObjects ( const std::vector < mitk::PickedObject > & points, std:
 }
 
 //---------------------------------------------------------------------------
-void LoadPickedObjectsFromDirectory (  std::vector < mitk::PickedObject > & points, const std::string& directory )
+void LoadPickedObjectsFromDirectory (  std::vector < mitk::PickedObject > & points, const std::string& directory ,
+    const double& yScale )
 {
   boost::regex timeStampFilter ( "([0-9]{19})(.+)(Points.xml)");
   boost::filesystem::directory_iterator endItr;
@@ -660,7 +661,7 @@ void LoadPickedObjectsFromDirectory (  std::vector < mitk::PickedObject > & poin
         std::ifstream fin ( it->path().string() );
         if ( fin )
         {
-          mitk::LoadPickedObjects ( points, fin );
+          mitk::LoadPickedObjects ( points, fin, yScale );
           ++fileInCount;
           fin.close();
         }
@@ -675,7 +676,7 @@ void LoadPickedObjectsFromDirectory (  std::vector < mitk::PickedObject > & poin
 }
 
 //---------------------------------------------------------------------------
-void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is )
+void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istream& is, const double& yScale )
 {
   boost::property_tree::ptree pt;
   try
@@ -699,6 +700,7 @@ void LoadPickedObjects (  std::vector < mitk::PickedObject > & points, std::istr
              std::stringstream xyzstream(xyz);
              cv::Point3d point;
              xyzstream >> point.x >> point.y >> point.z;
+             point.y *= yScale;
              po.m_Points.push_back(point);
            }
         }

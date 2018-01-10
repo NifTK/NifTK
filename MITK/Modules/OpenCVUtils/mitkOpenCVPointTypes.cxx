@@ -491,7 +491,8 @@ double PickedObject::DistanceTo(const PickedObject& otherPickedObject , PickedOb
   deltas.m_Points.clear();
   if ( ( ! otherPickedObject.HeadersMatch (*this) ) || ( otherPickedObject.m_Points.size() < 1 ) || ( m_Points.size() < 1 ) )
   {
-    deltas.m_Points.push_back(cv::Point3d (  std::numeric_limits<double>::infinity(),  std::numeric_limits<double>::infinity(),  std::numeric_limits<double>::infinity()));
+    deltas.m_Points.push_back(cv::Point3d (  std::numeric_limits<double>::quiet_NaN(),
+          std::numeric_limits<double>::quiet_NaN(),  std::numeric_limits<double>::quiet_NaN()));
     deltas.m_Points.push_back ( mitk::GetCentroid ( this->m_Points, false, NULL ));
     deltas.m_Points.push_back ( mitk::GetCentroid ( otherPickedObject.m_Points, false, NULL ));
     return std::numeric_limits<double>::infinity();

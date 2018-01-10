@@ -208,7 +208,6 @@
       <label>The maximum timing error in millisecond</label>
       <default>20</default>
     </integer>
- 
 
     <float>
 	<name>pointMatchingRatio</name>
@@ -216,6 +215,14 @@
 	<description>The minimum ratio between the lowest 2 distance when matching Gold standard points</description>
 	<label>The minimum ratio between the lowest 2 distance when matching Gold standard points</label>
 	<default>3.0</default>
+    </float>
+
+    <float>
+	<name>goldStandardYScale</name>
+	<longflag>goldStandardYScale</longflag>
+	<description>A vertical scaling factor for the gold standard points, useful if the point picking was done on at a different ascpect ration to the calibration.</description>
+	<label>A vertical scaling factor for the gold standard points.</label>
+	<default>1.0</default>
     </float>
 
     <float>

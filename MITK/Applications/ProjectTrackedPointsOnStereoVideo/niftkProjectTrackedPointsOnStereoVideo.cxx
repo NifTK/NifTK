@@ -64,6 +64,8 @@ int main(int argc, char** argv)
     projector->SetProjectorScreenBuffer(projectorScreenBuffer);
     projector->SetClassifierScreenBuffer(classifierScreenBuffer);
     projector->SetVisualiseTrackingStatus(showTrackingStatus);
+    projector->SetVideoHeight(540.0 * goldStandardYScale );
+    projector->SetVideoWidth(1920.0);
     if ( saveAnnotateWithGS )
     {
       annotateWithGS = true;
@@ -220,7 +222,7 @@ int main(int argc, char** argv)
       if ( fin ) 
       {
         std::vector < mitk::PickedObject > pickedObjects;
-        mitk::LoadPickedObjects ( pickedObjects, fin );
+        mitk::LoadPickedObjects ( pickedObjects, fin, goldStandardYScale );
         projector->SetGoldStandardObjects (pickedObjects);
         fin.close();
       }
@@ -232,7 +234,7 @@ int main(int argc, char** argv)
     if ( goldStandardDirectory.length() != 0 )
     {
       std::vector < mitk::PickedObject > pickedObjects;
-      mitk::LoadPickedObjectsFromDirectory ( pickedObjects, goldStandardDirectory );
+      mitk::LoadPickedObjectsFromDirectory ( pickedObjects, goldStandardDirectory, goldStandardYScale );
       projector->SetGoldStandardObjects (pickedObjects);
     }
 
