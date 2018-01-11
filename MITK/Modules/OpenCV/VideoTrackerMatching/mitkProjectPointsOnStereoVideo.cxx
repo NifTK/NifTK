@@ -337,8 +337,8 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       lastFrameTimeStamp.push_back(0);
 
       tracks_out << i << "_TimingError ";
-      tracks_out << i << "_tracker_X " << i << "_tracker_Y " << i << "_tracker_Z " << i << "_tracker_Distance" << i << "_tracker_Speed "  ;
-      tracks_out << i << "_camera_X " << i << "_camera_Y " << i << "_camera_Z " << i << "_camera_Distance" << i << "_camera_Speed "  ;
+      tracks_out << i << "_tracker_X " << i << "_tracker_Y " << i << "_tracker_Z " << i << "_tracker_Distance " << i << "_tracker_Speed "  ;
+      tracks_out << i << "_camera_X " << i << "_camera_Y " << i << "_camera_Z " << i << "_camera_Distance " << i << "_camera_Speed "  ;
     }
     tracks_out << std::endl;
   }
