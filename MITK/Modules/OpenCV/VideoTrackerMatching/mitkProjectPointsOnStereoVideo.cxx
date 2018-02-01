@@ -336,8 +336,9 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
       lastFrameCameraOrigin.push_back(cv::Point3d(0.0,0.0,0.0));
       lastFrameTimeStamp.push_back(0);
 
-      tracks_out << i << "_TimingError " << i << "_tracker_X " << i << "_tracker_Y " << i << "_tracker_Z " << i << "_tracker_Speed "  ;
-      tracks_out << i << "_camera_X " << i << "_camera_Y " << i << "_camera_Z " << i << "_camera_Speed "  ;
+      tracks_out << i << "_TimingError ";
+      tracks_out << i << "_tracker_X " << i << "_tracker_Y " << i << "_tracker_Z " << i << "_tracker_Distance " << i << "_tracker_Speed "  ;
+      tracks_out << i << "_camera_X " << i << "_camera_Y " << i << "_camera_Z " << i << "_camera_Distance " << i << "_camera_Speed "  ;
     }
     tracks_out << std::endl;
   }
@@ -369,19 +370,29 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           {
             long long timingError;
             cv::Mat trackerToWorld = trackerMatcher->GetTrackerMatrix(framenumber, &timingError, i, m_ReferenceIndex);
-            if ( m_WriteTrackingPositionData && (timeStamp != lastFrameTimeStamp[0]) )
+            if ( m_WriteTrackingPositionData && (timeStamp != lastFrameTimeStamp[i]) )
             {
               cv::Mat cameraToWorld = trackerMatcher->GetCameraTrackingMatrix(framenumber, &timingError, i, perturbation, m_ReferenceIndex);
               cv::Point3d origin (0.0,0.0,0.0);
               cv::Point3d trackerOrigin = trackerToWorld * origin;
               cv::Point3d cameraOrigin = cameraToWorld * origin;
-              double trackerSpeed = ( mitk::Norm  (trackerOrigin - lastFrameTrackerOrigin[i]) ) / ( timeStamp - lastFrameTimeStamp[i] ) * 1e9; //mm per second
-              double cameraSpeed = ( mitk::Norm  (cameraOrigin - lastFrameCameraOrigin[i]) ) / ( timeStamp - lastFrameTimeStamp[i] ) * 1e9; //mm per second
-              tracks_out << timingError << " " << trackerOrigin.x << " " << trackerOrigin.y << " " << trackerOrigin.z << " " << trackerSpeed  ;
-              tracks_out << " " << cameraOrigin.x << " " << cameraOrigin.y << " " << cameraOrigin.z << " " << cameraSpeed  ;
+              double trackerDistance =  mitk::Norm  (trackerOrigin - lastFrameTrackerOrigin[i]);
+              double cameraDistance = mitk::Norm  (cameraOrigin - lastFrameCameraOrigin[i]);
+              double trackerSpeed = ( trackerDistance ) / ( timeStamp - lastFrameTimeStamp[i] ) * 1e9; //mm per second
+              double cameraSpeed = ( cameraDistance ) / ( timeStamp - lastFrameTimeStamp[i] ) * 1e9; //mm per second
+              tracks_out << timingError << " " << trackerOrigin.x << " " << trackerOrigin.y << " " << trackerOrigin.z << " " << trackerDistance << " " << trackerSpeed  ;
+              tracks_out << " " << cameraOrigin.x << " " << cameraOrigin.y << " " << cameraOrigin.z << " " << cameraDistance << " " << cameraSpeed  ;
               lastFrameTrackerOrigin[i] = trackerOrigin;
               lastFrameCameraOrigin[i] = cameraOrigin;
               lastFrameTimeStamp[i] = timeStamp;
+              if ( i == howMany -1 )
+              {
+                tracks_out << std::endl;
+              }
+              else
+              {
+                tracks_out << " ";
+              }
             }
             if ( m_WriteTrackingMatrixFilesPerFrame )
             {
@@ -410,10 +421,6 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
               }
             }
 
-          }
-          if ( m_WriteTrackingPositionData && (timeStamp != lastFrameTimeStamp[0]) )
-          {
-            tracks_out << std::endl;
           }
         }
       }
