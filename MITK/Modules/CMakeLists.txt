@@ -39,6 +39,14 @@ if(BUILD_NiftyView)
   )
 endif()
 
+if(BUILD_NiftyMITKView)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    DnDDisplay
+    Thumbnail
+  )
+endif()
+
 if(BUILD_NiftyMIDAS)
   set(MODULE_DIRS
     ${MODULE_DIRS}
