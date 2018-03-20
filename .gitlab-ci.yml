@@ -46,7 +46,7 @@ Linux continuous build:
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
           -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
           ${src_dir}
-    - make -j 8
+    - make -j 1
 
   only:
     - branches
