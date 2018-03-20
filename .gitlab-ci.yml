@@ -46,7 +46,7 @@ Linux continuous build:
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
           -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
           ${src_dir}
-    - make -j 1
+    - make -j 8
 
   only:
     - branches
@@ -55,51 +55,51 @@ Linux continuous build:
     - linux, continuous
 
 
-# Mac continuous build:
+Mac continuous build:
 
-  # stage: build
+  stage: build
 
-  # script:
-    # - mkdir -p ${sb_dir}
-    # - mkdir -p ${ep_dir}
-    # - cd ${sb_dir}
-    # - cmake -DEP_BASE:PATH=${ep_dir}
-          # -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
-          # -DEP_DIRECTORY_PER_VERSION:BOOL=ON
-          # -DBUILD_TESTING:BOOL=ON
-          # -DBUILD_Caffe:BOOL=ON
-          # -DBUILD_LEGACY_COMMAND_LINE_PROGRAMS:BOOL=ON
-          # -DDESIRED_QT_VERSION:STRING=4
-          # -DNIFTYLINK_CHECK_COVERAGE=ON
-          # -DNIFTK_Apps/NiftyMITKView:BOOL=ON
-          # -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          # -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
-          # ${src_dir}
-    # - make -j 4
+  script:
+    - mkdir -p ${sb_dir}
+    - mkdir -p ${ep_dir}
+    - cd ${sb_dir}
+    - cmake -DEP_BASE:PATH=${ep_dir}
+          -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
+          -DEP_DIRECTORY_PER_VERSION:BOOL=ON
+          -DBUILD_TESTING:BOOL=ON
+          -DBUILD_Caffe:BOOL=ON
+          -DBUILD_LEGACY_COMMAND_LINE_PROGRAMS:BOOL=ON
+          -DDESIRED_QT_VERSION:STRING=4
+          -DNIFTYLINK_CHECK_COVERAGE=ON
+          -DNIFTK_Apps/NiftyMITKView:BOOL=ON
+          -DNIFTK_Apps/NiftyIGI:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          ${src_dir}
+    - make -j 4
 
-  # only:
-    # - branches
+  only:
+    - branches
 
-  # tags:
-    # - mac, continuous
+  tags:
+    - mac, continuous
 
 
-# Windows continuous build:
+Windows continuous build:
 
-  # stage: build
+  stage: build
 
-  # script:
-    # - mkdir -p ${sb_dir}
-    # - mkdir -p ${ep_dir}
-    # - cd ${sb_dir}
-    # - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
-    # - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
+  script:
+    - mkdir -p ${sb_dir}
+    - mkdir -p ${ep_dir}
+    - cd ${sb_dir}
+    - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKContinuousBuild.bat"
+    - tail -n 1 ${sb_dir}/build.log | grep -q ", 0 failed,"
 
-  # only:
-    # - branches
+  only:
+    - branches
 
-  # tags:
-    # - windows, continuous
+  tags:
+    - windows, continuous
 
 
 #Windows 32 bit continuous build:
@@ -142,36 +142,36 @@ Linux continuous test:
     - linux, continuous
 
 
-# Mac continuous test:
+Mac continuous test:
 
-  # stage: test
+  stage: test
 
-  # script:
-    # - cd ${pb_dir}
-    # - export NIFTK_DRC_ANALYZE=ON
-    # - export DISPLAY=mespak3.cs.ucl.ac.uk:1
-    # - ctest -S CTestContinuous.cmake -V
+  script:
+    - cd ${pb_dir}
+    - export NIFTK_DRC_ANALYZE=ON
+    - export DISPLAY=mespak3.cs.ucl.ac.uk:1
+    - ctest -S CTestContinuous.cmake -V
 
-  # only:
-    # - branches
+  only:
+    - branches
 
-  # tags:
-    # - mac, continuous
+  tags:
+    - mac, continuous
 
 
-# Windows continuous test:
+Windows continuous test:
 
-  # stage: test
+  stage: test
 
-  # script:
-    # - cd ${pb_dir}
-    # - ${src_dir}/Utilities/NifTKContinuousTest.bat
+  script:
+    - cd ${pb_dir}
+    - ${src_dir}/Utilities/NifTKContinuousTest.bat
 
-  # only:
-    # - branches
+  only:
+    - branches
 
-  # tags:
-    # - windows, continuous
+  tags:
+    - windows, continuous
 
 
 #Windows 32 bit continuous test:
@@ -250,38 +250,38 @@ Linux continuous clean up:
     - linux, continuous
 
 
-# Mac continuous clean up:
+Mac continuous clean up:
 
-  # stage: cleanup
+  stage: cleanup
 
-  # script:
-    # - rm -rf ${sb_dir}
-    # - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+  script:
+    - rm -rf ${sb_dir}
+    - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 
-  # when: always
+  when: always
 
-  # only:
-    # - branches
+  only:
+    - branches
 
-  # tags:
-    # - mac, continuous
+  tags:
+    - mac, continuous
 
 
-# Windows continuous clean up:
+Windows continuous clean up:
 
-  # stage: cleanup
+  stage: cleanup
 
-  # script:
-    # - rm -rf ${sb_dir}
-    # - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
+  script:
+    - rm -rf ${sb_dir}
+    - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 
-  # when: always
+  when: always
 
-  # only:
-  # - branches
+  only:
+  - branches
 
-  # tags:
-  # - windows, continuous
+  tags:
+  - windows, continuous
 
 
 #Windows 32 bit continuous clean up:
