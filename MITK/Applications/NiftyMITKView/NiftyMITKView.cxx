@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 {
   niftk::BaseApplication app(argc, argv);
   app.setApplicationName("NiftyMITKView");
-  app.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.NiftyMITKView");
+  app.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.niftymitkview");
 
   return app.run();
 }

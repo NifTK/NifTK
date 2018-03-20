@@ -29,7 +29,7 @@ option(NIFTK_Apps/NiftyIGI "Build NiftyIGI - Research application for general im
 # with required plug-in target names.
 
 set(NIFTK_APPS
-  NiftyMITKView^^NIFTK_APPS/NiftyMITKView
+  NiftyMITKView^^NIFTK_Apps/NiftyMITKView
   #NiftyView^^NIFTK_Apps/NiftyView
   NiftyMIDAS^^NIFTK_Apps/NiftyMIDAS
   NiftyIGI^^NIFTK_Apps/NiftyIGI

@@ -2,15 +2,15 @@
 <?eclipse version="3.0"?>
 <plugin>
 
-  <extension id="uk.ac.ucl.cmic.niftkmitkview" point="org.blueberry.osgi.applications">
+  <extension id="uk.ac.ucl.cmic.niftymitkview" point="org.blueberry.osgi.applications">
     <application>
       <run class="niftk::NiftyMITKViewApplication"/>
     </application>
   </extension>
 
   <extension point="org.blueberry.ui.preferencePages">
-    <page id="uk.ac.ucl.cmic.niftkmitkview.NiftyMITKViewPreferencePageKeywords" name="Application Preferences" class="niftk::NiftyMITKViewPreferencePageKeywords">
-      <keywordreference id="uk.ac.ucl.cmic.niftkmitkview.NiftyMITKViewPreferencePageKeywords"></keywordreference>
+    <page id="uk.ac.ucl.cmic.niftymitkview.NiftyMITKViewPreferencePageKeywords" name="Application Preferences" class="niftk::NiftyMITKViewPreferencePageKeywords">
+      <keywordreference id="uk.ac.ucl.cmic.niftymitkview.NiftyMITKViewPreferencePageKeywords"></keywordreference>
     </page>
   </extension>
 

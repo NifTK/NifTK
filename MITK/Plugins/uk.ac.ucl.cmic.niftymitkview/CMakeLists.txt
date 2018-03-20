@@ -21,5 +21,5 @@ mitk_create_plugin(
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(uk_ac_ucl_cmic_niftkmitkview)
+  cotire(uk_ac_ucl_cmic_niftymitkview)
 endif()
