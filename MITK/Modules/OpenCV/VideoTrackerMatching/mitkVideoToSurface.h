@@ -71,13 +71,20 @@ public:
   void  SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer matcher);
 
   void SetSaveVideo( bool state );
+  itkSetMacro ( SaveSurfaces, bool);
   itkSetMacro ( TrackerIndex, int);
   itkSetMacro ( ReferenceIndex, int);
   itkSetMacro ( EndFrame, unsigned int);
+  itkSetMacro ( StartFrame, unsigned int);
   itkSetMacro ( HaltOnVideoReadFail, bool);
   itkSetMacro ( FlipVideo, bool);
   itkSetMacro ( VisualiseTrackingStatus, bool);
   itkSetMacro ( AllowableTimingError, long long);
+  itkSetMacro ( PatchWidth, double );
+  itkSetMacro ( PatchHeight, double );
+  itkSetMacro ( PatchOriginX, double );
+  itkSetMacro ( PatchOriginY, double );
+
 
   itkGetMacro ( InitOK, bool);
   itkGetMacro ( WorldToLeftCameraMatrices, std::vector < cv::Mat > );
@@ -92,6 +99,7 @@ protected:
 
 private:
   bool                          m_SaveVideo; //if true the project function will buffer frames into a object to write out.
+  bool                          m_SaveSurfaces; //if true the project function will save a surface for each frame pair in a separate time stamped file;
   std::string                   m_VideoIn; //the video in file
   std::string                   m_VideoOut; //video needs to be saved on the fly
   std::string                   m_Directory; //the directory containing the data
