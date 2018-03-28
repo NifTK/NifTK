@@ -68,12 +68,52 @@
     </integer>
 
     <integer>
+      <name>startFrame</name>
+      <longflag>startFrame</longflag>
+      <description>Start processing video after n frames</description>
+      <label>Start Frame</label>
+      <default>0</default>
+    </integer>
+
+    <integer>
       <name>trackerIndex</name>
       <longflag>trackerIndex</longflag>
       <description>Which tracker index to use</description>
       <label>Tracker Index</label>
       <default>0</default>
     </integer>
+ 
+    <float>
+      <name>patchHeight</name>
+      <longflag>patchHeight</longflag>
+      <description>On process a subregion of height patchHeight pixels</description>
+      <label>Patch Height</label>
+      <default>270.0</default>
+    </float>
+
+    <float>
+      <name>patchWidth</name>
+      <longflag>patchWidth</longflag>
+      <description>On process a subregion of width patchWidth pixels</description>
+      <label>Patch Height</label>
+      <default>480.0</default>
+    </float>
+
+    <float>
+      <name>patchOriginX</name>
+      <longflag>patchOriginX</longflag>
+      <description>The X (column) origin of any subregion used</description>
+      <label>Patch Origin X</label>
+      <default>720.0</default>
+    </float>
+
+    <float>
+      <name>patchOriginY</name>
+      <longflag>patchOriginY</longflag>
+      <description>The Y (column) origin of any subregion used</description>
+      <label>Patch Origin Y</label>
+      <default>135.0</default>
+    </float>
 
 
   </parameters>
