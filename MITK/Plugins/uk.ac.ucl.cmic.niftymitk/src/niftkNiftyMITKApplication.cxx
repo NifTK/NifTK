@@ -12,21 +12,21 @@
 
 =============================================================================*/
 
-#include "niftkNiftyMITKViewApplication.h"
-#include "niftkNiftyMITKViewWorkbenchAdvisor.h"
+#include "niftkNiftyMITKApplication.h"
+#include "niftkNiftyMITKWorkbenchAdvisor.h"
 
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-NiftyMITKViewApplication::NiftyMITKViewApplication()
+NiftyMITKApplication::NiftyMITKApplication()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-NiftyMITKViewApplication::NiftyMITKViewApplication(const NiftyMITKViewApplication& other)
+NiftyMITKApplication::NiftyMITKApplication(const NiftyMITKApplication& other)
 {
   Q_UNUSED(other)
   throw std::runtime_error("Copy constructor not implemented");
@@ -34,9 +34,9 @@ NiftyMITKViewApplication::NiftyMITKViewApplication(const NiftyMITKViewApplicatio
 
 
 //-----------------------------------------------------------------------------
-berry::WorkbenchAdvisor* NiftyMITKViewApplication::GetWorkbenchAdvisor()
+berry::WorkbenchAdvisor* NiftyMITKApplication::GetWorkbenchAdvisor()
 {
-  return new NiftyMITKViewWorkbenchAdvisor();
+  return new NiftyMITKWorkbenchAdvisor();
 }
 
 }

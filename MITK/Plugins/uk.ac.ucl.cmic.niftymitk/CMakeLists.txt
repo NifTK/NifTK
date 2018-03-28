@@ -12,14 +12,14 @@
 #
 #============================================================================*/
 
-project(uk_ac_ucl_cmic_niftymitkview)
+project(uk_ac_ucl_cmic_niftymitk)
 
 mitk_create_plugin(
-  EXPORT_DIRECTIVE NIFTYMITKVIEW_EXPORT
+  EXPORT_DIRECTIVE NIFTYMITK_EXPORT
   EXPORTED_INCLUDE_SUFFIXES src
   MODULE_DEPENDS niftkCoreGui
 )
 
 if (NIFTK_USE_COTIRE AND COMMAND cotire)
-  cotire(uk_ac_ucl_cmic_niftymitkview)
+  cotire(uk_ac_ucl_cmic_niftymitk)
 endif()

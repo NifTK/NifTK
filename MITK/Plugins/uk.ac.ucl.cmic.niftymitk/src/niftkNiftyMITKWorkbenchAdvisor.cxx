@@ -12,30 +12,30 @@
 
 =============================================================================*/
 
-#include "niftkNiftyMITKViewWorkbenchAdvisor.h"
-#include "niftkNiftyMITKViewWorkbenchWindowAdvisor.h"
+#include "niftkNiftyMITKWorkbenchAdvisor.h"
+#include "niftkNiftyMITKWorkbenchWindowAdvisor.h"
 
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-QString NiftyMITKViewWorkbenchAdvisor::GetInitialWindowPerspectiveId()
+QString NiftyMITKWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 {
   return "uk.ac.ucl.cmic.commonapps.minimal_perspective";
 }
 
 //-----------------------------------------------------------------------------
-QString NiftyMITKViewWorkbenchAdvisor::GetWindowIconResourcePath() const
+QString NiftyMITKWorkbenchAdvisor::GetWindowIconResourcePath() const
 {
-  return ":/NiftyMITKViewApplication/icon_ucl.xpm";
+  return ":/NiftyMITKApplication/icon_ucl.xpm";
 }
 
 //-----------------------------------------------------------------------------
-BaseWorkbenchWindowAdvisor* NiftyMITKViewWorkbenchAdvisor::CreateBaseWorkbenchWindowAdvisor(
+BaseWorkbenchWindowAdvisor* NiftyMITKWorkbenchAdvisor::CreateBaseWorkbenchWindowAdvisor(
     berry::IWorkbenchWindowConfigurer::Pointer configurer)
 {
-  return new NiftyMITKViewWorkbenchWindowAdvisor(this, configurer);
+  return new NiftyMITKWorkbenchWindowAdvisor(this, configurer);
 }
 
 }

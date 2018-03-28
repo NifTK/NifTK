@@ -24,13 +24,13 @@ namespace niftk
 /**
  * \class PluginActivator
  * \brief Implements Qt and CTK specific functionality to launch the application as a plugin.
- * \ingroup uk_ac_ucl_cmic_niftymitkview_internal
+ * \ingroup uk_ac_ucl_cmic_niftymitk_internal
  */
 class PluginActivator : public BaseApplicationPluginActivator
 {
   Q_OBJECT
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_niftymitkview")
+  Q_PLUGIN_METADATA(IID "uk_ac_ucl_cmic_niftymitk")
 #endif
 
 public:

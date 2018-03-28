@@ -1,21 +1,21 @@
 /**
-\page uk_ac_ucl_cmic_niftymitkview_intro NiftyMITKView Introduction
+\page uk_ac_ucl_cmic_niftymitk_intro NiftyMITK Introduction
 
-Welcome to the NiftyMITKView application. This page contains some general information
+Welcome to the NiftyMITK application. This page contains some general information
 to help you get started. For all other enquiries, please join 
 
 \li <a href="http://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users">the users mailing list</a>
 
 and ask questions via email.
 
-\section NiftyMITKViewPurpose Purpose
+\section NiftyMITKPurpose Purpose
 
-The NiftyMITKView application was developed by the 
+The NiftyMITK application was developed by the 
 <a href="http://cmic.cs.ucl.ac.uk">Centre For Medical Image Computing (CMIC)</a> as a general
 purpose research application for medical image visualisation and analysis, and to support
 image guided interventions. It is not intended for clinical use.
 
-By design, all available plugins for the NifTK platform will be available in NiftyMITKView.
+By design, all available plugins for the NifTK platform will be available in NiftyMITK.
 More specific application will also be developed, and provide a subset of the functionality 
 according to different user requirements.  For example, CMIC has also developed
  
@@ -24,7 +24,7 @@ according to different user requirements.  For example, CMIC has also developed
 image analysis tools to study dementia.
 \li NiftyIGI to provide a platform for research into Image Guided Interventions (IGI).
 
-\section NiftyMITKViewFurtherReading Further Reading
+\section NiftyMITKFurtherReading Further Reading
 
 \li <a href="qthelp://uk.ac.ucl.cmic.common/bundle/WorkbenchMainWindow.html">The Main Window</a>
 \li <a href="qthelp://uk.ac.ucl.cmic.common/bundle/WorkbenchEditors.html">Editors</a>

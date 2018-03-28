@@ -91,7 +91,7 @@ call cmake.exe ^
     -DBUILD_Python:BOOL=OFF ^
     -DBUILD_Caffe:BOOL=OFF ^
 rem    -DNIFTK_Apps/NiftyView:BOOL=ON ^
-    -DNIFTK_Apps/NiftyMITKView:BOOL=ON ^
+    -DNIFTK_Apps/NiftyMITK:BOOL=ON ^
     -DNIFTK_Apps/NiftyIGI:BOOL=ON ^
     -DNIFTK_Apps/NiftyMIDAS:BOOL=ON ^
     -G "%CMAKE_GENERATOR%" "%src_dir%"

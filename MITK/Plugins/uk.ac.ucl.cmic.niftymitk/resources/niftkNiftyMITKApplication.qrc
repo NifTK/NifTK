@@ -1,5 +1,5 @@
 <!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/niftkNiftyMITKViewApplication">
+<qresource prefix="/niftkNiftyMITKApplication">
     <file>icon_cmic.xpm</file>
     <file>icon_ion.xpm</file>
     <file>icon_ucl.xpm</file>

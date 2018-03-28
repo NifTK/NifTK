@@ -12,14 +12,14 @@
 
 =============================================================================*/
 
-#include "niftkNiftyMITKViewWorkbenchWindowAdvisor.h"
+#include "niftkNiftyMITKWorkbenchWindowAdvisor.h"
 
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-NiftyMITKViewWorkbenchWindowAdvisor::NiftyMITKViewWorkbenchWindowAdvisor(
+NiftyMITKWorkbenchWindowAdvisor::NiftyMITKWorkbenchWindowAdvisor(
     berry::WorkbenchAdvisor* wbAdvisor,
     berry::IWorkbenchWindowConfigurer::Pointer configurer)
 : BaseWorkbenchWindowAdvisor(wbAdvisor, configurer)
@@ -28,7 +28,7 @@ NiftyMITKViewWorkbenchWindowAdvisor::NiftyMITKViewWorkbenchWindowAdvisor(
 
 
 //-----------------------------------------------------------------------------
-void NiftyMITKViewWorkbenchWindowAdvisor::PostWindowCreate()
+void NiftyMITKWorkbenchWindowAdvisor::PostWindowCreate()
 {
   BaseWorkbenchWindowAdvisor::PostWindowCreate();
   this->OpenEditorIfEnvironmentVariableIsON("NIFTK_MITK_DISPLAY", "org.mitk.editors.stdmultiwidget");

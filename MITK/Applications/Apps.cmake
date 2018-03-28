@@ -14,7 +14,7 @@
 
 # This file is included in the top-level CMakeLists.txt file to allow early dependency checking
 
-option (NIFTK_Apps/NiftyMITKView "Build NiftyMITKView -- MITK appliction with additional features." ON)
+option (NIFTK_Apps/NiftyMITK "Build NiftyMITK -- MITK appliction with additional features." ON)
 #option(NIFTK_Apps/NiftyView "Build Niftyiew - Research application for all users." ON)
 option(NIFTK_Apps/NiftyMIDAS "Build NiftyMIDAS - Dementia Research Centre application for clinical trials in Dementia." ON)
 option(NIFTK_Apps/NiftyIGI "Build NiftyIGI - Research application for general image guided interventions" ON)
@@ -29,7 +29,7 @@ option(NIFTK_Apps/NiftyIGI "Build NiftyIGI - Research application for general im
 # with required plug-in target names.
 
 set(NIFTK_APPS
-  NiftyMITKView^^NIFTK_Apps/NiftyMITKView
+  NiftyMITK^^NIFTK_Apps/NiftyMITK
   #NiftyView^^NIFTK_Apps/NiftyView
   NiftyMIDAS^^NIFTK_Apps/NiftyMIDAS
   NiftyIGI^^NIFTK_Apps/NiftyIGI

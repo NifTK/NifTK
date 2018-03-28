@@ -1,4 +1,4 @@
-set(Plugin-Name "NiftyMITKView")
+set(Plugin-Name "NiftyMITK")
 set(Plugin-Version "0.1")
 set(Plugin-Vendor "CMIC, Centre For Medical Image Computing, UCL.")
 set(Plugin-ContactAddress "http://cmic.cs.ucl.ac.uk/")

@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef niftkNiftyMITKViewPreferencePage_h
-#define niftkNiftyMITKViewPreferencePage_h
+#ifndef niftkNiftyMITKPreferencePage_h
+#define niftkNiftyMITKPreferencePage_h
 
-#include <uk_ac_ucl_cmic_niftymitkview_Export.h>
+#include <uk_ac_ucl_cmic_niftymitk_Export.h>
 
 #include <niftkBaseApplicationPreferencePage.h>
 
@@ -24,19 +24,19 @@ class QWidget;
 namespace niftk
 {
 
-/// \class NiftyMITKViewPreferencePage
-/// \brief Preferences page for the NiftyMITKView application, providing application wide defaults.
+/// \class NiftyMITKPreferencePage
+/// \brief Preferences page for the NiftyMITK application, providing application wide defaults.
 /// \ingroup uk_ac_ucl_cmic_niftyview_internal
-class NIFTYMITKVIEW_EXPORT NiftyMITKViewPreferencePage : public BaseApplicationPreferencePage
+class NIFTYMITK_EXPORT NiftyMITKPreferencePage : public BaseApplicationPreferencePage
 {
   Q_OBJECT
   Q_INTERFACES(berry::IPreferencePage)
 
 public:
 
-  NiftyMITKViewPreferencePage();
-  NiftyMITKViewPreferencePage(const NiftyMITKViewPreferencePage& other);
-  ~NiftyMITKViewPreferencePage();
+  NiftyMITKPreferencePage();
+  NiftyMITKPreferencePage(const NiftyMITKPreferencePage& other);
+  ~NiftyMITKPreferencePage();
 
   void Init(berry::IWorkbench::Pointer workbench) override;
 

@@ -149,13 +149,13 @@ if(NIFTK_Apps/NiftyIGI)
 
   
 # ---------------------------------------------------------------------------------------------------
-# NiftyMITKView Specific Plugins
+# NiftyMITK Specific Plugins
 # ---------------------------------------------------------------------------------------------------
 
-if(NIFTK_Apps/NiftyMITKView)
+if(NIFTK_Apps/NiftyMITK)
 
   list(APPEND PROJECT_PLUGINS
-    Plugins/uk.ac.ucl.cmic.niftymitkview:ON
+    Plugins/uk.ac.ucl.cmic.niftymitk:ON
     Plugins/uk.ac.ucl.cmic.sideviewer:ON
     Plugins/uk.ac.ucl.cmic.thumbnail:ON
   )

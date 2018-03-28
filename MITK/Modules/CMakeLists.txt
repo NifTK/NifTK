@@ -39,7 +39,7 @@ if(BUILD_NiftyView)
   )
 endif()
 
-if(BUILD_NiftyMITKView)
+if(BUILD_NiftyMITK)
   set(MODULE_DIRS
     ${MODULE_DIRS}
     DnDDisplay

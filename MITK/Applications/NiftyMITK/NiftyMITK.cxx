@@ -16,13 +16,13 @@
 
 #include <QVariant>
 
-/// \file NiftyMITKView.cxx
-/// \brief Main entry point for NiftyMITKView application.
+/// \file NiftyMITK.cxx
+/// \brief Main entry point for NiftyMITK application.
 int main(int argc, char** argv)
 {
   niftk::BaseApplication app(argc, argv);
-  app.setApplicationName("NiftyMITKView");
-  app.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.niftymitkview");
+  app.setApplicationName("NiftyMITK");
+  app.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.niftymitk");
 
   return app.run();
 }

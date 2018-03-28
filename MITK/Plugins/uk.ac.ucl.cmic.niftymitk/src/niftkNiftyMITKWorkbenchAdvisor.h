@@ -12,8 +12,8 @@
 
 =============================================================================*/
 
-#ifndef niftkNiftyMITKViewWorkbenchAdvisor_h
-#define niftkNiftyMITKViewWorkbenchAdvisor_h
+#ifndef niftkNiftyMITKWorkbenchAdvisor_h
+#define niftkNiftyMITKWorkbenchAdvisor_h
 
 #ifdef __MINGW32__
 // We need to include winbase.h here in order to declare
@@ -22,7 +22,7 @@
 #include <windows.h>
 #endif
 
-#include <uk_ac_ucl_cmic_niftymitkview_Export.h>
+#include <uk_ac_ucl_cmic_niftymitk_Export.h>
 #include <niftkBaseWorkbenchAdvisor.h>
 
 
@@ -30,15 +30,15 @@ namespace niftk
 {
 
 /**
- * \class NiftyMITKViewWorkbenchAdvisor
- * \brief Advisor class to set up the initial NiftyMITKView workbench.
+ * \class NiftyMITKWorkbenchAdvisor
+ * \brief Advisor class to set up the initial NiftyMITK workbench.
  * \ingroup uk_ac_ucl_cmic_niftyview
  */
-class NIFTYMITKVIEW_EXPORT NiftyMITKViewWorkbenchAdvisor: public BaseWorkbenchAdvisor
+class NIFTYMITK_EXPORT NiftyMITKWorkbenchAdvisor: public BaseWorkbenchAdvisor
 {
 public:
 
-  /// \brief Returns uk.ac.ucl.cmic.niftymitkview.minimal_perspective which should match that in plugin.xml.
+  /// \brief Returns uk.ac.ucl.cmic.niftymitk.minimal_perspective which should match that in plugin.xml.
   virtual QString GetInitialWindowPerspectiveId() override;
 
   /// \brief Gets the resource name of the window icon.

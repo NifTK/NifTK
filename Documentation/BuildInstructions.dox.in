@@ -473,8 +473,8 @@ on Linux and Mac only. Below you can find screenshots about using the CMake GUI 
     \verbatim
       BUILD_COMMAND_LINE_PROGRAMS:BOOL - if you want command line apps. There are 150+, so if you know you just want the GUIs, you can leave this off.
       BUILD_Caffe:BOOL - to build the Caffe deep learning framework (Experimental, feedback needed).
-      BUILD_Python:BOOL - builds a Python shell into the NiftyMITKView and NiftyIGI GUI, along with bindings for VTK, ITK and OpenCV.
-      NIFTK_APPS/NiftyMITKView:BOOL - to build NiftyMITKView, a basic viewer with MITK and UCL plugins.
+      BUILD_Python:BOOL - builds a Python shell into the NiftyMITK and NiftyIGI GUI, along with bindings for VTK, ITK and OpenCV.
+      NIFTK_APPS/NiftyMITK:BOOL - to build NiftyMITK, a basic viewer with MITK and UCL plugins.
       NIFTK_APPS/NiftyMIDAS:BOOL - to build NiftyMIDAS, developed with the UCL Dementia Research Centre for image segmentation.
       NIFTK_APPS/NiftyIGI:BOOL - to build NiftyIGI, developed for image guided surgery.
       DESIRED_QT_VERSION:STRING - must be 4 or 5, and then CMake will search for a suitable version.
@@ -510,9 +510,9 @@ change the build configuration to Release, regardless what was set in CMake. Onc
 successfully completed, exit Visual Studio.
 
 The repeated cycle of code, compile, test should be done within the subdirectory 
-called NifTK-build, where you should use the batch file startNiftyMITKView_Debug.bat
-or startNiftyMITKView_Release.bat to launch Visual Studio, and the BUILD task. Please
-ALWAYS use these bat files to start VS! NiftyMITKView can be run directly within Visual
+called NifTK-build, where you should use the batch file startNiftyMITK_Debug.bat
+or startNiftyMITK_Release.bat to launch Visual Studio, and the BUILD task. Please
+ALWAYS use these bat files to start VS! NiftyMITK can be run directly within Visual
 Studio by setting it as the startup project.
 
 \section BuildInstructionsUnix 9.2. Compiling NifTK on Linux and Mac

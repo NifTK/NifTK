@@ -12,13 +12,13 @@
 #
 #============================================================================*/
 
-project(NiftyMITKView)
-set(MY_APP_NAME NiftyMITKView)
+project(NiftyMITK)
+set(MY_APP_NAME NiftyMITK)
 
 # Create a cache entry for the provisioning file which is used to export
 # the file name in the NifTKConfig.cmake file. This will keep external projects
 # which rely on this file happy.
-set(NIFTK_NiftyMITKView_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyMITKView.provisioning" CACHE INTERNAL "NiftyMITKView provisioning file" FORCE)
+set(NIFTK_NiftyMITK_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyMITK.provisioning" CACHE INTERNAL "NiftyMITK provisioning file" FORCE)
 
 ###########################################################
 # Note: You need to explicitly turn OFF MITK/CTK plugins.
@@ -42,7 +42,7 @@ set(_exclude_plugins
 ###########################################################
 set(_include_plugins
   uk.ac.ucl.cmic.commonapps
-  uk.ac.ucl.cmic.niftymitkview
+  uk.ac.ucl.cmic.niftymitk
   uk.ac.ucl.cmic.common
   uk.ac.ucl.cmic.imagelookuptables
   uk.ac.ucl.cmic.affinetransform
@@ -62,7 +62,7 @@ if(BUILD_VL)
 endif()
 
 NIFTK_CREATE_GUI_APPLICATION(
-  NAME NiftyMITKView
+  NAME NiftyMITK
   INCLUDE_PLUGINS ${_include_plugins}
   EXCLUDE_PLUGINS ${_exclude_plugins}
 )

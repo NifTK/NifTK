@@ -5,19 +5,19 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>NiftyMITKView</string>
+	<string>NiftyMITK</string>
 	<key>CFBundleGetInfoString</key>
-	<string>NiftyMITKView</string>
+	<string>NiftyMITK</string>
 	<key>CFBundleIconFile</key>
 	<string>icon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>NiftyMITKView</string>
+	<string>NiftyMITK</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleLongVersionString</key>
 	<string>1.0.</string>
 	<key>CFBundleName</key>
-	<string>NiftyMITKView</string>
+	<string>NiftyMITK</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

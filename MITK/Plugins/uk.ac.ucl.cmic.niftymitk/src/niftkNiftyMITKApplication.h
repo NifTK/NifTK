@@ -12,10 +12,10 @@
 
 =============================================================================*/
 
-#ifndef niftkNiftyMITKViewApplication_h
-#define niftkNiftyMITKViewApplication_h
+#ifndef niftkNiftyMITKApplication_h
+#define niftkNiftyMITKApplication_h
 
-#include <uk_ac_ucl_cmic_niftymitkview_Export.h>
+#include <uk_ac_ucl_cmic_niftymitk_Export.h>
 #include <niftkBaseApplication.h>
 
 
@@ -23,18 +23,18 @@ namespace niftk
 {
 
 /**
- * \class NiftyMITKViewApplication
- * \brief Plugin class to start up the NiftyMITKView application.
+ * \class NiftyMITKApplication
+ * \brief Plugin class to start up the NiftyMITK application.
  * \ingroup uk_ac_ucl_cmic_niftyview
  */
-class NIFTYMITKVIEW_EXPORT NiftyMITKViewApplication : public BaseApplication
+class NIFTYMITK_EXPORT NiftyMITKApplication : public BaseApplication
 {
   Q_OBJECT
 
 public:
 
-  NiftyMITKViewApplication();
-  NiftyMITKViewApplication(const NiftyMITKViewApplication& other);
+  NiftyMITKApplication();
+  NiftyMITKApplication(const NiftyMITKApplication& other);
 
 protected:
 

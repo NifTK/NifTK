@@ -13,10 +13,10 @@
 #============================================================================*/
 
 set(SRC_CPP_FILES
-  niftkNiftyMITKViewApplication.cxx
-  niftkNiftyMITKViewPreferencePage.cxx
-  niftkNiftyMITKViewWorkbenchAdvisor.cxx
-  niftkNiftyMITKViewWorkbenchWindowAdvisor.cxx
+  niftkNiftyMITKApplication.cxx
+  niftkNiftyMITKPreferencePage.cxx
+  niftkNiftyMITKWorkbenchAdvisor.cxx
+  niftkNiftyMITKWorkbenchWindowAdvisor.cxx
 )
 
 set(INTERNAL_CPP_FILES
@@ -24,9 +24,9 @@ set(INTERNAL_CPP_FILES
 )
 
 set(MOC_H_FILES
-  src/niftkNiftyMITKViewApplication.h
-  src/niftkNiftyMITKViewPreferencePage.h
-  src/niftkNiftyMITKViewWorkbenchWindowAdvisor.h
+  src/niftkNiftyMITKApplication.h
+  src/niftkNiftyMITKPreferencePage.h
+  src/niftkNiftyMITKWorkbenchWindowAdvisor.h
   src/internal/niftkPluginActivator.h
 )
 
@@ -43,7 +43,7 @@ set(CACHED_RESOURCE_FILES
 
 set(QRC_FILES
 # uncomment the following line if you want to use Qt resources
-  resources/niftkNiftyMITKViewApplication.qrc
+  resources/niftkNiftyMITKApplication.qrc
 )
 
 set(CPP_FILES )

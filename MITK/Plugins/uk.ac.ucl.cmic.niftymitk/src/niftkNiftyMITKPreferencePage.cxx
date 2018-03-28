@@ -12,21 +12,21 @@
 
 =============================================================================*/
 
-#include "niftkNiftyMITKViewPreferencePage.h"
+#include "niftkNiftyMITKPreferencePage.h"
 
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-NiftyMITKViewPreferencePage::NiftyMITKViewPreferencePage()
+NiftyMITKPreferencePage::NiftyMITKPreferencePage()
 : BaseApplicationPreferencePage()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-NiftyMITKViewPreferencePage::NiftyMITKViewPreferencePage(const NiftyMITKViewPreferencePage& other)
+NiftyMITKPreferencePage::NiftyMITKPreferencePage(const NiftyMITKPreferencePage& other)
 : BaseApplicationPreferencePage(other)
 {
   throw std::runtime_error("Copy constructor not implemented");
@@ -34,20 +34,20 @@ NiftyMITKViewPreferencePage::NiftyMITKViewPreferencePage(const NiftyMITKViewPref
 
 
 //-----------------------------------------------------------------------------
-NiftyMITKViewPreferencePage::~NiftyMITKViewPreferencePage()
+NiftyMITKPreferencePage::~NiftyMITKPreferencePage()
 {
 }
 
 
 //-----------------------------------------------------------------------------
-void NiftyMITKViewPreferencePage::Init(berry::IWorkbench::Pointer workbench)
+void NiftyMITKPreferencePage::Init(berry::IWorkbench::Pointer workbench)
 {
   BaseApplicationPreferencePage::Init(workbench);
 }
 
 
 //-----------------------------------------------------------------------------
-void NiftyMITKViewPreferencePage::CreateQtControl(QWidget* parent)
+void NiftyMITKPreferencePage::CreateQtControl(QWidget* parent)
 {
   BaseApplicationPreferencePage::CreateQtControl(parent);
 
@@ -60,21 +60,21 @@ void NiftyMITKViewPreferencePage::CreateQtControl(QWidget* parent)
 
 
 //-----------------------------------------------------------------------------
-bool NiftyMITKViewPreferencePage::PerformOk()
+bool NiftyMITKPreferencePage::PerformOk()
 {
   return BaseApplicationPreferencePage::PerformOk();
 }
 
 
 //-----------------------------------------------------------------------------
-void NiftyMITKViewPreferencePage::PerformCancel()
+void NiftyMITKPreferencePage::PerformCancel()
 {
   BaseApplicationPreferencePage::PerformCancel();
 }
 
 
 //-----------------------------------------------------------------------------
-void NiftyMITKViewPreferencePage::Update()
+void NiftyMITKPreferencePage::Update()
 {
   BaseApplicationPreferencePage::Update();
 }
