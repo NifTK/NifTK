@@ -17,6 +17,7 @@ set(SRC_CPP_FILES
   niftkNiftyViewPreferencePage.cxx
   niftkNiftyViewWorkbenchAdvisor.cxx
   niftkNiftyViewWorkbenchWindowAdvisor.cxx
+  niftkDnDDefaultPerspective.cxx
 )
 
 set(INTERNAL_CPP_FILES
@@ -28,6 +29,7 @@ set(MOC_H_FILES
   src/niftkNiftyViewPreferencePage.h
   src/niftkNiftyViewWorkbenchWindowAdvisor.h
   src/internal/niftkPluginActivator.h
+  src/niftkDnDDefaultPerspective.h
 )
 
 set(CACHED_RESOURCE_FILES

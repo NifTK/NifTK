@@ -17,7 +17,7 @@
 #include <niftkNiftyViewPreferencePage.h>
 #include <niftkBaseApplicationPreferencePage.h>
 #include "../niftkNiftyViewApplication.h"
-
+#include "../niftkDnDDefaultPerspective.h"
 
 namespace niftk
 {
@@ -47,6 +47,7 @@ void PluginActivator::start(ctkPluginContext* context)
   BaseApplicationPluginActivator::start(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(NiftyViewApplication, context);
+  BERRY_REGISTER_EXTENSION_CLASS(DnDDefaultPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(NiftyViewPreferencePage, context);
 
   this->RegisterHelpSystem();

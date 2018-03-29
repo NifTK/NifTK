@@ -22,7 +22,7 @@ namespace niftk
 //-----------------------------------------------------------------------------
 QString NiftyViewWorkbenchAdvisor::GetInitialWindowPerspectiveId()
 {
-  return "uk.ac.ucl.cmic.commonapps.minimal_perspective";
+  return "uk.ac.ucl.cmic.niftyview.default_perspective";
 }
 
 //-----------------------------------------------------------------------------
