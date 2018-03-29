@@ -16,7 +16,7 @@
 
 option (NIFTK_Apps/NiftyMITK "Build NiftyMITK -- MITK appliction with additional features." ON)
 #option(NIFTK_Apps/NiftyView "Build Niftyiew - Research application for all users." ON)
-option(NIFTK_Apps/NiftyMIDAS "Build NiftyMIDAS - Dementia Research Centre application for clinical trials in Dementia." ON)
+option(NIFTK_Apps/NiftyMIDAS "Build NiftyMIDAS - Dementia Research Centre application for clinical trials in Dementia." OFF)
 option(NIFTK_Apps/NiftyIGI "Build NiftyIGI - Research application for general image guided interventions" ON)
 
 # This variable is fed to ctkFunctionSetupPlugins() macro in the
