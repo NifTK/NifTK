@@ -73,11 +73,11 @@ endif()
 
 # if(NIFTK_Apps/NiftyView)
 
-  # list(APPEND PROJECT_PLUGINS
-    # Plugins/uk.ac.ucl.cmic.niftyview:ON
-    # Plugins/uk.ac.ucl.cmic.sideviewer:ON
-    # Plugins/uk.ac.ucl.cmic.thumbnail:ON
-  # )
+  list(APPEND PROJECT_PLUGINS
+    Plugins/uk.ac.ucl.cmic.niftyview:ON
+    Plugins/uk.ac.ucl.cmic.sideviewer:ON
+    Plugins/uk.ac.ucl.cmic.thumbnail:ON
+  )
 
   # # Unfortunately not finished yet.
   # #if(BUILD_VL)
