@@ -37,7 +37,6 @@ set(_exclude_plugins
   org_mitk_gui_qt_segmentation
   org_mitk_gui_qt_stdmultiwidgeteditor
   org_mitk_gui_qt_volumevisualization
-  org_mitk_gui_qt_basicimageprocessing
 )
 
 ###########################################################
