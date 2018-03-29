@@ -44,7 +44,8 @@ Linux continuous build:
           -DDESIRED_QT_VERSION:STRING=4
           -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make -j 1
 
@@ -73,7 +74,8 @@ Mac continuous build:
           -DNIFTYLINK_CHECK_COVERAGE=ON
           -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make -j 4
 
@@ -321,7 +323,8 @@ Ubuntu 14.04 release build:
           -DBUILD_Caffe:BOOL=ON
           -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make -j 8
 
@@ -348,7 +351,8 @@ Ubuntu 14.04 release build:
 #          -DBUILD_Caffe:BOOL=ON
 #          -DNIFTK_Apps/NiftyMITK:BOOL=ON
 #          -DNIFTK_Apps/NiftyIGI:BOOL=ON
-#          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+#          -DNIFTK_Apps/NiftyView:BOOL=ON
+#          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
 #          ${src_dir}
 #    - make -j 8
 #
@@ -376,7 +380,8 @@ CentOS 7 release build:
           -DBUILD_Caffe:BOOL=ON
           -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make -j 8
 
@@ -408,7 +413,8 @@ CentOS 6 release build:
           -DOPENCV_WITH_FFMPEG:BOOL=ON
           -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make
 
@@ -435,7 +441,8 @@ Mac release build:
           -DBUILD_Caffe:BOOL=ON
           -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make -j 4
 

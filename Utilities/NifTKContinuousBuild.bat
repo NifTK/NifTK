@@ -90,10 +90,10 @@ call cmake.exe ^
     -DNIFTK_GENERATE_DOXYGEN_HELP:BOOL=ON ^
     -DBUILD_Python:BOOL=OFF ^
     -DBUILD_Caffe:BOOL=OFF ^
-rem    -DNIFTK_Apps/NiftyView:BOOL=ON ^
+    -DNIFTK_Apps/NiftyView:BOOL=ON ^
     -DNIFTK_Apps/NiftyMITK:BOOL=ON ^
     -DNIFTK_Apps/NiftyIGI:BOOL=ON ^
-    -DNIFTK_Apps/NiftyMIDAS:BOOL=ON ^
+    -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF ^
     -G "%CMAKE_GENERATOR%" "%src_dir%"
 if %ERRORLEVEL% NEQ 0 exit /B 1
 
