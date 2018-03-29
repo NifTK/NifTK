@@ -14,8 +14,6 @@
 
 #include "niftkPluginActivator.h"
 
-#include <niftkMinimalPerspective.h>
-#include <niftkIGIPerspective.h>
 #include <niftkNiftyViewPreferencePage.h>
 #include <niftkBaseApplicationPreferencePage.h>
 #include "../niftkNiftyViewApplication.h"
@@ -49,8 +47,6 @@ void PluginActivator::start(ctkPluginContext* context)
   BaseApplicationPluginActivator::start(context);
 
   BERRY_REGISTER_EXTENSION_CLASS(NiftyViewApplication, context);
-  BERRY_REGISTER_EXTENSION_CLASS(MinimalPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(IGIPerspective, context);
   BERRY_REGISTER_EXTENSION_CLASS(NiftyViewPreferencePage, context);
 
   this->RegisterHelpSystem();

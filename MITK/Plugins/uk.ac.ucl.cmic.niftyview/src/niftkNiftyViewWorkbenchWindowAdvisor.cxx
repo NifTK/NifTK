@@ -26,12 +26,4 @@ NiftyViewWorkbenchWindowAdvisor::NiftyViewWorkbenchWindowAdvisor(
 {
 }
 
-
-//-----------------------------------------------------------------------------
-void NiftyViewWorkbenchWindowAdvisor::PostWindowCreate()
-{
-  BaseWorkbenchWindowAdvisor::PostWindowCreate();
-  this->OpenEditorIfEnvironmentVariableIsON("NIFTK_MITK_DISPLAY", "org.mitk.editors.stdmultiwidget");
-}
-
 }
