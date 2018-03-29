@@ -27,9 +27,17 @@ set(NIFTK_NIFTYVIEW_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyVi
 # So, turn them OFF if you DON'T want them in your app.
 ###########################################################
 set(_exclude_plugins
-  org_mitk_gui_qt_extapplication
   org_mitk_gui_qt_aicpregistration
+  org_mitk_gui_qt_basicimageprocessing
+  org_mitk_gui_qt_common_legacy
+  org_mitk_gui_qt_extapplication
   org_mitk_gui_qt_igttracking
+  org_mitk_gui_qt_moviemaker
+  org_mitk_gui_qt_pointsetinteraction
+  org_mitk_gui_qt_segmentation
+  org_mitk_gui_qt_stdmultiwidgeteditor
+  org_mitk_gui_qt_volumevisualization
+  org_mitk_gui_qt_basicimageprocessing
 )
 
 ###########################################################
@@ -45,13 +53,12 @@ set(_include_plugins
   uk.ac.ucl.cmic.niftyview
   uk.ac.ucl.cmic.common
   uk.ac.ucl.cmic.imagelookuptables
-  uk.ac.ucl.cmic.affinetransform
-  uk.ac.ucl.cmic.surfaceextractor
   uk.ac.ucl.cmic.snapshot
   uk.ac.ucl.cmic.imagestatistics
-  uk.ac.ucl.cmic.thumbnail
-  uk.ac.ucl.cmic.sideviewer
   uk.ac.ucl.cmic.xnat
+  uk.ac.ucl.cmic.sideviewer
+  uk.ac.ucl.cmic.thumbnail
+  uk.ac.ucl.cmic.dnddisplay
 )
 
 if(BUILD_VL)
