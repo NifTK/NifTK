@@ -49,6 +49,7 @@ set(_exclude_plugins
 ###########################################################
 set(_include_plugins
   uk.ac.ucl.cmic.commonapps
+  uk.ac.ucl.cmic.commonmidas
   uk.ac.ucl.cmic.niftyview
   uk.ac.ucl.cmic.common
   uk.ac.ucl.cmic.imagelookuptables
@@ -57,6 +58,8 @@ set(_include_plugins
   uk.ac.ucl.cmic.xnat
   uk.ac.ucl.cmic.sideviewer
   uk.ac.ucl.cmic.thumbnail
+  uk.ac.ucl.cmic.midasmorphologicalsegmentor
+  uk.ac.ucl.cmic.midasgeneralsegmentor
   uk.ac.ucl.cmic.dnddisplay
 )
 
