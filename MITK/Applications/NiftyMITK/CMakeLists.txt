@@ -27,9 +27,9 @@ set(NIFTK_NiftyMITK_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyMI
 # So, turn them OFF if you DON'T want them in your app.
 ###########################################################
 set(_exclude_plugins
-  org_mitk_gui_qt_extapplication
-  org_mitk_gui_qt_aicpregistration
-  org_mitk_gui_qt_igttracking
+  org_mitk_gui_qt_extapplication   # We provide our own main app.
+  org_mitk_gui_qt_aicpregistration # Only relevant for NiftyIGI really.
+  org_mitk_gui_qt_igttracking      # Only relevant for NiftyIGI really.
 )
 
 ###########################################################
@@ -49,8 +49,6 @@ set(_include_plugins
   uk.ac.ucl.cmic.surfaceextractor
   uk.ac.ucl.cmic.snapshot
   uk.ac.ucl.cmic.imagestatistics
-  uk.ac.ucl.cmic.thumbnail
-  uk.ac.ucl.cmic.sideviewer
   uk.ac.ucl.cmic.xnat
 )
 
