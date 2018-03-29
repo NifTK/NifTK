@@ -31,6 +31,13 @@ set(MODULE_DIRS
   CoreApp
 )
 
+if(BUILD_NiftyMITK)
+  set(MODULE_DIRS
+    ${MODULE_DIRS}
+    # Add more here, if we ever need to
+  )
+endif()
+
 if(BUILD_NiftyView)
   set(MODULE_DIRS
     ${MODULE_DIRS}
