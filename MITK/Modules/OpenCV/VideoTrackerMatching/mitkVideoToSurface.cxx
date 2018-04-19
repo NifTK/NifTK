@@ -343,7 +343,11 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
                   triangulatedPoints[i].first.z << " ";
               for ( unsigned int c = 0 ; c < channels ; ++c )
               {
-                fileout << (int)rgbValues[i][c] << " ";
+                fileout << (int)rgbValues[i][c];
+                if ( c < channels -1 )
+                {
+                  fileout << " ";
+                }
               }
               fileout << std::endl;
             }
