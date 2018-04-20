@@ -12,30 +12,34 @@
 
 =============================================================================*/
 
-#ifndef niftkNiftyViewWorkbenchWindowAdvisor_h
-#define niftkNiftyViewWorkbenchWindowAdvisor_h
+#ifndef niftkNiftyMITKApplication_h
+#define niftkNiftyMITKApplication_h
 
-#include <uk_ac_ucl_cmic_niftyview_Export.h>
-#include <niftkBaseWorkbenchWindowAdvisor.h>
+#include <uk_ac_ucl_cmic_niftymitk_Export.h>
+#include <niftkBaseApplication.h>
 
 
 namespace niftk
 {
 
 /**
- * \class NiftyViewWorkbenchWindowAdvisor
- * \brief Advisor class to set up NiftyView windows on startup.
+ * \class NiftyMITKApplication
+ * \brief Plugin class to start up the NiftyMITK application.
  * \ingroup uk_ac_ucl_cmic_niftyview
- * \sa niftk::HelpAboutDialog
  */
-class NIFTYVIEW_EXPORT NiftyViewWorkbenchWindowAdvisor : public BaseWorkbenchWindowAdvisor
+class NIFTYMITK_EXPORT NiftyMITKApplication : public BaseApplication
 {
   Q_OBJECT
 
 public:
 
-  NiftyViewWorkbenchWindowAdvisor(berry::WorkbenchAdvisor* wbAdvisor,
-    berry::IWorkbenchWindowConfigurer::Pointer configurer);
+  NiftyMITKApplication();
+  NiftyMITKApplication(const NiftyMITKApplication& other);
+
+protected:
+
+  /// \brief Derived classes override this to provide a workbench advisor.
+  virtual berry::WorkbenchAdvisor* GetWorkbenchAdvisor() override;
 
 };
 

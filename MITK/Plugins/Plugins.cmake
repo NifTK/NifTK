@@ -57,26 +57,24 @@ set(PROJECT_PLUGINS
   Plugins/uk.ac.ucl.cmic.surfaceextractor:ON
 )
 
+
 # ---------------------------------------------------------------------------------------------------
 # NiftyView Specific Plugins
 # ---------------------------------------------------------------------------------------------------
 
-if(NIFTK_Apps/NiftyView)
+ if(NIFTK_Apps/NiftyView)
 
   list(APPEND PROJECT_PLUGINS
+    Plugins/uk.ac.ucl.cmic.commonmidas:ON
     Plugins/uk.ac.ucl.cmic.niftyview:ON
     Plugins/uk.ac.ucl.cmic.sideviewer:ON
     Plugins/uk.ac.ucl.cmic.thumbnail:ON
+    Plugins/uk.ac.ucl.cmic.dnddisplay:ON
+    Plugins/uk.ac.ucl.cmic.midasmorphologicalsegmentor:ON
+    Plugins/uk.ac.ucl.cmic.midasgeneralsegmentor:ON
   )
 
-  # Unfortunately not finished yet.
-  #if(BUILD_VL)
-  #  list(APPEND PROJECT_PLUGINS
-  #    Plugins/uk.ac.ucl.cmic.vlstandarddisplayeditor:ON
-  #  )
-  #endif()
-
-endif()
+ endif()
 
 # ---------------------------------------------------------------------------------------------------
 # NiftyMIDAS Specific Plugins
@@ -146,5 +144,20 @@ if(NIFTK_Apps/NiftyIGI)
       Plugins/uk.ac.ucl.cmic.igidistancemeasurer:ON
     )
   endif()
+
+  
+# ---------------------------------------------------------------------------------------------------
+# NiftyMITK Specific Plugins
+# ---------------------------------------------------------------------------------------------------
+
+if(NIFTK_Apps/NiftyMITK)
+
+  list(APPEND PROJECT_PLUGINS
+    Plugins/uk.ac.ucl.cmic.niftymitk:ON
+    Plugins/uk.ac.ucl.cmic.sideviewer:ON
+    Plugins/uk.ac.ucl.cmic.thumbnail:ON
+  )
+
+endif()
 
 endif()

@@ -14,10 +14,11 @@
 
 #include "niftkPluginActivator.h"
 
-#include <niftkNiftyViewPreferencePage.h>
+#include <niftkMinimalPerspective.h>
+#include <niftkNiftyMITKPreferencePage.h>
 #include <niftkBaseApplicationPreferencePage.h>
-#include "../niftkNiftyViewApplication.h"
-#include "../niftkDnDDefaultPerspective.h"
+#include "../niftkNiftyMITKApplication.h"
+
 
 namespace niftk
 {
@@ -37,7 +38,7 @@ PluginActivator::~PluginActivator()
 //-----------------------------------------------------------------------------
 QString PluginActivator::GetHelpHomePageURL() const
 {
-  return QString("qthelp://uk.ac.ucl.cmic.niftyview/bundle/uk_ac_ucl_cmic_niftyview_intro.html");
+  return QString("qthelp://uk.ac.ucl.cmic.niftyview/bundle/uk_ac_ucl_cmic_niftymitk_intro.html");
 }
 
 
@@ -46,9 +47,8 @@ void PluginActivator::start(ctkPluginContext* context)
 {
   BaseApplicationPluginActivator::start(context);
 
-  BERRY_REGISTER_EXTENSION_CLASS(NiftyViewApplication, context);
-  BERRY_REGISTER_EXTENSION_CLASS(DnDDefaultPerspective, context);
-  BERRY_REGISTER_EXTENSION_CLASS(NiftyViewPreferencePage, context);
+  BERRY_REGISTER_EXTENSION_CLASS(NiftyMITKApplication, context);
+  BERRY_REGISTER_EXTENSION_CLASS(NiftyMITKPreferencePage, context);
 
   this->RegisterHelpSystem();
 }
@@ -64,5 +64,5 @@ void PluginActivator::stop(ctkPluginContext* context)
 
 //-----------------------------------------------------------------------------
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_niftyview, niftk::PluginActivator)
+  Q_EXPORT_PLUGIN2(uk_ac_ucl_cmic_niftymitk, niftk::PluginActivator)
 #endif

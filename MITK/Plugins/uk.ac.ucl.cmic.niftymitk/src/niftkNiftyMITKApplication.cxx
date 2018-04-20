@@ -12,30 +12,31 @@
 
 =============================================================================*/
 
-#include "niftkNiftyViewWorkbenchAdvisor.h"
-#include "niftkNiftyViewWorkbenchWindowAdvisor.h"
+#include "niftkNiftyMITKApplication.h"
+#include "niftkNiftyMITKWorkbenchAdvisor.h"
 
 
 namespace niftk
 {
 
 //-----------------------------------------------------------------------------
-QString NiftyViewWorkbenchAdvisor::GetInitialWindowPerspectiveId()
+NiftyMITKApplication::NiftyMITKApplication()
 {
-  return "uk.ac.ucl.cmic.niftyview.default_perspective";
 }
 
-//-----------------------------------------------------------------------------
-QString NiftyViewWorkbenchAdvisor::GetWindowIconResourcePath() const
-{
-  return ":/NiftyViewApplication/icon_ucl.xpm";
-}
 
 //-----------------------------------------------------------------------------
-BaseWorkbenchWindowAdvisor* NiftyViewWorkbenchAdvisor::CreateBaseWorkbenchWindowAdvisor(
-    berry::IWorkbenchWindowConfigurer::Pointer configurer)
+NiftyMITKApplication::NiftyMITKApplication(const NiftyMITKApplication& other)
 {
-  return new NiftyViewWorkbenchWindowAdvisor(this, configurer);
+  Q_UNUSED(other)
+  throw std::runtime_error("Copy constructor not implemented");
+}
+
+
+//-----------------------------------------------------------------------------
+berry::WorkbenchAdvisor* NiftyMITKApplication::GetWorkbenchAdvisor()
+{
+  return new NiftyMITKWorkbenchAdvisor();
 }
 
 }

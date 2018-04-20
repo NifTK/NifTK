@@ -12,18 +12,17 @@
 
 =============================================================================*/
 
-#include "niftkNiftyViewWorkbenchWindowAdvisor.h"
+#include <niftkBaseApplication.h>
 
+#include <QVariant>
 
-namespace niftk
+/// \file NiftyMITK.cxx
+/// \brief Main entry point for NiftyMITK application.
+int main(int argc, char** argv)
 {
+  niftk::BaseApplication app(argc, argv);
+  app.setApplicationName("NiftyMITK");
+  app.setProperty(mitk::BaseApplication::PROP_APPLICATION, "uk.ac.ucl.cmic.niftymitk");
 
-//-----------------------------------------------------------------------------
-NiftyViewWorkbenchWindowAdvisor::NiftyViewWorkbenchWindowAdvisor(
-    berry::WorkbenchAdvisor* wbAdvisor,
-    berry::IWorkbenchWindowConfigurer::Pointer configurer)
-: BaseWorkbenchWindowAdvisor(wbAdvisor, configurer)
-{
-}
-
+  return app.run();
 }

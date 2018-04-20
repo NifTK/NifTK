@@ -12,13 +12,13 @@
 #
 #============================================================================*/
 
-project(NiftyView)
-set(MY_APP_NAME NiftyView)
+project(NiftyMITK)
+set(MY_APP_NAME NiftyMITK)
 
 # Create a cache entry for the provisioning file which is used to export
 # the file name in the NifTKConfig.cmake file. This will keep external projects
 # which rely on this file happy.
-set(NIFTK_NIFTYVIEW_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyView.provisioning" CACHE INTERNAL "NiftyView provisioning file" FORCE)
+set(NIFTK_NiftyMITK_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyMITK.provisioning" CACHE INTERNAL "NiftyMITK provisioning file" FORCE)
 
 ###########################################################
 # Note: You need to explicitly turn OFF MITK/CTK plugins.
@@ -27,16 +27,9 @@ set(NIFTK_NIFTYVIEW_PROVISIONING_FILE "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NiftyVi
 # So, turn them OFF if you DON'T want them in your app.
 ###########################################################
 set(_exclude_plugins
-  org_mitk_gui_qt_aicpregistration
-  org_mitk_gui_qt_basicimageprocessing
-  org_mitk_gui_qt_common_legacy
-  org_mitk_gui_qt_extapplication
-  org_mitk_gui_qt_igttracking
-  org_mitk_gui_qt_moviemaker
-  org_mitk_gui_qt_pointsetinteraction
-  org_mitk_gui_qt_segmentation
-  org_mitk_gui_qt_stdmultiwidgeteditor
-  org_mitk_gui_qt_volumevisualization
+  org_mitk_gui_qt_extapplication   # We provide our own main app.
+  org_mitk_gui_qt_aicpregistration # Only relevant for NiftyIGI really.
+  org_mitk_gui_qt_igttracking      # Only relevant for NiftyIGI really.
 )
 
 ###########################################################
@@ -49,18 +42,14 @@ set(_exclude_plugins
 ###########################################################
 set(_include_plugins
   uk.ac.ucl.cmic.commonapps
-  uk.ac.ucl.cmic.commonmidas
-  uk.ac.ucl.cmic.niftyview
+  uk.ac.ucl.cmic.niftymitk
   uk.ac.ucl.cmic.common
   uk.ac.ucl.cmic.imagelookuptables
+  uk.ac.ucl.cmic.affinetransform
+  uk.ac.ucl.cmic.surfaceextractor
   uk.ac.ucl.cmic.snapshot
   uk.ac.ucl.cmic.imagestatistics
   uk.ac.ucl.cmic.xnat
-  uk.ac.ucl.cmic.sideviewer
-  uk.ac.ucl.cmic.thumbnail
-  uk.ac.ucl.cmic.midasmorphologicalsegmentor
-  uk.ac.ucl.cmic.midasgeneralsegmentor
-  uk.ac.ucl.cmic.dnddisplay
 )
 
 if(BUILD_VL)
@@ -71,7 +60,7 @@ if(BUILD_VL)
 endif()
 
 NIFTK_CREATE_GUI_APPLICATION(
-  NAME NiftyView
+  NAME NiftyMITK
   INCLUDE_PLUGINS ${_include_plugins}
   EXCLUDE_PLUGINS ${_exclude_plugins}
 )

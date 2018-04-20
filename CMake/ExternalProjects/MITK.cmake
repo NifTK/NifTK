@@ -70,7 +70,7 @@ if(NOT DEFINED MITK_DIR)
     set(_enabled_plugins "")
 
     # Common requirements for GUI applications:
-    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyIGI OR NIFTK_Apps/NiftyMIDAS)
+    if(NIFTK_Apps/NiftyMITK OR NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyMIDAS OR NIFTK_Apps/NiftyIGI)
 
       list(APPEND _enabled_modules
         Core                    # needed by niftkCore
@@ -104,14 +104,14 @@ if(NOT DEFINED MITK_DIR)
           org.blueberry.core.runtime      # needed by org.blueberry.core.commands
           org.blueberry.core.commands     # needed by org.blueberry.ui.qt
           org.blueberry.core.expressions  # needed by org.blueberry.ui.qt
-          org.blueberry.ui.qt             # needed by NiftyView
+          org.blueberry.ui.qt             # needed by NiftyMITK, NiftyView etc.
           org.mitk.core.ext               # needed by org.mitk.gui.qt.ext
           org.mitk.core.services          # needed by org.mitk.gui.common
           org.mitk.gui.common             # needed by org.mitk.gui.qt.application
           org.mitk.gui.qt.application     # needed by org.mitk.gui.qt.datamanager and org.mitk.gui.qt.ext
           org.mitk.gui.qt.common          # needed by org.mitk.gui.qt.datamanager
           org.mitk.gui.qt.ext             # needed by uk.ac.ucl.cmic.commonapps
-          org.mitk.gui.qt.datamanager     # needed by NiftyView
+          org.mitk.gui.qt.datamanager     # needed by NiftyMITK, NiftyView etc.
           org.blueberry.ui.qt.help
           org.blueberry.ui.qt.log
           org.mitk.planarfigure
@@ -121,8 +121,8 @@ if(NOT DEFINED MITK_DIR)
       endif()
     endif()
 
-    # Additionally required for NiftyView:
-    if(NIFTK_Apps/NiftyView)
+    # Additionally required for NiftyMITK
+    if(NIFTK_Apps/NiftyMITK)
 
       list(APPEND _enabled_modules
         ImageDenoising          # needed by org.mitk.gui.qt.basicimageprocessing
@@ -173,8 +173,10 @@ if(NOT DEFINED MITK_DIR)
 
     endif()
 
-    # Additionally required for NiftyMIDAS:
-    if(NIFTK_Apps/NiftyMIDAS)
+    # Additionally required for NiftyView OR NiftyMIDAS,
+    # which are similar, except NiftyMIDAS has a few
+    # extra MIDAS specific segmentation plugins.
+    if(NIFTK_Apps/NiftyView OR NIFTK_Apps/NiftyMIDAS)
 
       list(APPEND _enabled_modules
         DicomUI                 # needed by org.mitk.gui.qt.dicom

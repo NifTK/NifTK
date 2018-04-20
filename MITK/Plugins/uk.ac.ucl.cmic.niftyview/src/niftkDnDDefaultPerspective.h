@@ -12,30 +12,30 @@
 
 =============================================================================*/
 
-#ifndef niftkNiftyViewWorkbenchWindowAdvisor_h
-#define niftkNiftyViewWorkbenchWindowAdvisor_h
+#ifndef niftkDnDDefaultPerspective_h
+#define niftkDnDDefaultPerspective_h
 
 #include <uk_ac_ucl_cmic_niftyview_Export.h>
-#include <niftkBaseWorkbenchWindowAdvisor.h>
-
+#include <berryIPerspectiveFactory.h>
 
 namespace niftk
 {
 
-/**
- * \class NiftyViewWorkbenchWindowAdvisor
- * \brief Advisor class to set up NiftyView windows on startup.
- * \ingroup uk_ac_ucl_cmic_niftyview
- * \sa niftk::HelpAboutDialog
- */
-class NIFTYVIEW_EXPORT NiftyViewWorkbenchWindowAdvisor : public BaseWorkbenchWindowAdvisor
+/// \class DnDDefaultPerspective
+/// \brief Default perspective for Drag and Drop display in NiftyView.
+///
+/// Note: We have to load at least one view component, to get an editor created.
+class NIFTYVIEW_EXPORT DnDDefaultPerspective : public QObject, public berry::IPerspectiveFactory
 {
   Q_OBJECT
+  Q_INTERFACES(berry::IPerspectiveFactory)
 
 public:
 
-  NiftyViewWorkbenchWindowAdvisor(berry::WorkbenchAdvisor* wbAdvisor,
-    berry::IWorkbenchWindowConfigurer::Pointer configurer);
+  DnDDefaultPerspective();
+  DnDDefaultPerspective(const DnDDefaultPerspective& other);
+
+  void CreateInitialLayout(berry::IPageLayout::Pointer layout);
 
 };
 

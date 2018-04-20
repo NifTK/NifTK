@@ -123,6 +123,8 @@ set(BUILD_NiftyIGI OFF)
 mark_as_advanced(BUILD_NiftyIGI)
 set(BUILD_NiftyMIDAS OFF)
 mark_as_advanced(BUILD_NiftyMIDAS)
+set(BUILD_NiftyMITK OFF)
+mark_as_advanced(BUILD_NiftyMITK)
 
 # Check each GUI application.
 foreach(NIFTK_APP ${NIFTK_APPS})
@@ -149,6 +151,9 @@ foreach(NIFTK_APP ${NIFTK_APPS})
       set(BUILD_NiftyMIDAS ON)
     endif()
 
+    if (${app_name} STREQUAL "NiftyMITK")
+      set(BUILD_NiftyMITK ON)
+    endif()
   endif()
 
 endforeach()

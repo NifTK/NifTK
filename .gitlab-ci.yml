@@ -42,9 +42,10 @@ Linux continuous build:
           -DNIFTK_USE_CPPCHECK:BOOL=ON
           -DNIFTK_USE_KWSTYLE:BOOL=ON
           -DDESIRED_QT_VERSION:STRING=4
-          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make -j 4 
 
@@ -71,9 +72,10 @@ Mac continuous build:
           -DBUILD_LEGACY_COMMAND_LINE_PROGRAMS:BOOL=ON
           -DDESIRED_QT_VERSION:STRING=4
           -DNIFTYLINK_CHECK_COVERAGE=ON
-          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make -j 4
 
@@ -319,9 +321,10 @@ Ubuntu 14.04 release build:
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
           -DBUILD_Caffe:BOOL=ON
-          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make -j 8
 
@@ -346,9 +349,10 @@ Ubuntu 14.04 release build:
 #          -DDESIRED_QT_VERSION:STRING=4
 #          -DBUILD_Python:BOOL=ON
 #          -DBUILD_Caffe:BOOL=ON
-#          -DNIFTK_Apps/NiftyView:BOOL=ON
+#          -DNIFTK_Apps/NiftyMITK:BOOL=ON
 #          -DNIFTK_Apps/NiftyIGI:BOOL=ON
-#          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+#          -DNIFTK_Apps/NiftyView:BOOL=ON
+#          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
 #          ${src_dir}
 #    - make -j 8
 #
@@ -374,9 +378,10 @@ CentOS 7 release build:
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
           -DBUILD_Caffe:BOOL=ON
-          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make -j 8
 
@@ -406,9 +411,10 @@ CentOS 6 release build:
           -DBUILD_Python:BOOL=ON
           -DBUILD_Caffe:BOOL=ON
           -DOPENCV_WITH_FFMPEG:BOOL=ON
-          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make
 
@@ -433,9 +439,10 @@ Mac release build:
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
           -DBUILD_Caffe:BOOL=ON
-          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
+          -DNIFTK_Apps/NiftyView:BOOL=ON
+          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
     - make -j 4
 
