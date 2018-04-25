@@ -8,11 +8,9 @@
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
   <contributor>Steve Thompson</contributor>
   <acknowledgements><![CDATA[]]></acknowledgements>
-  
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
-
     <file fileExtensions=".mps">
       <name>input</name>
       <longflag>input</longflag>
@@ -21,5 +19,4 @@
       <channel>input</channel>
     </file>
   </parameters>
-  
 </executable>
