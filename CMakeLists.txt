@@ -1876,17 +1876,6 @@ if(OPENCV_WITH_FFMPEG)
 endif()
 
 ######################################################################
-# AprilTags packaging hacks.
-######################################################################
-if(MITK_USE_AprilTags)
-  get_property(_additional_search_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
-  list(APPEND _additional_search_paths ${AprilTags_LIBRARY_DIR})
-  message("AprilTags: MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS=${AprilTags_LIBRARY_DIR}")
-  set_property(GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS ${_additional_search_paths})
-endif()
-
-
-######################################################################
 # Python packaging hacks.
 ######################################################################
 if(MITK_USE_Python)
