@@ -45,6 +45,12 @@ int main(int argc, char** argv)
   {
     mitk::VideoToSurface::Pointer projector = mitk::VideoToSurface::New();
     projector->SetEndFrame(endFrame);
+    projector->SetStartFrame(startFrame);
+    projector->SetSaveSurfaces(outputSurfaces);
+    projector->SetPatchHeight(patchHeight);
+    projector->SetPatchWidth(patchWidth);
+    projector->SetPatchOriginX(patchOriginX);
+    projector->SetPatchOriginY(patchOriginY);
    // projector->SetAllowableTimingError(maxTimingError * 1e6);
     
     projector->SetSaveVideo(true);

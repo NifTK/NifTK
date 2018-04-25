@@ -50,7 +50,7 @@ VideoToSurface::VideoToSurface()
 , m_VideoHeight(540)
 , m_Capture(NULL)
 , m_LeftWriter(NULL)
-, m_AllowableTimingError (20e6) // 20 milliseconds 
+, m_AllowableTimingError (20e6) // 20 milliseconds
 , m_StartFrame(0)
 , m_PatchHeight (270)
 , m_PatchWidth (480)
@@ -72,7 +72,7 @@ VideoToSurface::~VideoToSurface()
 //-----------------------------------------------------------------------------
 void VideoToSurface::SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Pointer trackerMatcher)
 {
-  if ( ! m_InitOK ) 
+  if ( ! m_InitOK )
   {
     MITK_ERROR << "Can't set trackerMatcher handeye before projector initialiastion";
     return;
@@ -81,7 +81,7 @@ void VideoToSurface::SetMatcherCameraToTracker(mitk::VideoTrackerMatching::Point
   return;
 }
 //-----------------------------------------------------------------------------
-void VideoToSurface::Initialise(std::string directory, 
+void VideoToSurface::Initialise(std::string directory,
     std::string calibrationParameterDirectory)
 {
   m_InitOK = false;
@@ -110,17 +110,17 @@ void VideoToSurface::Initialise(std::string directory)
 {
   m_InitOK = false;
   m_Directory = directory;
-  
-  m_OutDirectory = m_Directory + niftk::GetFileSeparator() +  "Surface_Recon_Results";
- 
+
+  m_OutDirectory = m_Directory + niftk::GetFileSeparator() +  "Surface_Recon_Results" ;
+
   m_InitOK = true;
   return;
 }
 
 //-----------------------------------------------------------------------------
-void VideoToSurface::FindVideoData(mitk::VideoTrackerMatching::Pointer trackerMatcher) 
+void VideoToSurface::FindVideoData(mitk::VideoTrackerMatching::Pointer trackerMatcher)
 {
-  if ( m_Capture == NULL ) 
+  if ( m_Capture == NULL )
   {
     m_VideoIn = niftk::FindVideoFile ( m_Directory , niftk::Basename (niftk::Basename ( trackerMatcher->GetFrameMap() )));
     if ( m_VideoIn == "" )
@@ -138,8 +138,8 @@ void VideoToSurface::FindVideoData(mitk::VideoTrackerMatching::Pointer trackerMa
       exit(1);
     }
   }
-  
-  if ( m_SaveVideo ) 
+
+  if ( m_SaveVideo || m_SaveSurfaces )
   {
     try
     {
@@ -149,11 +149,11 @@ void VideoToSurface::FindVideoData(mitk::VideoTrackerMatching::Pointer trackerMa
     {
       MITK_ERROR << "Caught exception " << e.what();
     }
-    
+
     cv::Size S = cv::Size((int) m_VideoWidth, (int) m_VideoHeight );
     double fps = static_cast<double>(m_Capture->get(CV_CAP_PROP_FPS));
     double halfFPS = fps/2.0;
-    m_LeftWriter = mitk::CreateVideoWriter(std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_leftchannel_reconstruction.avi").c_str(),halfFPS,S);
+    m_LeftWriter = mitk::CreateVideoWriter(std::string( m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) +  "_leftchannel_reconstruction.avi").c_str(),halfFPS,S);
   }
 
   return;
@@ -162,7 +162,7 @@ void VideoToSurface::FindVideoData(mitk::VideoTrackerMatching::Pointer trackerMa
 //-----------------------------------------------------------------------------
 void VideoToSurface::SetSaveVideo ( bool savevideo )
 {
-  if ( m_InitOK ) 
+  if ( m_InitOK )
   {
     MITK_WARN << "Changing save video  state after initialisation, will need to re-initialise";
   }
@@ -181,7 +181,7 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
     return;
   }
 
-  ofstream out ( std::string( m_OutDirectory + niftk::Basename(m_VideoIn) +  "_reconstruction.txt" ) );
+  ofstream out ( std::string( m_OutDirectory + niftk::GetFileSeparator() + niftk::Basename(m_VideoIn) +  "_reconstruction.txt" ) );
   out << "# Framenumber TimeStamp TimingError PatchDepthMean PatchDepthStdDev PointsInPatch MeanTriangulationError" << std::endl;
   this->FindVideoData(trackerMatcher);
 
@@ -189,7 +189,7 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
   int key = 0;
 
   niftk::SequentialCpuQds  featureMatcher(m_PatchWidth, m_PatchHeight);
-  while ( framenumber < trackerMatcher->GetNumberOfFrames() ) 
+  while ( framenumber < trackerMatcher->GetNumberOfFrames() )
   {
     cv::Mat leftImage;
     cv::Mat rightImage;
@@ -207,7 +207,7 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
       MITK_INFO << "Skipping frames " << framenumber << " and " << framenumber + 1;
       framenumber ++;
       framenumber ++;
-      if  ( framenumber > m_EndFrame ) 
+      if  ( framenumber > m_EndFrame )
       {
         framenumber = trackerMatcher->GetNumberOfFrames();
       }
@@ -226,7 +226,7 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
 
       unsigned long long matrixTimeStamp;
       unsigned long long absTimingError = static_cast<unsigned long long>(std::abs(timingError));
-      if ( timingError < 0 ) 
+      if ( timingError < 0 )
       {
         matrixTimeStamp = trackerMatcher->GetVideoFrameTimeStamp(framenumber) + absTimingError;
       }
@@ -243,11 +243,14 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
       IplImage IplLeftPatch = leftPatch;
       IplImage IplRightPatch = rightPatch;
       featureMatcher.Process ( &IplLeftPatch, &IplRightPatch ) ;
-    
-      cv::Mat disparityImage = featureMatcher.CreateDisparityImage();
-      
-      std::vector < std::pair < cv::Point2d , cv::Point2d > > matchedPairs;
 
+      cv::Mat disparityImage = featureMatcher.CreateDisparityImage();
+
+      std::vector < std::pair < cv::Point2d , cv::Point2d > > matchedPairs;
+      std::vector < std::vector < unsigned char > > rgbValues;
+
+      unsigned int channels = leftPatch.channels();
+      unsigned int depth = leftPatch.depth();
       for ( unsigned int row = 0 ; row < m_PatchHeight ; ++row )
       {
         for ( unsigned int column = 0 ; column < m_PatchWidth ; ++column )
@@ -256,19 +259,30 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
 
           if ( match.x != 0 )
           {
-            matchedPairs.push_back ( std::pair <cv::Point2d, cv::Point2d> 
+            //get the rgb from both images and average it.
+            unsigned char *leftPatchPointer  = leftPatch.ptr<uchar>(row, column);
+            unsigned char *rightPatchPointer  = rightPatch.ptr<uchar>(match.y,match.x);
+
+            std::vector<unsigned char> rgb;
+            for ( unsigned int i = 0 ; i < channels ; ++i )
+            {
+              rgb.push_back((leftPatchPointer[i] + rightPatchPointer[i])/2);
+            }
+            matchedPairs.push_back ( std::pair <cv::Point2d, cv::Point2d>
                 ( cv::Point2d ( column + m_PatchOriginX, row + m_PatchOriginY ) ,
-                  cv::Point2d ( match.x + m_PatchOriginX, match.y + m_PatchOriginY )) ); 
+                  cv::Point2d ( match.x + m_PatchOriginX, match.y + m_PatchOriginY )) );
+            rgbValues.push_back ( rgb );
           }
         }
       }
-    
-      std::vector < std::pair < cv::Point3d, double > > triangulatedPoints = 
+      //and preserveVectorSize to maintain corresponence between triangulatedPoints and rgbValues
+      bool preserveVectorSize = true;
+      std::vector < std::pair < cv::Point3d, double > > triangulatedPoints =
         mitk::TriangulatePointPairsUsingGeometry ( matchedPairs ,
-            *m_LeftIntrinsicMatrix, *m_RightIntrinsicMatrix, 
+            *m_LeftIntrinsicMatrix, *m_RightIntrinsicMatrix,
             *m_RightToLeftRotationMatrix, *m_RightToLeftTranslationVector,
-            m_TriangulationTolerance );
-   
+            m_TriangulationTolerance, preserveVectorSize);
+
       std::vector <cv::Point3d> points;
       double meanError = 0;
       std::vector <unsigned int> histogram;
@@ -276,39 +290,74 @@ void VideoToSurface::Reconstruct(mitk::VideoTrackerMatching::Pointer trackerMatc
       {
         histogram.push_back(0);
       }
-      
+
+      unsigned int goodPoints = 0;
       for ( std::vector < std::pair <cv::Point3d, double> >::iterator it = triangulatedPoints.begin() ; it <  triangulatedPoints.end() ; ++it )
       {
-        unsigned int bin = static_cast<unsigned int> ( floor ( it->first.z + 0.5 ) );
-        if ( bin > m_HistogramMaximumDepth ) 
+        if ( mitk::IsNotNaNorInf ( it->first ) )
         {
-          bin = m_HistogramMaximumDepth;
-        }
-        histogram[bin]++;
+          unsigned int bin = static_cast<unsigned int> ( floor ( it->first.z + 0.5 ) );
+          if ( bin > m_HistogramMaximumDepth )
+          {
+            bin = m_HistogramMaximumDepth;
+          }
+          histogram[bin]++;
 
-        points.push_back ( it->first );
-        
-        meanError += it->second;
+          points.push_back ( it->first );
+
+          meanError += it->second;
+          goodPoints ++;
+        }
       }
-      meanError /= static_cast<double>( triangulatedPoints.size());
+      meanError /= static_cast<double>( goodPoints );
 
       cv::Point3d stddev;
 
       cv::Point3d centroid = mitk::GetCentroid ( points, false, &stddev );
-   
+
       this->AnnotateImage ( leftImage, disparityImage, timingError, centroid.z, stddev.z,
-        triangulatedPoints.size(), histogram, meanError );
+        goodPoints, histogram, meanError );
 
       if ( m_SaveVideo )
       {
-        if ( m_LeftWriter != NULL ) 
+        if ( m_LeftWriter != NULL )
         {
            m_LeftWriter->write(leftImage);
         }
       }
 
-      out << framenumber << " " << trackerMatcher->GetVideoFrameTimeStamp(framenumber) << " " << timingError << " " <<  centroid.z << " " 
-        << stddev.z << " " << triangulatedPoints.size() << " " << meanError << std::endl;
+      if ( m_SaveSurfaces )
+      {
+        std::stringstream outname;
+        outname << m_OutDirectory << niftk::GetFileSeparator() << trackerMatcher->GetVideoFrameTimeStamp(framenumber) << "_surface.txt";
+        ofstream fileout;
+        fileout.open(outname.str());
+        if ( fileout )
+        {
+          for ( unsigned int i = 0 ; i <  triangulatedPoints.size() ; ++i )
+          {
+            if ( mitk::IsNotNaNorInf ( triangulatedPoints[i].first ) )
+            {
+              fileout << triangulatedPoints[i].first.x << " " <<
+                 triangulatedPoints[i].first.y << " " <<
+                  triangulatedPoints[i].first.z << " ";
+              for ( unsigned int c = 0 ; c < channels ; ++c )
+              {
+                fileout << (int)rgbValues[i][c];
+                if ( c < channels -1 )
+                {
+                  fileout << " ";
+                }
+              }
+              fileout << std::endl;
+            }
+          }
+        }
+        fileout.close();
+      }
+
+      out << framenumber << " " << trackerMatcher->GetVideoFrameTimeStamp(framenumber) << " " << timingError << " " <<  centroid.z << " "
+        << stddev.z << " " << goodPoints << " " << meanError << std::endl;
       framenumber ++;
       framenumber ++;
       leftImage.release();
@@ -337,7 +386,7 @@ void VideoToSurface::AnnotateImage(cv::Mat& image, const cv::Mat& patch, const l
 
   cv::Point2d textLocation = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.03 ) , m_VideoHeight * 0.07  );
   cv::Point2d location = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) , m_VideoHeight * 0.02  );
-  cv::Point2d location1 = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) + ( m_VideoWidth * 0.025 ) , 
+  cv::Point2d location1 = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.035 ) + ( m_VideoWidth * 0.025 ) ,
                (m_VideoHeight * 0.06) + m_VideoHeight * 0.02);
   if ( timingError < m_AllowableTimingError )
   {
@@ -349,11 +398,11 @@ void VideoToSurface::AnnotateImage(cv::Mat& image, const cv::Mat& patch, const l
     cv::rectangle ( image, location, location1  , cvScalar (0,0,255), CV_FILLED);
     cv::putText(image , "T" + boost::lexical_cast<std::string>(m_TrackerIndex), textLocation ,0,1.0, cvScalar ( 255,255,255), 4.0);
   }
-  
+
   int patchChannels = patch.channels();
   int imageChannels = image.channels();
   int channels = patchChannels;
-  if ( imageChannels < patchChannels ) 
+  if ( imageChannels < patchChannels )
   {
     channels = imageChannels;
   }
@@ -375,7 +424,7 @@ void VideoToSurface::AnnotateImage(cv::Mat& image, const cv::Mat& patch, const l
   double histogramXEnd = 100;
   double histogramYStart = m_VideoHeight - 10;
   double histogramYEnd = m_VideoHeight -  patchDepthHistogram.size() - 10;
-  
+
   assert ( histogramYEnd > 0 );
   unsigned int histMax = 0;
 
@@ -392,10 +441,10 @@ void VideoToSurface::AnnotateImage(cv::Mat& image, const cv::Mat& patch, const l
   cv::rectangle ( image, cv::Point2d(histogramXStart,histogramYStart), cv::Point2d ( histogramXEnd, histogramYEnd ), cvScalar ( 255,255,255)  );
   for ( unsigned int i = 0 ; i < m_HistogramMaximumDepth + 1 ; i ++ )
   {
-    cv::line ( image, cv::Point2d ( histogramXStart, histogramYStart - i), cv::Point2d ( histogramXStart + ( histogramScaler * static_cast<double>(patchDepthHistogram[i])) , histogramYStart - i), cvScalar ( 255,255,255)); 
+    cv::line ( image, cv::Point2d ( histogramXStart, histogramYStart - i), cv::Point2d ( histogramXStart + ( histogramScaler * static_cast<double>(patchDepthHistogram[i])) , histogramYStart - i), cvScalar ( 255,255,255));
   }
- 
-  cv::rectangle ( image, cv::Point2d ( histogramXStart-5, histogramYStart - patchDepthMean - patchDepthStdDev), cv::Point2d ( histogramXEnd + 5 , histogramYStart - patchDepthMean + patchDepthStdDev), cvScalar ( 255,0 , 0 )); 
+
+  cv::rectangle ( image, cv::Point2d ( histogramXStart-5, histogramYStart - patchDepthMean - patchDepthStdDev), cv::Point2d ( histogramXEnd + 5 , histogramYStart - patchDepthMean + patchDepthStdDev), cvScalar ( 255,0 , 0 ));
 
   cv::Point2d errorTextLocation = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.08 ) , m_VideoHeight * 0.14  );
   cv::Point2d depthTextLocation = cv::Point2d ( m_VideoWidth - ( m_VideoWidth * 0.08 ) , m_VideoHeight * 0.21  );
