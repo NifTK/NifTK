@@ -18,7 +18,6 @@
       <description>Scale the transform's magnititude to be equal to this many standard deviations</description>
       <label>scaleSD</label>
       <default>-1.0</default>
-      <channel>input</channel>
     </float>
 
     <float>
@@ -27,7 +26,6 @@
       <description>The seed for the random number generator. If you don't set this you'll get the same ranodom sequence every time.</description>
       <label>seed</label>
       <default>0.0</default>
-      <channel>input</channel>
     </float>
 
   <file>
@@ -35,7 +33,6 @@
       <longflag>modelToCentreTransform</longflag>
       <description>A 4x4 matrix defining the centre of the model</description>
       <label>modelToCentreTransform</label>
-      <channel>input</channel>
     </file>
 
     <float>
@@ -44,7 +41,6 @@
       <description>The desired standard deviation of the x translations in mm</description>
       <label>xtsd</label>
       <default>10.0</default>
-      <channel>input</channel>
     </float>
 
     <float>
@@ -53,7 +49,6 @@
       <description>The desired standard deviation of the y translations in mm</description>
       <label>ytsd</label>
       <default>10.0</default>
-      <channel>input</channel>
     </float>
 
     <float>
@@ -62,7 +57,6 @@
       <description>The desired standard deviation of the z translations in mm</description>
       <label>ztsd</label>
       <default>10.0</default>
-      <channel>input</channel>
     </float>
 
     <float>
@@ -71,7 +65,6 @@
       <description>The desired standard deviation of the x rotations in degrees</description>
       <label>xrsd</label>
       <default>10.0</default>
-      <channel>input</channel>
     </float>
 
     <float>
@@ -80,7 +73,6 @@
       <description>The desired standard deviation of the y rotations in degrees</description>
       <label>yrsd</label>
       <default>10.0</default>
-      <channel>input</channel>
     </float>
 
     <float>
@@ -89,7 +81,6 @@
       <description>The desired standard deviation of the z rotations in degrees</description>
       <label>zrsd</label>
       <default>10.0</default>
-      <channel>input</channel>
     </float>
 
     <boolean>
@@ -97,7 +88,6 @@
       <longflag>useUniformRNG</longflag>
       <description>By default we use a random number generator returning normally distributed numbers, we can use a uniform distribution by setting this flag</description>
       <label>useUnformRNG</label>
-      <channel>input</channel>
     </boolean>
 
   </parameters>
@@ -118,7 +108,6 @@
       <longflag>repeats</longflag>
       <description>The number of matrices to generate</description>
       <label>repeats</label>
-      <channel>output</channel>
       <default>1</default>
     </integer>
 
@@ -127,7 +116,7 @@
       <longflag>outputTransformFile</longflag>
       <description>Optionally write transforms to a single file of 6 columns and repeats rows.</description>
       <label>outputTransformFile</label>
-      <channel>outputTransformFile</channel>
+      <channel>output</channel>
     </file>
 
   </parameters>
