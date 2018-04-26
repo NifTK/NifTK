@@ -24,6 +24,8 @@ namespace niftk
 IGIMatrixPerFileBackend::IGIMatrixPerFileBackend(QString name, mitk::DataStorage::Pointer dataStorage)
 : IGITrackerBackend(name, dataStorage)
 {
+  m_CachedTransformForSaving = vtkSmartPointer<vtkMatrix4x4>::New();
+  m_CachedTransformForSaving->Identity();
 }
 
 
@@ -225,8 +227,8 @@ void IGIMatrixPerFileBackend::SaveItem(const QString& directoryName,
   mitk::Point4D rotation;
   mitk::Vector3D translation;
   data->GetTransform(rotation, translation);
-  niftk::ConvertRotationAndTranslationToMatrix(rotation, translation, *m_CachedTransform);
-  bool success = SaveVtkMatrix4x4ToFile(fileName.toStdString(), *m_CachedTransform);
+  niftk::ConvertRotationAndTranslationToMatrix(rotation, translation, *m_CachedTransformForSaving);
+  bool success = SaveVtkMatrix4x4ToFile(fileName.toStdString(), *m_CachedTransformForSaving);
 
   if (!success)
   {
