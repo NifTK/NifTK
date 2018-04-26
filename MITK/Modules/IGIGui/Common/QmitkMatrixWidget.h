@@ -38,6 +38,7 @@ public:
 
   void SetClearButtonVisible(const bool& isVisible);
   void SetLoadButtonVisible(const bool& isVisible);
+  void SetSaveButtonVisible(const bool& isVisible);
 
   void SetMatrix(const vtkMatrix4x4& matrix);
 
@@ -52,6 +53,7 @@ signals:
 private slots:
   void OnClearButtonPressed();
   void OnLoadButtonPressed();
+  void OnSaveButtonPressed();
 
 private:
   vtkSmartPointer<vtkMatrix4x4> m_Matrix;

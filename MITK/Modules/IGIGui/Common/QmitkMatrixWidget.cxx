@@ -34,6 +34,7 @@ QmitkMatrixWidget::QmitkMatrixWidget(QWidget *parent)
   m_MatrixWidget->setRange(-1e10, 1e10);
   this->connect(m_ClearButton, SIGNAL(pressed()), this, SLOT(OnClearButtonPressed()));
   this->connect(m_LoadButton, SIGNAL(pressed()), this, SLOT(OnLoadButtonPressed()));
+  this->connect(m_SaveButton, SIGNAL(pressed()), this, SLOT(OnSaveButtonPressed()));
 }
 
 
@@ -54,6 +55,13 @@ void QmitkMatrixWidget::SetClearButtonVisible(const bool& isVisible)
 void QmitkMatrixWidget::SetLoadButtonVisible(const bool& isVisible)
 {
   m_LoadButton->setVisible(isVisible);
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMatrixWidget::SetSaveButtonVisible(const bool& isVisible)
+{
+  m_SaveButton->setVisible(isVisible);
 }
 
 
@@ -97,6 +105,33 @@ void QmitkMatrixWidget::OnLoadButtonPressed()
     // TO DO: Better error handling
     m_Matrix = niftk::LoadVtkMatrix4x4FromFile(fileName.toStdString());
     this->SynchroniseWidgetWithMatrix();
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void QmitkMatrixWidget::OnSaveButtonPressed()
+{
+  QString fileName = QFileDialog::getSaveFileName(this,
+                       tr("Save Matrix"),
+#if (QT_VERSION < QT_VERSION_CHECK(5,0,0))
+                       QDesktopServices::storageLocation(QDesktopServices::HomeLocation),
+#else
+                       QStandardPaths::standardLocations(QStandardPaths::HomeLocation)[0],
+#endif
+                       tr("Matrix Files (*.txt *.mat *.4x4)")
+                     );
+
+  if (fileName.size() > 0)
+  {
+    bool isSuccessful = niftk::SaveVtkMatrix4x4ToFile(fileName.toStdString(), *m_Matrix);
+    if (!isSuccessful)
+    {
+      QMessageBox::warning(this, QApplication::applicationName(),
+                           tr("Failed to save matrix.\n"
+                              "Maybe check log file?"),
+                           QMessageBox::Ok);
+    }
   }
 }
 
