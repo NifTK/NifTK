@@ -42,7 +42,7 @@ if(BUILD_NiftyIGI)
     string(SUBSTRING ${NiftyLinkVersion} 0 10 version)
 
   else ()
-    set(version "95a8d907d0")
+    set(version "fe81e46a6b")
   endif ()
   set(depends "")
 
