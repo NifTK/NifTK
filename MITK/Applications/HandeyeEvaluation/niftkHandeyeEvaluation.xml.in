@@ -35,7 +35,7 @@
       <longflag>model</longflag>
       <description>Calibration model file</description>
       <label>Calibration model</label>
-      <channel>Input</channel>
+      <channel>input</channel>
     </file>
 
     <file fileExtensions=".txt">
@@ -44,7 +44,7 @@
       <longflag>intrinsics</longflag>
       <description>Camera intrinsic parameters</description>
       <label>Intrinsic parameters</label>
-      <channel>Input</channel>
+      <channel>input</channel>
     </file>
 
     <file fileExtensions=".txt,.4x4">
@@ -53,7 +53,7 @@
       <longflag>handeye</longflag>
       <description>Hand-eye calibration matrix</description>
       <label>Hand-eye matrix</label>
-      <channel>Input</channel>
+      <channel>input</channel>
     </file>
 
     <file fileExtensions=".txt,.4x4">
@@ -62,7 +62,7 @@
       <longflag>registration</longflag>
       <description>Registration matrix (model to world).</description>
       <label>Registration matrix</label>
-      <channel>Input</channel>
+      <channel>input</channel>
     </file>
 
   </parameters>

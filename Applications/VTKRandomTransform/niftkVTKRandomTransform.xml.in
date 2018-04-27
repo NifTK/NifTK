@@ -109,6 +109,7 @@
       <description>The number of matrices to generate</description>
       <label>repeats</label>
       <default>1</default>
+      <channel>output</channel>
     </integer>
 
     <file>
