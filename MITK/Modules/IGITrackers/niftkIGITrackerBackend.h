@@ -117,13 +117,17 @@ protected:
   int                                m_Lag;
   unsigned int                       m_ExpectedFramesPerSecond;
   std::set<mitk::DataNode::Pointer>  m_DataNodes;
-  vtkSmartPointer<vtkMatrix4x4>      m_CachedTransform;
-  niftk::IGITrackerDataType          m_CachedDataType;
   std::map<std::string,
            std::unique_ptr<
              niftk::IGIDataSourceRingBuffer>
           >                          m_Buffers;
   QString                            m_PlaybackDirectory;
+
+private:
+
+  // Don't make these protected
+  vtkSmartPointer<vtkMatrix4x4>      m_CachedTransform;
+  niftk::IGITrackerDataType          m_CachedDataType;
 };
 
 } // end namespace

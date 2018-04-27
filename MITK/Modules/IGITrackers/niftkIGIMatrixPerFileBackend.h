@@ -88,6 +88,9 @@ private:
 
   QMap<QString, std::set<niftk::IGIDataSourceI::IGITimeType> > m_PlaybackIndex;
 
+private:
+
+  vtkSmartPointer<vtkMatrix4x4>      m_CachedTransformForSaving;
 };
 
 } // end namespace
