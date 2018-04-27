@@ -27,6 +27,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="m_SaveButton">
+       <property name="text">
+        <string>save</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="m_ClearButton">
        <property name="text">
         <string>clear</string>
