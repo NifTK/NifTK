@@ -407,22 +407,22 @@
       </widget>
      </item>
      <item row="15" column="0">
-      <widget class="QLabel" name="m_ModelToTrackerLabel">
+      <widget class="QLabel" name="m_ModelTransformLabel">
        <property name="toolTip">
         <string>Name of a 4x4 file to describe model to tracker transform.</string>
        </property>
        <property name="text">
-        <string>model-to-tracker:</string>
+        <string>model transform</string>
        </property>
       </widget>
      </item>
      <item row="15" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <widget class="QLineEdit" name="m_ModelToTrackerLineEdit"/>
+        <widget class="QLineEdit" name="m_ModelTransformLineEdit"/>
        </item>
        <item>
-        <widget class="QToolButton" name="m_ModelToTrackerToolButton">
+        <widget class="QToolButton" name="m_ModelTransformToolButton">
          <property name="text">
           <string>...</string>
          </property>

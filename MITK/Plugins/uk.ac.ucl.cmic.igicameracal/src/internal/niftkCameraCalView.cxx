@@ -105,12 +105,12 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_TrackerMatrixComboBox->SetDataStorage(dataStorage);
     m_Controls->m_TrackerMatrixComboBox->setCurrentIndex(0);
 
-    m_Controls->m_ReferenceTrackerMatrixComboBox->SetAutoSelectNewItems(false);
-    m_Controls->m_ReferenceTrackerMatrixComboBox->SetPredicate(isMatrix);
-    m_Controls->m_ReferenceTrackerMatrixComboBox->SetDataStorage(dataStorage);
-    m_Controls->m_ReferenceTrackerMatrixComboBox->setCurrentIndex(0);
-    m_Controls->m_ReferenceTrackerMatrixComboBox->setVisible(false);
-    m_Controls->m_ReferenceTrackerMatrixLabel->setVisible(false);
+    m_Controls->m_ModelMatrixComboBox->SetAutoSelectNewItems(false);
+    m_Controls->m_ModelMatrixComboBox->SetPredicate(isMatrix);
+    m_Controls->m_ModelMatrixComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_ModelMatrixComboBox->setCurrentIndex(0);
+    m_Controls->m_ModelMatrixComboBox->setVisible(true);
+    m_Controls->m_ModelMatrixLabel->setVisible(true);
 
     connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
     connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUnGrabButtonPressed()));
@@ -120,7 +120,7 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     connect(m_Controls->m_LeftCameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
     connect(m_Controls->m_RightCameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
     connect(m_Controls->m_TrackerMatrixComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
-    connect(m_Controls->m_ReferenceTrackerMatrixComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
+    connect(m_Controls->m_ModelMatrixComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
 
     // Start these up as disabled, until we have enough images to calibrate.
     m_Controls->m_UndoButton->setEnabled(false);
@@ -161,7 +161,7 @@ void CameraCalView::SetButtonsEnabled(bool isEnabled)
   m_Controls->m_LeftCameraComboBox->setEnabled(isEnabled);
   m_Controls->m_RightCameraComboBox->setEnabled(isEnabled);
   m_Controls->m_TrackerMatrixComboBox->setEnabled(isEnabled);
-  m_Controls->m_ReferenceTrackerMatrixComboBox->setEnabled(isEnabled);
+  m_Controls->m_ModelMatrixComboBox->setEnabled(isEnabled);
   m_Controls->m_GrabButton->setEnabled(isEnabled);
 
   if (isEnabled)
@@ -253,11 +253,11 @@ void CameraCalView::RetrievePreferenceValues()
           prefs->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)));
     m_Manager->SetHandeyeMethod(method);
 
-    std::string modelToTrackerFileName = prefs->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, "").toStdString();
+    std::string modelTransformFileName = prefs->Get(CameraCalViewPreferencePage::MODEL_TRANSFORM_NODE_NAME, "").toStdString();
 
-    if (!modelToTrackerFileName.empty())
+    if (!modelTransformFileName.empty())
     {
-      m_Manager->SetModelToTrackerFileName(modelToTrackerFileName);
+      m_Manager->SetModelTransformFileName(modelTransformFileName);
     }
   }
 }
@@ -280,7 +280,7 @@ void CameraCalView::OnComboBoxChanged()
   mitk::DataNode::Pointer leftImageNode = m_Controls->m_LeftCameraComboBox->GetSelectedNode();
   mitk::DataNode::Pointer rightImageNode = m_Controls->m_RightCameraComboBox->GetSelectedNode();
   mitk::DataNode::Pointer trackingNode = m_Controls->m_TrackerMatrixComboBox->GetSelectedNode();
-  mitk::DataNode::Pointer referenceTrackingNode = m_Controls->m_ReferenceTrackerMatrixComboBox->GetSelectedNode();
+  mitk::DataNode::Pointer modelNode = m_Controls->m_ModelMatrixComboBox->GetSelectedNode();
 
   int numberOfSnapshots = m_Manager->GetNumberOfSnapshots();
   if (numberOfSnapshots > 0)
@@ -290,32 +290,32 @@ void CameraCalView::OnComboBoxChanged()
     mitk::DataNode::Pointer leftImageNodeInManager = m_Manager->GetLeftImageNode();
     mitk::DataNode::Pointer rightImageNodeInManager = m_Manager->GetRightImageNode();
     mitk::DataNode::Pointer trackingNodeInManager = m_Manager->GetTrackingTransformNode();
-    mitk::DataNode::Pointer referenceTrackingNodeInManager = m_Manager->GetReferenceTrackingTransformNode();
+    mitk::DataNode::Pointer modelNodeInManager = m_Manager->GetModelTransformNode();
 
     if (   leftImageNode.IsNotNull()
-        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || referenceTrackingNodeInManager.IsNotNull())
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || modelNodeInManager.IsNotNull())
         && leftImageNode != leftImageNodeInManager)
     {
       needsReset = true;
     }
 
     if (   rightImageNode.IsNotNull()
-        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || referenceTrackingNodeInManager.IsNotNull())
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || modelNodeInManager.IsNotNull())
         && rightImageNode != rightImageNodeInManager)
     {
       needsReset = true;
     }
 
     if (   trackingNode.IsNotNull()
-        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || referenceTrackingNodeInManager.IsNotNull())
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || modelNodeInManager.IsNotNull())
         && trackingNode != trackingNodeInManager)
     {
       needsReset = true;
     }
 
-    if (   referenceTrackingNode.IsNotNull()
-        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || referenceTrackingNodeInManager.IsNotNull())
-        && referenceTrackingNode != referenceTrackingNodeInManager)
+    if (   modelNode.IsNotNull()
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || modelNodeInManager.IsNotNull())
+        && modelNode != modelNodeInManager)
     {
       needsReset = true;
     }
@@ -336,7 +336,7 @@ void CameraCalView::OnComboBoxChanged()
   m_Manager->SetLeftImageNode(leftImageNode);
   m_Manager->SetRightImageNode(rightImageNode);
   m_Manager->SetTrackingTransformNode(trackingNode);
-  m_Manager->SetReferenceTrackingTransformNode(referenceTrackingNode);
+  m_Manager->SetModelTransformNode(modelNode);
 }
 
 

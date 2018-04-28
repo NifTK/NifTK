@@ -93,8 +93,8 @@ public:
   void SetTrackingTransformNode(mitk::DataNode::Pointer node);
   itkGetMacro(TrackingTransformNode, mitk::DataNode::Pointer);
 
-  itkSetMacro(ReferenceTrackingTransformNode, mitk::DataNode::Pointer);
-  itkGetMacro(ReferenceTrackingTransformNode, mitk::DataNode::Pointer);
+  itkSetMacro(ModelTransformNode, mitk::DataNode::Pointer);
+  itkGetMacro(ModelTransformNode, mitk::DataNode::Pointer);
 
   itkSetMacro(NumberOfSnapshotsForCalibrating, unsigned int);
   itkGetMacro(NumberOfSnapshotsForCalibrating, unsigned int);
@@ -149,8 +149,8 @@ public:
   void SetTemplateImageFileName(const std::string& fileName);
   itkGetMacro(TemplateImageFileName, std::string);
 
-  void SetModelToTrackerFileName(const std::string& fileName);
-  itkGetMacro(ModelToTrackerFileName, std::string);
+  void SetModelTransformFileName(const std::string& fileName);
+  itkGetMacro(ModelTransformFileName, std::string);
 
   bool isStereo() const;
 
@@ -235,9 +235,14 @@ private:
   std::list<cv::Matx44d> ExtractCameraMatrices(int imageIndex);
 
   /**
-   * \brief Extracts a set of tracking matrices, optionally making them w.r.t the refererence.
+   * \brief Extracts a set of tracking matrices.
    */
-  std::list<cv::Matx44d> ExtractTrackingMatrices(bool useReference);
+  std::list<cv::Matx44d> ExtractTrackingMatrices();
+
+  /**
+   * \brief Extracts a set of model (chessboard to tracker) matrices.
+   */
+  std::list<cv::Matx44d> ExtractModelMatrices();
 
   /**
    * \brief Converts a list of matrices to a vector.
@@ -247,28 +252,28 @@ private:
   /**
    * \brief Actually does Tsai's 1989 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */
-  cv::Matx44d DoTsaiHandEye(int imageIndex, bool useReference);
+  cv::Matx44d DoTsaiHandEye(int imageIndex);
 
   /**
    * \brief Actually does Shahidi 2002 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */
-  cv::Matx44d DoShahidiHandEye(int imageIndex, bool useReference);
+  cv::Matx44d DoShahidiHandEye(int imageIndex);
 
   /**
    * \brief Actually does Malti's 2013 hand-eye calibration for imageIndex=0=left, imageIndex=1=right camera.
    */
-  cv::Matx44d DoMaltiHandEye(int imageIndex, bool useReference);
+  cv::Matx44d DoMaltiHandEye(int imageIndex);
 
   /**
    * \brief Actually does a full non-linear calibration of all extrinsic parameters.
    */
-  cv::Matx44d DoFullExtrinsicHandEye(int imageIndex, bool useReference);
+  cv::Matx44d DoFullExtrinsicHandEye(int imageIndex);
 
   /**
    * \brief Bespoke method to calculate independent leftHandEye and rightHandEye,
    * by optimising all parameters in stereo, simultaneously.
    */
-  void DoFullExtrinsicHandEyeInStereo(cv::Matx44d& leftHandEye, cv::Matx44d& rightHandEye, bool useReference);
+  void DoFullExtrinsicHandEyeInStereo(cv::Matx44d& leftHandEye, cv::Matx44d& rightHandEye);
 
   /**
    * \brief Transforms m_ModelPoints into m_ModelPointsToVisualise;
@@ -317,7 +322,7 @@ private:
    */
   void UpdateDisplayNodes();
 
-  cv::Matx44d GetInitialHandEye(int imageIndex, bool useReference);
+  cv::Matx44d GetInitialHandEye(int imageIndex);
   cv::Matx44d GetInitialModelToWorld();
   double      GetStereoRMSReconstructionError(const cv::Matx44d& handEye);
   double      GetMonoRMSReconstructionError(const cv::Matx44d& handEye);
@@ -329,7 +334,7 @@ private:
   mitk::DataStorage::Pointer                     m_DataStorage;
   mitk::DataNode::Pointer                        m_ImageNode[2];
   mitk::DataNode::Pointer                        m_TrackingTransformNode;
-  mitk::DataNode::Pointer                        m_ReferenceTrackingTransformNode;
+  mitk::DataNode::Pointer                        m_ModelTransformNode;
 
   // Data from preferences.
   bool                                           m_DoIterative;
@@ -346,7 +351,7 @@ private:
   std::string                                    m_TagFamily;
   std::string                                    m_OutputPrefixName;
   std::string                                    m_OutputDirName;
-  std::string                                    m_ModelToTrackerFileName;
+  std::string                                    m_ModelTransformFileName;
   std::string                                    m_ReferenceImageFileName;
   std::string                                    m_ReferencePointsFileName;
   bool                                           m_UpdateNodes;
@@ -361,7 +366,8 @@ private:
   cv::Size2i                                     m_ImageSize;
   std::pair< cv::Mat, niftk::PointSet>           m_ReferenceDataForIterativeCalib;
   cv::Mat                                        m_TemplateImage;
-  cv::Matx44d                                    m_ModelToTracker;
+  cv::Matx44d                                    m_StaticModelTransform;
+  cv::Matx44d                                    m_ModelTransform;
   niftk::Model3D                                 m_ModelPoints;
   mitk::PointSet::Pointer                        m_ModelPointsToVisualise;
   mitk::DataNode::Pointer                        m_ModelPointsToVisualiseDataNode;
@@ -378,7 +384,7 @@ private:
     >                                            m_ImagesForWarping[2];
   std::list<cv::Matx44d>                         m_TrackingMatrices;
   std::vector<mitk::DataNode::Pointer>           m_TrackingMatricesDataNodes;
-  std::list<cv::Matx44d>                         m_ReferenceTrackingMatrices;
+  std::list<cv::Matx44d>                         m_ModelTrackingMatrices;
 
   // Calibration result
   cv::Mat                                        m_Intrinsic[2];
@@ -390,7 +396,6 @@ private:
   cv::Mat                                        m_LeftToRightRotationMatrix;
   cv::Mat                                        m_LeftToRightTranslationVector;
   std::vector<cv::Matx44d>                       m_HandEyeMatrices[2];
-  std::vector<cv::Matx44d>                       m_ReferenceHandEyeMatrices[2];
   cv::Matx44d                                    m_ModelToWorld;
   std::string                                    m_CalibrationResult;
 

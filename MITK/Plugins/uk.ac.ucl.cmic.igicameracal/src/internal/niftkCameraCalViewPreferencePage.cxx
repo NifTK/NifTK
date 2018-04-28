@@ -39,7 +39,7 @@ const QString CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME("tag family");
 const QString CameraCalViewPreferencePage::GRIDX_NODE_NAME("grid size in x");
 const QString CameraCalViewPreferencePage::GRIDY_NODE_NAME("grid size in y");
 const QString CameraCalViewPreferencePage::HANDEYE_NODE_NAME("handeye method");
-const QString CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME("model to tracker transform");
+const QString CameraCalViewPreferencePage::MODEL_TRANSFORM_NODE_NAME("model transform");
 const QString CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME("reference image");
 const QString CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME("reference points");
 const QString CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME("minimum number of points");
@@ -110,11 +110,9 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   bool ok = false;
   ok = connect(m_Ui->m_FeaturesComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnFeaturesComboSelected()));
   assert(ok);
-  ok = connect(m_Ui->m_HandEyeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnHandEyeComboSelected()));
-  assert(ok);
   ok = connect(m_Ui->m_3DModelToolButton, SIGNAL(pressed()), this, SLOT(On3DModelButtonPressed()));
   assert(ok);
-  ok = connect(m_Ui->m_ModelToTrackerToolButton, SIGNAL(pressed()), this, SLOT(OnModelToTrackerButtonPressed()));
+  ok = connect(m_Ui->m_ModelTransformToolButton, SIGNAL(pressed()), this, SLOT(OnModelTransformButtonPressed()));
   assert(ok);
   ok = connect(m_Ui->m_ReferenceImagePushButton, SIGNAL(pressed()), this, SLOT(OnReferenceImageButtonPressed()));
   assert(ok);
@@ -137,7 +135,6 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
   this->OnDoIterativeChecked(false);
   this->OnFeaturesComboSelected();
-  this->OnHandEyeComboSelected();
 
   this->Update();
 
@@ -249,28 +246,6 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
 
 
 //-----------------------------------------------------------------------------
-void CameraCalViewPreferencePage::OnHandEyeComboSelected()
-{
-  switch(m_Ui->m_HandEyeComboBox->currentIndex())
-  {
-    case niftk::NiftyCalVideoCalibrationManager::TSAI_1989:
-    case niftk::NiftyCalVideoCalibrationManager::MALTI_2013:
-  case niftk::NiftyCalVideoCalibrationManager::NON_LINEAR_EXTRINSIC:
-      m_Ui->m_ModelToTrackerLabel->setVisible(false);
-      m_Ui->m_ModelToTrackerLineEdit->setVisible(false);
-      m_Ui->m_ModelToTrackerToolButton->setVisible(false);
-    break;
-
-    case niftk::NiftyCalVideoCalibrationManager::SHAHIDI_2002:
-      m_Ui->m_ModelToTrackerLabel->setVisible(true);
-      m_Ui->m_ModelToTrackerLineEdit->setVisible(true);
-      m_Ui->m_ModelToTrackerToolButton->setVisible(true);
-    break;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void CameraCalViewPreferencePage::On3DModelButtonPressed()
 {
   QString fileName = QFileDialog::getOpenFileName(m_Control,
@@ -284,14 +259,14 @@ void CameraCalViewPreferencePage::On3DModelButtonPressed()
 
 
 //-----------------------------------------------------------------------------
-void CameraCalViewPreferencePage::OnModelToTrackerButtonPressed()
+void CameraCalViewPreferencePage::OnModelTransformButtonPressed()
 {
   QString fileName = QFileDialog::getOpenFileName(m_Control,
       tr("Model to tracker transform"), "", tr("Transform (*.4x4 *.txt)"));
 
   if (!fileName.isEmpty())
   {
-    m_Ui->m_ModelToTrackerLineEdit->setText(fileName);
+    m_Ui->m_ModelTransformLineEdit->setText(fileName);
   }
 }
 
@@ -373,7 +348,7 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->PutDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, m_Ui->m_ScaleImageInYSpinBox->value());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, m_Ui->m_GridPointsInXSpinBox->value());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, m_Ui->m_GridPointsInYSpinBox->value());
-  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, m_Ui->m_ModelToTrackerLineEdit->text());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_TRANSFORM_NODE_NAME, m_Ui->m_ModelTransformLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, m_Ui->m_ReferenceImageLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, m_Ui->m_ReferencePointsLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, m_Ui->m_TagFamilyComboBox->currentText());
@@ -405,7 +380,7 @@ void CameraCalViewPreferencePage::Update()
   m_Ui->m_ScaleImageInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorY));
   m_Ui->m_GridPointsInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeX));
   m_Ui->m_GridPointsInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeY));
-  m_Ui->m_ModelToTrackerLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, ""));
+  m_Ui->m_ModelTransformLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_TRANSFORM_NODE_NAME, ""));
   m_Ui->m_ReferenceImageLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, ""));
   m_Ui->m_ReferencePointsLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, ""));
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(
