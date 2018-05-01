@@ -8,27 +8,25 @@
   <license>@NIFTK_COPYRIGHT@ @NIFTK_LICENSE_SHORT_STRING@</license>
   <contributor>Matt Clarkson</contributor>
   <acknowledgements><![CDATA[]]></acknowledgements>
-  
   <parameters>
     <label>IO</label>
     <description><![CDATA[Input/output parameters]]></description>
-
     <directory>
       <name>trackingInputDirectory</name>
       <flag>t</flag>
       <longflag>tracking</longflag>
       <description>The directory containing the tracking matrices.</description>
       <label>Tracking Matrix Input directory.</label>
+      <channel>input</channel>
     </directory>
-
     <directory>
       <name>pointsInputDirectory</name>
       <flag>p</flag>
       <longflag>points</longflag>
       <description>The directory containing previously extracted image points.</description>
       <label>Image Points Input directory.</label>
+      <channel>input</channel>
     </directory>
-
     <file fileExtensions=".txt">
       <name>modelFile</name>
       <flag>m</flag>
@@ -37,7 +35,6 @@
       <label>Calibration model</label>
       <channel>input</channel>
     </file>
-
     <file fileExtensions=".txt">
       <name>intrinsicsFile</name>
       <flag>i</flag>
@@ -46,7 +43,6 @@
       <label>Intrinsic parameters</label>
       <channel>input</channel>
     </file>
-
     <file fileExtensions=".txt,.4x4">
       <name>handeyeFile</name>
       <flag>c</flag>
@@ -55,7 +51,6 @@
       <label>Hand-eye matrix</label>
       <channel>input</channel>
     </file>
-
     <file fileExtensions=".txt,.4x4">
       <name>registrationFile</name>
       <flag>r</flag>
@@ -64,13 +59,10 @@
       <label>Registration matrix</label>
       <channel>input</channel>
     </file>
-
   </parameters>
-
   <parameters>
     <label>Mandatory Parameters</label>
     <description><![CDATA[Parameters that control the evaluation]]></description>
-
     <integer>
       <name>lag</name>
       <flag>l</flag>
@@ -79,7 +71,5 @@
       <label>Lag (ms)</label>
       <default>0</default>
     </integer>
-
   </parameters>
-
 </executable>
