@@ -423,6 +423,11 @@ void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
 
     coords->SetVtkMatrix(*cameraToWorldMatrix);
     node->Modified();
+
+    if (!this->GetModelIsStationary())
+    {
+      this->UpdateVisualisedPoints();
+    }
   }
 }
 
