@@ -107,8 +107,8 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
   // Computed on the fly after each calibration
   m_ModelToWorld = cv::Matx44d::eye();
 
-  // Loaded in, say from a point based registration from chessboard to tracker/world space,
-  // or, as of #5322 from chessboard to tracked marker space.
+  // Loaded in, say from a point based registration from a stationary chessboard to tracker/world space,
+  // or, as of #5322, from chessboard to chessboard marker space.
   m_StaticModelTransform = cv::Matx44d::eye();
 
   m_ModelPointsToVisualise = mitk::PointSet::New();
@@ -215,7 +215,25 @@ void NiftyCalVideoCalibrationManager::SetTrackingTransformNode(mitk::DataNode::P
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints()
 {
-  this->UpdateVisualisedPoints(m_ModelToWorld);
+  if(m_ModelIsStationary)
+  {
+    this->UpdateVisualisedPoints(m_ModelToWorld);
+  }
+  else
+  {
+    niftk::CoordinateAxesData::Pointer trackingData = dynamic_cast<CoordinateAxesData*>(m_ModelTransformNode->GetData());
+    if (tracking.IsNull())
+    {
+      MITK_WARN << "Preferences say !m_ModelIsStationary, but there is no model tracking matrix";
+    }
+    vtkSmartPointer<vtkMatrix4x4> trackingVtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    trackingData->GetVtkMatrix(*trackingVtkMatrix);
+
+    cv::Matx44d trackingCvMat;
+    niftk::CopyToOpenCVMatrix(*trackingVtkMatrix, trackingCvMat);
+
+    this->UpdateVisualisedPoints(trackingCvMat * m_StaticModelTransform);
+  }
 }
 
 
