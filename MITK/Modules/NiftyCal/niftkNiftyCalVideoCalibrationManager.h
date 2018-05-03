@@ -106,6 +106,9 @@ public:
   itkSetMacro(Do3DOptimisation, bool);
   itkGetMacro(Do3DOptimisation, bool);
 
+  itkSetMacro(ModelIsStationary, bool);
+  itkGetMacro(ModelIsStationary, bool);
+
   itkSetMacro(DoClustering, bool);
   itkGetMacro(DoClustering, bool);
 
@@ -341,6 +344,7 @@ private:
   bool                                           m_DoIterative;
   bool                                           m_Do3DOptimisation;
   bool                                           m_DoClustering;
+  bool                                           m_ModelIsStationary;
   unsigned int                                   m_NumberOfSnapshotsForCalibrating;
   std::string                                    m_ModelFileName;
   double                                         m_ScaleFactorX;
