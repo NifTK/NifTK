@@ -49,6 +49,10 @@ AtracsysDataSourceService::AtracsysDataSourceService(
   this->SetShouldUpdate(true);
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
+
+  bool isOk = connect(m_DataGrabbingThread, SIGNAL(ErrorOccured(QString)), this, SLOT(OnErrorFromThread(QString)));
+  assert(isOk);
+
   m_DataGrabbingThread->SetInterval(1000 / m_Tracker->GetExpectedFramesPerSecond());
   m_DataGrabbingThread->start();
 
@@ -67,7 +71,18 @@ AtracsysDataSourceService::AtracsysDataSourceService(
 AtracsysDataSourceService::~AtracsysDataSourceService()
 {
   m_DataGrabbingThread->ForciblyStop();
+
+  bool isOk = disconnect(m_DataGrabbingThread, SIGNAL(ErrorOccured(QString)), this, SLOT(OnErrorFromThread(QString)));
+  assert(isOk);
+
   delete m_DataGrabbingThread;
+}
+
+
+//-----------------------------------------------------------------------------
+void AtracsysDataSourceService::OnErrorFromThread(QString message)
+{
+  this->OnErrorOccurred(message);
 }
 
 } // end namespace

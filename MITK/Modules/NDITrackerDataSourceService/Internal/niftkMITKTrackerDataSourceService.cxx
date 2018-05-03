@@ -50,6 +50,10 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
   this->SetShouldUpdate(true);
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
+
+  bool isOk = connect(m_DataGrabbingThread, SIGNAL(ErrorOccured(QString)), this, SLOT(OnErrorFromThread(QString)));
+  assert(isOk);
+
   m_DataGrabbingThread->SetUseFastPolling(true);
   m_DataGrabbingThread->SetInterval(1000 / m_Tracker->GetExpectedFramesPerSecond());
   m_DataGrabbingThread->start();
@@ -69,7 +73,18 @@ MITKTrackerDataSourceService::MITKTrackerDataSourceService(
 MITKTrackerDataSourceService::~MITKTrackerDataSourceService()
 {
   m_DataGrabbingThread->ForciblyStop();
+
+  bool isOk = disconnect(m_DataGrabbingThread, SIGNAL(ErrorOccured(QString)), this, SLOT(OnErrorFromThread(QString)));
+  assert(isOk);
+
   delete m_DataGrabbingThread;
+}
+
+
+//-----------------------------------------------------------------------------
+void MITKTrackerDataSourceService::OnErrorFromThread(QString message)
+{
+  this->OnErrorOccurred(message);
 }
 
 } // end namespace

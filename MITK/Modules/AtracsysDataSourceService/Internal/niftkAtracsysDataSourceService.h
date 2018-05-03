@@ -31,6 +31,8 @@ namespace niftk
 class AtracsysDataSourceService : public IGITrackerDataSourceService
 {
 
+  Q_OBJECT
+
 public:
 
   mitkClassMacroItkParent(AtracsysDataSourceService, IGITrackerDataSourceService)
@@ -45,6 +47,10 @@ protected:
                            );
 
   virtual ~AtracsysDataSourceService();
+
+private slots:
+
+  void OnErrorFromThread(QString);
 
 private:
 
