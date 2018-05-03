@@ -101,6 +101,8 @@ protected:
                               );
   virtual ~SingleFrameDataSourceService();
 
+  void OnErrorOccurred(QString errorMessage);
+
   /**
    * \brief Derived classes implement this to grab a new image.
    *

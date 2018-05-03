@@ -22,6 +22,7 @@ set(CPP_FILES
 
 set(MOC_H_FILES
   Internal/niftkOpenCVCameraDialog.h
+  Internal/niftkOpenCVVideoDataSourceService.h
 )
 
 set(UI_FILES

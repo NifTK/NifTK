@@ -72,6 +72,14 @@ SingleFrameDataSourceService::~SingleFrameDataSourceService()
 
 
 //-----------------------------------------------------------------------------
+void SingleFrameDataSourceService::OnErrorOccurred(QString errorMessage)
+{
+  // We could raise QMessage box, but if we just throw, message box gets generated at app level.
+  mitkThrow() << errorMessage.toStdString();
+}
+
+
+//-----------------------------------------------------------------------------
 void SingleFrameDataSourceService::SetApproximateIntervalInMilliseconds(const int& ms)
 {
   m_ApproxIntervalInMilliseconds = ms;

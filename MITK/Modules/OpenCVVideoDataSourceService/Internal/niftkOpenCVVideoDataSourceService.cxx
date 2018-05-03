@@ -35,6 +35,9 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
 
   m_VideoSource = mitk::OpenCVVideoSource::New();
   m_VideoSource->SetVideoCameraInput(this->GetChannelNumber());
+
+  MITK_INFO << "Creating OpenCVVideoDataSourceService on channel:" << this->GetChannelNumber();
+
   if (!m_VideoSource->IsCapturingEnabled())
   {
     m_VideoSource->StartCapturing();
@@ -51,6 +54,10 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
   }
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(nullptr, this);
+
+  bool isConnected = connect(m_DataGrabbingThread, SIGNAL(ErrorOccured(QString)), this, SLOT(OnErrorFromThread(QString)));
+  assert(isConnected);
+
   m_DataGrabbingThread->SetUseFastPolling(true);
   m_DataGrabbingThread->SetInterval(this->GetApproximateIntervalInMilliseconds());
   m_DataGrabbingThread->start();
@@ -62,6 +69,8 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
   this->SetDescription("Local OpenCV video source.");
   this->SetStatus("Initialised");
   this->Modified();
+
+  MITK_INFO << "Created OpenCVVideoDataSourceService on channel:" << this->GetChannelNumber();
 }
 
 
@@ -79,6 +88,13 @@ OpenCVVideoDataSourceService::~OpenCVVideoDataSourceService()
 
 
 //-----------------------------------------------------------------------------
+void OpenCVVideoDataSourceService::OnErrorFromThread(QString message)
+{
+  this->OnErrorOccurred(message);
+}
+
+
+//-----------------------------------------------------------------------------
 std::unique_ptr<niftk::IGIDataType> OpenCVVideoDataSourceService::GrabImage()
 {
   if (m_VideoSource.IsNull())
@@ -89,6 +105,7 @@ std::unique_ptr<niftk::IGIDataType> OpenCVVideoDataSourceService::GrabImage()
   // Here, I'm assuming that MITK returns a pointer to the image
   // that was just fetched, and we do not have the right to claim this buffer.
   m_VideoSource->FetchFrame();
+
   const IplImage* img = m_VideoSource->GetCurrentFrame();
   if (img == NULL)
   {
@@ -98,7 +115,7 @@ std::unique_ptr<niftk::IGIDataType> OpenCVVideoDataSourceService::GrabImage()
   // So, here we clone the image.
   niftk::OpenCVVideoDataType *wrapper = new niftk::OpenCVVideoDataType();
   wrapper->SetImage(img);
-
+  
   // This method is therefore a factory for new images.
   std::unique_ptr<niftk::IGIDataType> result(wrapper);
   return result;
