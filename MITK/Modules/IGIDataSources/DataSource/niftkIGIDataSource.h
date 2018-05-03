@@ -26,6 +26,7 @@
 
 #include <QDir>
 #include <QString>
+#include <QMutex>
 
 namespace niftk
 {
@@ -189,6 +190,7 @@ protected:
 
 private:
 
+  mutable QMutex                     m_Mutex;
   igtl::TimeStamp::Pointer           m_TimeStamp;
   mitk::DataStorage::Pointer         m_DataStorage;
   std::set<mitk::DataNode::Pointer>  m_DataNodes;
