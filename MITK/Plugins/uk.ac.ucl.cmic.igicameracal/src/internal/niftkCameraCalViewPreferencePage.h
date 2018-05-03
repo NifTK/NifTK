@@ -63,6 +63,7 @@ public:
   static const QString TEMPLATE_IMAGE_NODE_NAME;
   static const QString PREVIOUS_CALIBRATION_DIR_NODE_NAME;
   static const QString OUTPUT_DIR_NODE_NAME;
+  static const QString MODEL_IS_STATIONARY_NODE_NAME;
 
   CameraCalViewPreferencePage();
   CameraCalViewPreferencePage(const CameraCalViewPreferencePage& other);

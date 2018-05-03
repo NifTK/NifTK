@@ -46,6 +46,7 @@ const QString CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME("mini
 const QString CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME("template image");
 const QString CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME("previous calibration directory");
 const QString CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME("output directory");
+const QString CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME("model is stationary");
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
@@ -133,6 +134,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_Do3DOptimisationCheckBox->setChecked(false);
   m_Ui->m_ClusteringCheckBox->setChecked(false);
   m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
+  m_Ui->m_ModelIsStationaryCheckBox->setChecked(true);
+
   this->OnDoIterativeChecked(false);
   this->OnFeaturesComboSelected();
 
@@ -358,6 +361,7 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME, m_Ui->m_TemplateImageLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME, m_Ui->m_PreviousCalibrationDirLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, m_Ui->m_OutputDirLineEdit->text());
+  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME, m_Ui->m_ModelIsStationaryCheckBox->isChecked());
   return true;
 }
 
@@ -396,6 +400,7 @@ void CameraCalViewPreferencePage::Update()
     path = GetWritablePath();
   }
   m_Ui->m_OutputDirLineEdit->setText(path);
+  m_Ui->m_ModelIsStationaryCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultModelIsStationary));
 }
 
 } // end namespace

@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout_10">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
@@ -431,6 +431,23 @@
       </layout>
      </item>
      <item row="16" column="0">
+      <widget class="QLabel" name="m_ModelIsStationaryLabel">
+       <property name="toolTip">
+        <string>Name of a 4x4 file to describe model to tracker transform.</string>
+       </property>
+       <property name="text">
+        <string>model is stationary</string>
+       </property>
+      </widget>
+     </item>
+     <item row="16" column="1">
+      <widget class="QCheckBox" name="m_ModelIsStationaryCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="17" column="0">
       <widget class="QLabel" name="m_OutputDirLabel">
        <property name="toolTip">
         <string>The minimum before camera calibration starts.</string>
@@ -440,7 +457,7 @@
        </property>
       </widget>
      </item>
-     <item row="16" column="1">
+     <item row="17" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_9">
        <item>
         <widget class="QLineEdit" name="m_OutputDirLineEdit">

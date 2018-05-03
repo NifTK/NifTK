@@ -65,6 +65,7 @@ const unsigned int        NiftyCalVideoCalibrationManager::DefaultGridSizeY(10);
 const std::string         NiftyCalVideoCalibrationManager::DefaultTagFamily("25h7");
 const bool                NiftyCalVideoCalibrationManager::DefaultUpdateNodes(true);
 const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints(70);
+const bool                NiftyCalVideoCalibrationManager::DefaultModelIsStationary(true);
 
 const NiftyCalVideoCalibrationManager::CalibrationPatterns
   NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESS_BOARD);
@@ -102,8 +103,12 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
     m_HandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
   }
 
-  m_ModelToWorld = cv::Matx44d::eye();   // computed on the fly after each calibration
-  m_StaticModelTransform = cv::Matx44d::eye(); // loaded in, say from a point based registration from chessboard to tracker space.
+  // Computed on the fly after each calibration
+  m_ModelToWorld = cv::Matx44d::eye();
+
+  // Loaded in, say from a point based registration from chessboard to tracker/world space,
+  // or, as of #5322 from chessboard to tracked marker space.
+  m_StaticModelTransform = cv::Matx44d::eye();
 
   m_ModelPointsToVisualise = mitk::PointSet::New();
   m_ModelPointsToVisualiseDataNode = mitk::DataNode::New();

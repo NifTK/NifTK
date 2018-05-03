@@ -78,6 +78,7 @@ public:
   const static std::string         DefaultTagFamily;
   const static unsigned int        DefaultMinimumNumberOfPoints;
   const static bool                DefaultUpdateNodes;
+  const static bool                DefaultModelIsStationary;
 
   mitkClassMacroItkParent(NiftyCalVideoCalibrationManager, itk::Object);
   itkNewMacro(NiftyCalVideoCalibrationManager);
