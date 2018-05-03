@@ -221,19 +221,28 @@ void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints()
   }
   else
   {
-    niftk::CoordinateAxesData::Pointer trackingData = dynamic_cast<CoordinateAxesData*>(m_ModelTransformNode->GetData());
-    if (trackingData.IsNull())
+    if (m_ModelTransformNode.IsNotNull())
     {
-      MITK_WARN << "Preferences say !m_ModelIsStationary, but there is no model tracking matrix";
+      niftk::CoordinateAxesData::Pointer trackingData = dynamic_cast<CoordinateAxesData*>(m_ModelTransformNode->GetData());
+      if (trackingData.IsNull())
+      {
+        MITK_WARN << "Preferences say !m_ModelIsStationary, but there is no model tracking matrix";
+        return;
+      }
+
+      vtkSmartPointer<vtkMatrix4x4> trackingVtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+      trackingData->GetVtkMatrix(*trackingVtkMatrix);
+
+      cv::Matx44d trackingCvMat;
+      mitk::CopyToOpenCVMatrix(*trackingVtkMatrix, trackingCvMat);
+
+      cv::Matx44d modelToWorld = trackingCvMat * m_StaticModelTransform;
+      this->UpdateVisualisedPoints(modelToWorld);
     }
-    vtkSmartPointer<vtkMatrix4x4> trackingVtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-    trackingData->GetVtkMatrix(*trackingVtkMatrix);
-
-    cv::Matx44d trackingCvMat;
-    mitk::CopyToOpenCVMatrix(*trackingVtkMatrix, trackingCvMat);
-
-    cv::Matx44d modelToWorld = trackingCvMat * m_StaticModelTransform;
-    this->UpdateVisualisedPoints(modelToWorld);
+    else
+    {
+      MITK_WARN << "Preferences say !m_ModelIsStationary, but no model transform node is set.";
+    }
   }
 }
 
