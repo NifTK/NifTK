@@ -65,6 +65,10 @@ public:
    */
   void SetUseFastPolling(bool useFastPolling);
 
+signals:
+
+  void ErrorOccured(QString errorMessage);
+
 protected:
 
   /**

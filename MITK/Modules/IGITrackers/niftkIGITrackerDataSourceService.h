@@ -100,6 +100,9 @@ protected:
                              );
   virtual ~IGITrackerDataSourceService();
 
+  // Used to pass error messages from threads to front end.
+  void OnErrorOccurred(QString errorMessage);
+
   static niftk::IGIDataSourceLocker   s_Lock;
   int                                 m_TrackerNumber;
   niftk::IGITracker::Pointer          m_Tracker;

@@ -26,6 +26,7 @@ set(CPP_FILES
 
 set(MOC_H_FILES
   Internal/niftkMITKTrackerDialog.h
+  Internal/niftkMITKTrackerDataSourceService.h
 )
 
 set(UI_FILES

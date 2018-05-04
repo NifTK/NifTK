@@ -20,6 +20,7 @@
 #include <usModuleContext.h>
 #include <usGetModuleContext.h>
 #include <cassert>
+#include <QMutexLocker>
 
 namespace niftk
 {
@@ -28,7 +29,8 @@ namespace niftk
 IGIDataSource::IGIDataSource(const std::string& name,
                              const std::string& factoryName,
                              mitk::DataStorage::Pointer dataStorage)
-: m_TimeStamp(nullptr)
+: m_Mutex(QMutex::Recursive)
+, m_TimeStamp(nullptr)
 , m_DataStorage(dataStorage)
 , m_Name(QString::fromStdString(name))
 , m_FactoryName(QString::fromStdString(factoryName))
@@ -100,6 +102,8 @@ IGIDataSource::~IGIDataSource()
 //-----------------------------------------------------------------------------
 QString IGIDataSource::GetName() const
 {
+  QMutexLocker locker(&m_Mutex);
+
   return m_Name;
 }
 
@@ -107,6 +111,8 @@ QString IGIDataSource::GetName() const
 //-----------------------------------------------------------------------------
 QString IGIDataSource::GetFactoryName() const
 {
+  QMutexLocker locker(&m_Mutex);
+
   return m_FactoryName;
 }
 
@@ -114,6 +120,8 @@ QString IGIDataSource::GetFactoryName() const
 //-----------------------------------------------------------------------------
 QString IGIDataSource::GetStatus() const
 {
+  QMutexLocker locker(&m_Mutex);
+
   return m_Status;
 }
 
@@ -121,14 +129,19 @@ QString IGIDataSource::GetStatus() const
 //-----------------------------------------------------------------------------
 void IGIDataSource::SetStatus(const QString& status)
 {
+  QMutexLocker locker(&m_Mutex);
+
   m_Status = status;
   this->Modified();
+
 }
 
 
 //-----------------------------------------------------------------------------
 QString IGIDataSource::GetDescription() const
 {
+  QMutexLocker locker(&m_Mutex);
+
   return m_Description;
 }
 
@@ -136,6 +149,8 @@ QString IGIDataSource::GetDescription() const
 //-----------------------------------------------------------------------------
 void IGIDataSource::SetDescription(const QString& description)
 {
+  QMutexLocker locker(&m_Mutex);
+
   m_Description = description;
   this->Modified();
 }
@@ -144,6 +159,8 @@ void IGIDataSource::SetDescription(const QString& description)
 //-----------------------------------------------------------------------------
 mitk::DataStorage::Pointer IGIDataSource::GetDataStorage() const
 {
+  QMutexLocker locker(&m_Mutex);
+
   return m_DataStorage;
 }
 
@@ -151,6 +168,8 @@ mitk::DataStorage::Pointer IGIDataSource::GetDataStorage() const
 //-----------------------------------------------------------------------------
 bool IGIDataSource::GetShouldUpdate() const
 {
+  QMutexLocker locker(&m_Mutex);
+
   return m_ShouldUpdate;
 }
 
@@ -158,14 +177,19 @@ bool IGIDataSource::GetShouldUpdate() const
 //-----------------------------------------------------------------------------
 void IGIDataSource::SetShouldUpdate(bool shouldUpdate)
 {
+  QMutexLocker locker(&m_Mutex);
+
   m_ShouldUpdate = shouldUpdate;
   this->Modified();
+
 }
 
 
 //-----------------------------------------------------------------------------
 QString IGIDataSource::GetRecordingLocation() const
 {
+  QMutexLocker locker(&m_Mutex);
+
   return m_RecordingLocation;
 }
 
@@ -173,6 +197,8 @@ QString IGIDataSource::GetRecordingLocation() const
 //-----------------------------------------------------------------------------
 void IGIDataSource::SetRecordingLocation(const QString& pathName)
 {
+  QMutexLocker locker(&m_Mutex);
+
   m_RecordingLocation = pathName;
   this->Modified();
 }
@@ -181,6 +207,8 @@ void IGIDataSource::SetRecordingLocation(const QString& pathName)
 //-----------------------------------------------------------------------------
 void IGIDataSource::SetPlaybackSourceName(const QString& sourceName)
 {
+  QMutexLocker locker(&m_Mutex);
+
   m_PlaybackSourceName = sourceName;
   this->Modified();
 }
@@ -189,6 +217,8 @@ void IGIDataSource::SetPlaybackSourceName(const QString& sourceName)
 //-----------------------------------------------------------------------------
 QString IGIDataSource::GetPlaybackSourceName() const
 {
+  QMutexLocker locker(&m_Mutex);
+
   return m_PlaybackSourceName;
 }
 
@@ -196,6 +226,8 @@ QString IGIDataSource::GetPlaybackSourceName() const
 //-----------------------------------------------------------------------------
 QString IGIDataSource::GetPlaybackDirectory() const
 {
+  QMutexLocker locker(&m_Mutex);
+
   return this->GetRecordingLocation()
          + QDir::separator()
          + this->GetPlaybackSourceName();
@@ -205,6 +237,8 @@ QString IGIDataSource::GetPlaybackDirectory() const
 //-----------------------------------------------------------------------------
 QString IGIDataSource::GetRecordingDirectory() const
 {
+  QMutexLocker locker(&m_Mutex);
+
   return this->GetRecordingLocation()
       + QDir::separator()
       + this->GetName();
@@ -214,6 +248,8 @@ QString IGIDataSource::GetRecordingDirectory() const
 //-----------------------------------------------------------------------------
 void IGIDataSource::StartRecording()
 {
+  QMutexLocker locker(&m_Mutex);
+
   this->SetIsRecording(true);
   this->Modified();
 }
@@ -222,6 +258,8 @@ void IGIDataSource::StartRecording()
 //-----------------------------------------------------------------------------
 void IGIDataSource::StopRecording()
 {
+  QMutexLocker locker(&m_Mutex);
+
   this->SetIsRecording(false);
   this->Modified();
 }
@@ -231,6 +269,8 @@ void IGIDataSource::StopRecording()
 void IGIDataSource::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeStamp,
                                   niftk::IGIDataSourceI::IGITimeType lastTimeStamp)
 {
+  QMutexLocker locker(&m_Mutex);
+
   this->SetIsPlayingBack(true);
   this->Modified();
 }
@@ -239,6 +279,8 @@ void IGIDataSource::StartPlayback(niftk::IGIDataSourceI::IGITimeType firstTimeSt
 //-----------------------------------------------------------------------------
 void IGIDataSource::StopPlayback()
 {
+  QMutexLocker locker(&m_Mutex);
+
   this->SetIsPlayingBack(false);
   this->Modified();
 }
@@ -247,6 +289,8 @@ void IGIDataSource::StopPlayback()
 //-----------------------------------------------------------------------------
 niftk::IGIDataSourceI::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
 {
+  QMutexLocker locker(&m_Mutex);
+
   m_TimeStamp->GetTime();
   return m_TimeStamp->GetTimeStampInNanoseconds();
 }
@@ -255,6 +299,8 @@ niftk::IGIDataSourceI::IGITimeType IGIDataSource::GetTimeStampInNanoseconds()
 //-----------------------------------------------------------------------------
 mitk::DataNode::Pointer IGIDataSource::GetDataNode(const QString& name, const bool& addToDataStorage)
 {
+  QMutexLocker locker(&m_Mutex);
+
   if (m_DataStorage.IsNull())
   {
     mitkThrow() << "DataStorage is NULL!";
@@ -294,6 +340,8 @@ bool IGIDataSource::IsLate(const niftk::IGIDataSourceI::IGITimeType& requested,
                            const niftk::IGIDataSourceI::IGITimeType& actual
                           ) const
 {
+  QMutexLocker locker(&m_Mutex);
+
   if (actual > requested)
   {
     mitkThrow() << "Retrieved data has a timestamp that is ahead of the requested one, which should never happen";
@@ -307,6 +355,8 @@ unsigned int IGIDataSource::GetLagInMilliseconds(const niftk::IGIDataSourceI::IG
                                                  const niftk::IGIDataSourceI::IGITimeType& actual
                                                 ) const
 {
+  QMutexLocker locker(&m_Mutex);
+
   if (actual > requested)
   {
     mitkThrow() << "Retrieved data has a timestamp that is ahead of the requested one, which should never happen";

@@ -14,6 +14,8 @@
 
 #include "niftkIGITimerBasedThread.h"
 #include <QDebug>
+#include <QMessageBox>
+#include <QApplication>
 
 namespace niftk
 {
@@ -112,20 +114,52 @@ void IGITimerBasedThread::run()
 //-----------------------------------------------------------------------------
 void IGITimerBasedThread::OnTimeout()
 {
-  if (m_UseFastPolling)
+  try
   {
-    m_TimeStamp->GetTime();
-    niftk::IGIDataSourceI::IGITimeType currentTime = m_TimeStamp->GetTimeStampInNanoseconds();
-
-    if ((currentTime - m_LastTime) >= m_TimerIntervalInNanoseconds)
+    if (m_UseFastPolling)
     {
-      m_LastTime = currentTime;
+      m_TimeStamp->GetTime();
+      niftk::IGIDataSourceI::IGITimeType currentTime = m_TimeStamp->GetTimeStampInNanoseconds();
+
+      if ((currentTime - m_LastTime) >= m_TimerIntervalInNanoseconds)
+      {
+        m_LastTime = currentTime;
+        this->OnTimeoutImpl();
+      }
+    }
+    else
+    {
       this->OnTimeoutImpl();
     }
   }
-  else
+  catch (mitk::Exception& e)
   {
-    this->OnTimeoutImpl();
+    QString errorMsg = QString("MITK Exception:\n\n")
+                       + QString("Description: ")
+                       + QString(e.GetDescription()) + QString("\n\n")
+                       + QString("Filename: ") + QString(e.GetFile()) + QString("\n\n")
+                       + QString("Line: ") + QString::number(e.GetLine());
+
+    qDebug() << errorMsg;
+    m_Timer->stop();
+    emit ErrorOccured(errorMsg);
+  }
+  catch (std::exception& e)
+  {
+    QString errorMsg = QString("Caught std::exception:\n\n")
+                       + QString(e.what()) + QString("\n\n");
+
+    qDebug() << errorMsg;
+    m_Timer->stop();
+    emit ErrorOccured(errorMsg);
+  }
+  catch (...)
+  {
+    QString errorMsg = QString("Caught unknown exception.\n\nPlease check console.");
+
+    qDebug() << errorMsg;
+    m_Timer->stop();
+    emit ErrorOccured(errorMsg);
   }
 }
 

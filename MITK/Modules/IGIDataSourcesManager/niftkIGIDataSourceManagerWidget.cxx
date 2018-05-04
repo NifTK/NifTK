@@ -69,7 +69,10 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
   assert(ok);
   ok = QObject::connect(m_Manager,
     SIGNAL(UpdateFinishedDataSources(niftk::IGIDataSourceI::IGITimeType, QList< QList<IGIDataItemInfo> >)),
-    this, SLOT(OnUpdateFinishedDataSources(niftk::IGIDataSourceI::IGITimeType, QList< QList<IGIDataItemInfo> >)));
+    this,
+    SLOT(OnUpdateFinishedDataSources(niftk::IGIDataSourceI::IGITimeType, QList< QList<IGIDataItemInfo> >)),
+    Qt::DirectConnection
+    );
   assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedRendering()),
                         this, SIGNAL(UpdateFinishedRendering()));
@@ -297,8 +300,6 @@ void IGIDataSourceManagerWidget::OnFreezeTableHeaderClicked(int section)
 void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(
     niftk::IGIDataSourceI::IGITimeType timeNow, QList< QList<IGIDataItemInfo> > infos)
 {
-  emit UpdateGuiFinishedDataSources (timeNow);
-
   QMutexLocker locker(&m_Lock);
 
   // This can happen if this gets called before a data source is added.
@@ -389,6 +390,8 @@ void IGIDataSourceManagerWidget::OnUpdateFinishedDataSources(
     m_TableWidget->setItem(r, 4, item4);
   }
   m_TableWidget->update();
+
+  emit UpdateGuiFinishedDataSources (timeNow);
 }
 
 //-----------------------------------------------------------------------------

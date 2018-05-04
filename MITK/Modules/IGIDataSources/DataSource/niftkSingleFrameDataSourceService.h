@@ -101,6 +101,9 @@ protected:
                               );
   virtual ~SingleFrameDataSourceService();
 
+  // Used to pass error messages from threads to front end.
+  void OnErrorOccurred(QString errorMessage);
+
   /**
    * \brief Derived classes implement this to grab a new image.
    *

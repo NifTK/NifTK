@@ -34,6 +34,8 @@ namespace niftk
 class MITKTrackerDataSourceService : public IGITrackerDataSourceService
 {
 
+  Q_OBJECT
+
 public:
 
   mitkClassMacroItkParent(MITKTrackerDataSourceService, IGITrackerDataSourceService)
@@ -49,6 +51,10 @@ protected:
                                niftk::NDITracker::Pointer tracker
                               );
   virtual ~MITKTrackerDataSourceService();
+
+private slots:
+
+  void OnErrorFromThread(QString);
 
 private:
 

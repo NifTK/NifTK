@@ -49,6 +49,13 @@ IGITrackerDataSourceService::~IGITrackerDataSourceService()
 
 
 //-----------------------------------------------------------------------------
+void IGITrackerDataSourceService::OnErrorOccurred(QString errorMessage)
+{
+  mitkThrow() << errorMessage.toStdString();
+}
+
+
+//-----------------------------------------------------------------------------
 bool IGITrackerDataSourceService::ProbeRecordedData(niftk::IGIDataSourceI::IGITimeType* firstTimeStampInStore,
                                                     niftk::IGIDataSourceI::IGITimeType* lastTimeStampInStore)
 {

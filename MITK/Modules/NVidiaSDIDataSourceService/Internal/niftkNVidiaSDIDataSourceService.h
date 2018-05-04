@@ -130,6 +130,8 @@ protected slots:
   // to be used by NVidiaSDIDataSourceImpl to make us show a message box.
   void ShowFatalErrorMessage(QString msg);
 
+  void OnGrabbingThreadFailed(QString errorMsg);
+
 protected:
 
   NVidiaSDIDataSourceService(QString factoryName,

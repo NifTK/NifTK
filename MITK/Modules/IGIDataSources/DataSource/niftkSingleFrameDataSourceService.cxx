@@ -72,6 +72,13 @@ SingleFrameDataSourceService::~SingleFrameDataSourceService()
 
 
 //-----------------------------------------------------------------------------
+void SingleFrameDataSourceService::OnErrorOccurred(QString errorMessage)
+{
+  mitkThrow() << errorMessage.toStdString();
+}
+
+
+//-----------------------------------------------------------------------------
 void SingleFrameDataSourceService::SetApproximateIntervalInMilliseconds(const int& ms)
 {
   m_ApproxIntervalInMilliseconds = ms;

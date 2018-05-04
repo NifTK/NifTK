@@ -104,6 +104,10 @@ NVidiaSDIDataSourceService::NVidiaSDIDataSourceService(
     }
 
     m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(NULL, this);
+
+    ok = connect(m_DataGrabbingThread, SIGNAL(ErrorOccured(QString)), this, SLOT(OnGrabbingThreadFailed(QString)));
+    assert(ok);
+
     this->StartCapturing(); // Should only be called once in constructor.
     if (!m_DataGrabbingThread->isRunning())
     {
@@ -137,6 +141,11 @@ NVidiaSDIDataSourceService::~NVidiaSDIDataSourceService()
   if (m_DataGrabbingThread != NULL)
   {
     this->StopCapturing();
+
+    bool ok = false;
+    ok = QObject::disconnect(m_DataGrabbingThread, SIGNAL(SignalFatalError(QString)), this, SLOT(OnGrabbingThreadFailed(QString)));
+    assert(ok);
+
     delete m_DataGrabbingThread;
   }
 
@@ -1056,6 +1065,13 @@ void NVidiaSDIDataSourceService::ShowFatalErrorMessage(QString msg)
   this->SetStatus(message);
 
   MITK_ERROR << message.toStdString();
+}
+
+
+//-----------------------------------------------------------------------------
+void NVidiaSDIDataSourceService::OnGrabbingThreadFailed(QString errorMsg)
+{
+  mitkThrow() << errorMsg.toStdString();
 }
 
 } // end namespace

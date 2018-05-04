@@ -32,6 +32,8 @@ namespace niftk
 class OpenCVVideoDataSourceService : public SingleFrameDataSourceService
 {
 
+  Q_OBJECT
+
 public:
 
   mitkClassMacroItkParent(OpenCVVideoDataSourceService, SingleFrameDataSourceService)
@@ -66,6 +68,10 @@ protected:
    * \see niftk::SingleFrameDataSourceService::LoadImage().
    */
   virtual std::unique_ptr<niftk::IGIDataType> LoadImage(const std::string& filename) override;
+
+private slots:
+
+  void OnErrorFromThread(QString);
 
 private:
 
