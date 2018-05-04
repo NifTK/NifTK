@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_NiftySim)
 
-  set(version "20c6ef0f04")
+  set(version "4603f7f168")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySim-${version}.tar.gz")
   set(depends "")
   if(DEFINED VTK_DIR)
@@ -76,7 +76,6 @@ if(BUILD_NiftySim)
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
