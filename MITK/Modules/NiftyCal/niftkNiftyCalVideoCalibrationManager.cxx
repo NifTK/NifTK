@@ -215,34 +215,27 @@ void NiftyCalVideoCalibrationManager::SetTrackingTransformNode(mitk::DataNode::P
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints()
 {
-  if(m_ModelIsStationary)
+  if(m_ModelTransformNode.IsNull())
   {
     this->UpdateVisualisedPoints(m_ModelToWorld);
   }
   else
   {
-    if (m_ModelTransformNode.IsNotNull())
+    niftk::CoordinateAxesData::Pointer trackingData = dynamic_cast<CoordinateAxesData*>(m_ModelTransformNode->GetData());
+    if (trackingData.IsNull())
     {
-      niftk::CoordinateAxesData::Pointer trackingData = dynamic_cast<CoordinateAxesData*>(m_ModelTransformNode->GetData());
-      if (trackingData.IsNull())
-      {
-        MITK_WARN << "Preferences say !m_ModelIsStationary, but there is no model tracking matrix";
-        return;
-      }
-
-      vtkSmartPointer<vtkMatrix4x4> trackingVtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-      trackingData->GetVtkMatrix(*trackingVtkMatrix);
-
-      cv::Matx44d trackingCvMat;
-      mitk::CopyToOpenCVMatrix(*trackingVtkMatrix, trackingCvMat);
-
-      cv::Matx44d modelToWorld = trackingCvMat * m_StaticModelTransform;
-      this->UpdateVisualisedPoints(modelToWorld);
+      MITK_WARN << "Can't extract trackingData from ModelTransformNode!";
+      return;
     }
-    else
-    {
-      MITK_WARN << "Preferences say !m_ModelIsStationary, but no model transform node is set.";
-    }
+
+    vtkSmartPointer<vtkMatrix4x4> trackingVtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    trackingData->GetVtkMatrix(*trackingVtkMatrix);
+
+    cv::Matx44d trackingCvMat;
+    mitk::CopyToOpenCVMatrix(*trackingVtkMatrix, trackingCvMat);
+
+    cv::Matx44d modelToWorld = trackingCvMat * m_StaticModelTransform;
+    this->UpdateVisualisedPoints(modelToWorld);
   }
 }
 
@@ -433,7 +426,7 @@ void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
     coords->SetVtkMatrix(*cameraToWorldMatrix);
     node->Modified();
 
-    if (!this->GetModelIsStationary())
+    if (m_ModelTransformNode.IsNotNull())
     {
       this->UpdateVisualisedPoints();
     }
@@ -494,7 +487,7 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(
 {
   std::list<cv::Matx44d> trackingMatrices;
 
-  if (m_ModelIsStationary || m_TrackingMatrices.size() == 1)
+  if (m_ModelTransformNode.IsNull() || m_TrackingMatrices.size() == 1)
   {
     std::list<cv::Matx44d>::const_iterator trackingIter;
     for (trackingIter = m_TrackingMatrices.begin();

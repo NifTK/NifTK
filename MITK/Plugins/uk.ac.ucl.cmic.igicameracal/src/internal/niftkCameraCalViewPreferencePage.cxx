@@ -135,7 +135,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_ClusteringCheckBox->setChecked(false);
   m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
   m_Ui->m_ModelIsStationaryCheckBox->setChecked(true);
-
+  m_Ui->m_ModelIsStationaryCheckBox->setVisible(false); // not sure if we need this
+  m_Ui->m_ModelIsStationaryLabel->setVisible(false);    // not sure if we need this
   this->OnDoIterativeChecked(false);
   this->OnFeaturesComboSelected();
 
