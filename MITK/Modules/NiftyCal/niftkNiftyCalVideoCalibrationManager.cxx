@@ -1473,6 +1473,16 @@ bool NiftyCalVideoCalibrationManager::Grab()
     m_ModelTrackingMatrices.push_back(openCVMat);
     extracted[3] = true;
   }
+  else
+  {
+    // If we are tracking laparoscope, but not chessboard, then provide default identity matrix instead.
+    if (m_TrackingTransformNode.IsNotNull())
+    {
+      cv::Matx44d opencvIdentity = cv::Matx44d::eye();
+      m_ModelTrackingMatrices.push_back(opencvIdentity);
+      extracted[3] = true;
+    }
+  }
 
   // Then we check if we got everything, and therefore we are successful.
   if (extracted[0] // must always do left.
