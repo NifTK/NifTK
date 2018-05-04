@@ -104,11 +104,11 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
     m_HandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
   }
 
-  // Computed on the fly after each calibration
+  // Computed on the fly after each calibration.
   m_ModelToWorld = cv::Matx44d::eye();
 
   // Loaded in, say from a point based registration from a stationary chessboard to tracker/world space,
-  // or, as of #5322, from chessboard to chessboard marker space.
+  // or, as of #5322, as a calibration matrix from chessboard to chessboard marker space.
   m_StaticModelTransform = cv::Matx44d::eye();
 
   m_ModelPointsToVisualise = mitk::PointSet::New();
@@ -460,8 +460,7 @@ void NiftyCalVideoCalibrationManager::Restart()
   for (int i = 0; i < m_TrackingMatricesDataNodes.size(); i++)
   {
     if (m_DataStorage.IsNotNull()
-        && m_DataStorage->Exists(m_TrackingMatricesDataNodes[i])
-       )
+        && m_DataStorage->Exists(m_TrackingMatricesDataNodes[i]))
     {
       m_DataStorage->Remove(m_TrackingMatricesDataNodes[i]);
     }
@@ -509,27 +508,27 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(
   else
   {
     std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
-    if (cameraMatrices.size() != trackingMatrices.size())
+    if (cameraMatrices.size() != m_TrackingMatrices.size())
     {
       mitkThrow() << "Number of camera matrices:" << cameraMatrices.size()
-                  << ", does not equal the number of tracking matrices:" << trackingMatrices.size();
+                  << ", does not equal the number of tracking matrices:" << m_TrackingMatrices.size();
     }
 
     std::list<cv::Matx44d> modelMatrices = this->ExtractModelMatrices();
-    if (modelMatrices.size() != trackingMatrices.size())
+    if (modelMatrices.size() != m_TrackingMatrices.size())
     {
       mitkThrow() << "Number of model matrices:" << modelMatrices.size()
-                  << ", does not equal the number of tracking matrices:" << trackingMatrices.size();
+                  << ", does not equal the number of tracking matrices:" << m_TrackingMatrices.size();
     }
 
     std::list<cv::Matx44d>::const_iterator tIter;
     std::list<cv::Matx44d>::const_iterator cIter;
     std::list<cv::Matx44d>::const_iterator mIter;
 
-    for (tIter = (trackingMatrices.begin())++,
+    for (tIter = (m_TrackingMatrices.begin())++,
          cIter = (cameraMatrices.begin())++,
          mIter = (modelMatrices.begin())++;
-         tIter != trackingMatrices.end() &&
+         tIter != m_TrackingMatrices.end() &&
          cIter != cameraMatrices.end() &&
          mIter != modelMatrices.end();
          tIter++, cIter++, mIter++
@@ -540,7 +539,8 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(
       // to the first (earlier) camera position. Then add that offset
       // to the laparoscope tracking transformation to estimate where
       // the laparoscope would be relative to the chessboard if the chessboard
-      // was not in fact moving.
+      // was not in fact moving. This means calibration is done, by transforming
+      // all laparoscope positions relative the first starting chessboard.
 
       cv::Matx44d camera2ToCamera1 =
         (*(cameraMatrices.begin())).inv() * m_StaticModelTransform.inv() * ((*(modelMatrices.begin())).inv()) * (*mIter) * m_StaticModelTransform * ((*cIter).inv());
@@ -626,7 +626,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex)
   std::list<cv::Matx44d> modelMatrices = this->ExtractModelMatrices();
 
   cv::Matx44d handEye = niftk::CalculateHandEyeByDirectMatrixMultiplication(
-    (*(modelMatrices.begin()) * m_StaticModelTransform), // chessboard tracking matrix * static chessboard transform
+    (*(modelMatrices.begin()) * m_StaticModelTransform),
     trackingMatrices,
     cameraMatrices
     );
