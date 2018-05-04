@@ -37,6 +37,7 @@ Linux continuous build:
           -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
           -DEP_DIRECTORY_PER_VERSION:BOOL=ON
           -DBUILD_TESTING:BOOL=ON
+          -DBUILD_DISPLAY_TESTING:BOOL=ON
           -DBUILD_Caffe:BOOL=ON
           -DBUILD_LEGACY_COMMAND_LINE_PROGRAMS:BOOL=ON
           -DNIFTK_USE_CPPCHECK:BOOL=ON
@@ -68,6 +69,7 @@ Mac continuous build:
           -DEP_ALWAYS_USE_INSTALL_DIR:BOOL=OFF
           -DEP_DIRECTORY_PER_VERSION:BOOL=ON
           -DBUILD_TESTING:BOOL=ON
+          -DBUILD_DISPLAY_TESTING:BOOL=ON
           -DBUILD_Caffe:BOOL=ON
           -DBUILD_LEGACY_COMMAND_LINE_PROGRAMS:BOOL=ON
           -DDESIRED_QT_VERSION:STRING=4
@@ -316,6 +318,7 @@ Ubuntu 14.04 release build:
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - cmake -DBUILD_TESTING:BOOL=OFF
+          -DBUILD_DISPLAY_TESTING:BOOL=OFF
           -DNIFTK_USE_CPPCHECK:BOOL=OFF
           -DNIFTK_USE_KWSTYLE:BOOL=OFF
           -DDESIRED_QT_VERSION:STRING=4
@@ -344,6 +347,7 @@ Ubuntu 14.04 release build:
 #    - mkdir -p ${sb_dir}
 #    - cd ${sb_dir}
 #    - cmake -DBUILD_TESTING:BOOL=OFF
+#          -DBUILD_DISPLAY_TESTING:BOOL=OFF
 #          -DNIFTK_USE_CPPCHECK:BOOL=OFF
 #          -DNIFTK_USE_KWSTYLE:BOOL=OFF
 #          -DDESIRED_QT_VERSION:STRING=4
@@ -372,6 +376,7 @@ CentOS 7 release build:
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - cmake -DBUILD_TESTING:BOOL=OFF
+          -DBUILD_DISPLAY_TESTING:BOOL=OFF
           -DNIFTK_USE_CPPCHECK:BOOL=OFF
           -DNIFTK_USE_KWSTYLE:BOOL=OFF
           -DNIFTK_SITK_FLAGS:STRING="--single-version-externally-managed;--root=/"
@@ -405,6 +410,7 @@ CentOS 6 release build:
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - cmake -DBUILD_TESTING:BOOL=OFF
+          -DBUILD_DISPLAY_TESTING:BOOL=OFF
           -DNIFTK_USE_CPPCHECK:BOOL=OFF
           -DNIFTK_USE_KWSTYLE:BOOL=OFF
           -DDESIRED_QT_VERSION:STRING=4
