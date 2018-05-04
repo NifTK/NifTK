@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_NiftyReg)
 
-  set(version "810a02e829")
+  set(version "4e4525b842")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/niftyreg-${version}.tar.gz")
   set(depends "")
 
@@ -40,7 +40,6 @@ if(BUILD_NiftyReg)
       INSTALL_DIR ${proj_INSTALL}
       URL ${proj_LOCATION}
       URL_MD5 ${proj_CHECKSUM}
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       CMAKE_GENERATOR ${gen}
       CMAKE_ARGS
         ${EP_COMMON_ARGS}
