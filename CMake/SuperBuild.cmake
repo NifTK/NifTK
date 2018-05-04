@@ -307,7 +307,7 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
   endif()
 
   # Case-sensitive: Must match case in top level CMake.
-  foreach(p PCL NiftyReg NiftySeg NiftySim NiftyRec RTK VL Caffe Python)
+  foreach(p PCL NiftyReg NiftySeg NiftySim RTK VL Caffe Python)
     if (BUILD_${p})
       list(APPEND proj_DEPENDENCIES ${${p}_DEPENDS})
       message("Adding ${proj} dependencies: ${${p}_DEPENDS} as BUILD_${p} is ON.")
@@ -393,7 +393,6 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DBUILD_TESTING:BOOL=${BUILD_TESTING}
       -DBUILD_MESHING:BOOL=${BUILD_MESHING}
       -DBUILD_NiftyReg:BOOL=${BUILD_NiftyReg}
-      -DBUILD_NiftyRec:BOOL=${BUILD_NiftyRec}
       -DBUILD_NiftySim:BOOL=${BUILD_NiftySim}
       -DBUILD_NiftySeg:BOOL=${BUILD_NiftySeg}
       -DCUDA_SDK_ROOT_DIR:PATH=${CUDA_SDK_ROOT_DIR}
@@ -439,8 +438,6 @@ if(NOT DEFINED SUPERBUILD_EXCLUDE_NIFTKBUILD_TARGET OR NOT SUPERBUILD_EXCLUDE_NI
       -DVL_ROOT:PATH=${VL_ROOT}
       -DNiftyReg_DIR:PATH=${NiftyReg_DIR}
       -DNiftyReg_DEBUG_POSTFIX:STRING=d
-      -DNiftyRec_DIR:PATH=${NiftyRec_DIR}
-      -DNiftyRec_DEBUG_POSTFIX:STRING=d
       -DNiftySim_DIR:PATH=${NiftySim_DIR}
       -DNiftySim_DEBUG_POSTFIX:STRING=d
       -DNiftySeg_DIR:PATH=${NiftySeg_DIR}

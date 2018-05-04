@@ -127,11 +127,6 @@ Website : http://sourceforge.net/projects/niftysim/
 Purpose : Non-Linear Finite Element Solver Library
 License : Documentation/Licenses/NiftySim.txt (BSD 3 clause license)
 
-Library : NiftyRec
-Website : http://sourceforge.net/projects/niftyrec/
-Purpose : Tomographic Reconstruction Library
-License : Documentation/Licenses/NiftyRec.txt (BSD 3 clause license)
-
 Library : NiftyLink
 Website : http://cmicdev.cs.ucl.ac.uk/NiftyLink/html/index.html
 Purpose : Messaging Library to talk to client applications

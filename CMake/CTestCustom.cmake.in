@@ -136,13 +136,11 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
   # Trac 1860 - turn of external NiftyReg, NiftySeg package warnings etc.
   ".*NiftyReg.*"
   ".*NiftySeg.*"
-  ".*NiftyRec.*"
   ".*NiftySim.*"
   ".*NIFTYLINK.*"
   ".*OPENIGTLINK.*"
   ".*niftyreg.*"
   ".*niftyseg.*"
-  ".*niftyrec.*"
   ".*niftysim.*"
   ".*niftylink.*"
   ".*openigtlink.*"

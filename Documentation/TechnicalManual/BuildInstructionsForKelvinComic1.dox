@@ -20,7 +20,6 @@ The basic CMake options are listed below:
 \verbatim
  BUILD_COMMAND_LINE_PROGRAMS      ON
  BUILD_COMMAND_LINE_SCRIPTS       ON
- BUILD_NIFTYREC                   OFF
  BUILD_NIFTYREG                   OFF
  BUILD_NIFTYSEG                   OFF
  BUILD_NIFTYSIM                   OFF

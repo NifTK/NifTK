@@ -77,11 +77,6 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   QString ctkLocation(NIFTK_CTK_LOCATION);
   QString mitkLocation(NIFTK_MITK_LOCATION);
   
-#ifdef USE_NIFTYREC
-  QString niftyRecVersion(NIFTK_NIFTYREC_VERSION);
-  QString niftyRecLocation(NIFTK_NIFTYREC_LOCATION);
-#endif
-
   // Main titles with application name, release version and copyright statement.
   QString titles = QObject::tr(
       "<p>"

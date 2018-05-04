@@ -55,7 +55,8 @@ OpenCVVideoDataSourceService::OpenCVVideoDataSourceService(
 
   m_DataGrabbingThread = new niftk::IGIDataSourceGrabbingThread(nullptr, this);
 
-  bool isConnected = connect(m_DataGrabbingThread, SIGNAL(ErrorOccured(QString)), this, SLOT(OnErrorFromThread(QString)));
+  bool isConnected = connect(m_DataGrabbingThread, SIGNAL(ErrorOccured(QString)),
+                             this, SLOT(OnErrorFromThread(QString)));
   assert(isConnected);
 
   m_DataGrabbingThread->SetUseFastPolling(true);

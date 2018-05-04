@@ -55,7 +55,6 @@ Supported projects:
     qRestAPI
     commontk/PythonQt
     NifTK/PythonQt
-    NiftyRec
     niftyreg
     EpiNav-NiftyReg
     NiftySeg
@@ -410,9 +409,6 @@ then
 elif [ $project = NiftySim ]
 then
   download_from_sourceforge_git $project $version code
-elif [ $project = NiftyRec ]
-then
-  download_from_sourceforge_svn $project $version
 elif [ $project = camino ]
 then
   download_from_sourceforge_git $project $version git

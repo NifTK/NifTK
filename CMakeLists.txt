@@ -169,7 +169,6 @@ option(BUILD_COMMAND_LINE_PROGRAMS "Build command line applications." ON)
 option(BUILD_COMMAND_LINE_SCRIPTS "Build command line scripts in." ON)
 option(BUILD_CAMINO "Build Camino." OFF)
 option(BUILD_NiftyReg "Build NiftyReg." ON)
-option(BUILD_NiftyRec "Build NiftyRec." OFF)
 option(BUILD_NiftySim "Build NiftySim." ON)
 option(BUILD_NiftySeg "Build NiftySeg." ON)
 option(BUILD_Python "Build Python wrapping." OFF)
@@ -610,7 +609,6 @@ mitkFunctionAddExternalProject(NAME NiftyLink OFF ADVANCED)
 mitkFunctionAddExternalProject(NAME NiftySim  OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME NiftySeg  OFF ADVANCED NO_PACKAGE DEPENDS Eigen)
 mitkFunctionAddExternalProject(NAME NiftyReg  OFF ADVANCED NO_PACKAGE)
-mitkFunctionAddExternalProject(NAME NiftyRec  OFF ADVANCED NO_PACKAGE)
 mitkFunctionAddExternalProject(NAME NifTKData OFF ADVANCED)
 
 mitkFunctionAddExternalProject(NAME DCMTK     ON  ADVANCED)
@@ -683,12 +681,6 @@ if (BUILD_NiftySim)
   set(MITK_USE_NiftySim ON CACHE BOOL "" FORCE)
 else()
   set(MITK_USE_NiftySim OFF CACHE BOOL "" FORCE)
-endif()
-
-if (BUILD_NiftyRec)
-  set(MITK_USE_NiftyRec ON CACHE BOOL "" FORCE)
-else()
-  set(MITK_USE_NiftyRec OFF CACHE BOOL "" FORCE)
 endif()
 
 if (BUILD_VL)
@@ -1048,7 +1040,6 @@ if(aruco_FOUND)
 endif()
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindFFTW.cmake ${CMAKE_BINARY_DIR}/FindFFTW.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyReg.cmake ${CMAKE_BINARY_DIR}/FindNiftyReg.cmake @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftyRec.cmake ${CMAKE_BINARY_DIR}/FindNiftyRec.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySim.cmake ${CMAKE_BINARY_DIR}/FindNiftySim.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindNiftySeg.cmake ${CMAKE_BINARY_DIR}/FindNiftySeg.cmake @ONLY)
 configure_file(${CMAKE_SOURCE_DIR}/CMake/FindEigen.cmake ${CMAKE_BINARY_DIR}/FindEigen.cmake @ONLY)
@@ -1395,23 +1386,6 @@ if(NOT NiftyReg_FOUND)
 endif()
 
 ######################################################################
-# Find NiftyRec - (version will vary according to whether CUDA found)
-# NB: Is dependent on NiftyReg and at time of writing only has GPU version
-######################################################################
-
-if(BUILD_NiftyRec)
-  find_package(NiftyRec)
-  if(NiftyRec_FOUND)
-    set(NIFTK_INCLUDE_DIRS_BUILD_TREE ${NIFTK_INCLUDE_DIRS_BUILD_TREE} ${NiftyRec_INCLUDE_DIR})
-    add_definitions(-DUSE_NIFTYREC)
-    set(NIFTYREC_NVCC_FLAGS "${NIFTYREC_NVCC_FLAGS};-DUSE_NIFTYREC")
-    message("Found NiftyRec")
-  else()
-    message("Didn't find NiftyRec")
-  endif()
-endif()
-
-######################################################################
 # Find NiftySim
 ######################################################################
 
@@ -1733,7 +1707,6 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/Qt.txt DESTINATION $
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/MITK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/CTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftyReg.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftyRec.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftySeg.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/NiftySim.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/Documentation/Licenses/DCMTK.txt DESTINATION ${NIFTK_INSTALL_LICENSES_DIR} COMPONENT documentation)
@@ -1771,7 +1744,7 @@ if(NOT WIN32 AND NOT APPLE)
 endif()
 
 ##########################################################################
-# Install commands for the NiftyReg, NiftySeg, NiftyRec, NiftySim packages
+# Install commands for the NiftyReg, NiftySeg, NiftySim packages
 ##########################################################################
 
 # NiftyReg
@@ -1809,18 +1782,6 @@ if(BUILD_NiftySeg)
 
   file(GLOB _NiftySeg_PRIORS_FILES ${NiftySeg_DIR}/priors/*)
   install(PROGRAMS ${_NiftySeg_PRIORS_FILES} DESTINATION ${NIFTK_INSTALL_BASE_DIR}/priors COMPONENT applications)
-endif()
-
-# NiftyRec
-if(BUILD_NiftyRec AND NiftyRec_FOUND)
-  file(GLOB _NiftyRec_LIB_FILES
-       ${NiftyRec_DIR}/lib/*.so
-       ${NiftyRec_DIR}/lib/*.dylib
-       )
-  MITK_INSTALL(PROGRAMS ${_NiftyRec_LIB_FILES})
-
-  file(GLOB _NiftyRec_INCL_FILES ${NiftyRec_DIR}/include/*)
-  MITK_INSTALL(PROGRAMS ${_NiftyRec_INCL_FILES})
 endif()
 
 # NiftySim
