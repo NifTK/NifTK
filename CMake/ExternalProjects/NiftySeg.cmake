@@ -24,7 +24,7 @@ endif()
 
 if(BUILD_NiftySeg)
 
-  set(version "ce235017b7")
+  set(version "1e550da6e1")
   set(location "${NIFTK_EP_TARBALL_LOCATION}/NiftySeg-${version}.tar.gz")
   set(depends Eigen)
 
@@ -42,7 +42,6 @@ if(BUILD_NiftySeg)
       URL_MD5 ${proj_CHECKSUM}
       CMAKE_GENERATOR ${gen}
       #CONFIGURE_COMMAND ""
-      UPDATE_COMMAND ${GIT_EXECUTABLE} checkout ${proj_VERSION}
       #BUILD_COMMAND ""
       #INSTALL_COMMAND ""
       CMAKE_ARGS
