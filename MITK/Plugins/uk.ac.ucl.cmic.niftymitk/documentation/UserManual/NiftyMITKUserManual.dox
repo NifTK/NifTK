@@ -10,19 +10,16 @@ and ask questions via email.
 
 \section NiftyMITKPurpose Purpose
 
-The NiftyMITK application was developed by the 
-<a href="http://cmic.cs.ucl.ac.uk">Centre For Medical Image Computing (CMIC)</a> as a general
-purpose research application for medical image visualisation and analysis, and to support
-image guided interventions. It is not intended for clinical use.
+The NifTK user interfaces are built using the MITK application framework.
 
-By design, all available plugins for the NifTK platform will be available in NiftyMITK.
-More specific application will also be developed, and provide a subset of the functionality 
-according to different user requirements.  For example, CMIC has also developed
- 
-\li NiftyMIDAS, which is a specific program for the 
-<a href="http://dementia.ion.ucl.ac.uk/">UCL Dementia Research Centre</a>, to provide
-image analysis tools to study dementia.
-\li NiftyIGI to provide a platform for research into Image Guided Interventions (IGI).
+This NiftyMITK application uses the MITK Display Editor (Viewer) to view
+data, and this application is called NiftyMITK because it was packaged
+by the NifTK team, but mainly contains MITK plugins developed by the
+original MITK team, plus a few of our own. So, its mostly MITK.
+
+Feel free to refer to <a href="http://www.mitk.org">mitk.org</a> for more information.
+
+NiftyMITK is not intended for clinical use.
 
 \section NiftyMITKFurtherReading Further Reading
 

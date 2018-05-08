@@ -11,18 +11,10 @@ and ask questions via email.
 \section NiftyViewPurpose Purpose
 
 The NiftyView application was developed by the 
-<a href="http://cmic.cs.ucl.ac.uk">Centre For Medical Image Computing (CMIC)</a> as a general
-purpose research application for medical image visualisation and analysis, and to support
-image guided interventions. It is not intended for clinical use.
+<a href="http://www.ucl.ac.uk/medical-image-computing">Centre For Medical Image Computing (CMIC)</a> as a general
+purpose research application for medical image visualisation and analysis.
 
-By design, all available plugins for the NifTK platform will be available in NiftyView.
-More specific application will also be developed, and provide a subset of the functionality 
-according to different user requirements.  For example, CMIC has also developed
- 
-\li NiftyMIDAS, which is a specific program for the 
-<a href="http://dementia.ion.ucl.ac.uk/">UCL Dementia Research Centre</a>, to provide
-image analysis tools to study dementia.
-\li NiftyIGI to provide a platform for reasearch into Image Guided Interventions (IGI).
+NiftyView is not intended for clinical use.
 
 \section NiftyViewFurtherReading Further Reading
 

@@ -11,9 +11,10 @@ and ask questions via email.
 \section NiftyIGIPurpose Purpose
 
 The NiftyIGI application was developed by the 
-<a href="http://cmic.cs.ucl.ac.uk">Centre For Medical Image Computing (CMIC)</a> as a general
+<a href="http://www.ucl.ac.uk/medical-image-computing">Centre For Medical Image Computing (CMIC)</a> as a general
 purpose graphical user interface (GUI) to support research into image guided interventions.
-It is not intended for clinical use.
+
+NiftyIGI is not intended for clinical use.
 
 \section NiftyIGIFurtherReading Further Reading
 
