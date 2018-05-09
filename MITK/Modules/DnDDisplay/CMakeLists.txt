@@ -22,6 +22,6 @@ if (NIFTK_USE_COTIRE AND COMMAND cotire)
   cotire(niftkDnDDisplay)
 endif()
 
-if(BUILD_TESTING)
+if(BUILD_DISPLAY_TESTING)
   add_subdirectory(Testing)
 endif()
