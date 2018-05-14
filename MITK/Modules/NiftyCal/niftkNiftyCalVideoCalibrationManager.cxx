@@ -221,7 +221,8 @@ void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints()
   }
   else
   {
-    niftk::CoordinateAxesData::Pointer trackingData = dynamic_cast<CoordinateAxesData*>(m_ModelTransformNode->GetData());
+    niftk::CoordinateAxesData::Pointer trackingData
+      = dynamic_cast<CoordinateAxesData*>(m_ModelTransformNode->GetData());
     if (trackingData.IsNull())
     {
       MITK_WARN << "Can't extract trackingData from ModelTransformNode!";
@@ -524,7 +525,7 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(
          tIter != m_TrackingMatrices.end() &&
          cIter != cameraMatrices.end() &&
          mIter != modelMatrices.end();
-         tIter++, cIter++, mIter++
+         ++tIter, ++cIter, ++mIter
          )
     {
       // If laparoscope and chessboard are moving, then calculate
@@ -536,7 +537,12 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(
       // all laparoscope positions relative the first starting chessboard.
 
       cv::Matx44d camera2ToCamera1 =
-        (*(cameraMatrices.begin())).inv() * m_StaticModelTransform.inv() * ((*(modelMatrices.begin())).inv()) * (*mIter) * m_StaticModelTransform * ((*cIter).inv());
+          (*(cameraMatrices.begin())).inv()
+        * m_StaticModelTransform.inv()
+        * ((*(modelMatrices.begin())).inv())
+        * (*mIter)
+        * m_StaticModelTransform
+        * ((*cIter).inv());
 
       cv::Matx44d tracking2 = *tIter;
       cv::Matx44d result = camera2ToCamera1 * tracking2;
