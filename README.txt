@@ -13,12 +13,12 @@ Notices
 We have included the Slicer Execution Model. This is downloaded at compile
 time, in order to build command line applications. In addition the file
 NifTK/CMake/niftkMacroBuildCLI.cmake contains a modified version of 
-SEMMacroBuildCLI.cmake.
+SEMMacroBuildCLI.cmake. The Slicer license requires the following notice:
 
-All or portions of this licensed product (such portions are the "Software") 
+"All or portions of this licensed product (such portions are the "Software") 
 have been obtained under license from The Brigham and Women's Hospital, Inc. 
 and are subject to the following terms and conditions:
-  http://www.slicer.org/copyright/copyright.txt
+  http://www.slicer.org/copyright/copyright.txt"
 
 Additional Libraries
 --------------------
@@ -53,11 +53,9 @@ Library : ITK
 Website : http://www.itk.org
 Purpose : Image processing algorithms.
 License : Documentation/Licenses/ITK.txt (Apache v2 license)
-Mods    : 4.3.2.1: Removed path length check in top level CMakeLists.txt
-          4.3.2.2: Raised https://issues.itk.org/jira/browse/ITK-3206
-                   Applied patch directly to our 4.3.2.1 version.
-          4.3.2.3: Fixed ITK_USE_FFTWF to USE_FFTWF in itkExternal_FFTW.cmake
-                   This is not required to be fed back to ITK, as they already fixed it (albeit differently).
+Version : 4.7.1 Release
+Mods    : Applied via CMake patches:
+          https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/tree/master/CMake/ExternalProjects
 
 Library : OpenCV
 Website : http://opencv.willowgarage.com/wiki
@@ -113,7 +111,7 @@ Purpose : Common medical imaging specific classes.
 License : Documentation/Licenses/CTK_LICENSE.txt (Apache v2.0 license)
 
 Library : NiftyReg
-Website : http://sourceforge.net/projects/niftyreg/ 
+Website : https://cmiclab.cs.ucl.ac.uk/mmodat/niftyreg
 Purpose : Image Registration Library
 License : Documentation/Licenses/NiftyReg.txt (BSD 3 clause license)
 
@@ -128,6 +126,6 @@ Purpose : Non-Linear Finite Element Solver Library
 License : Documentation/Licenses/NiftySim.txt (BSD 3 clause license)
 
 Library : NiftyLink
-Website : http://cmicdev.cs.ucl.ac.uk/NiftyLink/html/index.html
+Website : https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink 
 Purpose : Messaging Library to talk to client applications
 License : Documentation/Licenses/NiftyLink.txt (BSD 3 clause license)
