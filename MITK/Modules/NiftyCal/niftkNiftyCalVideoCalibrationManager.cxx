@@ -66,6 +66,7 @@ const std::string         NiftyCalVideoCalibrationManager::DefaultTagFamily("25h
 const bool                NiftyCalVideoCalibrationManager::DefaultUpdateNodes(true);
 const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints(70);
 const bool                NiftyCalVideoCalibrationManager::DefaultModelIsStationary(true);
+const bool                NiftyCalVideoCalibrationManager::DefaultCameraIsStationary(false);
 
 const NiftyCalVideoCalibrationManager::CalibrationPatterns
   NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESS_BOARD);
@@ -81,6 +82,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_DoIterative(NiftyCalVideoCalibrationManager::DefaultDoIterative)
 , m_Do3DOptimisation(NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation)
 , m_ModelIsStationary(NiftyCalVideoCalibrationManager::DefaultModelIsStationary)
+, m_CameraIsStationary(NiftyCalVideoCalibrationManager::DefaultCameraIsStationary)
 , m_NumberOfSnapshotsForCalibrating(NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating)
 , m_ScaleFactorX(NiftyCalVideoCalibrationManager::DefaultScaleFactorX)
 , m_ScaleFactorY(NiftyCalVideoCalibrationManager::DefaultScaleFactorY)

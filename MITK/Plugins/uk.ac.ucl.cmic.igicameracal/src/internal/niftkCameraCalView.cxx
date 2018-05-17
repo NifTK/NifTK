@@ -210,6 +210,9 @@ void CameraCalView::RetrievePreferenceValues()
     bool modelIsStationary = prefs->GetBool(CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultModelIsStationary);
     m_Manager->SetModelIsStationary(modelIsStationary);
 
+    bool cameraIsStationary = prefs->GetBool(CameraCalViewPreferencePage::CAMERA_IS_STATIONARY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultCameraIsStationary);
+    m_Manager->SetCameraIsStationary(cameraIsStationary);
+
     bool doClustering = prefs->GetBool(CameraCalViewPreferencePage::DO_CLUSTERING_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoClustering);
     m_Manager->SetDoClustering(doClustering);
 

@@ -448,6 +448,23 @@
       </widget>
      </item>
      <item row="17" column="0">
+      <widget class="QLabel" name="m_CameraIsStationaryLabel">
+       <property name="toolTip">
+        <string>Name of a 4x4 file to describe model to tracker transform.</string>
+       </property>
+       <property name="text">
+        <string>camera is stationary</string>
+       </property>
+      </widget>
+     </item>
+     <item row="17" column="1">
+      <widget class="QCheckBox" name="m_CameraIsStationaryCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="18" column="0">
       <widget class="QLabel" name="m_OutputDirLabel">
        <property name="toolTip">
         <string>The minimum before camera calibration starts.</string>
@@ -457,7 +474,7 @@
        </property>
       </widget>
      </item>
-     <item row="17" column="1">
+     <item row="18" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout_9">
        <item>
         <widget class="QLineEdit" name="m_OutputDirLineEdit">
