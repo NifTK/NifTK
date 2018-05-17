@@ -249,7 +249,7 @@ private:
   /**
    * \brief Extracts a set of tracking matrices.
    */
-  std::list<cv::Matx44d> ExtractTrackingMatrices(int imageIndex);
+  std::list<cv::Matx44d> ExtractTrackingMatrices();
 
   /**
    * \brief Extracts a set of model (chessboard to tracker) matrices.
