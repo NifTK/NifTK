@@ -492,6 +492,23 @@
        </item>
       </layout>
      </item>
+     <item row="19" column="0">
+      <widget class="QLabel" name="m_SaveOutputBeforeCalibrationLabel">
+       <property name="toolTip">
+        <string>Name of a 4x4 file to describe model to tracker transform.</string>
+       </property>
+       <property name="text">
+        <string>save output regardless of calibration:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="19" column="1">
+      <widget class="QCheckBox" name="m_SaveOutputBeforeCalibrationCheckBox">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>

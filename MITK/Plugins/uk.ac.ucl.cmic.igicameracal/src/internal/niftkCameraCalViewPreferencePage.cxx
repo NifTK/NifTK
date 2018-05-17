@@ -48,6 +48,7 @@ const QString CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME("p
 const QString CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME("output directory");
 const QString CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME("model is stationary");
 const QString CameraCalViewPreferencePage::CAMERA_IS_STATIONARY_NODE_NAME("camera is stationary");
+const QString CameraCalViewPreferencePage::SAVE_OUTPUT_BEFORE_CALIBRATION_NODE_NAME("save output before calibration");
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
@@ -137,6 +138,7 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
   m_Ui->m_ModelIsStationaryCheckBox->setChecked(true);
   m_Ui->m_CameraIsStationaryCheckBox->setChecked(false);
+  m_Ui->m_SaveOutputBeforeCalibrationCheckBox->setChecked(false);
   this->OnDoIterativeChecked(false);
   this->OnFeaturesComboSelected();
 
@@ -364,6 +366,7 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, m_Ui->m_OutputDirLineEdit->text());
   m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME, m_Ui->m_ModelIsStationaryCheckBox->isChecked());
   m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::CAMERA_IS_STATIONARY_NODE_NAME, m_Ui->m_CameraIsStationaryCheckBox->isChecked());
+  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::SAVE_OUTPUT_BEFORE_CALIBRATION_NODE_NAME, m_Ui->m_SaveOutputBeforeCalibrationCheckBox->isChecked());
   return true;
 }
 
@@ -404,6 +407,7 @@ void CameraCalViewPreferencePage::Update()
   m_Ui->m_OutputDirLineEdit->setText(path);
   m_Ui->m_ModelIsStationaryCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultModelIsStationary));
   m_Ui->m_CameraIsStationaryCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::CAMERA_IS_STATIONARY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultCameraIsStationary));
+  m_Ui->m_SaveOutputBeforeCalibrationCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::SAVE_OUTPUT_BEFORE_CALIBRATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultSaveOutputBeforeCalibration));
 }
 
 } // end namespace
