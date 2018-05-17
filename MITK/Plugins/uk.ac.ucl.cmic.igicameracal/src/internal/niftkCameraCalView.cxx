@@ -553,6 +553,10 @@ std::string CameraCalView::RunCalibration()
 
   try
   {
+    if (m_Manager->GetSaveOutputBeforeCalibration())
+    {
+      m_Manager->Save();
+    }
     outputMessage = m_Manager->Calibrate();
   }
   catch (niftk::NiftyCalException& e)
@@ -605,7 +609,10 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
-    m_Manager->Save();
+    if (!m_Manager->GetSaveOutputBeforeCalibration())
+    {
+      m_Manager->Save();
+    }
   }
 
   m_Manager->Restart();
