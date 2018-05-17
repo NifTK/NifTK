@@ -492,6 +492,14 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(
 {
   std::list<cv::Matx44d> trackingMatrices;
 
+  // Algorithm
+  // If model (chessboard) is stationary, and camera moving
+  //   This is the 'normal' mode of operation, so just extract tracking matrices.
+  //   We are effectively assuming the chessboard is untracked, regardless of whether
+  //   the user has selected a tracking transformation, which they may be recording
+  //   just for amusements sake. Shahidi's method
+  // else if camera is stationary and model is moving
+  //
   if (m_ModelTransformNode.IsNull() || m_TrackingMatrices.size() == 1)
   {
     std::list<cv::Matx44d>::const_iterator trackingIter;
@@ -570,7 +578,7 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractModelMatrices()
        ++modelIter
        )
   {
-    modelMatrices.push_back(*modelIter);
+    modelMatrices.push_back((*modelIter) * m_StaticModelTransform);
   }
 
   return modelMatrices;
@@ -628,13 +636,49 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex)
   std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(imageIndex);
   std::list<cv::Matx44d> modelMatrices = this->ExtractModelMatrices();
 
-  cv::Matx44d handEye = niftk::CalculateHandEyeByDirectMatrixMultiplication(
-    (*(modelMatrices.begin()) * m_StaticModelTransform),
-    trackingMatrices,
-    cameraMatrices
-    );
+  if (cameraMatrices.size() != trackingMatrices.size())
+  {
+    mitkThrow() << "Number of camera matrices:" << cameraMatrices.size()
+                << ", does not equal the number of tracking matrices:" << trackingMatrices.size();
+  }
+  if (modelMatrices.size() != trackingMatrices.size())
+  {
+    mitkThrow() << "Number of model matrices:" << modelMatrices.size()
+                << ", does not equal the number of tracking matrices:" << trackingMatrices.size();
+  }
 
+  std::list<cv::Matx44d> handEyeMatrices;
 
+  std::list<cv::Matx44d>::const_iterator tIter;
+  std::list<cv::Matx44d>::const_iterator cIter;
+  std::list<cv::Matx44d>::const_iterator mIter;
+
+  for (tIter = (trackingMatrices.begin())++,
+       cIter = (cameraMatrices.begin())++,
+       mIter = (modelMatrices.begin())++;
+       tIter != trackingMatrices.end() &&
+       cIter != cameraMatrices.end() &&
+       mIter != modelMatrices.end();
+       ++tIter, ++cIter, ++mIter
+       )
+  {
+
+    std::list<cv::Matx44d> singleTracking;
+    singleTracking.push_back(*tIter);
+
+    std::list<cv::Matx44d> singleCamera;
+    singleCamera.push_back(*cIter);
+
+    cv::Matx44d handEye = niftk::CalculateHandEyeByDirectMatrixMultiplication(
+      *mIter,
+      singleTracking,
+      singleCamera
+      );
+
+    handEyeMatrices.push_back(handEye);
+  }
+
+  cv::Matx44d handEye = niftk::AverageMatricesUsingEigenValues(handEyeMatrices);
   return handEye;
 }
 
