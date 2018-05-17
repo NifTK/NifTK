@@ -129,6 +129,10 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   assert(ok);
   ok = connect(m_Ui->m_IterativeCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnDoIterativeChecked(bool)));
   assert(ok);
+  ok = connect(m_Ui->m_ModelIsStationaryCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnModelIsStationaryChecked(bool)));
+  assert(ok);
+  ok = connect(m_Ui->m_CameraIsStationaryCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnCameraIsStationaryChecked(bool)));
+  assert(ok);
 
   m_Ui->m_FeaturesComboBox->setCurrentIndex(0);
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(1);
@@ -182,6 +186,26 @@ void CameraCalViewPreferencePage::UpdateReferenceImageVisibility()
 void CameraCalViewPreferencePage::OnDoIterativeChecked(bool)
 {
   this->UpdateReferenceImageVisibility();
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnModelIsStationaryChecked(bool isChecked)
+{
+  if(m_Ui->m_CameraIsStationaryCheckBox->isChecked() && isChecked)
+  {
+    m_Ui->m_ModelIsStationaryCheckBox->setChecked(false);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnCameraIsStationaryChecked(bool isChecked)
+{
+  if(m_Ui->m_ModelIsStationaryCheckBox->isChecked() && isChecked)
+  {
+    m_Ui->m_CameraIsStationaryCheckBox->setChecked(false);
+  }
 }
 
 

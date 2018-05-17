@@ -94,6 +94,8 @@ public:
 
 private slots:
 
+  void OnModelIsStationaryChecked(bool);
+  void OnCameraIsStationaryChecked(bool);
   void OnDoIterativeChecked(bool);
   void OnFeaturesComboSelected();
 
