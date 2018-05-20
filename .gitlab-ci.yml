@@ -388,7 +388,7 @@ CentOS 7 release build:
           -DNIFTK_Apps/NiftyView:BOOL=ON
           -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
-    - make -j 8
+    - make -j 1 
 
   only:
     - tags
