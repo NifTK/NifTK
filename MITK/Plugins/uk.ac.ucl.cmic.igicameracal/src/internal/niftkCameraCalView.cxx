@@ -526,7 +526,7 @@ void CameraCalView::Calibrate()
   int numberForCalibrating = m_Manager->GetNumberOfSnapshotsForCalibrating();
   int numberAcquired = m_Manager->GetNumberOfSnapshots();
 
-  if (numberAcquired == numberForCalibrating)
+  if (numberAcquired >= numberForCalibrating)
   {
     this->SetButtonsEnabled(false);
 
