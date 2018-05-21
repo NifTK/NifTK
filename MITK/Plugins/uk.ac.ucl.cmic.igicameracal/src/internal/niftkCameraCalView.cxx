@@ -401,12 +401,28 @@ void CameraCalView::OnGrabButtonPressed()
   assert(!m_BackgroundGrabProcess.isRunning());
   assert(!m_BackgroundCalibrateProcess.isRunning());
 
+  // No point grabbing or calibrating if no left channel video image at all.
   mitk::DataNode::Pointer node = m_Controls->m_LeftCameraComboBox->GetSelectedNode();
   if (node.IsNull())
   {
     QMessageBox msgBox;
     msgBox.setText("The left camera image is non-existent, or not-selected.");
     msgBox.setInformativeText("Please select a left camera image.");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+    return;
+  }
+
+  // If there is no model file, calibration will ultimately fail.
+  // However, if the user just wants to grab data, and hence
+  // m_Manager->GetSaveOutputBeforeCalibration() is true, then we do NOT need this check.
+  // So, only do this check if m_Manager->GetSaveOutputBeforeCalibration() is false.
+  if (m_Manager->GetModelFileName().empty() && !m_Manager->GetSaveOutputBeforeCalibration())
+  {
+    QMessageBox msgBox;
+    msgBox.setText("An Error Occurred.");
+    msgBox.setInformativeText("The model file name is empty - check preferences.");
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.setDefaultButton(QMessageBox::Ok);
     msgBox.exec();
@@ -512,26 +528,14 @@ void CameraCalView::Calibrate()
 
   if (numberAcquired == numberForCalibrating)
   {
-    if (m_Manager->GetModelFileName().empty())
-    {
-      QMessageBox msgBox;
-      msgBox.setText("An Error Occurred.");
-      msgBox.setInformativeText("The model file name is empty - check preferences.");
-      msgBox.setStandardButtons(QMessageBox::Ok);
-      msgBox.setDefaultButton(QMessageBox::Ok);
-      msgBox.exec();
-    }
-    else
-    {
-      this->SetButtonsEnabled(false);
+    this->SetButtonsEnabled(false);
 
-      QPixmap image(":/uk.ac.ucl.cmic.igicameracal/boobaloo-Don-t-Step-No-Gnome--300px.png");
-      m_Controls->m_ImageLabel->setPixmap(image);
-      m_Controls->m_ImageLabel->show();
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/boobaloo-Don-t-Step-No-Gnome--300px.png");
+    m_Controls->m_ImageLabel->setPixmap(image);
+    m_Controls->m_ImageLabel->show();
 
-      m_BackgroundCalibrateProcess = QtConcurrent::run(this, &CameraCalView::RunCalibration);
-      m_BackgroundCalibrateProcessWatcher.setFuture(m_BackgroundCalibrateProcess);
-    }
+    m_BackgroundCalibrateProcess = QtConcurrent::run(this, &CameraCalView::RunCalibration);
+    m_BackgroundCalibrateProcessWatcher.setFuture(m_BackgroundCalibrateProcess);
   }
   else
   {
