@@ -94,7 +94,7 @@ call cmake.exe ^
     -DNIFTK_Apps/NiftyView:BOOL=ON ^
     -DNIFTK_Apps/NiftyMITK:BOOL=ON ^
     -DNIFTK_Apps/NiftyIGI:BOOL=ON ^
-    -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF ^
+    -DNIFTK_Apps/NiftyMIDAS:BOOL=ON ^
     -G "%CMAKE_GENERATOR%" "%src_dir%"
 if %ERRORLEVEL% NEQ 0 exit /B 1
 
