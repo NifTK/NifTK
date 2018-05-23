@@ -219,7 +219,7 @@ void NiftyCalVideoCalibrationManager::SetTrackingTransformNode(mitk::DataNode::P
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints()
 {
-  if(m_ModelTransformNode.IsNull())
+  if(m_ModelTransformNode.IsNull() || m_ModelIsStationary)
   {
     this->UpdateVisualisedPoints(m_ModelToWorld);
   }
@@ -431,7 +431,7 @@ void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
     coords->SetVtkMatrix(*cameraToWorldMatrix);
     node->Modified();
 
-    if (m_ModelTransformNode.IsNotNull())
+    if (m_ModelTransformNode.IsNotNull() && !m_ModelIsStationary)
     {
       this->UpdateVisualisedPoints();
     }
