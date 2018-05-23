@@ -488,11 +488,11 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractCameraMatrices(in
 
 
 //-----------------------------------------------------------------------------
-std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices()
+std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(bool shahidiOverride)
 {
   std::list<cv::Matx44d> trackingMatrices;
 
-  if (m_ModelIsStationary && !m_CameraIsStationary)
+  if (m_ModelIsStationary || shahidiOverride)
   {
     std::list<cv::Matx44d>::const_iterator trackingIter;
     for (trackingIter = m_TrackingMatrices.begin();
@@ -519,10 +519,7 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(
          ++tIter, ++mIter
          )
     {
-      cv::Matx44d modelNToModel1 =
-        (*(modelMatrices.begin())).inv() * (*mIter);
-
-      trackingMatrices.push_back((*tIter) * modelNToModel1);
+      trackingMatrices.push_back((*(modelMatrices.begin())) * ((*mIter).inv()) * (*tIter));
     }
   }
   else
@@ -600,7 +597,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex)
 cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex)
 {
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices();
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(true);
   std::list<cv::Matx44d> modelMatrices = this->ExtractModelMatrices();
 
   if (cameraMatrices.size() != trackingMatrices.size())
