@@ -249,8 +249,8 @@ endif(BUILD_MESHING)
 # Variables that get compiled into C++ code.
 ######################################################################
 set(NIFTK_PLATFORM "NifTK" CACHE STRING "Full name of platform." FORCE )
-set(NIFTK_LICENSE_SHORT_STRING "Not licensed for use outside of UCL." CACHE STRING "Short description of license" FORCE )
-set(NIFTK_COPYRIGHT "Copyright (C) 2008-2017 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
+set(NIFTK_LICENSE_SHORT_STRING "Licensed under BSD 3-clause open-source license." CACHE STRING "Short description of license" FORCE )
+set(NIFTK_COPYRIGHT "Copyright (C) 2008-2018 University College London (UCL). All rights reserved." CACHE STRING "Copyright string." FORCE )
 set(NIFTK_ORIGIN_URL "http://www.ucl.ac.uk/medical-image-computing" CACHE STRING "URL of originating institution." FORCE )
 set(NIFTK_ORIGIN_SHORT_TEXT "CMIC" CACHE STRING "Short name of originating institution." FORCE)
 set(NIFTK_ORIGIN_LONG_TEXT "Centre For Medical Image Computing" CACHE STRING "Full name of originating institution." FORCE)
