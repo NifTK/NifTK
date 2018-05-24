@@ -189,7 +189,7 @@ bool UltrasonixDataSourceInterface::IsConnected() const
 //-----------------------------------------------------------------------------
 void UltrasonixDataSourceInterface::Connect(const QString& host)
 {
-  if (!m_Ulterius->connect(host.toAscii()))
+  if (!m_Ulterius->connect(host.toLatin1()))
   {
     mitkThrow() << "Failed to connect to:" << host.toStdString();
   }
