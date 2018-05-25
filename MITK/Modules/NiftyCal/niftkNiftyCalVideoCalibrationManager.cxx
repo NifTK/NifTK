@@ -219,9 +219,12 @@ void NiftyCalVideoCalibrationManager::SetTrackingTransformNode(mitk::DataNode::P
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints()
 {
+  vtkSmartPointer<vtkMatrix4x4> vtkModelToWorld = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkModelToWorld->Identity();
+
   if(m_ModelTransformNode.IsNull() || m_ModelIsStationary)
   {
-    this->UpdateVisualisedPoints(m_ModelToWorld);
+    mitk::CopyToVTK4x4Matrix(m_ModelToWorld, *vtkModelToWorld);
   }
   else
   {
@@ -236,48 +239,13 @@ void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints()
     vtkSmartPointer<vtkMatrix4x4> trackingVtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
     trackingData->GetVtkMatrix(*trackingVtkMatrix);
 
-    cv::Matx44d trackingCvMat;
-    mitk::CopyToOpenCVMatrix(*trackingVtkMatrix, trackingCvMat);
+    vtkSmartPointer<vtkMatrix4x4> staticModelTransform = vtkSmartPointer<vtkMatrix4x4>::New();
+    mitk::CopyToVTK4x4Matrix(m_StaticModelTransform, *staticModelTransform);
 
-    cv::Matx44d modelToWorld = trackingCvMat * m_StaticModelTransform;
-    this->UpdateVisualisedPoints(modelToWorld);
+    vtkMatrix4x4::Multiply4x4(trackingVtkMatrix, staticModelTransform, vtkModelToWorld);
   }
-}
 
-
-//-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints(cv::Matx44d& transform)
-{
-  if (m_DataStorage.IsNotNull())
-  {
-    m_DataStorage->Remove(m_ModelPointsToVisualiseDataNode);
-
-    m_ModelPointsToVisualise->Clear();
-
-    niftk::Model3D::const_iterator iter;
-    for (iter = m_ModelPoints.begin();
-         iter != m_ModelPoints.end();
-         ++iter
-         )
-    {
-      cv::Point3d p1 = (*iter).second.point;
-      cv::Matx41d p2;
-      p2(0, 0) = p1.x;
-      p2(1, 0) = p1.y;
-      p2(2, 0) = p1.z;
-      p2(3, 0) = 1;
-      cv::Matx41d p3 = transform * p2;
-
-      mitk::Point3D p4;
-      p4[0] = p3(0, 0);
-      p4[1] = p3(1, 0);
-      p4[2] = p3(2, 0);
-
-      m_ModelPointsToVisualise->InsertPoint((*iter).first, p4);
-    }
-
-    m_DataStorage->Add(m_ModelPointsToVisualiseDataNode);
-  }
+  m_ModelPointsToVisualiseDataNode->GetData()->GetGeometry()->SetIndexToWorldTransformByVtkMatrix(vtkModelToWorld);
 }
 
 
@@ -289,6 +257,11 @@ void NiftyCalVideoCalibrationManager::SetModelFileName(const std::string& fileNa
     mitkThrow() << "Empty 3D model file name.";
   }
 
+  if (m_DataStorage.IsNull())
+  {
+    mitkThrow() << "Data storage is NULL";
+  }
+
   niftk::Model3D model = niftk::LoadModel3D(fileName);
   if (model.empty())
   {
@@ -298,8 +271,35 @@ void NiftyCalVideoCalibrationManager::SetModelFileName(const std::string& fileNa
   m_ModelFileName = fileName;
   m_ModelPoints = model;
 
-  cv::Matx44d id = cv::Matx44d::eye();
-  this->UpdateVisualisedPoints(id);
+  if (m_DataStorage->Exists(m_ModelPointsToVisualiseDataNode))
+  {
+    m_DataStorage->Remove(m_ModelPointsToVisualiseDataNode);
+  }
+
+  m_ModelPointsToVisualise->Clear();
+
+  niftk::Model3D::const_iterator iter;
+  for (iter = m_ModelPoints.begin();
+       iter != m_ModelPoints.end();
+       ++iter
+       )
+  {
+    cv::Point3d p1 = (*iter).second.point;
+
+    mitk::Point3D p2;
+    p2[0] = p1.x;
+    p2[1] = p1.y;
+    p2[2] = p1.z;
+
+    m_ModelPointsToVisualise->InsertPoint((*iter).first, p2);
+  }
+
+  vtkSmartPointer<vtkMatrix4x4> idMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  idMatrix->Identity();
+  m_ModelPointsToVisualiseDataNode->GetData()->GetGeometry()->SetIndexToWorldTransformByVtkMatrix(idMatrix);
+
+  m_DataStorage->Add(m_ModelPointsToVisualiseDataNode);
+
   this->Modified();
 }
 
