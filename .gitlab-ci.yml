@@ -224,7 +224,11 @@ Continuous docs:
           rm -rf niftk-master-docs.tar.bz2 master ;
           tar xfj niftk-${version}-docs.tar.bz2 ;
           mv niftk-${version}-docs master ;
-          mv niftk-${version}-docs.tar.bz2 niftk-master-docs.tar.bz2"
+          mv niftk-${version}-docs.tar.bz2 niftk-master-docs.tar.bz2 ;
+          find master -type f -exec chmod 644 {} \; ;
+          find master -type d -exec chmod 755 {} \; ;
+          chmod 644 niftk-master-docs.tar.bz2 
+          "
 
   only:
     - master
@@ -633,7 +637,12 @@ Release docs:
           tar xfj niftk-${version}-docs.tar.bz2 ;
           mv niftk-${version}-docs ${version} ;
           ln -s niftk-${version}-docs.tar.bz2 niftk-latest-docs.tar.bz2 ;
-          ln -s ${version} latest"
+          ln -s ${version} latest ;
+          chmod a+rx latest ;
+          chmod a+r niftk-latest-docs.tar.bz2 ;
+          find latest -type f -exec chmod 644 {} \; ;
+          find latest -type d -exec chmod 755 {} \;
+          "
 
   only:
     - tags
