@@ -218,9 +218,9 @@ Continuous docs:
     - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
     - echo "API reference documentation generated:"
     - "# Upload the tarball"
-    - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/docs/
+    - scp niftk-${version}-docs.tar.bz2 jet:/cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/NifTK/docs 
     - "# Extract the tarball and replace the old files"
-    - ssh cmiclab "cd /cs/research/medic/cmiclab/deploy/CMIC/NifTK/docs ;
+    - ssh jet "cd /cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/NifTK/docs ;
           rm -rf niftk-master-docs.tar.bz2 master ;
           tar xfj niftk-${version}-docs.tar.bz2 ;
           mv niftk-${version}-docs master ;
@@ -626,9 +626,9 @@ Release docs:
     - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
     - echo "API reference documentation generated:"
     - "# Upload the tarball"
-    - scp niftk-${version}-docs.tar.bz2 cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/docs/
+    - scp niftk-${version}-docs.tar.bz2 jet:/cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/NifTK/docs 
     - "# Extract the tarball and replace the old files"
-    - ssh cmiclab "cd /cs/research/medic/cmiclab/deploy/CMIC/NifTK/docs ;
+    - ssh cmiclab "cd /cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/NifTK/docs ;
           rm niftk-latest-docs.tar.bz2 latest ;
           tar xfj niftk-${version}-docs.tar.bz2 ;
           mv niftk-${version}-docs ${version} ;
