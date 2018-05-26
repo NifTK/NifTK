@@ -31,7 +31,7 @@ Useful Links
 License
 -----------
 
-Copyright (c) 2018, [University College London][ucl].
+Copyright (c) 2010 - 2018, [University College London][ucl].
 
 This project is distributed under the conditions of the BSD 3-clause license.
 
@@ -54,7 +54,7 @@ NifTK is a cross-platform C++ library and officially supports:
  - MacOS X
  - Linux
 
-[cmic]: http://cmic.cs.ucl.ac.uk
+[cmic]: http://www.ucl.ac.uk/medical-image-computing 
 [ucl]: http://www.ucl.ac.uk
 [nihr]: http://www.nihr.ac.uk/research
 [uclh]: http://www.uclh.nhs.uk
@@ -63,11 +63,11 @@ NifTK is a cross-platform C++ library and officially supports:
 [niftk-platform]: http://www.niftk.org
 [niftk-project]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK
 [binaries]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/install
-[install-instructions]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs/latest/InstallationInstructions.html
-[docs]: http://cmic.cs.ucl.ac.uk/NifTK/docs/index.html 
-[build-instructions]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs/master/BuildInstructions.html
+[install-instructions]: http://cmic.cs.ucl.ac.uk/NifTK/docs/master/InstallationInstructions.html
+[docs]: http://cmic.cs.ucl.ac.uk/NifTK/docs/master/ 
+[build-instructions]: http://cmic.cs.ucl.ac.uk/NifTK/docs/master/BuildInstructions.html
 [wiki]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/wikis/home
 [mailinglist]: https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users
-[dashboard]: http://cdash.cmiclab.cs.ucl.ac.uk/index.php?project=NifTK 
-[citation]: http://link.springer.com/article/10.1007%2Fs11548-014-1124-7
+[dashboard]: http://cdash.cmiclab.cs.ucl.ac.uk/index.php?project=NifTK
+[citation]: https://doi.org/10.1007/s11548-014-1124-7
 
