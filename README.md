@@ -64,7 +64,7 @@ NifTK is a cross-platform C++ library and officially supports:
 [niftk-project]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK
 [binaries]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/install
 [install-instructions]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs/latest/InstallationInstructions.html
-[docs]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs
+[docs]: http://cmic.cs.ucl.ac.uk/NifTK/docs/index.html 
 [build-instructions]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/docs/master/BuildInstructions.html
 [wiki]: https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/wikis/home
 [mailinglist]: https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users
