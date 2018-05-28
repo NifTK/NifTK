@@ -21,9 +21,9 @@ Useful Links
  - [NifTK platform home page][niftk-platform]
  - [NifTK project home page][niftk-project]
  - [Binaries][binaries]
- - [Installation instructions][install-instructions]
  - [Documentation][docs]
  - [Build instructions][build-instructions]
+ - [Installation instructions][install-instructions]. (For if you downloaded binaries).
  - [Wiki pages][wiki]
  - [Mailing list][mailinglist]
  - [Dashboard][dashboard]
