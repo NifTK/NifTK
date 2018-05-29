@@ -636,19 +636,17 @@ Release docs:
           rm niftk-latest-docs.tar.bz2 latest ;
           tar xfj niftk-${version}-docs.tar.bz2 ;
           mv niftk-${version}-docs ${version} ;
+          find ${version}/ -type f -exec chmod 644 {} \; ;
+          find ${version}/ -type d -exec chmod 755 {} \; ;
           ln -s niftk-${version}-docs.tar.bz2 niftk-latest-docs.tar.bz2 ;
-          ln -s ${version} latest ;
-          chmod a+rx latest ;
-          chmod a+r niftk-latest-docs.tar.bz2 ;
-          find latest -type f -exec chmod 644 {} \; ;
-          find latest -type d -exec chmod 755 {} \;
+          ln -s ${version} latest 
           "
 
   only:
     - tags
 
   tags:
-    - linux, ubuntu-14.04, release
+    - linux, centos-7, release
 
 
 Ubuntu 14.04 release installer:

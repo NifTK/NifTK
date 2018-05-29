@@ -105,9 +105,9 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "<p>"
       "%1 was launched with funding from the NIHR and the Comprehensive Biomedical Research Centre "
       "at UCL and UCLH grant 168 and TSB grant M1638A. "
-      "The principal investigator is <a href=\"http://cmictig.cs.ucl.ac.uk/people/academic-staff/1-sourselin\">"
+      "The principal investigator is <a href=\"https://kclpure.kcl.ac.uk/portal/sebastien.ourselin.html\">"
       "Sebastien Ourselin</a> "
-      "and team leader is <a href=\"http://cmictig.cs.ucl.ac.uk/people/academic-staff/84-matt-clarkson\">"
+      "and team leader is <a href=\"https://iris.ucl.ac.uk/iris/browse/profile?upi=MJCLA42\">"
       "Matt Clarkson</a>."
       "</p>"
       ).arg(applicationName).arg(originURL).arg(originLongText).arg(originShortText).arg(platformName);

@@ -1,6 +1,6 @@
 /**
 
-\page UserManualNiftyView NiftyView, NiftyIGI and NiftyMIDAS applications.
+\page UserManualNiftyView NiftyView, NiftyMITK, NiftyIGI and NiftyMIDAS applications.
 
 The graphical user interface (GUI) applications are built on <a href="http://www.mitk.org">MITK</a> and hence
 <a href="http://www.commontk.org">CTK</a> technology is based around "plugins". These plugins each 
@@ -10,7 +10,8 @@ plugins is shown below, and these exact pages are available in each GUI as help 
 
 \section UserManualNiftyViewPlugins Plugins
 
-\li \subpage uk_ac_ucl_cmic_niftyview The original NiftyView application containing most if not all plugins.
+\li \subpage uk_ac_ucl_cmic_niftymitk Essentially, MITK plugins, packaged up by the NifTK team.
+\li \subpage uk_ac_ucl_cmic_niftyview The original NiftyView application containing The Drag and Drop Display and associated plugins.
 \li \subpage uk_ac_ucl_cmic_niftyigi NiftyIGI contains a subset of plugins, dedicated to image guided interventions.
 \li \subpage uk_ac_ucl_cmic_niftymidas NiftyMIDAS contains a subset of plugins, dedicated to image analysis.
 \li \subpage uk_ac_ucl_cmic_affinetransform

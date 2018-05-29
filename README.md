@@ -6,7 +6,7 @@ and various command line applications and command line scripts. The NifTK projec
 of the overall NifTK platform.
 
 NifTK was developed by the [Centre for Medical Image Computing][cmic] at [University College London (UCL)][ucl]
-and the Principal Investigator is Prof. Sebastien Ourselin.
+and the Principal Investigator is Prof. [Sebastien Ourselin][seb], now at [KCL][kcl].
 
 If you use this software, please cite [this paper][citation]. 
 
@@ -21,9 +21,9 @@ Useful Links
  - [NifTK platform home page][niftk-platform]
  - [NifTK project home page][niftk-project]
  - [Binaries][binaries]
- - [Installation instructions][install-instructions]
  - [Documentation][docs]
  - [Build instructions][build-instructions]
+ - [Installation instructions][install-instructions]. (For if you downloaded binaries).
  - [Wiki pages][wiki]
  - [Mailing list][mailinglist]
  - [Dashboard][dashboard]
@@ -56,6 +56,8 @@ NifTK is a cross-platform C++ library and officially supports:
 
 [cmic]: http://www.ucl.ac.uk/medical-image-computing 
 [ucl]: http://www.ucl.ac.uk
+[seb]: https://kclpure.kcl.ac.uk/portal/sebastien.ourselin.html
+[kcl]: https://www.kcl.ac.uk/index.aspx
 [nihr]: http://www.nihr.ac.uk/research
 [uclh]: http://www.uclh.nhs.uk
 [innovateuk]: https://www.innovateuk.org

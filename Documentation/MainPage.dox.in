@@ -15,8 +15,10 @@ of medical imaging algorithms from the computer science lab to every-day clinica
 
 @NIFTK_PLATFORM@ was developed with funding from the NIHR and the Comprehensive Biomedical 
 Research Centre at UCL and UCLH grant 168 and TSB grant M1638A. The principal investigator 
-is <a href="http://cmictig.cs.ucl.ac.uk/people/academic-staff/sourselin">Sebastien Ourselin</a>
-and team leader is <a href="http://cmictig.cs.ucl.ac.uk/people/academic-staff/matt-clarkson">Matt Clarkson</a>.
+is <a href="https://kclpure.kcl.ac.uk/portal/sebastien.ourselin.html">Sebastien Ourselin</a>
+now Head of <a href="https://www.kcl.ac.uk/lsm/research/divisions/imaging/about/People.aspx">The School
+of Biomedical Engineering and Imaging Sciences</a> at <a href="https://www.kcl.ac.uk/index.aspx">KCL</a>.
+The team leader at <a href="http://www.ucl.ac.uk>UCL</a> is <a href="https://iris.ucl.ac.uk/iris/browse/profile?upi=MJCLA42">Matt Clarkson</a>.
 
 The term @NIFTK_PLATFORM@ refers to the whole collection of Nifty<Something> packages 
 developed by <a href="@NIFTK_ORIGIN_URL@">@NIFTK_ORIGIN_SHORT_TEXT@</a> and listed 
@@ -44,7 +46,7 @@ For developers it is important to read:
 
 \li <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/wikis/home">The wiki</a>
 \li <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/pipelines">The CI dashboard</a>
-\li <a href="https://cmicdev.cs.ucl.ac.uk/cdash/index.php?project=NifTK">The CDash dashboard</a>
+\li <a href="http://cdash.cmiclab.cs.ucl.ac.uk/index.php?project=NifTK">The CDash dashboard</a>
 \li <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/milestones">The current tasks</a>
 
 \section MainPageAcknowledgements Acknowledgements
