@@ -68,6 +68,7 @@ const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberO
 const bool                NiftyCalVideoCalibrationManager::DefaultModelIsStationary(true);
 const bool                NiftyCalVideoCalibrationManager::DefaultCameraIsStationary(false);
 const bool                NiftyCalVideoCalibrationManager::DefaultSaveOutputBeforeCalibration(false);
+const bool                NiftyCalVideoCalibrationManager::DefaultResetCalibrationIfNodeChanges(true);
 
 const NiftyCalVideoCalibrationManager::CalibrationPatterns
   NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESS_BOARD);

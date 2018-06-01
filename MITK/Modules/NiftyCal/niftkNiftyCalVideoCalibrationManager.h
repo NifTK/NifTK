@@ -81,6 +81,7 @@ public:
   const static bool                DefaultModelIsStationary;
   const static bool                DefaultCameraIsStationary;
   const static bool                DefaultSaveOutputBeforeCalibration;
+  const static bool                DefaultResetCalibrationIfNodeChanges;
 
   mitkClassMacroItkParent(NiftyCalVideoCalibrationManager, itk::Object);
   itkNewMacro(NiftyCalVideoCalibrationManager);
@@ -116,6 +117,9 @@ public:
 
   itkSetMacro(SaveOutputBeforeCalibration, bool);
   itkGetMacro(SaveOutputBeforeCalibration, bool);
+
+  itkSetMacro(ResetCalibrationIfNodeChanges, bool);
+  itkGetMacro(ResetCalibrationIfNodeChanges, bool);
 
   itkSetMacro(DoClustering, bool);
   itkGetMacro(DoClustering, bool);
@@ -350,6 +354,7 @@ private:
   bool                                           m_ModelIsStationary;
   bool                                           m_CameraIsStationary;
   bool                                           m_SaveOutputBeforeCalibration;
+  bool                                           m_ResetCalibrationIfNodeChanges;
   unsigned int                                   m_NumberOfSnapshotsForCalibrating;
   std::string                                    m_ModelFileName;
   double                                         m_ScaleFactorX;

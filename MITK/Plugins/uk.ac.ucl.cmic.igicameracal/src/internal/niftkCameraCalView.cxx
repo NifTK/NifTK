@@ -216,6 +216,9 @@ void CameraCalView::RetrievePreferenceValues()
     bool saveOutputBeforeCalibration = prefs->GetBool(CameraCalViewPreferencePage::SAVE_OUTPUT_BEFORE_CALIBRATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultSaveOutputBeforeCalibration);
     m_Manager->SetSaveOutputBeforeCalibration(saveOutputBeforeCalibration);
 
+    bool resetCalibrationIfNodeChanges = prefs->GetBool(CameraCalViewPreferencePage::RESET_CALIBRATION_IF_NODE_CHANGES_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultResetCalibrationIfNodeChanges);
+    m_Manager->SetResetCalibrationIfNodeChanges(resetCalibrationIfNodeChanges);
+
     bool doClustering = prefs->GetBool(CameraCalViewPreferencePage::DO_CLUSTERING_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoClustering);
     m_Manager->SetDoClustering(doClustering);
 
@@ -329,7 +332,7 @@ void CameraCalView::OnComboBoxChanged()
       needsReset = true;
     }
 
-    if (needsReset)
+    if (needsReset && m_Manager->GetResetCalibrationIfNodeChanges())
     {
       QMessageBox msgBox;
       msgBox.setText("Reset requested.");
