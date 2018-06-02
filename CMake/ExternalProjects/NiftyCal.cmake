@@ -23,7 +23,7 @@ endif()
 
 if(BUILD_NiftyIGI)
 
-  set(version "271e0aa885")
+  set(version "f93692f093")
   set(location "https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyCal.git")
   set(depends OpenCV Eigen AprilTags ITK VTK)
 
