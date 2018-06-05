@@ -246,7 +246,39 @@ void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints()
     vtkMatrix4x4::Multiply4x4(trackingVtkMatrix, staticModelTransform, vtkModelToWorld);
   }
 
-  m_ModelPointsToVisualiseDataNode->GetData()->GetGeometry()->SetIndexToWorldTransformByVtkMatrix(vtkModelToWorld);
+  cv::Matx44d modelToWorldForOpenCV;
+  mitk::CopyToOpenCVMatrix(*vtkModelToWorld, modelToWorldForOpenCV);
+
+  if (m_DataStorage.IsNotNull())
+  {
+    m_DataStorage->Remove(m_ModelPointsToVisualiseDataNode);
+
+    m_ModelPointsToVisualise->Clear();
+
+    niftk::Model3D::const_iterator iter;
+    for (iter = m_ModelPoints.begin();
+      iter != m_ModelPoints.end();
+      ++iter
+      )
+    {
+      cv::Point3d p1 = (*iter).second.point;
+      cv::Matx41d p2;
+      p2(0, 0) = p1.x;
+      p2(1, 0) = p1.y;
+      p2(2, 0) = p1.z;
+      p2(3, 0) = 1;
+      cv::Matx41d p3 = modelToWorldForOpenCV * p2;
+
+      mitk::Point3D p4;
+      p4[0] = p3(0, 0);
+      p4[1] = p3(1, 0);
+      p4[2] = p3(2, 0);
+
+      m_ModelPointsToVisualise->InsertPoint((*iter).first, p4);
+    }
+
+    m_DataStorage->Add(m_ModelPointsToVisualiseDataNode);
+  }
 }
 
 
@@ -504,10 +536,7 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(
       trackingMatrices.push_back(*trackingIter);
     }
   }
-  else if (   (!m_ModelIsStationary && !m_CameraIsStationary)
-           || (m_CameraIsStationary && !m_ModelIsStationary)
-          )
-
+  else if (!m_ModelIsStationary)
   {
     std::list<cv::Matx44d> modelMatrices = this->ExtractModelMatrices();
     std::list<cv::Matx44d>::const_iterator tIter;
