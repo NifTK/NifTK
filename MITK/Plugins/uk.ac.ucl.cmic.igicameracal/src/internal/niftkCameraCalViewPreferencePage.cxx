@@ -143,6 +143,8 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
   m_Ui->m_ModelIsStationaryCheckBox->setChecked(true);
   m_Ui->m_CameraIsStationaryCheckBox->setChecked(false);
+  m_Ui->m_CameraIsStationaryCheckBox->setVisible(false);
+  m_Ui->m_CameraIsStationaryLabel->setVisible(false);
   m_Ui->m_SaveOutputBeforeCalibrationCheckBox->setChecked(false);
   this->OnDoIterativeChecked(false);
   this->OnFeaturesComboSelected();
