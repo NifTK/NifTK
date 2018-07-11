@@ -227,7 +227,7 @@ public:
   itkNewMacro(PickedPointList)
 
   void PutOut (std::ofstream& os);
-  void AnnotateImage (cv::Mat& image);
+  void AnnotateImage (cv::Mat& image, int lineThickness);
   cv::Mat CreateMaskImage ( const cv::Mat& image);
 
   void SetInLineMode (const bool& mode);

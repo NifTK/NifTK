@@ -104,7 +104,8 @@ int main(int argc, char** argv)
     projector->SetReferenceIndex(referenceIndex);
     projector->SetMatcherCameraToTracker(matcher);
     projector->SetDrawAxes(DrawAxes);
-    
+    projector->SetAnnotationLineThickness(lineThickness);
+
     std::vector < mitk::ProjectedPointPair > screenPoints;
     std::vector < unsigned int  > screenPointFrameNumbers;
     std::vector < mitk::WorldPoint > worldPoints;
@@ -112,7 +113,15 @@ int main(int argc, char** argv)
     std::vector < mitk::WorldPoint > worldPointsWithScalars;
     if ( input3DDirectory.length() != 0 )
     {
-      projector->SetModelPoints ( mitk::LoadPickedPointListFromDirectoryOfMPSFiles ( input3DDirectory ));
+      unsigned int frameNumber = 0;
+      unsigned long long timestamp = 0;
+      std::string channel = "world";
+      cv::Scalar scalar = cv::Scalar ( mpsBlue, mpsGreen, mpsRed);
+      projector->SetModelPoints (
+          mitk::LoadPickedPointListFromDirectoryOfMPSFiles (
+            input3DDirectory,
+            frameNumber, timestamp, channel, scalar
+            ));
     }
     if ( modelToWorld.length() != 0 )
     {
@@ -155,7 +164,9 @@ int main(int argc, char** argv)
         std::vector < cv::Point3d > worldPointsVector = mitk::PointSetToVector ( pointSet, fillMissingIndicesWithNaN );
         for ( unsigned int i = 0 ; i < worldPointsVector.size() ; i ++ )
         {
-          worldPoints.push_back ( mitk::WorldPoint(worldPointsVector[i] ) );
+          mitk::WorldPoint worldPoint (worldPointsVector[i]);
+          worldPoint.m_Scalar = cv::Scalar ( mpsBlue, mpsGreen, mpsRed);
+          worldPoints.push_back ( mitk::WorldPoint(worldPoint ) );
         }
       }
       catch (std::exception& e)

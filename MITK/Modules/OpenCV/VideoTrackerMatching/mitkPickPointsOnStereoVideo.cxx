@@ -110,6 +110,8 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
 
   int framenumber = 0 ;
   int key = 0;
+
+  int annotationLineThickness = 1;
   cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
   cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
      
@@ -310,7 +312,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                 if ( leftPickedPoints->GetIsModified() )
                 {
                   leftAnnotatedVideoImage = leftVideoImage.clone();
-                  leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage);
+                  leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage, annotationLineThickness);
 
                   std::ofstream leftPointOut ((leftOutName+ ".xml").c_str());
                   leftPickedPoints->PutOut( leftPointOut );
@@ -332,7 +334,7 @@ void PickPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tracke
                 if ( rightPickedPoints->GetIsModified() )
                 {
                   rightAnnotatedVideoImage = rightVideoImage.clone();
-                  rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
+                  rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage, annotationLineThickness);
 
                   std::ofstream rightPointOut ((rightOutName + ".xml").c_str());
                   rightPickedPoints->PutOut (rightPointOut);
