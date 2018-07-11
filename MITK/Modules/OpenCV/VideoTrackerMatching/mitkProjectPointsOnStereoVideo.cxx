@@ -49,6 +49,7 @@ ProjectPointsOnStereoVideo::ProjectPointsOnStereoVideo()
 , m_VisualiseTrackingStatus(false)
 , m_AnnotateWithGoldStandards(false)
 , m_WriteAnnotatedGoldStandards(false)
+, m_AnnotationLineThickness(1)
 , m_WriteTrackingPositionData(false)
 , m_WriteTrackingMatrixFilesPerFrame(false)
 , m_CorrectTrackingMatrixFileNamesForSequentialChannelSplitVideo (true)
@@ -475,7 +476,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
 
         if ( drawProjection )
         {
-          m_ProjectedPointLists.back()->AnnotateImage(videoImage);
+          m_ProjectedPointLists.back()->AnnotateImage(videoImage, m_AnnotationLineThickness);
         }
         if ( m_DrawAxes )
         {
@@ -546,7 +547,7 @@ void ProjectPointsOnStereoVideo::Project(mitk::VideoTrackerMatching::Pointer tra
           {
             mitk::PickedPointList::Pointer goldStandardPointList = mitk::PickedPointList::New();
             goldStandardPointList->SetPickedObjects(goldStandardObjects);
-            goldStandardPointList->AnnotateImage(videoImage);
+            goldStandardPointList->AnnotateImage(videoImage,  m_AnnotationLineThickness);
             if ( m_WriteAnnotatedGoldStandards )
             {
               std::ostringstream ss;

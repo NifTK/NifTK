@@ -241,8 +241,34 @@
 	<default>100.0</default>
     </float>
 
-
-						
+    <integer>
+	<name>mpsRed</name>
+	<longflag>mpsRed</longflag>
+	<description>When using a directory of MPS files for the model, we can optionally set the scalar colors (red)</description>
+	<label>The red channel for the colour scalar for model points</label>
+	<default>255</default>
+    </integer>
+    <integer>
+	<name>mpsGreen</name>
+	<longflag>mpsGreen</longflag>
+	<description>When using a directory of MPS files for the model, we can optionally set the scalar colors (green)</description>
+	<label>The green channel for the colour scalar for model points</label>
+	<default>255</default>
+    </integer>
+    <integer>
+	<name>mpsBlue</name>
+	<longflag>mpsBlue</longflag>
+	<description>When using a directory of MPS files for the model, we can optionally set the scalar colors (blue)</description>
+	<label>The blue channel for the colour scalar for model points</label>
+	<default>255</default>
+    </integer>
+    <integer>
+	<name>lineThickness</name>
+	<longflag>lineThickness</longflag>
+	<description>The line thickness to use for annotation</description>
+	<label>The annotation line thickness</label>
+	<default>1</default>
+    </integer>
 
   </parameters>
   

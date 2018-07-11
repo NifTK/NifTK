@@ -116,6 +116,7 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
 
   int framenumber = 0 ;
   int key = 0;
+  int annotationLineThickness = 1;
   cvNamedWindow ("Left Channel", CV_WINDOW_AUTOSIZE);
   cvNamedWindow ("Right Channel", CV_WINDOW_AUTOSIZE);
      
@@ -286,7 +287,7 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
                   if ( leftPickedPoints->GetIsModified() )
                   {
                     leftAnnotatedVideoImage = leftVideoImage.clone();
-                    leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage);
+                    leftPickedPoints->AnnotateImage(leftAnnotatedVideoImage, annotationLineThickness);
 
                     std::ofstream leftPointOut ((leftOutName+ "_leftContour.xml").c_str());
                     leftPickedPoints->PutOut( leftPointOut );
@@ -310,7 +311,7 @@ void MakeMaskImagesFromStereoVideo::Project(mitk::VideoTrackerMatching::Pointer 
                   if ( rightPickedPoints->GetIsModified() )
                   {
                     rightAnnotatedVideoImage = rightVideoImage.clone();
-                    rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage);
+                    rightPickedPoints->AnnotateImage(rightAnnotatedVideoImage, annotationLineThickness);
 
                     std::ofstream rightPointOut ((rightOutName + "_rightContour.xml").c_str());
                     rightPickedPoints->PutOut (rightPointOut);

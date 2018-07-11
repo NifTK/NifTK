@@ -620,7 +620,7 @@ void PickedPointList::ClearList ()
 }
 
 //-----------------------------------------------------------------------------
-void PickedPointList::AnnotateImage(cv::Mat& image)
+void PickedPointList::AnnotateImage(cv::Mat& image , int lineThickness)
 {
   for ( int i = 0 ; i < m_PickedObjects.size() ; i ++ )
   {
@@ -641,8 +641,8 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
         if ( mitk::IsNotNaNorInf ( m_PickedObjects[i].m_Points[j] ) )
         {
           cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
-          cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
-          cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,1,1);
+          cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar, lineThickness);
+          cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,lineThickness,1);
         }
       }
     }
@@ -658,15 +658,15 @@ void PickedPointList::AnnotateImage(cv::Mat& image)
             if ( ! lineStarted )
             {
               cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
-              cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar);
-              cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,1,1);
+              cv::putText(image,number,point,0,1.0,m_PickedObjects[i].m_Scalar,lineThickness);
+              cv::circle(image, point,5,m_PickedObjects[i].m_Scalar,lineThickness,1);
               lineStarted = true;
             }
             else
             {
               cv::Point2i point = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j]);
               cv::Point2i point2 = mitk::Point3dToPoint2i(m_PickedObjects[i].m_Points[j-1]);
-              cv::line(image,  point, point2, m_PickedObjects[i].m_Scalar);
+              cv::line(image,  point, point2, m_PickedObjects[i].m_Scalar, lineThickness);
             }
           }
         }

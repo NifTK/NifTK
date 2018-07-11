@@ -93,7 +93,7 @@ extern "C++" NIFTKOPENCVUTILS_EXPORT bool TestVideoWriterCodec (int codec);
  */
 extern "C++" NIFTKOPENCVUTILS_EXPORT cv::VideoWriter* CreateVideoWriter(std::string filename,
     double frameRate , cv::Size imageSize,
-    int codec = CV_FOURCC('M','P','G','1'),
+    int codec = CV_FOURCC('H','2','6','4'),
     bool isColour = true);
 
 /**
