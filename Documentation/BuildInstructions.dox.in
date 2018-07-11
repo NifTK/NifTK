@@ -72,6 +72,7 @@ screenshots from a Mac.
         <ol>
           <li>RHEL 6 or 7 or compatible (CentOS, Scientific Linux)</li>
           <li>Ubuntu 14.04 or compatible (Linux Mint 17)</li>
+          <li>Ubuntu 16.04 or compatible</li>
           <li>Other recent Linux systems likely work, although not regularly tested.</li>
           <li>RHEL 5 and compatible systems (e.g. CS Centos 5 machines) are not supported.</li>
         </ol>
@@ -81,9 +82,11 @@ screenshots from a Mac.
         to upgrade it to the CentOS 7. Email request@cs.ucl.ac.uk and ask for an upgrade.
       </li>
       <li>
-        On Debian based systems (Ubuntu, Linux Mint) you will need the libbz2-dev,
+        On Debian based systems (Ubuntu 14.04, Linux Mint) you will need the libbz2-dev,
         libncurses-dev, libxt-dev, libtiff4-dev and libwrap0-dev packages.
       </li>
+      <li>
+        On Ubuntu 16.04 a recommended list of packages to install is listed \ref SystemSetupUbuntu1604 "here".
       <li>
         On RedHat based systems (Scientific Linux, CentOS) you will need the
         libgomp, libtiff-devel and tcpwrappers-devel packages.

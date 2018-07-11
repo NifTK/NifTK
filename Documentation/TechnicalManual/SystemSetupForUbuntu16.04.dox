@@ -1,0 +1,60 @@
+/**
+
+\page SystemSetupUbuntu1604 System Setup for Ubuntu 16.04.
+
+\section SystemSetupUbuntu1604Intro Introduction
+
+The following instructions illustrate how to set up a system to enable you to compile NifTK on
+Ubuntu 16.04. More specifically, they were used to produce a NifTK development VM. So you may
+still require different packages if you want to run Ubuntu 16.04 natively, and benefit from
+hardware accelerated graphics.
+
+Furthermore, these instructions are just an illustration, not word-for-word.
+They assume the username is niftk and the qt source code has been download into ~/Downloads
+as qt-everywhere-opensource-src-4.8.7.tar.gz.
+
+\verbatim
+mkdir build install
+sudo apt install doxygen
+sudo apt install cmake
+sudo apt install git
+sudo apt install cmake-curses-gui
+sudo apt-get install libbz2-dev
+sudo apt-get install libncurses-dev
+sudo apt-get install libxt-dev
+sudo apt-get install libtiff-dev
+sudo apt-get install libwrap0-dev
+sudo apt-get install libxext-dev
+sudo apt-get install libssl-dev
+sudo apt-get install mesa-common-dev
+sudo apt-get install libglib2.0-dev
+sudo apt-get install libxrender-dev
+sudo apt-get install libfontconfig1-dev
+sudo apt-get install libxcursor-dev
+sudo apt-get install libxft-dev
+sudo apt-get install libxi-dev
+sudo apt-get install libxrandr-dev
+sudo apt-get install libgl-dev
+sudo apt-get install libglu-dev
+sudo apt-get install qtcreator
+sudo apt-get install g++-4.8
+sudo apt-get install '^libxcb.*-dev'
+sudo apt-get install libxnvctrl-dev
+sudo apt-get install gfortran
+sudo apt-get install valgrind
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 50
+cd build
+cp ~/Downloads/qt-everywhere-opensource-src-4.8.7.tar.gz .
+tar -zxvf qt-everywhere-opensource-src-4.8.7.tar.gz
+cd qt-everywhere-opensource-src-4.8.7
+./configure -prefix /home/niftk/install/qt-4.8.7 -opensource -confirm-license -release -shared -script -openssl -no-phonon -no-phonon-backend -nomake examples -nomake demos -nomake tests
+make -j 4
+make install
+cd ..
+echo '# Added for NifTK' >> ~/.bashrc
+echo 'export PATH=/home/niftk/install/qt-4.8.7/bin:$PATH' >> ~/.bashrc
+\endverbatim
+ 
+*/
+
