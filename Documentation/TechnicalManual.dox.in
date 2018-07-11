@@ -28,6 +28,7 @@ the design decisions will be explained in detail. It is however assumed that the
 \li \subpage HowToWritePlugins
 \li \subpage HowToDoUltrasoundCalibration
 \li \subpage BuildInstructionsKelvin
+\li \subpage SystemSetupUbuntu1604
 \li \subpage TestingApplications
 \li \subpage TestingReportsGenerated
 \li \subpage VividRenderer
