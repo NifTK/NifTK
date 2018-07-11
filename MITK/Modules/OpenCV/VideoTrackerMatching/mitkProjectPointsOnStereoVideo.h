@@ -106,6 +106,7 @@ public:
   itkSetMacro ( VisualiseTrackingStatus, bool);
   itkSetMacro ( AnnotateWithGoldStandards, bool );
   itkSetMacro ( WriteAnnotatedGoldStandards, bool );
+  itkSetMacro ( AnnotationLineThickness, int );
   itkSetMacro ( WriteTrackingPositionData, bool );
   itkSetMacro ( WriteTrackingMatrixFilesPerFrame, bool);
   itkSetMacro ( AllowablePointMatchingRatio, double);
@@ -216,6 +217,7 @@ private:
   bool                            m_VisualiseTrackingStatus; //draw something on screen to indicate whether tracking was working got frame
   bool                            m_AnnotateWithGoldStandards; //Annotate images with the gold standard picked points
   bool                            m_WriteAnnotatedGoldStandards; //Save the annotated gold standard images as png
+  int                             m_AnnotationLineThickness; //the line thickness to use for annotation;
   bool                            m_WriteTrackingPositionData; //Write Out a data file describing the motion of the tracked objects for each frame
   bool                            m_WriteTrackingMatrixFilesPerFrame; //Write Out tracking matrix files for each video frame
   bool                            m_CorrectTrackingMatrixFileNamesForSequentialChannelSplitVideo; //when writing out tracking matrices we halve the frame nuber and only write out every second frame.
