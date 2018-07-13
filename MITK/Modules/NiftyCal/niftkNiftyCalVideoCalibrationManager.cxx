@@ -1839,7 +1839,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
         m_LeftToRightTranslationVector,
         m_EssentialMatrix,
         m_FundamentalMatrix,
-        CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_FIX_INTRINSIC,
+        CV_CALIB_USE_INTRINSIC_GUESS,
         m_Do3DOptimisation
         );
       rms = tmpRMS(1, 0);
