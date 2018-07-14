@@ -105,12 +105,12 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     m_Controls->m_TrackerMatrixComboBox->SetDataStorage(dataStorage);
     m_Controls->m_TrackerMatrixComboBox->setCurrentIndex(0);
 
-    m_Controls->m_ReferenceTrackerMatrixComboBox->SetAutoSelectNewItems(false);
-    m_Controls->m_ReferenceTrackerMatrixComboBox->SetPredicate(isMatrix);
-    m_Controls->m_ReferenceTrackerMatrixComboBox->SetDataStorage(dataStorage);
-    m_Controls->m_ReferenceTrackerMatrixComboBox->setCurrentIndex(0);
-    m_Controls->m_ReferenceTrackerMatrixComboBox->setVisible(false);
-    m_Controls->m_ReferenceTrackerMatrixLabel->setVisible(false);
+    m_Controls->m_ModelMatrixComboBox->SetAutoSelectNewItems(false);
+    m_Controls->m_ModelMatrixComboBox->SetPredicate(isMatrix);
+    m_Controls->m_ModelMatrixComboBox->SetDataStorage(dataStorage);
+    m_Controls->m_ModelMatrixComboBox->setCurrentIndex(0);
+    m_Controls->m_ModelMatrixComboBox->setVisible(true);
+    m_Controls->m_ModelMatrixLabel->setVisible(true);
 
     connect(m_Controls->m_GrabButton, SIGNAL(pressed()), this, SLOT(OnGrabButtonPressed()));
     connect(m_Controls->m_UndoButton, SIGNAL(pressed()), this, SLOT(OnUnGrabButtonPressed()));
@@ -120,7 +120,7 @@ void CameraCalView::CreateQtPartControl( QWidget *parent )
     connect(m_Controls->m_LeftCameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
     connect(m_Controls->m_RightCameraComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
     connect(m_Controls->m_TrackerMatrixComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
-    connect(m_Controls->m_ReferenceTrackerMatrixComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
+    connect(m_Controls->m_ModelMatrixComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnComboBoxChanged()));
 
     // Start these up as disabled, until we have enough images to calibrate.
     m_Controls->m_UndoButton->setEnabled(false);
@@ -161,7 +161,7 @@ void CameraCalView::SetButtonsEnabled(bool isEnabled)
   m_Controls->m_LeftCameraComboBox->setEnabled(isEnabled);
   m_Controls->m_RightCameraComboBox->setEnabled(isEnabled);
   m_Controls->m_TrackerMatrixComboBox->setEnabled(isEnabled);
-  m_Controls->m_ReferenceTrackerMatrixComboBox->setEnabled(isEnabled);
+  m_Controls->m_ModelMatrixComboBox->setEnabled(isEnabled);
   m_Controls->m_GrabButton->setEnabled(isEnabled);
 
   if (isEnabled)
@@ -206,6 +206,18 @@ void CameraCalView::RetrievePreferenceValues()
 
     bool do3DOptimisation = prefs->GetBool(CameraCalViewPreferencePage::DO_3D_OPTIMISATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation);
     m_Manager->SetDo3DOptimisation(do3DOptimisation);
+
+    bool modelIsStationary = prefs->GetBool(CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultModelIsStationary);
+    m_Manager->SetModelIsStationary(modelIsStationary);
+
+    bool cameraIsStationary = prefs->GetBool(CameraCalViewPreferencePage::CAMERA_IS_STATIONARY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultCameraIsStationary);
+    m_Manager->SetCameraIsStationary(cameraIsStationary);
+
+    bool saveOutputBeforeCalibration = prefs->GetBool(CameraCalViewPreferencePage::SAVE_OUTPUT_BEFORE_CALIBRATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultSaveOutputBeforeCalibration);
+    m_Manager->SetSaveOutputBeforeCalibration(saveOutputBeforeCalibration);
+
+    bool resetCalibrationIfNodeChanges = prefs->GetBool(CameraCalViewPreferencePage::RESET_CALIBRATION_IF_NODE_CHANGES_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultResetCalibrationIfNodeChanges);
+    m_Manager->SetResetCalibrationIfNodeChanges(resetCalibrationIfNodeChanges);
 
     bool doClustering = prefs->GetBool(CameraCalViewPreferencePage::DO_CLUSTERING_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultDoClustering);
     m_Manager->SetDoClustering(doClustering);
@@ -253,11 +265,11 @@ void CameraCalView::RetrievePreferenceValues()
           prefs->GetInt(CameraCalViewPreferencePage::HANDEYE_NODE_NAME, static_cast<int>(niftk::NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)));
     m_Manager->SetHandeyeMethod(method);
 
-    std::string modelToTrackerFileName = prefs->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, "").toStdString();
+    std::string modelTransformFileName = prefs->Get(CameraCalViewPreferencePage::MODEL_TRANSFORM_NODE_NAME, "").toStdString();
 
-    if (!modelToTrackerFileName.empty())
+    if (!modelTransformFileName.empty())
     {
-      m_Manager->SetModelToTrackerFileName(modelToTrackerFileName);
+      m_Manager->SetModelTransformFileName(modelTransformFileName);
     }
   }
 }
@@ -280,7 +292,7 @@ void CameraCalView::OnComboBoxChanged()
   mitk::DataNode::Pointer leftImageNode = m_Controls->m_LeftCameraComboBox->GetSelectedNode();
   mitk::DataNode::Pointer rightImageNode = m_Controls->m_RightCameraComboBox->GetSelectedNode();
   mitk::DataNode::Pointer trackingNode = m_Controls->m_TrackerMatrixComboBox->GetSelectedNode();
-  mitk::DataNode::Pointer referenceTrackingNode = m_Controls->m_ReferenceTrackerMatrixComboBox->GetSelectedNode();
+  mitk::DataNode::Pointer modelNode = m_Controls->m_ModelMatrixComboBox->GetSelectedNode();
 
   int numberOfSnapshots = m_Manager->GetNumberOfSnapshots();
   if (numberOfSnapshots > 0)
@@ -290,37 +302,37 @@ void CameraCalView::OnComboBoxChanged()
     mitk::DataNode::Pointer leftImageNodeInManager = m_Manager->GetLeftImageNode();
     mitk::DataNode::Pointer rightImageNodeInManager = m_Manager->GetRightImageNode();
     mitk::DataNode::Pointer trackingNodeInManager = m_Manager->GetTrackingTransformNode();
-    mitk::DataNode::Pointer referenceTrackingNodeInManager = m_Manager->GetReferenceTrackingTransformNode();
+    mitk::DataNode::Pointer modelNodeInManager = m_Manager->GetModelTransformNode();
 
     if (   leftImageNode.IsNotNull()
-        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || referenceTrackingNodeInManager.IsNotNull())
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || modelNodeInManager.IsNotNull())
         && leftImageNode != leftImageNodeInManager)
     {
       needsReset = true;
     }
 
     if (   rightImageNode.IsNotNull()
-        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || referenceTrackingNodeInManager.IsNotNull())
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || modelNodeInManager.IsNotNull())
         && rightImageNode != rightImageNodeInManager)
     {
       needsReset = true;
     }
 
     if (   trackingNode.IsNotNull()
-        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || referenceTrackingNodeInManager.IsNotNull())
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || modelNodeInManager.IsNotNull())
         && trackingNode != trackingNodeInManager)
     {
       needsReset = true;
     }
 
-    if (   referenceTrackingNode.IsNotNull()
-        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || referenceTrackingNodeInManager.IsNotNull())
-        && referenceTrackingNode != referenceTrackingNodeInManager)
+    if (   modelNode.IsNotNull()
+        && (rightImageNodeInManager.IsNotNull() || leftImageNodeInManager.IsNotNull() || trackingNodeInManager.IsNotNull() || modelNodeInManager.IsNotNull())
+        && modelNode != modelNodeInManager)
     {
       needsReset = true;
     }
 
-    if (needsReset)
+    if (needsReset && m_Manager->GetResetCalibrationIfNodeChanges())
     {
       QMessageBox msgBox;
       msgBox.setText("Reset requested.");
@@ -336,7 +348,7 @@ void CameraCalView::OnComboBoxChanged()
   m_Manager->SetLeftImageNode(leftImageNode);
   m_Manager->SetRightImageNode(rightImageNode);
   m_Manager->SetTrackingTransformNode(trackingNode);
-  m_Manager->SetReferenceTrackingTransformNode(referenceTrackingNode);
+  m_Manager->SetModelTransformNode(modelNode);
 }
 
 
@@ -392,12 +404,28 @@ void CameraCalView::OnGrabButtonPressed()
   assert(!m_BackgroundGrabProcess.isRunning());
   assert(!m_BackgroundCalibrateProcess.isRunning());
 
+  // No point grabbing or calibrating if no left channel video image at all.
   mitk::DataNode::Pointer node = m_Controls->m_LeftCameraComboBox->GetSelectedNode();
   if (node.IsNull())
   {
     QMessageBox msgBox;
     msgBox.setText("The left camera image is non-existent, or not-selected.");
     msgBox.setInformativeText("Please select a left camera image.");
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setDefaultButton(QMessageBox::Ok);
+    msgBox.exec();
+    return;
+  }
+
+  // If there is no model file, calibration will ultimately fail.
+  // However, if the user just wants to grab data, and hence
+  // m_Manager->GetSaveOutputBeforeCalibration() is true, then we do NOT need this check.
+  // So, only do this check if m_Manager->GetSaveOutputBeforeCalibration() is false.
+  if (m_Manager->GetModelFileName().empty() && !m_Manager->GetSaveOutputBeforeCalibration())
+  {
+    QMessageBox msgBox;
+    msgBox.setText("An Error Occurred.");
+    msgBox.setInformativeText("The model file name is empty - check preferences.");
     msgBox.setStandardButtons(QMessageBox::Ok);
     msgBox.setDefaultButton(QMessageBox::Ok);
     msgBox.exec();
@@ -501,28 +529,16 @@ void CameraCalView::Calibrate()
   int numberForCalibrating = m_Manager->GetNumberOfSnapshotsForCalibrating();
   int numberAcquired = m_Manager->GetNumberOfSnapshots();
 
-  if (numberAcquired == numberForCalibrating)
+  if (numberAcquired >= numberForCalibrating)
   {
-    if (m_Manager->GetModelFileName().empty())
-    {
-      QMessageBox msgBox;
-      msgBox.setText("An Error Occurred.");
-      msgBox.setInformativeText("The model file name is empty - check preferences.");
-      msgBox.setStandardButtons(QMessageBox::Ok);
-      msgBox.setDefaultButton(QMessageBox::Ok);
-      msgBox.exec();
-    }
-    else
-    {
-      this->SetButtonsEnabled(false);
+    this->SetButtonsEnabled(false);
 
-      QPixmap image(":/uk.ac.ucl.cmic.igicameracal/boobaloo-Don-t-Step-No-Gnome--300px.png");
-      m_Controls->m_ImageLabel->setPixmap(image);
-      m_Controls->m_ImageLabel->show();
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/boobaloo-Don-t-Step-No-Gnome--300px.png");
+    m_Controls->m_ImageLabel->setPixmap(image);
+    m_Controls->m_ImageLabel->show();
 
-      m_BackgroundCalibrateProcess = QtConcurrent::run(this, &CameraCalView::RunCalibration);
-      m_BackgroundCalibrateProcessWatcher.setFuture(m_BackgroundCalibrateProcess);
-    }
+    m_BackgroundCalibrateProcess = QtConcurrent::run(this, &CameraCalView::RunCalibration);
+    m_BackgroundCalibrateProcessWatcher.setFuture(m_BackgroundCalibrateProcess);
   }
   else
   {
@@ -544,6 +560,10 @@ std::string CameraCalView::RunCalibration()
 
   try
   {
+    if (m_Manager->GetSaveOutputBeforeCalibration())
+    {
+      m_Manager->Save();
+    }
     outputMessage = m_Manager->Calibrate();
   }
   catch (niftk::NiftyCalException& e)
@@ -596,7 +616,10 @@ void CameraCalView::OnBackgroundCalibrateProcessFinished()
     QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
-    m_Manager->Save();
+    if (!m_Manager->GetSaveOutputBeforeCalibration())
+    {
+      m_Manager->Save();
+    }
   }
 
   m_Manager->Restart();

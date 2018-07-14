@@ -65,6 +65,10 @@ const unsigned int        NiftyCalVideoCalibrationManager::DefaultGridSizeY(10);
 const std::string         NiftyCalVideoCalibrationManager::DefaultTagFamily("25h7");
 const bool                NiftyCalVideoCalibrationManager::DefaultUpdateNodes(true);
 const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints(70);
+const bool                NiftyCalVideoCalibrationManager::DefaultModelIsStationary(true);
+const bool                NiftyCalVideoCalibrationManager::DefaultCameraIsStationary(false);
+const bool                NiftyCalVideoCalibrationManager::DefaultSaveOutputBeforeCalibration(false);
+const bool                NiftyCalVideoCalibrationManager::DefaultResetCalibrationIfNodeChanges(true);
 
 const NiftyCalVideoCalibrationManager::CalibrationPatterns
   NiftyCalVideoCalibrationManager::DefaultCalibrationPattern(NiftyCalVideoCalibrationManager::CHESS_BOARD);
@@ -76,9 +80,12 @@ const NiftyCalVideoCalibrationManager::HandEyeMethod
 NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 : m_DataStorage(nullptr)
 , m_TrackingTransformNode(nullptr)
-, m_ReferenceTrackingTransformNode(nullptr)
+, m_ModelTransformNode(nullptr)
 , m_DoIterative(NiftyCalVideoCalibrationManager::DefaultDoIterative)
 , m_Do3DOptimisation(NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation)
+, m_ModelIsStationary(NiftyCalVideoCalibrationManager::DefaultModelIsStationary)
+, m_CameraIsStationary(NiftyCalVideoCalibrationManager::DefaultCameraIsStationary)
+, m_SaveOutputBeforeCalibration(NiftyCalVideoCalibrationManager::DefaultSaveOutputBeforeCalibration)
 , m_NumberOfSnapshotsForCalibrating(NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating)
 , m_ScaleFactorX(NiftyCalVideoCalibrationManager::DefaultScaleFactorX)
 , m_ScaleFactorY(NiftyCalVideoCalibrationManager::DefaultScaleFactorY)
@@ -88,7 +95,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_HandeyeMethod(NiftyCalVideoCalibrationManager::DefaultHandEyeMethod)
 , m_TagFamily(NiftyCalVideoCalibrationManager::DefaultTagFamily)
 , m_UpdateNodes(NiftyCalVideoCalibrationManager::DefaultUpdateNodes)
-, m_ModelToTrackerFileName("")
+, m_ModelTransformFileName("")
 , m_MinimumNumberOfPoints(NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints)
 , m_CalibrationDirName("")
 {
@@ -100,12 +107,14 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
   {
     m_HandEyeMatrices[0].push_back(cv::Matx44d::eye()); // left
     m_HandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
-    m_ReferenceHandEyeMatrices[0].push_back(cv::Matx44d::eye()); // left
-    m_ReferenceHandEyeMatrices[1].push_back(cv::Matx44d::eye()); // right
   }
 
+  // Computed on the fly after each calibration.
   m_ModelToWorld = cv::Matx44d::eye();
-  m_ModelToTracker = cv::Matx44d::eye();
+
+  // Loaded in, say from a point based registration from a stationary chessboard to tracker/world space,
+  // or, as of #5322, as a calibration matrix from chessboard to chessboard marker space.
+  m_StaticModelTransform = cv::Matx44d::eye();
 
   m_ModelPointsToVisualise = mitk::PointSet::New();
   m_ModelPointsToVisualiseDataNode = mitk::DataNode::New();
@@ -211,13 +220,35 @@ void NiftyCalVideoCalibrationManager::SetTrackingTransformNode(mitk::DataNode::P
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints()
 {
-  this->UpdateVisualisedPoints(m_ModelToWorld);
-}
+  vtkSmartPointer<vtkMatrix4x4> vtkModelToWorld = vtkSmartPointer<vtkMatrix4x4>::New();
+  vtkModelToWorld->Identity();
 
+  if(m_ModelTransformNode.IsNull() || m_ModelIsStationary)
+  {
+    mitk::CopyToVTK4x4Matrix(m_ModelToWorld, *vtkModelToWorld);
+  }
+  else
+  {
+    niftk::CoordinateAxesData::Pointer trackingData
+      = dynamic_cast<CoordinateAxesData*>(m_ModelTransformNode->GetData());
+    if (trackingData.IsNull())
+    {
+      MITK_WARN << "Can't extract trackingData from ModelTransformNode!";
+      return;
+    }
 
-//-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints(cv::Matx44d& transform)
-{
+    vtkSmartPointer<vtkMatrix4x4> trackingVtkMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+    trackingData->GetVtkMatrix(*trackingVtkMatrix);
+
+    vtkSmartPointer<vtkMatrix4x4> staticModelTransform = vtkSmartPointer<vtkMatrix4x4>::New();
+    mitk::CopyToVTK4x4Matrix(m_StaticModelTransform, *staticModelTransform);
+
+    vtkMatrix4x4::Multiply4x4(trackingVtkMatrix, staticModelTransform, vtkModelToWorld);
+  }
+
+  cv::Matx44d modelToWorldForOpenCV;
+  mitk::CopyToOpenCVMatrix(*vtkModelToWorld, modelToWorldForOpenCV);
+
   if (m_DataStorage.IsNotNull())
   {
     m_DataStorage->Remove(m_ModelPointsToVisualiseDataNode);
@@ -226,9 +257,9 @@ void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints(cv::Matx44d& transf
 
     niftk::Model3D::const_iterator iter;
     for (iter = m_ModelPoints.begin();
-         iter != m_ModelPoints.end();
-         ++iter
-         )
+      iter != m_ModelPoints.end();
+      ++iter
+      )
     {
       cv::Point3d p1 = (*iter).second.point;
       cv::Matx41d p2;
@@ -236,7 +267,7 @@ void NiftyCalVideoCalibrationManager::UpdateVisualisedPoints(cv::Matx44d& transf
       p2(1, 0) = p1.y;
       p2(2, 0) = p1.z;
       p2(3, 0) = 1;
-      cv::Matx41d p3 = transform * p2;
+      cv::Matx41d p3 = modelToWorldForOpenCV * p2;
 
       mitk::Point3D p4;
       p4[0] = p3(0, 0);
@@ -259,6 +290,11 @@ void NiftyCalVideoCalibrationManager::SetModelFileName(const std::string& fileNa
     mitkThrow() << "Empty 3D model file name.";
   }
 
+  if (m_DataStorage.IsNull())
+  {
+    mitkThrow() << "Data storage is NULL";
+  }
+
   niftk::Model3D model = niftk::LoadModel3D(fileName);
   if (model.empty())
   {
@@ -268,8 +304,35 @@ void NiftyCalVideoCalibrationManager::SetModelFileName(const std::string& fileNa
   m_ModelFileName = fileName;
   m_ModelPoints = model;
 
-  cv::Matx44d id = cv::Matx44d::eye();
-  this->UpdateVisualisedPoints(id);
+  if (m_DataStorage->Exists(m_ModelPointsToVisualiseDataNode))
+  {
+    m_DataStorage->Remove(m_ModelPointsToVisualiseDataNode);
+  }
+
+  m_ModelPointsToVisualise->Clear();
+
+  niftk::Model3D::const_iterator iter;
+  for (iter = m_ModelPoints.begin();
+       iter != m_ModelPoints.end();
+       ++iter
+       )
+  {
+    cv::Point3d p1 = (*iter).second.point;
+
+    mitk::Point3D p2;
+    p2[0] = p1.x;
+    p2[1] = p1.y;
+    p2[2] = p1.z;
+
+    m_ModelPointsToVisualise->InsertPoint((*iter).first, p2);
+  }
+
+  vtkSmartPointer<vtkMatrix4x4> idMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
+  idMatrix->Identity();
+  m_ModelPointsToVisualiseDataNode->GetData()->GetGeometry()->SetIndexToWorldTransformByVtkMatrix(idMatrix);
+
+  m_DataStorage->Add(m_ModelPointsToVisualiseDataNode);
+
   this->Modified();
 }
 
@@ -328,13 +391,13 @@ void NiftyCalVideoCalibrationManager::SetTemplateImageFileName(const std::string
 
 
 //-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::SetModelToTrackerFileName(
+void NiftyCalVideoCalibrationManager::SetModelTransformFileName(
     const std::string& fileName)
 {
   if (!fileName.empty())
   {
-    m_ModelToTracker = niftk::LoadMatrix(fileName);
-    m_ModelToTrackerFileName = fileName;
+    m_StaticModelTransform = niftk::LoadMatrix(fileName);
+    m_ModelTransformFileName = fileName;
     this->Modified();
   }
 }
@@ -400,6 +463,11 @@ void NiftyCalVideoCalibrationManager::UpdateCameraToWorldPosition()
 
     coords->SetVtkMatrix(*cameraToWorldMatrix);
     node->Modified();
+
+    if (m_ModelTransformNode.IsNotNull() && !m_ModelIsStationary)
+    {
+      this->UpdateVisualisedPoints();
+    }
   }
 }
 
@@ -423,15 +491,14 @@ void NiftyCalVideoCalibrationManager::Restart()
   for (int i = 0; i < m_TrackingMatricesDataNodes.size(); i++)
   {
     if (m_DataStorage.IsNotNull()
-        && m_DataStorage->Exists(m_TrackingMatricesDataNodes[i])
-       )
+        && m_DataStorage->Exists(m_TrackingMatricesDataNodes[i]))
     {
       m_DataStorage->Remove(m_TrackingMatricesDataNodes[i]);
     }
   }
   m_TrackingMatricesDataNodes.clear();
   m_TrackingMatrices.clear();
-  m_ReferenceTrackingMatrices.clear();
+  m_ModelTrackingMatrices.clear();
 
   MITK_INFO << "Restart. Left point size now:" << m_Points[0].size()
             << ", right: " <<  m_Points[1].size();
@@ -454,30 +521,11 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractCameraMatrices(in
 
 
 //-----------------------------------------------------------------------------
-std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(bool useReference)
+std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(bool shahidiOverride)
 {
   std::list<cv::Matx44d> trackingMatrices;
 
-  if (useReference)
-  {
-    if (m_TrackingMatrices.size() != m_ReferenceTrackingMatrices.size())
-    {
-      mitkThrow() << "Different number of tracking and reference matrices";
-    }
-
-    std::list<cv::Matx44d>::const_iterator trackingIter;
-    std::list<cv::Matx44d>::const_iterator referenceIter;
-    for (trackingIter = m_TrackingMatrices.begin(),
-         referenceIter = m_ReferenceTrackingMatrices.begin();
-         trackingIter != m_TrackingMatrices.end() && referenceIter != m_ReferenceTrackingMatrices.end();
-         ++trackingIter,
-         ++referenceIter
-        )
-    {
-      trackingMatrices.push_back((*trackingIter) * ((*referenceIter).inv()));
-    }
-  }
-  else
+  if (m_ModelIsStationary || shahidiOverride)
   {
     std::list<cv::Matx44d>::const_iterator trackingIter;
     for (trackingIter = m_TrackingMatrices.begin();
@@ -488,8 +536,46 @@ std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractTrackingMatrices(
       trackingMatrices.push_back(*trackingIter);
     }
   }
+  else if (!m_ModelIsStationary)
+  {
+    std::list<cv::Matx44d> modelMatrices = this->ExtractModelMatrices();
+    std::list<cv::Matx44d>::const_iterator tIter;
+    std::list<cv::Matx44d>::const_iterator mIter;
+
+    for (tIter = (m_TrackingMatrices.begin())++,
+         mIter = (modelMatrices.begin())++;
+         tIter != m_TrackingMatrices.end() &&
+         mIter != modelMatrices.end();
+         ++tIter, ++mIter
+         )
+    {
+      trackingMatrices.push_back((*(modelMatrices.begin())) * ((*mIter).inv()) * (*tIter));
+    }
+  }
+  else
+  {
+    mitkThrow() << "You should not have both camera and model stationary.";
+  }
 
   return trackingMatrices;
+}
+
+
+//-----------------------------------------------------------------------------
+std::list<cv::Matx44d> NiftyCalVideoCalibrationManager::ExtractModelMatrices()
+{
+  std::list<cv::Matx44d> modelMatrices;
+
+  std::list<cv::Matx44d>::const_iterator modelIter;
+  for (modelIter = m_ModelTrackingMatrices.begin();
+       modelIter != m_ModelTrackingMatrices.end();
+       ++modelIter
+       )
+  {
+    modelMatrices.push_back((*modelIter) * m_StaticModelTransform);
+  }
+
+  return modelMatrices;
 }
 
 
@@ -512,14 +598,14 @@ std::vector<cv::Mat> NiftyCalVideoCalibrationManager::ConvertMatrices(const std:
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex, bool useReference)
+cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex)
 {
   cv::Matx21d residual;
   residual(0, 0) = 0;
   residual(1, 0) = 0;
 
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices();
 
   // This method needs at least 3 camera and tracking matrices,
   // corresponding to 2 movements, rotating about 2 independent axes.
@@ -538,58 +624,70 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoTsaiHandEye(int imageIndex, bool 
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex, bool useReference)
+cv::Matx44d NiftyCalVideoCalibrationManager::DoShahidiHandEye(int imageIndex)
 {
-  // This method itself, can work with only 1 example.
-
   std::list<cv::Matx44d> cameraMatrices = this->ExtractCameraMatrices(imageIndex);
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(true);
+  std::list<cv::Matx44d> modelMatrices = this->ExtractModelMatrices();
 
-  cv::Matx44d modelToWorld = m_ModelToTracker; // Shahidi always works by using the loaded transform.
-  if(useReference)
+  if (cameraMatrices.size() != trackingMatrices.size())
   {
-    cv::Matx44d averageReferenceToTracker =
-        niftk::AverageMatricesUsingEigenValues(m_ReferenceTrackingMatrices);
-
-    modelToWorld = averageReferenceToTracker.inv() * modelToWorld;
+    mitkThrow() << "Number of camera matrices:" << cameraMatrices.size()
+                << ", does not equal the number of tracking matrices:" << trackingMatrices.size();
+  }
+  if (modelMatrices.size() != trackingMatrices.size())
+  {
+    mitkThrow() << "Number of model matrices:" << modelMatrices.size()
+                << ", does not equal the number of tracking matrices:" << trackingMatrices.size();
   }
 
-  cv::Matx44d handEye =
-    niftk::CalculateHandEyeByDirectMatrixMultiplication(
-      modelToWorld,
-      trackingMatrices,
-      cameraMatrices
+  std::list<cv::Matx44d> handEyeMatrices;
+
+  std::list<cv::Matx44d>::const_iterator tIter;
+  std::list<cv::Matx44d>::const_iterator cIter;
+  std::list<cv::Matx44d>::const_iterator mIter;
+
+  for (tIter = (trackingMatrices.begin())++,
+       cIter = (cameraMatrices.begin())++,
+       mIter = (modelMatrices.begin())++;
+       tIter != trackingMatrices.end() &&
+       cIter != cameraMatrices.end() &&
+       mIter != modelMatrices.end();
+       ++tIter, ++cIter, ++mIter
+       )
+  {
+
+    std::list<cv::Matx44d> singleTracking;
+    singleTracking.push_back(*tIter);
+
+    std::list<cv::Matx44d> singleCamera;
+    singleCamera.push_back(*cIter);
+
+    cv::Matx44d handEye = niftk::CalculateHandEyeByDirectMatrixMultiplication(
+      *mIter,
+      singleTracking,
+      singleCamera
       );
 
+    handEyeMatrices.push_back(handEye);
+  }
+
+  cv::Matx44d handEye = niftk::AverageMatricesUsingEigenValues(handEyeMatrices);
   return handEye;
 }
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialHandEye(int imageIndex, bool useReference)
+cv::Matx44d NiftyCalVideoCalibrationManager::GetInitialHandEye(int imageIndex)
 {
   cv::Matx44d handEye;
   if (m_TrackingMatrices.size() > 1)
   {
-    if (useReference)
-    {
-      handEye = m_ReferenceHandEyeMatrices[imageIndex][TSAI_1989];
-    }
-    else
-    {
-      handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
-    }
+    handEye = m_HandEyeMatrices[imageIndex][TSAI_1989];
   }
   else
   {
-    if (useReference)
-    {
-      handEye = m_ReferenceHandEyeMatrices[imageIndex][SHAHIDI_2002];
-    }
-    else
-    {
-      handEye = m_HandEyeMatrices[imageIndex][SHAHIDI_2002];
-    }
+    handEye = m_HandEyeMatrices[imageIndex][SHAHIDI_2002];
   }
   return handEye;
 }
@@ -620,7 +718,7 @@ cv::Matx44d NiftyCalVideoCalibrationManager::GetModelToWorld(const cv::Matx44d& 
     mitkThrow() << "Empty list of camera matrices.";
   }
 
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices();
   if (trackingMatrices.empty())
   {
     mitkThrow() << "Empty list of tracking matrices.";
@@ -637,17 +735,17 @@ cv::Matx44d NiftyCalVideoCalibrationManager::GetModelToWorld(const cv::Matx44d& 
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool useReference)
+cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex)
 {
   double reprojectionRMS = 0;
 
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices();
 
   // We clone them, so we dont modify the member variables m_Intrinsic, m_Distortion.
   cv::Mat intrinsic = m_Intrinsic[imageIndex].clone();
   cv::Mat distortion = m_Distortion[imageIndex].clone();
 
-  cv::Matx44d handEye = this->GetInitialHandEye(imageIndex, useReference);
+  cv::Matx44d handEye = this->GetInitialHandEye(imageIndex);
   cv::Matx44d modelToWorld = this->GetInitialModelToWorld();
 
   niftk::CalculateHandEyeUsingMaltisMethod(m_ModelPoints,
@@ -669,13 +767,13 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoMaltiHandEye(int imageIndex, bool
 
 
 //-----------------------------------------------------------------------------
-cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageIndex, bool useReference)
+cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageIndex)
 {
   double reprojectionRMS = 0;
 
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices();
 
-  cv::Matx44d handEye = this->GetInitialHandEye(imageIndex, useReference);
+  cv::Matx44d handEye = this->GetInitialHandEye(imageIndex);
   cv::Matx44d modelToWorld = this->GetInitialModelToWorld();
 
   niftk::CalculateHandEyeByOptimisingAllExtrinsic(m_ModelPoints,
@@ -698,18 +796,17 @@ cv::Matx44d NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEye(int imageInd
 
 //-----------------------------------------------------------------------------
 void NiftyCalVideoCalibrationManager::DoFullExtrinsicHandEyeInStereo(cv::Matx44d& leftHandEye,
-                                                                     cv::Matx44d& rightHandEye,
-                                                                     bool useReference
+                                                                     cv::Matx44d& rightHandEye
                                                                      )
 {
   double reprojectionRMS = 0;
 
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(useReference);
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices();
 
   cv::Matx44d stereoExtrinsics = niftk::RotationAndTranslationToMatrix(
         m_LeftToRightRotationMatrix, m_LeftToRightTranslationVector);
 
-  cv::Matx44d handEye = this->GetInitialHandEye(0, useReference);
+  cv::Matx44d handEye = this->GetInitialHandEye(0);
   cv::Matx44d modelToWorld = this->GetInitialModelToWorld();
 
   niftk::CalculateHandEyeInStereoByOptimisingAllExtrinsic(m_ModelPoints,
@@ -1392,15 +1489,15 @@ bool NiftyCalVideoCalibrationManager::Grab()
     extracted[2] = true;
   }
 
-  // Now we extract the reference tracking node - ToDo: fix code duplication.
-  if (m_ReferenceTrackingTransformNode.IsNotNull())
+  // Now we extract the model tracking node - ToDo: fix code duplication.
+  if (m_ModelTransformNode.IsNotNull())
   {
     CoordinateAxesData::Pointer tracking = dynamic_cast<CoordinateAxesData*>(
-          m_ReferenceTrackingTransformNode->GetData());
+          m_ModelTransformNode->GetData());
 
     if (tracking.IsNull())
     {
-      mitkThrow() << "Reference tracking node contains null tracking matrix.";
+      mitkThrow() << "Model (e.g. chessboard) tracking node contains null tracking matrix.";
     }
     vtkSmartPointer<vtkMatrix4x4> mat = vtkSmartPointer<vtkMatrix4x4>::New();
     tracking->GetVtkMatrix(*mat);
@@ -1414,8 +1511,18 @@ bool NiftyCalVideoCalibrationManager::Grab()
         openCVMat(r,c) = mat->GetElement(r,c);
       }
     }
-    m_ReferenceTrackingMatrices.push_back(openCVMat);
+    m_ModelTrackingMatrices.push_back(openCVMat);
     extracted[3] = true;
+  }
+  else
+  {
+    // If we are tracking laparoscope, but not chessboard, then provide default identity matrix instead.
+    if (m_TrackingTransformNode.IsNotNull())
+    {
+      cv::Matx44d opencvIdentity = cv::Matx44d::eye();
+      m_ModelTrackingMatrices.push_back(opencvIdentity);
+      extracted[3] = true;
+    }
   }
 
   // Then we check if we got everything, and therefore we are successful.
@@ -1424,8 +1531,8 @@ bool NiftyCalVideoCalibrationManager::Grab()
           || m_ImageNode[1].IsNull())
       && ((m_TrackingTransformNode.IsNotNull() && extracted[2]) // tracking node is optional
           || m_TrackingTransformNode.IsNull())
-      && ((m_ReferenceTrackingTransformNode.IsNotNull() && extracted[3]) // reference tracking node is optional
-          || m_ReferenceTrackingTransformNode.IsNull())
+      && ((m_ModelTransformNode.IsNotNull() && extracted[3]) // reference tracking node is optional
+          || m_ModelTransformNode.IsNull())
       )
   {
     isSuccessful = true;
@@ -1462,9 +1569,9 @@ void NiftyCalVideoCalibrationManager::UnGrab()
     m_TrackingMatricesDataNodes.pop_back();
     m_TrackingMatrices.pop_back();
   }
-  if (!m_ReferenceTrackingMatrices.empty())
+  if (!m_ModelTrackingMatrices.empty())
   {
-    m_ReferenceTrackingMatrices.pop_back();
+    m_ModelTrackingMatrices.pop_back();
   }
 
   MITK_INFO << "UnGrab. Left point size now:" << m_Points[0].size() << ", right:" <<  m_Points[1].size();
@@ -1486,7 +1593,7 @@ bool NiftyCalVideoCalibrationManager::isStereo() const
 //-----------------------------------------------------------------------------
 double NiftyCalVideoCalibrationManager::GetMonoRMSReconstructionError(const cv::Matx44d& handEye)
 {
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices();
 
   double rms = niftk::ComputeRMSReconstructionError(m_ModelPoints,
                                                     m_Points[0],
@@ -1503,7 +1610,7 @@ double NiftyCalVideoCalibrationManager::GetMonoRMSReconstructionError(const cv::
 //-----------------------------------------------------------------------------
 double NiftyCalVideoCalibrationManager::GetStereoRMSReconstructionError(const cv::Matx44d& handEye)
 {
-  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices(false);
+  std::list<cv::Matx44d> trackingMatrices = this->ExtractTrackingMatrices();
 
   double recon = niftk::ComputeRMSReconstructionError(m_ModelPoints,
                                                       m_Points[0],
@@ -1732,7 +1839,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
         m_LeftToRightTranslationVector,
         m_EssentialMatrix,
         m_FundamentalMatrix,
-        CV_CALIB_USE_INTRINSIC_GUESS | CV_CALIB_FIX_INTRINSIC,
+        CV_CALIB_USE_INTRINSIC_GUESS,
         m_Do3DOptimisation
         );
       rms = tmpRMS(1, 0);
@@ -1758,7 +1865,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
     // Don't change the order of these sections where we compute each hand-eye.
     if (m_TrackingMatrices.size() > 1)
     {
-      m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, false);
+      m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0);
       {
         m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][TSAI_1989]);
         rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
@@ -1768,7 +1875,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       }
     }
 
-    m_HandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, false);
+    m_HandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0);
     {
       m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][SHAHIDI_2002]);
       rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
@@ -1777,7 +1884,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       m_CalibrationResult += message.str();
     }
 
-    m_HandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0, false);
+    m_HandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0);
     {
       m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][MALTI_2013]);
       rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
@@ -1786,7 +1893,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       m_CalibrationResult += message.str();
     }
 
-    m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC] = DoFullExtrinsicHandEye(0, false);
+    m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC] = DoFullExtrinsicHandEye(0);
     {
       m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
       rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
@@ -1800,7 +1907,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
       // Don't change the order of these sections where we compute each hand-eye.
       if (m_TrackingMatrices.size() > 1)
       {
-        m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, false);
+        m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1);
         {
           m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][TSAI_1989]);
           rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
@@ -1809,7 +1916,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
           m_CalibrationResult += message.str();
         }
       }
-      m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, false);
+      m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1);
       {
         m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][SHAHIDI_2002]);
         rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
@@ -1817,7 +1924,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
         message << "Shahidi stereo: " << rms << " mm" << std::endl;
         m_CalibrationResult += message.str();
       }
-      m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, false);
+      m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1);
       {
         m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][MALTI_2013]);
         rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
@@ -1826,8 +1933,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
         m_CalibrationResult += message.str();
       }
       DoFullExtrinsicHandEyeInStereo(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
-                                     m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC],
-                                     false
+                                     m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC]
                                     );
       {
         m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
@@ -1837,37 +1943,6 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
         m_CalibrationResult += message.str();
       }
     } // end if we are in stereo.
-
-    if (m_ReferenceTrackingTransformNode.IsNotNull())
-    {
-      // Don't change the order of these.
-      if (m_ReferenceTrackingMatrices.size() > 1)
-      {
-        m_ReferenceHandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0, true);
-      }
-      m_ReferenceHandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0, true);
-      m_ReferenceHandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0, true);
-
-      if (m_ImageNode[1].IsNull())
-      {
-        m_ReferenceHandEyeMatrices[0][NON_LINEAR_EXTRINSIC] = DoFullExtrinsicHandEye(0, true);
-      }
-
-      if (m_ImageNode[1].IsNotNull())
-      {
-        // Don't change the order of these.
-        if (m_ReferenceTrackingMatrices.size() > 1)
-        {
-          m_ReferenceHandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1, true);
-        }
-        m_ReferenceHandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1, true);
-        m_ReferenceHandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1, true);
-        DoFullExtrinsicHandEyeInStereo(m_ReferenceHandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
-                                       m_ReferenceHandEyeMatrices[1][NON_LINEAR_EXTRINSIC],
-                                       true
-                                      );
-      } // end if we are in stereo
-    } // end if we have a reference matrix.
 
     // This is so that the one we see on screen is our prefered one.
     m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][m_HandeyeMethod]);
@@ -2184,67 +2259,18 @@ void NiftyCalVideoCalibrationManager::Save()
           + "calib.right.eyehand.current.params.txt");
     }
 
-    if (m_ReferenceTrackingTransformNode.IsNotNull())
+    if (m_ModelTransformNode.IsNotNull())
     {
       int counter = 0;
       std::list<cv::Matx44d >::const_iterator iter;
-      for (iter = m_ReferenceTrackingMatrices.begin();
-           iter != m_ReferenceTrackingMatrices.end();
+      for (iter = m_ModelTrackingMatrices.begin();
+           iter != m_ModelTrackingMatrices.end();
            ++iter
            )
       {
         std::ostringstream fileName;
-        fileName << m_OutputDirName << "calib.tracking.reference." << counter++ << ".4x4";
+        fileName << m_OutputDirName << "calib.tracking.model." << counter++ << ".4x4";
         niftk::Save4x4Matrix(*iter, fileName.str());
-      }
-
-      // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
-      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][0].inv(), m_OutputDirName
-          + "calib.left.eyehand.reference.tsai.txt");
-      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][1].inv(), m_OutputDirName
-          + "calib.left.eyehand.reference.shahidi.txt");
-      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][2].inv(), m_OutputDirName
-          + "calib.left.eyehand.reference.malti.txt");
-      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][3].inv(), m_OutputDirName
-          + "calib.left.eyehand.reference.allextrinsic.txt");
-      niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[0][m_HandeyeMethod].inv(), m_OutputDirName
-          + "calib.left.eyehand.reference.txt");
-
-      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][0].inv(), m_OutputDirName
-          + "calib.left.eyehand.reference.tsai.params.txt");
-      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][1].inv(), m_OutputDirName
-          + "calib.left.eyehand.reference.shahidi.params.txt");
-      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][2].inv(), m_OutputDirName
-          + "calib.left.eyehand.reference.malti.params.txt");
-      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][3].inv(), m_OutputDirName
-          + "calib.left.eyehand.reference.allextrinsic.params.txt");
-      niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[0][m_HandeyeMethod].inv(), m_OutputDirName
-          + "calib.left.eyehand.reference.params.txt");
-
-      if (m_ImageNode[1].IsNotNull())
-      {
-        // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
-        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][0].inv(), m_OutputDirName
-            + "calib.right.eyehand.reference.tsai.txt");
-        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][1].inv(), m_OutputDirName
-            + "calib.right.eyehand.reference.shahidi.txt");
-        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][2].inv(), m_OutputDirName
-            + "calib.right.eyehand.reference.malti.txt");
-        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][3].inv(), m_OutputDirName
-            + "calib.right.eyehand.reference.allextrinsic.txt");
-        niftk::Save4x4Matrix(m_ReferenceHandEyeMatrices[1][m_HandeyeMethod].inv(), m_OutputDirName
-            + "calib.right.eyehand.reference.txt");
-
-        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][0].inv(), m_OutputDirName
-            + "calib.right.eyehand.reference.tsai.params.txt");
-        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][1].inv(), m_OutputDirName
-            + "calib.right.eyehand.reference.shahidi.params.txt");
-        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][2].inv(), m_OutputDirName
-            + "calib.right.eyehand.reference.malti.params.txt");
-        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][3].inv(), m_OutputDirName
-            + "calib.right.eyehand.reference.allextrinsic.params.txt");
-        niftk::SaveRigidParams(m_ReferenceHandEyeMatrices[1][m_HandeyeMethod].inv(), m_OutputDirName
-            + "calib.right.eyehand.reference.params.txt");
       }
     } // end if we have a reference transform
 

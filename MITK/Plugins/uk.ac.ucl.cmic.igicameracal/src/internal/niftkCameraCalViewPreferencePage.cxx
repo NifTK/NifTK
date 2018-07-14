@@ -39,13 +39,17 @@ const QString CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME("tag family");
 const QString CameraCalViewPreferencePage::GRIDX_NODE_NAME("grid size in x");
 const QString CameraCalViewPreferencePage::GRIDY_NODE_NAME("grid size in y");
 const QString CameraCalViewPreferencePage::HANDEYE_NODE_NAME("handeye method");
-const QString CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME("model to tracker transform");
+const QString CameraCalViewPreferencePage::MODEL_TRANSFORM_NODE_NAME("model transform");
 const QString CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME("reference image");
 const QString CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME("reference points");
 const QString CameraCalViewPreferencePage::MINIMUM_NUMBER_POINTS_NODE_NAME("minimum number of points");
 const QString CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME("template image");
 const QString CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME("previous calibration directory");
 const QString CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME("output directory");
+const QString CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME("model is stationary");
+const QString CameraCalViewPreferencePage::CAMERA_IS_STATIONARY_NODE_NAME("camera is stationary");
+const QString CameraCalViewPreferencePage::SAVE_OUTPUT_BEFORE_CALIBRATION_NODE_NAME("save output before calibration");
+const QString CameraCalViewPreferencePage::RESET_CALIBRATION_IF_NODE_CHANGES_NODE_NAME("reset if node changes");
 
 //-----------------------------------------------------------------------------
 CameraCalViewPreferencePage::CameraCalViewPreferencePage()
@@ -110,11 +114,9 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   bool ok = false;
   ok = connect(m_Ui->m_FeaturesComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnFeaturesComboSelected()));
   assert(ok);
-  ok = connect(m_Ui->m_HandEyeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnHandEyeComboSelected()));
-  assert(ok);
   ok = connect(m_Ui->m_3DModelToolButton, SIGNAL(pressed()), this, SLOT(On3DModelButtonPressed()));
   assert(ok);
-  ok = connect(m_Ui->m_ModelToTrackerToolButton, SIGNAL(pressed()), this, SLOT(OnModelToTrackerButtonPressed()));
+  ok = connect(m_Ui->m_ModelTransformToolButton, SIGNAL(pressed()), this, SLOT(OnModelTransformButtonPressed()));
   assert(ok);
   ok = connect(m_Ui->m_ReferenceImagePushButton, SIGNAL(pressed()), this, SLOT(OnReferenceImageButtonPressed()));
   assert(ok);
@@ -128,6 +130,10 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   assert(ok);
   ok = connect(m_Ui->m_IterativeCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnDoIterativeChecked(bool)));
   assert(ok);
+  ok = connect(m_Ui->m_ModelIsStationaryCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnModelIsStationaryChecked(bool)));
+  assert(ok);
+  ok = connect(m_Ui->m_CameraIsStationaryCheckBox, SIGNAL(toggled(bool)), this, SLOT(OnCameraIsStationaryChecked(bool)));
+  assert(ok);
 
   m_Ui->m_FeaturesComboBox->setCurrentIndex(0);
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(1);
@@ -135,9 +141,13 @@ void CameraCalViewPreferencePage::CreateQtControl(QWidget* parent)
   m_Ui->m_Do3DOptimisationCheckBox->setChecked(false);
   m_Ui->m_ClusteringCheckBox->setChecked(false);
   m_Ui->m_HandEyeComboBox->setCurrentIndex(0);
+  m_Ui->m_ModelIsStationaryCheckBox->setChecked(true);
+  m_Ui->m_CameraIsStationaryCheckBox->setChecked(false);
+  m_Ui->m_CameraIsStationaryCheckBox->setVisible(false);
+  m_Ui->m_CameraIsStationaryLabel->setVisible(false);
+  m_Ui->m_SaveOutputBeforeCalibrationCheckBox->setChecked(false);
   this->OnDoIterativeChecked(false);
   this->OnFeaturesComboSelected();
-  this->OnHandEyeComboSelected();
 
   this->Update();
 
@@ -179,6 +189,26 @@ void CameraCalViewPreferencePage::UpdateReferenceImageVisibility()
 void CameraCalViewPreferencePage::OnDoIterativeChecked(bool)
 {
   this->UpdateReferenceImageVisibility();
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnModelIsStationaryChecked(bool isChecked)
+{
+  if(m_Ui->m_CameraIsStationaryCheckBox->isChecked() && isChecked)
+  {
+    m_Ui->m_ModelIsStationaryCheckBox->setChecked(false);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void CameraCalViewPreferencePage::OnCameraIsStationaryChecked(bool isChecked)
+{
+  if(m_Ui->m_ModelIsStationaryCheckBox->isChecked() && isChecked)
+  {
+    m_Ui->m_CameraIsStationaryCheckBox->setChecked(false);
+  }
 }
 
 
@@ -249,28 +279,6 @@ void CameraCalViewPreferencePage::OnFeaturesComboSelected()
 
 
 //-----------------------------------------------------------------------------
-void CameraCalViewPreferencePage::OnHandEyeComboSelected()
-{
-  switch(m_Ui->m_HandEyeComboBox->currentIndex())
-  {
-    case niftk::NiftyCalVideoCalibrationManager::TSAI_1989:
-    case niftk::NiftyCalVideoCalibrationManager::MALTI_2013:
-  case niftk::NiftyCalVideoCalibrationManager::NON_LINEAR_EXTRINSIC:
-      m_Ui->m_ModelToTrackerLabel->setVisible(false);
-      m_Ui->m_ModelToTrackerLineEdit->setVisible(false);
-      m_Ui->m_ModelToTrackerToolButton->setVisible(false);
-    break;
-
-    case niftk::NiftyCalVideoCalibrationManager::SHAHIDI_2002:
-      m_Ui->m_ModelToTrackerLabel->setVisible(true);
-      m_Ui->m_ModelToTrackerLineEdit->setVisible(true);
-      m_Ui->m_ModelToTrackerToolButton->setVisible(true);
-    break;
-  }
-}
-
-
-//-----------------------------------------------------------------------------
 void CameraCalViewPreferencePage::On3DModelButtonPressed()
 {
   QString fileName = QFileDialog::getOpenFileName(m_Control,
@@ -284,14 +292,14 @@ void CameraCalViewPreferencePage::On3DModelButtonPressed()
 
 
 //-----------------------------------------------------------------------------
-void CameraCalViewPreferencePage::OnModelToTrackerButtonPressed()
+void CameraCalViewPreferencePage::OnModelTransformButtonPressed()
 {
   QString fileName = QFileDialog::getOpenFileName(m_Control,
       tr("Model to tracker transform"), "", tr("Transform (*.4x4 *.txt)"));
 
   if (!fileName.isEmpty())
   {
-    m_Ui->m_ModelToTrackerLineEdit->setText(fileName);
+    m_Ui->m_ModelTransformLineEdit->setText(fileName);
   }
 }
 
@@ -373,7 +381,7 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->PutDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, m_Ui->m_ScaleImageInYSpinBox->value());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, m_Ui->m_GridPointsInXSpinBox->value());
   m_CameraCalViewPreferencesNode->PutInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, m_Ui->m_GridPointsInYSpinBox->value());
-  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, m_Ui->m_ModelToTrackerLineEdit->text());
+  m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::MODEL_TRANSFORM_NODE_NAME, m_Ui->m_ModelTransformLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, m_Ui->m_ReferenceImageLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, m_Ui->m_ReferencePointsLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TAG_FAMILY_NODE_NAME, m_Ui->m_TagFamilyComboBox->currentText());
@@ -383,6 +391,10 @@ bool CameraCalViewPreferencePage::PerformOk()
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::TEMPLATE_IMAGE_NODE_NAME, m_Ui->m_TemplateImageLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::PREVIOUS_CALIBRATION_DIR_NODE_NAME, m_Ui->m_PreviousCalibrationDirLineEdit->text());
   m_CameraCalViewPreferencesNode->Put(CameraCalViewPreferencePage::OUTPUT_DIR_NODE_NAME, m_Ui->m_OutputDirLineEdit->text());
+  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME, m_Ui->m_ModelIsStationaryCheckBox->isChecked());
+  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::CAMERA_IS_STATIONARY_NODE_NAME, m_Ui->m_CameraIsStationaryCheckBox->isChecked());
+  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::SAVE_OUTPUT_BEFORE_CALIBRATION_NODE_NAME, m_Ui->m_SaveOutputBeforeCalibrationCheckBox->isChecked());
+  m_CameraCalViewPreferencesNode->PutBool(CameraCalViewPreferencePage::RESET_CALIBRATION_IF_NODE_CHANGES_NODE_NAME, m_Ui->m_ResetCalibrationIfNodeChangesCheckBox->isChecked());
   return true;
 }
 
@@ -405,7 +417,7 @@ void CameraCalViewPreferencePage::Update()
   m_Ui->m_ScaleImageInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetDouble(CameraCalViewPreferencePage::SCALEY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultScaleFactorY));
   m_Ui->m_GridPointsInXSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDX_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeX));
   m_Ui->m_GridPointsInYSpinBox->setValue(m_CameraCalViewPreferencesNode->GetInt(CameraCalViewPreferencePage::GRIDY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultGridSizeY));
-  m_Ui->m_ModelToTrackerLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_TO_TRACKER_NODE_NAME, ""));
+  m_Ui->m_ModelTransformLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::MODEL_TRANSFORM_NODE_NAME, ""));
   m_Ui->m_ReferenceImageLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::REFERENCE_IMAGE_NODE_NAME, ""));
   m_Ui->m_ReferencePointsLineEdit->setText(m_CameraCalViewPreferencesNode->Get(CameraCalViewPreferencePage::REFERENCE_POINTS_NODE_NAME, ""));
   m_Ui->m_TagFamilyComboBox->setCurrentIndex(
@@ -421,6 +433,10 @@ void CameraCalViewPreferencePage::Update()
     path = GetWritablePath();
   }
   m_Ui->m_OutputDirLineEdit->setText(path);
+  m_Ui->m_ModelIsStationaryCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::MODEL_IS_STATIONARY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultModelIsStationary));
+  m_Ui->m_CameraIsStationaryCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::CAMERA_IS_STATIONARY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultCameraIsStationary));
+  m_Ui->m_SaveOutputBeforeCalibrationCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::SAVE_OUTPUT_BEFORE_CALIBRATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultSaveOutputBeforeCalibration));
+  m_Ui->m_ResetCalibrationIfNodeChangesCheckBox->setChecked(m_CameraCalViewPreferencesNode->GetBool(CameraCalViewPreferencePage::RESET_CALIBRATION_IF_NODE_CHANGES_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultResetCalibrationIfNodeChanges));
 }
 
 } // end namespace

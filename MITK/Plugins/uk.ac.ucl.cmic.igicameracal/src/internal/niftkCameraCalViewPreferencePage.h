@@ -58,11 +58,15 @@ public:
   static const QString HANDEYE_NODE_NAME;
   static const QString REFERENCE_IMAGE_NODE_NAME;
   static const QString REFERENCE_POINTS_NODE_NAME;
-  static const QString MODEL_TO_TRACKER_NODE_NAME;
+  static const QString MODEL_TRANSFORM_NODE_NAME;
   static const QString MINIMUM_NUMBER_POINTS_NODE_NAME;
   static const QString TEMPLATE_IMAGE_NODE_NAME;
   static const QString PREVIOUS_CALIBRATION_DIR_NODE_NAME;
   static const QString OUTPUT_DIR_NODE_NAME;
+  static const QString MODEL_IS_STATIONARY_NODE_NAME;
+  static const QString CAMERA_IS_STATIONARY_NODE_NAME;
+  static const QString SAVE_OUTPUT_BEFORE_CALIBRATION_NODE_NAME;
+  static const QString RESET_CALIBRATION_IF_NODE_CHANGES_NODE_NAME;
 
   CameraCalViewPreferencePage();
   CameraCalViewPreferencePage(const CameraCalViewPreferencePage& other);
@@ -91,12 +95,13 @@ public:
 
 private slots:
 
+  void OnModelIsStationaryChecked(bool);
+  void OnCameraIsStationaryChecked(bool);
   void OnDoIterativeChecked(bool);
   void OnFeaturesComboSelected();
-  void OnHandEyeComboSelected();
 
   void On3DModelButtonPressed();
-  void OnModelToTrackerButtonPressed();
+  void OnModelTransformButtonPressed();
   void OnReferenceImageButtonPressed();
   void OnReferencePointsButtonPressed();
   void OnTemplateImageButtonPressed();

@@ -19,6 +19,7 @@
 #include "niftkOpenCVVideoDataType.h"
 
 #include <mitkOpenCVVideoSource.h>
+#include <niftkOpenCVVideoDataSourceServiceExports.h>
 
 namespace niftk
 {
