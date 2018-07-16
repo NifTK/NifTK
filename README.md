@@ -28,6 +28,7 @@ Useful Links
  - [Wiki pages][wiki]
  - [Mailing list][mailinglist]
  - [Dashboard][dashboard]
+ - [Mirror on Github][mirror]
  
 License
 -----------
@@ -74,4 +75,5 @@ NifTK is a cross-platform C++ library and officially supports:
 [mailinglist]: https://www.mailinglists.ucl.ac.uk/mailman/listinfo/niftk-users
 [dashboard]: http://cdash.cmiclab.cs.ucl.ac.uk/index.php?project=NifTK
 [citation]: https://doi.org/10.1007/s11548-014-1124-7
+[mirror]: https://github.com/NifTK/NifTK
 
