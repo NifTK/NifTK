@@ -1,7 +1,6 @@
 NifTK
 -----
 
-
 Welcome to the NifTK project. This project contains several applications with graphical user interface,
 and various command line applications and command line scripts. The NifTK project is part
 of the overall NifTK platform.
