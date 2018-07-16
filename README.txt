@@ -129,3 +129,9 @@ Library : NiftyLink
 Website : https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyLink 
 Purpose : Messaging Library to talk to client applications
 License : Documentation/Licenses/NiftyLink.txt (BSD 3 clause license)
+
+Library : NiftyCal
+Website : https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyCal
+Purpose : Video camera calibration
+License : https://cmiclab.cs.ucl.ac.uk/CMIC/NiftyCal/blob/master/LICENSE.txt (BSD 3 clause license)
+
