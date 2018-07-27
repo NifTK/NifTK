@@ -58,7 +58,7 @@ NifTK is a cross-platform C++ library and officially supports:
  - Linux
 
 [cmic]: http://www.ucl.ac.uk/medical-image-computing 
-[beis]: https://www.kcl.ac.uk/lsm/research/divisions/imaging/about/People.aspx
+[beis]: https://www.kcl.ac.uk/lsm/research/divisions/imaging/index.aspx
 [ucl]: http://www.ucl.ac.uk
 [seb]: https://kclpure.kcl.ac.uk/portal/sebastien.ourselin.html
 [matt]: https://iris.ucl.ac.uk/iris/browse/profile?upi=MJCLA42

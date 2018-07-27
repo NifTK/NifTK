@@ -102,7 +102,7 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
       "translational imaging platform called "
       "<a href=\"http://www.niftk.org\">%5</a>. "
       "%5 is co-developed by members of the <a href=\"%2\">%3 (%4) </a> at University College London (UCL)"
-      " and <a href=\"https://www.kcl.ac.uk/lsm/research/divisions/imaging/about/People.aspx\">The School of Biomedical Engineering and Imaging Sciences</a>"
+      " and <a href=\"https://www.kcl.ac.uk/lsm/research/divisions/imaging/index.aspx\">The School of Biomedical Engineering and Imaging Sciences</a>"
       " at King's College London (KCL)."
       "The Principal Investigator is <a href=\"https://kclpure.kcl.ac.uk/portal/sebastien.ourselin.html\">"
       "Prof. Sebastien Ourselin</a> at KCL "
