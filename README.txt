@@ -7,6 +7,12 @@ Version @NIFTK_VERSION_STRING@.
 For all questions and queries, please join the users mailing list:
 @NIFTK_USER_CONTACT@.
 
+NifTK is co-developed by members of the Centre for Medical Image Computing (CMIC)
+at University College London (UCL) and The School of Biomedical
+Engineering and Imaging Sciences at King's College London (KCL).
+The Principal Investigator is Prof. Sebastien Ourselin at KCL,
+and the Team Leader is Dr Matt Clarkson at UCL.
+
 Notices
 -------
 

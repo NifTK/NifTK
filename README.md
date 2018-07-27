@@ -5,9 +5,10 @@ Welcome to the NifTK project. This project contains several applications with gr
 and various command line applications and command line scripts. The NifTK project is part
 of the overall NifTK platform.
 
-NifTK was developed by the [Centre for Medical Image Computing][cmic] at [University College London (UCL)][ucl]
-and the Principal Investigator is Prof. [Sebastien Ourselin][seb], now at [KCL][kcl]. The Team Leader is 
-Dr. [Matt Clarkson][matt] at [UCL][ucl].
+NifTK is co-developed by members of the [Centre for Medical Image Computing (CMIC)][cmic] at [University College London (UCL)][ucl]
+and [The School of Biomedical Engineering and Imaging Sciences][beis] at [King's College London (KCL)][kcl].
+The Principal Investigator is [Prof. Sebastien Ourselin][seb] at [KCL][kcl], and the Team Leader is
+[Dr Matt Clarkson][matt] at [UCL][ucl].
 
 If you use this software, please cite [this paper][citation]. 
 
@@ -57,6 +58,7 @@ NifTK is a cross-platform C++ library and officially supports:
  - Linux
 
 [cmic]: http://www.ucl.ac.uk/medical-image-computing 
+[beis]: https://www.kcl.ac.uk/lsm/research/divisions/imaging/index.aspx
 [ucl]: http://www.ucl.ac.uk
 [seb]: https://kclpure.kcl.ac.uk/portal/sebastien.ourselin.html
 [matt]: https://iris.ucl.ac.uk/iris/browse/profile?upi=MJCLA42
