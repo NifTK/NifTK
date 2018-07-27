@@ -98,17 +98,20 @@ void HelpAboutDialog::GenerateHelpAboutText(QString applicationName)
   // Short introduction.
   QString introduction = QObject::tr(
       "<p>"
-      "%1 is on of the the user interfaces for the <a href=\"%2\">%3 (%4) </a>"
+      "%1 is one of the the user interfaces for the "
       "translational imaging platform called "
-      "<a href=\"http://cmictig.cs.ucl.ac.uk/research/software/software-nifty/\">%5</a>."
+      "<a href=\"http://www.niftk.org\">%5</a>. "
+      "%5 is co-developed by members of the <a href=\"%2\">%3 (%4) </a> at University College London (UCL)"
+      " and <a href=\"https://www.kcl.ac.uk/lsm/research/divisions/imaging/about/People.aspx\">The School of Biomedical Engineering and Imaging Sciences</a>"
+      " at King's College London (KCL)."
+      "The Principal Investigator is <a href=\"https://kclpure.kcl.ac.uk/portal/sebastien.ourselin.html\">"
+      "Prof. Sebastien Ourselin</a> at KCL "
+      "and the team leader is <a href=\"https://iris.ucl.ac.uk/iris/browse/profile?upi=MJCLA42\">"
+      "Dr Matt Clarkson</a> at UCL."
       "</p>"
       "<p>"
-      "%1 was launched with funding from the NIHR and the Comprehensive Biomedical Research Centre "
+      "%5 was launched with funding from the NIHR and the Comprehensive Biomedical Research Centre "
       "at UCL and UCLH grant 168 and TSB grant M1638A. "
-      "The principal investigator is <a href=\"https://kclpure.kcl.ac.uk/portal/sebastien.ourselin.html\">"
-      "Sebastien Ourselin</a> "
-      "and team leader is <a href=\"https://iris.ucl.ac.uk/iris/browse/profile?upi=MJCLA42\">"
-      "Matt Clarkson</a>."
       "</p>"
       ).arg(applicationName).arg(originURL).arg(originLongText).arg(originShortText).arg(platformName);
 
