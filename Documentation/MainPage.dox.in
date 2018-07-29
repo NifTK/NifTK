@@ -16,16 +16,11 @@ of Biomedical Engineering and Imaging Sciences</a> at <a href="https://www.kcl.a
 The Principal Investigator is <a href="https://kclpure.kcl.ac.uk/portal/sebastien.ourselin.html">Prof. Sebastien Ourselin</a> at KCL
 and the Team Leader is <a href="https://iris.ucl.ac.uk/iris/browse/profile?upi=MJCLA42">Dr Matt Clarkson</a> at UCL.
 
-The term @NIFTK_PLATFORM@ refers to the whole collection of Nifty<Something> packages 
-developed by <a href="@NIFTK_ORIGIN_URL@">@NIFTK_ORIGIN_SHORT_TEXT@</a> and listed 
-<a href="http://www.niftk.org">here</a>.
-
-In addition, there is a specific code repository called @NIFTK_PLATFORM@, which can be considered
-as a parent project, containing several graphical user interfaces (GUIs) such as NiftyView, NiftyMIDAS and
+This specific code repository, called @NIFTK_PLATFORM@,can be considered
+as a parent project, containing several graphical user interfaces (GUIs) such as NiftyView, NiftyMITK, NiftyMIDAS and
 NiftyIGI, many command line programs and assorted scripts. Furthermore, this parent project, called @NIFTK_PLATFORM@,
-can download and build some of the smaller Nifty<Something> packages, thereby providing an integrated suite
-of applications. So this specific page and linked pages of documentation refer specifically to the @NIFTK_PLATFORM@
-code repository.
+can download and build some of the smaller Nifty<Something> packages (e.g. NiftyReg, NiftySeg, NiftySim),
+thereby providing an integrated suite of applications.
 
 Further information can be obtained via:
 
