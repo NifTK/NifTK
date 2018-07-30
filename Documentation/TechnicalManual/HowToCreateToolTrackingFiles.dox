@@ -1,0 +1,113 @@
+/**
+
+\page HowToCreateToolTrackingFiles How To - Create Tool Tracking Files (.IGTToolStorage files)
+
+\section HowToCreateToolTrackingFilesContents Table of Contents
+\li \ref HowToCreateToolTrackingFilesIntroduction
+\li \ref HowToCreateToolTrackingFilesMarkerFiles
+\li \ref HowToCreateToolTrackingFilesIGTToolStorage
+
+\section HowToCreateToolTrackingFilesIntroduction Introduction
+
+If you were to write your own tracking code, then for optical trackers like
+the NDI Spectra, you would have to manage multiple configuration files (called .rom files)
+to store the geometrical configuration of each optical marker set being tracked.
+Similarly, most other optical tracker manufacturers would use a configuration file
+for each optically tracked object. This leads to the need for each application to load
+in the right set of configuration files in order to initialise an optical tracker.
+These are typically not needed for electro-magnetic (EM) trackers like the NDI Aurora, as each tool is
+physically connected to a port, so the NDI API can detect which tools are being tracked. However,
+in this case, the Aurora would not know what tool was attached to each port, so you would probably
+end up with each tool having a name correspding to the port number, eg. [0, 1, 2, 3], which
+would then over time be confusing, as you would not know which tool was connected to which port.
+
+MITK on the other hand wraps these necessary configuration files into a single .IGTToolStorage
+file, which can be considered as a container. This container stores useful information like
+a Name. It can also contain extra configuration parameters
+like a surface model to use for rendering. These extra configuration parameters will not be covered
+here, as we just want to focus on the tracking capability.
+
+So, within MITK and NifTK, the basic principal of getting your tracker working is
+
+<ol>
+<li>Locate, or create a set of configuration files that define the geometry for each optically
+tracked object. These are only necessary for optical trackers, not for EM trackers.</li>
+<li>Create a .IGTToolStorage file, using the MITK IGT Navigation Tool Manager plugin. This
+.IGTToolStorage file acts as a container. This container can then be stored for later use,
+and does make management of multiple tool configurations a bit easier. For example it allows
+you to name the tool with a human readable name, and then the NifTK Data Manager plugin
+will save data in a folder of the same name.</li>
+</ol>
+
+These steps are now described in some detail.
+
+\section HowToCreateToolTrackingFilesMarkerFiles Creating Optical Marker Files
+
+These instructions pertain to either NDI Spectra (.rom files), or the Atracsys Fusion Track range (.ini files).
+
+<b>NDI .rom files</b>
+
+For standard NDI markers, which are manufactured to known dimensions by NDI, then the necessary .rom
+files can be downloaded from the NDI support website. These standard .rom files are also available in
+
+\verbatim
+NifTK/Resources/Tracking
+\endverbatim
+
+You can also create your own. Launch NDI 6D Architect, locate the Help files, and
+follow the instructions on how to create a new .rom file.
+
+You can also manually create one, simply by specifying the coordinates in
+the 6D Architect. This is useful if you have designed your own tool and manufactured
+it accurately enough.
+
+<b>Atracsys .ini files</b>
+
+You should probably follow the Atracsys documentation to make a new geometry file for
+each marker being tracked. The manual comes with each tracker and is not available for download.
+This probably gives the most accurate tracking in the long run.
+However, if you already have a .rom file available, for example for when you are using Atracsys to
+track a standard NDI marker, then you can create a suitable Atracsys .ini file
+by extracting the coordinates from the .rom file and following the Atracsys format to
+manually write the .ini file. You can look at similar examples in:
+
+\verbatim
+NifTK/Resources/Tracking
+NifTK/Resources/Tracking/README.txt
+\endverbatim
+
+where the README.txt tells you which Atracsys .ini files correspond with which NDI .rom files.
+
+\section HowToCreateToolTrackingFilesIGTToolStorage Creating Tool Storage Files
+
+Once you have your .rom files or .ini files, you can then proceed to create a .IGTToolStorage to group
+them together.
+
+\li Locate the IGT Navigation Tool Manager.
+\li Click "Create New" which brings up a dialog box to name your Tool Storage (See Figure 1).
+You can call it what you like, but its useful to name the tracker and all tools contained as succinctly as possible.
+
+\image html TrackingCreateToolStorage.png "Figure 1. Locate the IGT Navigation Tool Manager plugin and create a new Tool Storage with a name of your choice."
+
+\li Then you add tools to the storage file using the "Add" button (See Figure 2).
+
+\image html TrackingCreateNewTool.png "Figure 2. Click the Add button to create a new tool."
+
+\li You first select the type of tool, e.g. NDI Polaris, or NDI Aurora. For Atracsys, just select NDI Polaris.
+\li Then you name the tool, and for optical tracking, load the configuration file created above (See Figure 3). For EM tools you select NDI Aurora, and just name it. You do not need a .rom or .ini file.
+
+\image html TrackingNameToolAndLoadConfig.png "Figure 3. Name the tool and for optical trackers add the config file created above."
+
+\li Then you specify an identifier. For optical tools, this can be a string, and be the same as the Name. For EM tools,
+it must be a number corresponding to the port, [0, 1, 2, 3]. For the NDI 7 sensor, EM shape tool, you have to create
+7 tools, numbered: [0, 1, 2, 3, 101, 102, 103], as described <a href="https://cmiclab.cs.ucl.ac.uk/CMIC/NifTK/issues/4765">here</a>.
+See Figure 4.
+
+\image html TrackingSetIdentifier.png "Figure 4. Set the identifier, which for EM tools must be numeric [0, 1, 2, 3 (ports), 101, 102, 103]."
+
+\li The process is repeated, adding tools to the same tool storage. Finally, you save the tool storage to a
+filename of your choice, using the Save button in the "Select toolstorage" section. See Figure 5.
+
+\image html TrackingSetIdentifier.png "Figure 5. Add multiple tools to the same tool storage, then save the tool storage with an appropriate name."
+
+*/
