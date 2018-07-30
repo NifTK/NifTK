@@ -108,6 +108,6 @@ See Figure 4.
 \li The process is repeated, adding tools to the same tool storage. Finally, you save the tool storage to a
 filename of your choice, using the Save button in the "Select toolstorage" section. See Figure 5.
 
-\image html TrackingSetIdentifier.png "Figure 5. Add multiple tools to the same tool storage, then save the tool storage with an appropriate name."
+\image html TrackingAddMoreTools.png "Figure 5. Add multiple tools to the same tool storage, then save the tool storage with an appropriate name."
 
 */
