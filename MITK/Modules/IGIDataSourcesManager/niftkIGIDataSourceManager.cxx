@@ -595,11 +595,11 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
         mitkThrow() << "Cannot play source=" << nameOfSource.toStdString()
                     << ", using factory=" << nameOfFactory.toStdString() << ".";
       }
-      //here we need to check we've got the right backend for the source
-      //at present we throw at ProbeRecordedData
+      //check we've got the right backend for the source
       if ( m_Sources[sourceNumber]->GetFactoryName() != nameOfFactory )
       {
-        MITK_INFO << nameOfSource.toStdString() << " does not use " <<  m_Sources[sourceNumber]->GetFactoryName().toStdString() << " factory.";
+        MITK_INFO << nameOfSource.toStdString() << " does not use " <<
+          m_Sources[sourceNumber]->GetFactoryName().toStdString() << " factory.";
       }
       else
       {
