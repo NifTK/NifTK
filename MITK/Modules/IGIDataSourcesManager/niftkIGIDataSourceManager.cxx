@@ -587,7 +587,6 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
 
       IGIDataSourceI::IGITimeType startTime;
       IGIDataSourceI::IGITimeType endTime;
-      bool canDo = false;
 
       if (!m_NameToFactoriesMap.contains(nameOfFactory)
         && !m_LegacyNameToFactoriesMap.contains(nameOfFactory))
@@ -605,7 +604,7 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
       {
         m_Sources[sourceNumber]->SetRecordingLocation(directoryPrefix);
         m_Sources[sourceNumber]->SetPlaybackSourceName(nameOfSource);
-        canDo = m_Sources[sourceNumber]->ProbeRecordedData(&startTime, &endTime);
+        bool canDo = m_Sources[sourceNumber]->ProbeRecordedData(&startTime, &endTime);
 
         if (canDo)
         {
