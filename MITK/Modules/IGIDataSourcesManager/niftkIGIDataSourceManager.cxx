@@ -587,7 +587,6 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
 
       IGIDataSourceI::IGITimeType startTime;
       IGIDataSourceI::IGITimeType endTime;
-      bool canDo = false;
 
       if (!m_NameToFactoriesMap.contains(nameOfFactory)
         && !m_LegacyNameToFactoriesMap.contains(nameOfFactory))
@@ -595,18 +594,26 @@ void IGIDataSourceManager::StartPlayback(const QString& directoryPrefix,
         mitkThrow() << "Cannot play source=" << nameOfSource.toStdString()
                     << ", using factory=" << nameOfFactory.toStdString() << ".";
       }
-
-      m_Sources[sourceNumber]->SetRecordingLocation(directoryPrefix);
-      m_Sources[sourceNumber]->SetPlaybackSourceName(nameOfSource);
-      canDo = m_Sources[sourceNumber]->ProbeRecordedData(&startTime, &endTime);
-
-      if (canDo)
+      //check we've got the right backend for the source
+      if ( m_Sources[sourceNumber]->GetFactoryName() != nameOfFactory )
       {
-        overallStartTime = std::min(overallStartTime, startTime);
-        overallEndTime   = std::max(overallEndTime, endTime);
-        dir2NameMap.erase(iter);
-        goodSources.push_back(m_Sources[sourceNumber]);
-        break;
+        MITK_INFO << nameOfSource.toStdString() << " does not use " <<
+          m_Sources[sourceNumber]->GetFactoryName().toStdString() << " factory.";
+      }
+      else
+      {
+        m_Sources[sourceNumber]->SetRecordingLocation(directoryPrefix);
+        m_Sources[sourceNumber]->SetPlaybackSourceName(nameOfSource);
+        bool canDo = m_Sources[sourceNumber]->ProbeRecordedData(&startTime, &endTime);
+
+        if (canDo)
+        {
+          overallStartTime = std::min(overallStartTime, startTime);
+          overallEndTime   = std::max(overallEndTime, endTime);
+          dir2NameMap.erase(iter);
+          goodSources.push_back(m_Sources[sourceNumber]);
+          break;
+        }
       }
     } // end for each name in map
   } // end for each source
