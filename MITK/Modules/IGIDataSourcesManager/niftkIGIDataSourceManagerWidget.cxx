@@ -34,7 +34,8 @@ IGIDataSourceManagerWidget::IGIDataSourceManagerWidget(mitk::DataStorage::Pointe
 {
   Ui_IGIDataSourceManagerWidget::setupUi(parent);
 
-  m_PlaybackWidget = new IGIDataSourcePlaybackWidget ( dataStorage, m_Manager, groupBox_2 );
+  bool playbackVerticalLayout = true;
+  m_PlaybackWidget = new IGIDataSourcePlaybackWidget ( dataStorage, m_Manager, playbackVerticalLayout, groupBox_2 );
   QList<QString> namesOfFactories = m_Manager->GetAllFactoryNames();
   for (QString factory: namesOfFactories)
   {

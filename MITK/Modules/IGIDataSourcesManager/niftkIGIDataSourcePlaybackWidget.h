@@ -17,6 +17,7 @@
 
 #include "niftkIGIDataSourcesManagerExports.h"
 #include "ui_niftkIGIDataSourcePlaybackWidget.h"
+#include "niftkIGIDataSourcePlaybackControlsWidget.h"
 #include "niftkIGIDataSourceManager.h"
 
 #include <mitkDataStorage.h>
@@ -46,6 +47,7 @@ public:
 
   IGIDataSourcePlaybackWidget(mitk::DataStorage::Pointer dataStorage,
       IGIDataSourceManager* manager,
+      bool verticalLayout,
       QWidget *parent = 0);
 
   virtual ~IGIDataSourcePlaybackWidget();
@@ -155,6 +157,9 @@ private:
   QTime                 m_FixedRecordTime;              // To hold the amount of time the user specified.
   int                   m_MSecFixedRecordTime;          // Same time in milliseconds.
   QTime                 m_RecordTime;                   // Total amount of time of current recording.
+  bool                  m_VerticalLayout;               // Allows some customisation of the GUI layout.
+
+  IGIDataSourcePlaybackControlsWidget* m_PlaybackControlsWidget;
 
 }; // end class;
 
