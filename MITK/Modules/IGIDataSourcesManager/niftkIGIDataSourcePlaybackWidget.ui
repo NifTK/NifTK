@@ -79,7 +79,7 @@
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer">
+      <spacer name="m_horiz_spacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -91,92 +91,35 @@
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="ctkCollapsibleGroupBox" name="m_ToolManagerPlaybackGroupBox_Horizontal">
+       <property name="title">
+        <string>Playback Controls</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
-    <widget class="ctkCollapsibleGroupBox" name="m_ToolManagerPlaybackGroupBox">
+    <widget class="ctkCollapsibleGroupBox" name="m_ToolManagerPlaybackGroupBox_Vertical">
      <property name="title">
-      <string>Playback controls</string>
+      <string>Playback Controls</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_5">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QPushButton" name="m_StartPushButton">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>&lt;</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_PlayingPushButton">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="text">
-           <string>|&gt;</string>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_EndPushButton">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>&gt;</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="m_TimeStampEdit"/>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QSlider" name="m_PlaybackSlider">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="maximum">
-         <number>9999</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::NoTicks</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
     </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ctkCollapsibleGroupBox</class>
-   <extends>QGroupBox</extends>
-   <header>ctkCollapsibleGroupBox.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>ctkPathLineEdit</class>
    <extends>QWidget</extends>
    <header>ctkPathLineEdit.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleGroupBox</class>
+   <extends>QGroupBox</extends>
+   <header>ctkCollapsibleGroupBox.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

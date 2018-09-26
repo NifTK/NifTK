@@ -13,6 +13,7 @@
 =============================================================================*/
 
 #include "niftkIGIDataSourcePlaybackWidget.h"
+#include "niftkIGIDataSourcePlaybackControlsWidget.h"
 #include <niftkIGIInitialisationDialog.h>
 #include <niftkIGIConfigurationDialog.h>
 #include <QMessageBox>
@@ -29,13 +30,27 @@ namespace niftk
 //-----------------------------------------------------------------------------
 IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Pointer dataStorage,
     IGIDataSourceManager* manager,
+    bool verticalLayout,
     QWidget *parent)
 : m_FixedRecordTime(0,0,0,0)
 , m_RecordTime(0,0,0,0)
 , m_MSecFixedRecordTime(0)
+, m_VerticalLayout (verticalLayout)
 {
   m_Manager = manager;
   Ui_IGIDataSourcePlaybackWidget::setupUi(parent);
+
+  if ( m_VerticalLayout )
+  {
+    m_PlaybackControlsWidget = new IGIDataSourcePlaybackControlsWidget ( m_ToolManagerPlaybackGroupBox_Vertical );
+    m_ToolManagerPlaybackGroupBox_Horizontal->setVisible (false);
+  }
+  else
+  {
+    m_PlaybackControlsWidget = new IGIDataSourcePlaybackControlsWidget ( m_ToolManagerPlaybackGroupBox_Horizontal );
+    m_ToolManagerPlaybackGroupBox_Vertical->setVisible (false);
+  }
+
 
   m_PlayPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/play.png"));
   m_RecordPushButton->setIcon(QIcon(":/niftkIGIDataSourcesManagerResources/record.png"));
@@ -58,26 +73,11 @@ IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Poin
   ok = QObject::connect(m_PlayPushButton, SIGNAL(clicked()),
                         this, SLOT(OnPlayStart()));
   assert(ok);
-  ok = QObject::connect(m_TimeStampEdit, SIGNAL(editingFinished()),
-                        this, SLOT(OnPlaybackTimestampEditFinished()));
-  assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)),
                         this, SLOT(OnPlaybackTimeAdvanced(int)));
   assert(ok);
   ok = QObject::connect(m_Manager, SIGNAL(TimerUpdated(QString, QString)),
                         this, SLOT(OnTimerUpdated(QString, QString)));
-  assert(ok);
-  ok = QObject::connect(m_PlayingPushButton, SIGNAL(clicked(bool)),
-                        this, SLOT(OnPlayingPushButtonClicked(bool)));
-  assert(ok);
-  ok = QObject::connect(m_EndPushButton, SIGNAL(clicked(bool)),
-                        this, SLOT(OnEndPushButtonClicked(bool)));
-  assert(ok);
-  ok = QObject::connect(m_StartPushButton, SIGNAL(clicked(bool)),
-                        this, SLOT(OnStartPushButtonClicked(bool)));
-  assert(ok);
-  ok = QObject::connect(m_PlaybackSlider, SIGNAL(sliderReleased()),
-                        this, SLOT(OnSliderReleased()));
   assert(ok);
   ok = QObject::connect(m_GrabScreenCheckbox, SIGNAL(clicked(bool)),
                         this, SLOT(OnGrabScreen(bool)));
@@ -90,6 +90,23 @@ IGIDataSourcePlaybackWidget::IGIDataSourcePlaybackWidget(mitk::DataStorage::Poin
 
   ok = QObject::connect(m_Manager, SIGNAL(UpdateFinishedRendering()),
                         this, SLOT(OnUpdateRecordTimeDisplay()));
+  assert(ok);
+
+  //signals from the playback controls widget
+  ok = QObject::connect(m_PlaybackControlsWidget->m_TimeStampEdit, SIGNAL(editingFinished()),
+                        this, SLOT(OnPlaybackTimestampEditFinished()));
+  assert(ok);
+  ok = QObject::connect(m_PlaybackControlsWidget->m_PlayingPushButton, SIGNAL(clicked(bool)),
+                        this, SLOT(OnPlayingPushButtonClicked(bool)));
+  assert(ok);
+  ok = QObject::connect(m_PlaybackControlsWidget->m_EndPushButton, SIGNAL(clicked(bool)),
+                        this, SLOT(OnEndPushButtonClicked(bool)));
+  assert(ok);
+  ok = QObject::connect(m_PlaybackControlsWidget->m_PlaybackSlider, SIGNAL(sliderReleased()),
+                        this, SLOT(OnSliderReleased()));
+  assert(ok);
+  ok = QObject::connect(m_PlaybackControlsWidget->m_StartPushButton, SIGNAL(clicked(bool)),
+                        this, SLOT(OnStartPushButtonClicked(bool)));
   assert(ok);
 }
 
@@ -111,26 +128,11 @@ IGIDataSourcePlaybackWidget::~IGIDataSourcePlaybackWidget()
   ok = QObject::disconnect(m_PlayPushButton, SIGNAL(clicked()),
                            this, SLOT(OnPlayStart()));
   assert(ok);
-  ok = QObject::disconnect(m_TimeStampEdit, SIGNAL(editingFinished()),
-                           this, SLOT(OnPlaybackTimestampEditFinished()));
-  assert(ok);
   ok = QObject::disconnect(m_Manager, SIGNAL(PlaybackTimerAdvanced(int)),
                            this, SLOT(OnPlaybackTimeAdvanced(int)));
   assert(ok);
   ok = QObject::disconnect(m_Manager, SIGNAL(TimerUpdated(QString, QString)),
                            this, SLOT(OnTimerUpdated(QString, QString)));
-  assert(ok);
-  ok = QObject::disconnect(m_PlayingPushButton, SIGNAL(clicked(bool)),
-                           this, SLOT(OnPlayingPushButtonClicked(bool)));
-  assert(ok);
-  ok = QObject::disconnect(m_EndPushButton, SIGNAL(clicked(bool)),
-                           this, SLOT(OnEndPushButtonClicked(bool)));
-  assert(ok);
-  ok = QObject::disconnect(m_StartPushButton, SIGNAL(clicked(bool)),
-                           this, SLOT(OnStartPushButtonClicked(bool)));
-  assert(ok);
-  ok = QObject::disconnect(m_PlaybackSlider, SIGNAL(sliderReleased()),
-                           this, SLOT(OnSliderReleased()));
   assert(ok);
   ok = QObject::disconnect(m_GrabScreenCheckbox, SIGNAL(clicked(bool)),
                         this, SLOT(OnGrabScreen(bool)));
@@ -143,6 +145,22 @@ IGIDataSourcePlaybackWidget::~IGIDataSourcePlaybackWidget()
 
   ok = QObject::disconnect(m_Manager, SIGNAL(UpdateFinishedRendering()),
                            this, SLOT(OnUpdateRecordTimeDisplay()));
+  assert(ok);
+ //signals from the playback controls widget
+  ok = QObject::disconnect(m_PlaybackControlsWidget->m_TimeStampEdit, SIGNAL(editingFinished()),
+                        this, SLOT(OnPlaybackTimestampEditFinished()));
+  assert(ok);
+  ok = QObject::disconnect(m_PlaybackControlsWidget->m_PlayingPushButton, SIGNAL(clicked(bool)),
+                        this, SLOT(OnPlayingPushButtonClicked(bool)));
+  assert(ok);
+  ok = QObject::disconnect(m_PlaybackControlsWidget->m_EndPushButton, SIGNAL(clicked(bool)),
+                        this, SLOT(OnEndPushButtonClicked(bool)));
+  assert(ok);
+  ok = QObject::disconnect(m_PlaybackControlsWidget->m_PlaybackSlider, SIGNAL(sliderReleased()),
+                        this, SLOT(OnSliderReleased()));
+  assert(ok);
+  ok = QObject::disconnect(m_PlaybackControlsWidget->m_StartPushButton, SIGNAL(clicked(bool)),
+                        this, SLOT(OnStartPushButtonClicked(bool)));
   assert(ok);
 
   // m_Manager belongs to the calling widget
@@ -209,12 +227,19 @@ void IGIDataSourcePlaybackWidget::OnPlayStart()
                                  sliderValue
                                  );
 
-        m_PlaybackSlider->setMinimum(sliderValue);
-        m_PlaybackSlider->setMaximum(sliderMaximum);
-        m_PlaybackSlider->setSingleStep(sliderSingleStep);
-        m_PlaybackSlider->setPageStep(sliderPageStep);
+        m_PlaybackControlsWidget->m_PlaybackSlider->setMinimum(sliderValue);
+        m_PlaybackControlsWidget->m_PlaybackSlider->setMaximum(sliderMaximum);
+        m_PlaybackControlsWidget->m_PlaybackSlider->setSingleStep(sliderSingleStep);
+        m_PlaybackControlsWidget->m_PlaybackSlider->setPageStep(sliderPageStep);
 
-        m_ToolManagerPlaybackGroupBox->setCollapsed(false);
+        if ( m_VerticalLayout )
+        {
+          m_ToolManagerPlaybackGroupBox_Vertical->setCollapsed(false);
+        }
+        else
+        {
+          m_ToolManagerPlaybackGroupBox_Horizontal->setCollapsed(false);
+        }
 
         // Can stop playback with stop button (in addition to unchecking the playbutton)
         m_StopPushButton->setEnabled(true);
@@ -223,9 +248,9 @@ void IGIDataSourcePlaybackWidget::OnPlayStart()
         // could be possible: leave this enabled and simply stop all playback when user clicks on record.
         m_RecordPushButton->setEnabled(false);
         m_FixedRecordTimeInterval->setEnabled(false);
-        m_TimeStampEdit->setReadOnly(false);
-        m_PlaybackSlider->setEnabled(true);
-        m_PlaybackSlider->setValue(sliderValue);
+        m_PlaybackControlsWidget->m_TimeStampEdit->setReadOnly(false);
+        m_PlaybackControlsWidget->m_PlaybackSlider->setEnabled(true);
+        m_PlaybackControlsWidget->m_PlaybackSlider->setValue(sliderValue);
 
         // Stop the user editing the path.
         // In order to start editing the path, you must stop playing back.
@@ -266,9 +291,9 @@ void IGIDataSourcePlaybackWidget::OnPlayStart()
     m_StopPushButton->setEnabled(false);
     m_RecordPushButton->setEnabled(true);
     m_FixedRecordTimeInterval->setEnabled(true);
-    m_TimeStampEdit->setReadOnly(true);
-    m_PlaybackSlider->setEnabled(false);
-    m_PlaybackSlider->setValue(0);
+    m_PlaybackControlsWidget->m_TimeStampEdit->setReadOnly(true);
+    m_PlaybackControlsWidget->m_PlaybackSlider->setEnabled(false);
+    m_PlaybackControlsWidget->m_PlaybackSlider->setValue(0);
   }
 }
 
@@ -387,10 +412,10 @@ void IGIDataSourcePlaybackWidget::OnStop()
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnPlaybackTimestampEditFinished()
 {
-  int result = m_Manager->ComputePlaybackTimeSliderValue(m_TimeStampEdit->text());
+  int result = m_Manager->ComputePlaybackTimeSliderValue(m_PlaybackControlsWidget->m_TimeStampEdit->text());
   if (result != -1)
   {
-    m_PlaybackSlider->setValue(result);
+    m_PlaybackControlsWidget->m_PlaybackSlider->setValue(result);
     this->OnSliderReleased();
   }
 }
@@ -400,9 +425,9 @@ void IGIDataSourcePlaybackWidget::OnPlaybackTimeAdvanced(int newSliderValue)
 {
   if (newSliderValue != -1)
   {
-    m_PlaybackSlider->blockSignals(true);
-    m_PlaybackSlider->setValue(newSliderValue);
-    m_PlaybackSlider->blockSignals(false);
+    m_PlaybackControlsWidget->m_PlaybackSlider->blockSignals(true);
+    m_PlaybackControlsWidget->m_PlaybackSlider->setValue(newSliderValue);
+    m_PlaybackControlsWidget->m_PlaybackSlider->blockSignals(false);
   }
 }
 
@@ -411,20 +436,20 @@ void IGIDataSourcePlaybackWidget::OnPlaybackTimeAdvanced(int newSliderValue)
 void IGIDataSourcePlaybackWidget::OnTimerUpdated(QString rawString, QString humanReadableString)
 {
   // Only update text if user is not editing
-  if (!m_TimeStampEdit->hasFocus())
+  if (!m_PlaybackControlsWidget->m_TimeStampEdit->hasFocus())
   {
-    m_TimeStampEdit->blockSignals(true);
+    m_PlaybackControlsWidget->m_TimeStampEdit->blockSignals(true);
     // Avoid flickering the text field. it makes copy-n-paste impossible
     // during playback mode because it resets the selection every few milliseconds.
-    if (m_TimeStampEdit->text() != humanReadableString)
+    if (m_PlaybackControlsWidget->m_TimeStampEdit->text() != humanReadableString)
     {
-      m_TimeStampEdit->setText(humanReadableString);
+      m_PlaybackControlsWidget->m_TimeStampEdit->setText(humanReadableString);
     }
-    if (m_TimeStampEdit->toolTip() != rawString)
+    if (m_PlaybackControlsWidget->m_TimeStampEdit->toolTip() != rawString)
     {
-      m_TimeStampEdit->setToolTip(rawString);
+      m_PlaybackControlsWidget->m_TimeStampEdit->setToolTip(rawString);
     }
-    m_TimeStampEdit->blockSignals(false);
+    m_PlaybackControlsWidget->m_TimeStampEdit->blockSignals(false);
   }
 }
 
@@ -438,7 +463,7 @@ void IGIDataSourcePlaybackWidget::OnPlayingPushButtonClicked(bool isChecked)
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnEndPushButtonClicked(bool /*isChecked*/)
 {
-  m_PlaybackSlider->setValue(m_PlaybackSlider->maximum());
+  m_PlaybackControlsWidget->m_PlaybackSlider->setValue(m_PlaybackControlsWidget->m_PlaybackSlider->maximum());
   this->OnSliderReleased();
 }
 
@@ -446,7 +471,7 @@ void IGIDataSourcePlaybackWidget::OnEndPushButtonClicked(bool /*isChecked*/)
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnStartPushButtonClicked(bool /*isChecked*/)
 {
-  m_PlaybackSlider->setValue(m_PlaybackSlider->minimum());
+  m_PlaybackControlsWidget->m_PlaybackSlider->setValue(m_PlaybackControlsWidget->m_PlaybackSlider->minimum());
   this->OnSliderReleased();
 }
 
@@ -454,7 +479,7 @@ void IGIDataSourcePlaybackWidget::OnStartPushButtonClicked(bool /*isChecked*/)
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnSliderReleased()
 {
-  IGIDataSourceI::IGITimeType time = m_Manager->ComputeTimeFromSlider(m_PlaybackSlider->value());
+  IGIDataSourceI::IGITimeType time = m_Manager->ComputeTimeFromSlider(m_PlaybackControlsWidget->m_PlaybackSlider->value());
   m_Manager->SetPlaybackTime(time);
 }
 
