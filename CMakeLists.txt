@@ -1881,6 +1881,13 @@ if(BUILD_Caffe)
 endif()
 
 ######################################################################
+# Ensure we deploy the Resources directory
+######################################################################
+
+install(DIRECTORY Resources DESTINATION ${NIFTK_INSTALL_BASE_DIR} )
+
+
+######################################################################
 # Decide what subdirectories we are building, and go and build them.
 ######################################################################
 
