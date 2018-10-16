@@ -9,4 +9,5 @@ BigBlue.rom : geometry105.ini
 SmallBlue.rom : geometry106.ini
 Viking.rom : geometry107.ini
 TrackedWoodenBlock.rom : geometry108.ini
-
+CAS3141.rom : geometry109.ini
+CAS3138.rom : geometry110.ini
