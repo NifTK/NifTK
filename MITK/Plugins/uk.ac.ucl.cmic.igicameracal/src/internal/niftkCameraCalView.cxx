@@ -216,8 +216,8 @@ void CameraCalView::RetrievePreferenceValues()
     bool cameraIsStationary = prefs->GetBool(CameraCalViewPreferencePage::CAMERA_IS_STATIONARY_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultCameraIsStationary);
     m_Manager->SetCameraIsStationary(cameraIsStationary);
 
-    bool saveOutputBeforeCalibration = prefs->GetBool(CameraCalViewPreferencePage::SAVE_OUTPUT_BEFORE_CALIBRATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultSaveOutputBeforeCalibration);
-    m_Manager->SetSaveOutputBeforeCalibration(saveOutputBeforeCalibration);
+    bool saveOutputRegardlessOfCalibration = prefs->GetBool(CameraCalViewPreferencePage::SAVE_OUTPUT_REGARDLESS_OF_CALIBRATION_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultSaveOutputRegardlessOfCalibration);
+    m_Manager->SetSaveOutputRegardlessOfCalibration(saveOutputRegardlessOfCalibration);
 
     bool resetCalibrationIfNodeChanges = prefs->GetBool(CameraCalViewPreferencePage::RESET_CALIBRATION_IF_NODE_CHANGES_NODE_NAME, niftk::NiftyCalVideoCalibrationManager::DefaultResetCalibrationIfNodeChanges);
     m_Manager->SetResetCalibrationIfNodeChanges(resetCalibrationIfNodeChanges);
@@ -424,7 +424,7 @@ void CameraCalView::OnGrabButtonPressed()
   // However, if the user just wants to grab data, and hence
   // m_Manager->GetSaveOutputBeforeCalibration() is true, then we do NOT need this check.
   // So, only do this check if m_Manager->GetSaveOutputBeforeCalibration() is false.
-  if (m_Manager->GetModelFileName().empty() && !m_Manager->GetSaveOutputBeforeCalibration())
+  if (m_Manager->GetModelFileName().empty() && !m_Manager->GetSaveOutputRegardlessOfCalibration())
   {
     QMessageBox msgBox;
     msgBox.setText("An Error Occurred.");

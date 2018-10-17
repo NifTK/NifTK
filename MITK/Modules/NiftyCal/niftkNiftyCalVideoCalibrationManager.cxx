@@ -67,7 +67,7 @@ const bool                NiftyCalVideoCalibrationManager::DefaultUpdateNodes(tr
 const unsigned int        NiftyCalVideoCalibrationManager::DefaultMinimumNumberOfPoints(70);
 const bool                NiftyCalVideoCalibrationManager::DefaultModelIsStationary(true);
 const bool                NiftyCalVideoCalibrationManager::DefaultCameraIsStationary(false);
-const bool                NiftyCalVideoCalibrationManager::DefaultSaveOutputBeforeCalibration(false);
+const bool                NiftyCalVideoCalibrationManager::DefaultSaveOutputRegardlessOfCalibration(false);
 const bool                NiftyCalVideoCalibrationManager::DefaultResetCalibrationIfNodeChanges(true);
 
 const NiftyCalVideoCalibrationManager::CalibrationPatterns
@@ -85,7 +85,7 @@ NiftyCalVideoCalibrationManager::NiftyCalVideoCalibrationManager()
 , m_Do3DOptimisation(NiftyCalVideoCalibrationManager::DefaultDo3DOptimisation)
 , m_ModelIsStationary(NiftyCalVideoCalibrationManager::DefaultModelIsStationary)
 , m_CameraIsStationary(NiftyCalVideoCalibrationManager::DefaultCameraIsStationary)
-, m_SaveOutputBeforeCalibration(NiftyCalVideoCalibrationManager::DefaultSaveOutputBeforeCalibration)
+, m_SaveOutputRegardlessOfCalibration(NiftyCalVideoCalibrationManager::DefaultSaveOutputRegardlessOfCalibration)
 , m_NumberOfSnapshotsForCalibrating(NiftyCalVideoCalibrationManager::DefaultNumberOfSnapshotsForCalibrating)
 , m_ScaleFactorX(NiftyCalVideoCalibrationManager::DefaultScaleFactorX)
 , m_ScaleFactorY(NiftyCalVideoCalibrationManager::DefaultScaleFactorY)
@@ -1961,8 +1961,7 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
     message << "ERROR: Calibration failed: " << e.what() << std::endl;
     m_CalibrationResult += message.str();
 
-    // If this option is selected, we save regardless.
-    if (this->GetSaveOutputBeforeCalibration())
+    if (this->GetSaveOutputRegardlessOfCalibration())
     {
       this->Save();
     }
