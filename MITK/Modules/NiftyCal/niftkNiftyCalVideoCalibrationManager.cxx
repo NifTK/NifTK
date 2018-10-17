@@ -1634,323 +1634,339 @@ double NiftyCalVideoCalibrationManager::GetStereoRMSReconstructionError(const cv
 //-----------------------------------------------------------------------------
 std::string NiftyCalVideoCalibrationManager::Calibrate()
 {
-  double rms = 0;
+  std::ostringstream message;
+  message << "Calibrating with " << m_NumberOfSnapshotsForCalibrating
+    << " sample" << (m_NumberOfSnapshotsForCalibrating > 1 ? "s" : "")
+    << std::endl;
+  m_CalibrationResult = message.str();
 
-  cv::Matx21d tmpRMS;
-  tmpRMS(0, 0) = 0;
-  tmpRMS(1, 0) = 0;
-
-  cv::Point2d sensorDimensions;
-  sensorDimensions.x = 1;
-  sensorDimensions.y = 1;
-
-  if (m_ImageNode[0].IsNull())
+  try
   {
-    mitkThrow() << "Left image should never be NULL.";
-  }
+    double rms = 0;
 
-  if (m_ModelPoints.empty())
-  {
-    mitkThrow() << "Model should never be empty.";
-  }
+    cv::Matx21d tmpRMS;
+    tmpRMS(0, 0) = 0;
+    tmpRMS(1, 0) = 0;
 
-  cv::Size2i imageSize = m_ImageSize;
-  if (m_NumberOfSnapshotsForCalibrating == 1) // i.e. must be doing Tsai.
-  {
-    imageSize.width = m_ImageSize.width * m_ScaleFactorX;
-    imageSize.height = m_ImageSize.height * m_ScaleFactorY;
-  }
+    cv::Point2d sensorDimensions;
+    sensorDimensions.x = 1;
+    sensorDimensions.y = 1;
 
-  {
-    std::ostringstream message;
-    message << "Calibrating with " <<  m_NumberOfSnapshotsForCalibrating
-            << " sample" << (m_NumberOfSnapshotsForCalibrating > 1 ? "s" : "")
-            << std::endl;
-    m_CalibrationResult = message.str();
-  }
-
-  if (m_DoIterative)
-  {
-    if (m_ImageNode[1].IsNull())
+    if (m_ImageNode[0].IsNull())
     {
-      rms = niftk::IterativeMonoCameraCalibration(
-        m_ModelPoints,
-        m_ReferenceDataForIterativeCalib,
-        m_OriginalImages[0],
-        m_ImagesForWarping[0],
-        imageSize,
-        m_Intrinsic[0],
-        m_Distortion[0],
-        m_Rvecs[0],
-        m_Tvecs[0]
-       );
-
-      {
-        std::ostringstream message;
-        message << "Iterative mono: " << rms << " pixels" << std::endl;
-        m_CalibrationResult += message.str();
-      }
-    }
-    else
-    {
-      tmpRMS = niftk::IterativeStereoCameraCalibration(
-        m_ModelPoints,
-        m_ReferenceDataForIterativeCalib,
-        m_OriginalImages[0],
-        m_OriginalImages[1],
-        imageSize,
-        m_ImagesForWarping[0],
-        m_Intrinsic[0],
-        m_Distortion[0],
-        m_Rvecs[0],
-        m_Tvecs[0],
-        m_ImagesForWarping[1],
-        m_Intrinsic[1],
-        m_Distortion[1],
-        m_Rvecs[1],
-        m_Tvecs[1],
-        m_LeftToRightRotationMatrix,
-        m_LeftToRightTranslationVector,
-        m_EssentialMatrix,
-        m_FundamentalMatrix,
-        0,
-        m_Do3DOptimisation
-        );
-
-      {
-        std::ostringstream message;
-        message << "Iterative Stereo: " << tmpRMS(0,0) << " pixels" << std::endl;
-        message << "Iterative Stereo: " << tmpRMS(1, 0) << " mm" << std::endl;
-        m_CalibrationResult += message.str();
-      }
-    }
-  }
-  else
-  {
-    if (m_Points[0].size() == 1)
-    {
-      cv::Mat rvecLeft;
-      cv::Mat tvecLeft;
-
-      rms = niftk::TsaiMonoCameraCalibration(m_ModelPoints,
-                                             *(m_Points[0].begin()),
-                                             imageSize,
-                                             sensorDimensions,
-                                             m_Intrinsic[0],
-                                             m_Distortion[0],
-                                             rvecLeft,
-                                             tvecLeft
-                                            );
-
-      {
-        std::ostringstream message;
-        message << "Tsai mono left: " << rms << " pixels" << std::endl;
-        m_CalibrationResult += message.str();
-      }
-
-      m_Rvecs[0].clear();
-      m_Tvecs[0].clear();
-
-      m_Rvecs[0].push_back(rvecLeft);
-      m_Tvecs[0].push_back(tvecLeft);
-    }
-    else
-    {
-      rms = niftk::ZhangMonoCameraCalibration(
-        m_ModelPoints,
-        m_Points[0],
-        imageSize,
-        m_Intrinsic[0],
-        m_Distortion[0],
-        m_Rvecs[0],
-        m_Tvecs[0]
-        );
-
-      {
-        std::ostringstream message;
-        message << "Zhang mono left: " << rms << " pixels" << std::endl;
-        m_CalibrationResult += message.str();
-      }
-
+      mitkThrow() << "Left image should never be NULL.";
     }
 
-    if (m_ImageNode[1].IsNotNull())
+    if (m_ModelPoints.empty())
     {
-      if (m_Points[1].size() == 1)
-      {
-        cv::Mat rvecRight;
-        cv::Mat tvecRight;
+      mitkThrow() << "Model should never be empty.";
+    }
 
-        rms = niftk::TsaiMonoCameraCalibration(m_ModelPoints,
-                                               *(m_Points[1].begin()),
-                                               imageSize,
-                                               sensorDimensions,
-                                               m_Intrinsic[1],
-                                               m_Distortion[1],
-                                               rvecRight,
-                                               tvecRight
-                                              );
+    cv::Size2i imageSize = m_ImageSize;
+    if (m_NumberOfSnapshotsForCalibrating == 1) // i.e. must be doing Tsai.
+    {
+      imageSize.width = m_ImageSize.width * m_ScaleFactorX;
+      imageSize.height = m_ImageSize.height * m_ScaleFactorY;
+    }
+
+    if (m_DoIterative)
+    {
+      if (m_ImageNode[1].IsNull())
+      {
+        rms = niftk::IterativeMonoCameraCalibration(
+          m_ModelPoints,
+          m_ReferenceDataForIterativeCalib,
+          m_OriginalImages[0],
+          m_ImagesForWarping[0],
+          imageSize,
+          m_Intrinsic[0],
+          m_Distortion[0],
+          m_Rvecs[0],
+          m_Tvecs[0]
+          );
 
         {
           std::ostringstream message;
-          message << "Tsai mono right: " << rms << " pixels" << std::endl;
+          message << "Iterative mono: " << rms << " pixels" << std::endl;
+          m_CalibrationResult += message.str();
+        }
+      }
+      else
+      {
+        tmpRMS = niftk::IterativeStereoCameraCalibration(
+          m_ModelPoints,
+          m_ReferenceDataForIterativeCalib,
+          m_OriginalImages[0],
+          m_OriginalImages[1],
+          imageSize,
+          m_ImagesForWarping[0],
+          m_Intrinsic[0],
+          m_Distortion[0],
+          m_Rvecs[0],
+          m_Tvecs[0],
+          m_ImagesForWarping[1],
+          m_Intrinsic[1],
+          m_Distortion[1],
+          m_Rvecs[1],
+          m_Tvecs[1],
+          m_LeftToRightRotationMatrix,
+          m_LeftToRightTranslationVector,
+          m_EssentialMatrix,
+          m_FundamentalMatrix,
+          0,
+          m_Do3DOptimisation
+          );
+
+        {
+          std::ostringstream message;
+          message << "Iterative Stereo: " << tmpRMS(0, 0) << " pixels" << std::endl;
+          message << "Iterative Stereo: " << tmpRMS(1, 0) << " mm" << std::endl;
+          m_CalibrationResult += message.str();
+        }
+      }
+    }
+    else
+    {
+      if (m_Points[0].size() == 1)
+      {
+        cv::Mat rvecLeft;
+        cv::Mat tvecLeft;
+
+        rms = niftk::TsaiMonoCameraCalibration(m_ModelPoints,
+          *(m_Points[0].begin()),
+          imageSize,
+          sensorDimensions,
+          m_Intrinsic[0],
+          m_Distortion[0],
+          rvecLeft,
+          tvecLeft
+          );
+
+        {
+          std::ostringstream message;
+          message << "Tsai mono left: " << rms << " pixels" << std::endl;
           m_CalibrationResult += message.str();
         }
 
-        m_Rvecs[1].clear();
-        m_Tvecs[1].clear();
+        m_Rvecs[0].clear();
+        m_Tvecs[0].clear();
 
-        m_Rvecs[1].push_back(rvecRight);
-        m_Tvecs[1].push_back(tvecRight);
+        m_Rvecs[0].push_back(rvecLeft);
+        m_Tvecs[0].push_back(tvecLeft);
       }
       else
       {
         rms = niftk::ZhangMonoCameraCalibration(
           m_ModelPoints,
-          m_Points[1],
+          m_Points[0],
           imageSize,
-          m_Intrinsic[1],
-          m_Distortion[1],
-          m_Rvecs[1],
-          m_Tvecs[1]
+          m_Intrinsic[0],
+          m_Distortion[0],
+          m_Rvecs[0],
+          m_Tvecs[0]
           );
 
         {
           std::ostringstream message;
-          message << "Zhang mono right: " << rms << " pixels" << std::endl;
+          message << "Zhang mono left: " << rms << " pixels" << std::endl;
+          m_CalibrationResult += message.str();
+        }
+
+      }
+
+      if (m_ImageNode[1].IsNotNull())
+      {
+        if (m_Points[1].size() == 1)
+        {
+          cv::Mat rvecRight;
+          cv::Mat tvecRight;
+
+          rms = niftk::TsaiMonoCameraCalibration(m_ModelPoints,
+            *(m_Points[1].begin()),
+            imageSize,
+            sensorDimensions,
+            m_Intrinsic[1],
+            m_Distortion[1],
+            rvecRight,
+            tvecRight
+            );
+
+          {
+            std::ostringstream message;
+            message << "Tsai mono right: " << rms << " pixels" << std::endl;
+            m_CalibrationResult += message.str();
+          }
+
+          m_Rvecs[1].clear();
+          m_Tvecs[1].clear();
+
+          m_Rvecs[1].push_back(rvecRight);
+          m_Tvecs[1].push_back(tvecRight);
+        }
+        else
+        {
+          rms = niftk::ZhangMonoCameraCalibration(
+            m_ModelPoints,
+            m_Points[1],
+            imageSize,
+            m_Intrinsic[1],
+            m_Distortion[1],
+            m_Rvecs[1],
+            m_Tvecs[1]
+            );
+
+          {
+            std::ostringstream message;
+            message << "Zhang mono right: " << rms << " pixels" << std::endl;
+            m_CalibrationResult += message.str();
+          }
+        }
+
+        tmpRMS = niftk::StereoCameraCalibration(
+          m_ModelPoints,
+          m_Points[0],
+          m_Points[1],
+          imageSize,
+          m_Intrinsic[0],
+          m_Distortion[0],
+          m_Rvecs[0],
+          m_Tvecs[0],
+          m_Intrinsic[1],
+          m_Distortion[1],
+          m_Rvecs[1],
+          m_Tvecs[1],
+          m_LeftToRightRotationMatrix,
+          m_LeftToRightTranslationVector,
+          m_EssentialMatrix,
+          m_FundamentalMatrix,
+          CV_CALIB_USE_INTRINSIC_GUESS,
+          m_Do3DOptimisation
+          );
+        rms = tmpRMS(1, 0);
+
+        {
+          std::ostringstream message;
+          message << "Stereo: " << tmpRMS(0, 0) << " pixels" << std::endl;
+          message << "Stereo: " << tmpRMS(1, 0) << " mm" << std::endl;
           m_CalibrationResult += message.str();
         }
       }
+    }
 
-      tmpRMS = niftk::StereoCameraCalibration(
-        m_ModelPoints,
-        m_Points[0],
-        m_Points[1],
-        imageSize,
-        m_Intrinsic[0],
-        m_Distortion[0],
-        m_Rvecs[0],
-        m_Tvecs[0],
-        m_Intrinsic[1],
-        m_Distortion[1],
-        m_Rvecs[1],
-        m_Tvecs[1],
-        m_LeftToRightRotationMatrix,
-        m_LeftToRightTranslationVector,
-        m_EssentialMatrix,
-        m_FundamentalMatrix,
-        CV_CALIB_USE_INTRINSIC_GUESS,
-        m_Do3DOptimisation
-        );
-      rms = tmpRMS(1, 0);
-
+    // If we have tracking info, do all hand-eye methods .
+    if (m_TrackingTransformNode.IsNotNull())
+    {
       {
         std::ostringstream message;
-        message << "Stereo: " << tmpRMS(0,0) << " pixels" << std::endl;
-        message << "Stereo: " << tmpRMS(1,0) << " mm" << std::endl;
+        message << std::endl << "Calibrating hand-eye:" << std::endl;
         m_CalibrationResult += message.str();
       }
-    }
-  }
 
-  // If we have tracking info, do all hand-eye methods .
-  if (m_TrackingTransformNode.IsNotNull())
-  {
-    {
-      std::ostringstream message;
-      message << std::endl << "Calibrating hand-eye:" << std::endl;
-      m_CalibrationResult += message.str();
-    }
-
-    // Don't change the order of these sections where we compute each hand-eye.
-    if (m_TrackingMatrices.size() > 1)
-    {
-      m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0);
-      {
-        m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][TSAI_1989]);
-        rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
-        std::ostringstream message;
-        message << "Tsai mono left: " << rms << " mm" << std::endl;
-        m_CalibrationResult += message.str();
-      }
-    }
-
-    m_HandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0);
-    {
-      m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][SHAHIDI_2002]);
-      rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
-      std::ostringstream message;
-      message << "Shahidi mono left: " << rms << " mm" << std::endl;
-      m_CalibrationResult += message.str();
-    }
-
-    m_HandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0);
-    {
-      m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][MALTI_2013]);
-      rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
-      std::ostringstream message;
-      message << "Malti mono left: " << rms << " mm" << std::endl;
-      m_CalibrationResult += message.str();
-    }
-
-    m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC] = DoFullExtrinsicHandEye(0);
-    {
-      m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
-      rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
-      std::ostringstream message;
-      message << "Non-Linear Ext mono left: " << rms << " mm" << std::endl;
-      m_CalibrationResult += message.str();
-    }
-
-    if (m_ImageNode[1].IsNotNull())
-    {
       // Don't change the order of these sections where we compute each hand-eye.
       if (m_TrackingMatrices.size() > 1)
       {
-        m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1);
+        m_HandEyeMatrices[0][TSAI_1989] = DoTsaiHandEye(0);
         {
           m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][TSAI_1989]);
-          rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
+          rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
           std::ostringstream message;
-          message << "Tsai stereo: " << rms << " mm" << std::endl;
+          message << "Tsai mono left: " << rms << " mm" << std::endl;
           m_CalibrationResult += message.str();
         }
       }
-      m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1);
+
+      m_HandEyeMatrices[0][SHAHIDI_2002] = DoShahidiHandEye(0);
       {
         m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][SHAHIDI_2002]);
-        rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
+        rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
         std::ostringstream message;
-        message << "Shahidi stereo: " << rms << " mm" << std::endl;
+        message << "Shahidi mono left: " << rms << " mm" << std::endl;
         m_CalibrationResult += message.str();
       }
-      m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1);
+
+      m_HandEyeMatrices[0][MALTI_2013] = DoMaltiHandEye(0);
       {
         m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][MALTI_2013]);
-        rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
+        rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
         std::ostringstream message;
-        message << "Malti stereo: " << rms << " mm" << std::endl;
+        message << "Malti mono left: " << rms << " mm" << std::endl;
         m_CalibrationResult += message.str();
       }
-      DoFullExtrinsicHandEyeInStereo(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
-                                     m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC]
-                                    );
+
+      m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC] = DoFullExtrinsicHandEye(0);
       {
         m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
-        rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
+        rms = this->GetMonoRMSReconstructionError(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
         std::ostringstream message;
-        message << "Non-Linear Ext stereo: " << rms << " mm" << std::endl;
+        message << "Non-Linear Ext mono left: " << rms << " mm" << std::endl;
         m_CalibrationResult += message.str();
       }
-    } // end if we are in stereo.
 
-    // This is so that the one we see on screen is our prefered one.
-    m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][m_HandeyeMethod]);
+      if (m_ImageNode[1].IsNotNull())
+      {
+        // Don't change the order of these sections where we compute each hand-eye.
+        if (m_TrackingMatrices.size() > 1)
+        {
+          m_HandEyeMatrices[1][TSAI_1989] = DoTsaiHandEye(1);
+          {
+            m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][TSAI_1989]);
+            rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][TSAI_1989]);
+            std::ostringstream message;
+            message << "Tsai stereo: " << rms << " mm" << std::endl;
+            m_CalibrationResult += message.str();
+          }
+        }
+        m_HandEyeMatrices[1][SHAHIDI_2002] = DoShahidiHandEye(1);
+        {
+          m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][SHAHIDI_2002]);
+          rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][SHAHIDI_2002]);
+          std::ostringstream message;
+          message << "Shahidi stereo: " << rms << " mm" << std::endl;
+          m_CalibrationResult += message.str();
+        }
+        m_HandEyeMatrices[1][MALTI_2013] = DoMaltiHandEye(1);
+        {
+          m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][MALTI_2013]);
+          rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][MALTI_2013]);
+          std::ostringstream message;
+          message << "Malti stereo: " << rms << " mm" << std::endl;
+          m_CalibrationResult += message.str();
+        }
+        DoFullExtrinsicHandEyeInStereo(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC],
+          m_HandEyeMatrices[1][NON_LINEAR_EXTRINSIC]
+          );
+        {
+          m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
+          rms = this->GetStereoRMSReconstructionError(m_HandEyeMatrices[0][NON_LINEAR_EXTRINSIC]);
+          std::ostringstream message;
+          message << "Non-Linear Ext stereo: " << rms << " mm" << std::endl;
+          m_CalibrationResult += message.str();
+        }
+      } // end if we are in stereo.
 
-  } // end if we have tracking data.
+      // This is so that the one we see on screen is our prefered one.
+      m_ModelToWorld = this->GetModelToWorld(m_HandEyeMatrices[0][m_HandeyeMethod]);
 
-  // Sets properties on images.
-  this->UpdateDisplayNodes();
+    } // end if we have tracking data.
+
+    // Sets properties on images.
+    this->UpdateDisplayNodes();
+
+    // Save successful calibrations.
+    this->Save();
+  }
+  catch (std::exception& e)
+  {
+    std::ostringstream message;
+    message << "ERROR: Calibration failed: " << e.what() << std::endl;
+    m_CalibrationResult += message.str();
+
+    // If this option is selected, we save regardless.
+    if (this->GetSaveOutputBeforeCalibration())
+    {
+      this->Save();
+    }
+  }
 
   MITK_INFO << m_CalibrationResult;
   return m_CalibrationResult;
