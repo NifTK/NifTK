@@ -1632,13 +1632,16 @@ double NiftyCalVideoCalibrationManager::GetStereoRMSReconstructionError(const cv
 
 
 //-----------------------------------------------------------------------------
-std::string NiftyCalVideoCalibrationManager::Calibrate()
+bool NiftyCalVideoCalibrationManager::Calibrate()
 {
+  bool isSuccessful = false;
+
   std::ostringstream message;
   message << "Calibrating with " << m_NumberOfSnapshotsForCalibrating
     << " sample" << (m_NumberOfSnapshotsForCalibrating > 1 ? "s" : "")
     << std::endl;
   m_CalibrationResult = message.str();
+  m_CalibrationErrorMessage = "";
 
   try
   {
@@ -1953,22 +1956,38 @@ std::string NiftyCalVideoCalibrationManager::Calibrate()
     this->UpdateDisplayNodes();
 
     // Save successful calibrations.
-    this->Save();
+    isSuccessful = true;
+    this->Save(isSuccessful);
+  }
+  catch (niftk::NiftyCalException& e)
+  {
+    m_CalibrationErrorMessage = e.GetDescription();
+    MITK_ERROR << "ERROR: Calibration failed:" << e.GetDescription();
+  }
+  catch (mitk::Exception& e)
+  {
+    m_CalibrationErrorMessage = e.GetDescription();
+    MITK_ERROR << "ERROR: Calibration failed:" << e.GetDescription();
   }
   catch (std::exception& e)
   {
+    m_CalibrationErrorMessage = e.what();
+    MITK_ERROR << "ERROR: Calibration failed:" << e.what();
+  }
+  if (!isSuccessful)
+  {
     std::ostringstream message;
-    message << "ERROR: Calibration failed: " << e.what() << std::endl;
+    message << "CalibrationFailed: " << m_CalibrationErrorMessage << std::endl;
     m_CalibrationResult += message.str();
 
     if (this->GetSaveOutputRegardlessOfCalibration())
     {
-      this->Save();
+      this->Save(isSuccessful);
     }
   }
 
   MITK_INFO << m_CalibrationResult;
-  return m_CalibrationResult;
+  return isSuccessful;
 }
 
 
@@ -2135,7 +2154,7 @@ void NiftyCalVideoCalibrationManager::LoadCalibrationFromDirectory(const std::st
 
 
 //-----------------------------------------------------------------------------
-void NiftyCalVideoCalibrationManager::Save()
+void NiftyCalVideoCalibrationManager::Save(bool isSuccessful)
 {
   if (m_ImageNode[0].IsNull())
   {
@@ -2163,52 +2182,13 @@ void NiftyCalVideoCalibrationManager::Save()
     mitkThrow() << "Failed to create directory:" << m_OutputDirName;
   }
 
-  niftk::SaveNifTKIntrinsics(m_Intrinsic[0], m_Distortion[0], m_OutputDirName + "calib.left.intrinsic.txt");
   this->SaveImages("calib.left.images.", m_OriginalImages[0]);
   this->SavePoints("calib.left.points.", m_Points[0]);
 
   if (m_ImageNode[1].IsNotNull())
   {
-    niftk::SaveNifTKIntrinsics(
-      m_Intrinsic[1], m_Distortion[1], m_OutputDirName + "calib.right.intrinsic.txt");
-
-    niftk::SaveNifTKStereoExtrinsics(
-      m_LeftToRightRotationMatrix, m_LeftToRightTranslationVector, m_OutputDirName + "calib.r2l.txt");
-
     this->SaveImages("calib.right.images.", m_OriginalImages[1]);
     this->SavePoints("calib.right.points.", m_Points[1]);
-  }
-
-  if (m_ImageNode[0].IsNotNull())
-  {
-    int counter = 0;
-    std::list<cv::Matx44d> leftCams = this->ExtractCameraMatrices(0);
-    std::list<cv::Matx44d >::const_iterator iter;
-    for (iter = leftCams.begin();
-         iter != leftCams.end();
-         ++iter
-         )
-    {
-      std::ostringstream fileName;
-      fileName << m_OutputDirName << "calib.left.camera." << counter++ << ".4x4";
-      niftk::Save4x4Matrix(*iter, fileName.str());
-    }
-  }
-
-  if (m_ImageNode[1].IsNotNull())
-  {
-    int counter = 0;
-    std::list<cv::Matx44d> rightCams = this->ExtractCameraMatrices(1);
-    std::list<cv::Matx44d >::const_iterator iter;
-    for (iter = rightCams.begin();
-         iter != rightCams.end();
-         ++iter
-         )
-    {
-      std::ostringstream fileName;
-      fileName << m_OutputDirName << "calib.right.camera." << counter++ << ".4x4";
-      niftk::Save4x4Matrix(*iter, fileName.str());
-    }
   }
 
   if (m_TrackingTransformNode.IsNotNull())
@@ -2216,87 +2196,35 @@ void NiftyCalVideoCalibrationManager::Save()
     int counter = 0;
     std::list<cv::Matx44d >::const_iterator iter;
     for (iter = m_TrackingMatrices.begin();
-         iter != m_TrackingMatrices.end();
-         ++iter
-         )
+      iter != m_TrackingMatrices.end();
+      ++iter
+      )
     {
       std::ostringstream fileName;
       fileName << m_OutputDirName << "calib.tracking." << counter++ << ".4x4";
       niftk::Save4x4Matrix(*iter, fileName.str());
     }
+  }
 
-    // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
-    niftk::Save4x4Matrix(m_HandEyeMatrices[0][0].inv(), m_OutputDirName
-        + "calib.left.eyehand.tsai.txt");
-    niftk::Save4x4Matrix(m_HandEyeMatrices[0][1].inv(), m_OutputDirName
-        + "calib.left.eyehand.shahidi.txt");
-    niftk::Save4x4Matrix(m_HandEyeMatrices[0][2].inv(), m_OutputDirName
-        + "calib.left.eyehand.malti.txt");
-    niftk::Save4x4Matrix(m_HandEyeMatrices[0][3].inv(), m_OutputDirName
-        + "calib.left.eyehand.allextrinsic.txt");
-    niftk::Save4x4Matrix(m_HandEyeMatrices[0][m_HandeyeMethod].inv(), m_OutputDirName
-        + "calib.left.eyehand.current.txt");
-
-    niftk::SaveRigidParams(m_HandEyeMatrices[0][0].inv(), m_OutputDirName
-        + "calib.left.eyehand.tsai.params.txt");
-    niftk::SaveRigidParams(m_HandEyeMatrices[0][1].inv(), m_OutputDirName
-        + "calib.left.eyehand.shahidi.params.txt");
-    niftk::SaveRigidParams(m_HandEyeMatrices[0][2].inv(), m_OutputDirName
-        + "calib.left.eyehand.malti.params.txt");
-    niftk::SaveRigidParams(m_HandEyeMatrices[0][3].inv(), m_OutputDirName
-        + "calib.left.eyehand.allextrinsic.params.txt");
-    niftk::SaveRigidParams(m_HandEyeMatrices[0][m_HandeyeMethod].inv(), m_OutputDirName
-        + "calib.left.eyehand.current.params.txt");
-
-    if (m_ImageNode[1].IsNotNull())
+  if (m_ModelTransformNode.IsNotNull())
+  {
+    int counter = 0;
+    std::list<cv::Matx44d >::const_iterator iter;
+    for (iter = m_ModelTrackingMatrices.begin();
+      iter != m_ModelTrackingMatrices.end();
+      ++iter
+      )
     {
-      // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][0].inv(), m_OutputDirName
-          + "calib.right.eyehand.tsai.txt");
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][1].inv(), m_OutputDirName
-          + "calib.right.eyehand.shahidi.txt");
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][2].inv(), m_OutputDirName
-          + "calib.right.eyehand.malti.txt");
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][3].inv(), m_OutputDirName
-          + "calib.right.eyehand.allextrinsic.txt");
-      niftk::Save4x4Matrix(m_HandEyeMatrices[1][m_HandeyeMethod].inv(), m_OutputDirName
-          + "calib.right.eyehand.current.txt");
-
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][0].inv(), m_OutputDirName
-          + "calib.right.eyehand.tsai.params.txt");
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][1].inv(), m_OutputDirName
-          + "calib.right.eyehand.shahidi.params.txt");
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][2].inv(), m_OutputDirName
-          + "calib.right.eyehand.malti.params.txt");
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][3].inv(), m_OutputDirName
-          + "calib.right.eyehand.allextrinsic.params.txt");
-      niftk::SaveRigidParams(m_HandEyeMatrices[1][m_HandeyeMethod].inv(), m_OutputDirName
-          + "calib.right.eyehand.current.params.txt");
+      std::ostringstream fileName;
+      fileName << m_OutputDirName << "calib.tracking.model." << counter++ << ".4x4";
+      niftk::Save4x4Matrix(*iter, fileName.str());
     }
-
-    if (m_ModelTransformNode.IsNotNull())
-    {
-      int counter = 0;
-      std::list<cv::Matx44d >::const_iterator iter;
-      for (iter = m_ModelTrackingMatrices.begin();
-           iter != m_ModelTrackingMatrices.end();
-           ++iter
-           )
-      {
-        std::ostringstream fileName;
-        fileName << m_OutputDirName << "calib.tracking.model." << counter++ << ".4x4";
-        niftk::Save4x4Matrix(*iter, fileName.str());
-      }
-    } // end if we have a reference transform
-
-    niftk::Save4x4Matrix(m_ModelToWorld, m_OutputDirName + "calib.model2world.txt");
-
-  } // end if we have tracking info
+  }
 
   // Write main results to file.
   std::string outputMessageFileName = m_OutputDirName + "calib.result.log";
   std::ofstream outputMessageFile;
-  outputMessageFile.open (outputMessageFileName, std::ofstream::out);
+  outputMessageFile.open(outputMessageFileName, std::ofstream::out);
   if (!outputMessageFile.is_open())
   {
     mitkThrow() << "Failed to open file:" << outputMessageFileName << " for writing.";
@@ -2305,6 +2233,107 @@ void NiftyCalVideoCalibrationManager::Save()
   outputMessageFile.close();
 
   MITK_INFO << "Saving calibration to:" << m_OutputDirName << ": - DONE.";
+
+  if (isSuccessful)
+  {
+    niftk::SaveNifTKIntrinsics(m_Intrinsic[0], m_Distortion[0], m_OutputDirName + "calib.left.intrinsic.txt");
+
+    if (m_ImageNode[1].IsNotNull())
+    {
+      niftk::SaveNifTKIntrinsics(
+        m_Intrinsic[1], m_Distortion[1], m_OutputDirName + "calib.right.intrinsic.txt");
+
+      niftk::SaveNifTKStereoExtrinsics(
+        m_LeftToRightRotationMatrix, m_LeftToRightTranslationVector, m_OutputDirName + "calib.r2l.txt");
+    }
+
+    if (m_ImageNode[0].IsNotNull())
+    {
+      int counter = 0;
+      std::list<cv::Matx44d> leftCams = this->ExtractCameraMatrices(0);
+      std::list<cv::Matx44d >::const_iterator iter;
+      for (iter = leftCams.begin();
+        iter != leftCams.end();
+        ++iter
+        )
+      {
+        std::ostringstream fileName;
+        fileName << m_OutputDirName << "calib.left.camera." << counter++ << ".4x4";
+        niftk::Save4x4Matrix(*iter, fileName.str());
+      }
+    }
+
+    if (m_ImageNode[1].IsNotNull())
+    {
+      int counter = 0;
+      std::list<cv::Matx44d> rightCams = this->ExtractCameraMatrices(1);
+      std::list<cv::Matx44d >::const_iterator iter;
+      for (iter = rightCams.begin();
+        iter != rightCams.end();
+        ++iter
+        )
+      {
+        std::ostringstream fileName;
+        fileName << m_OutputDirName << "calib.right.camera." << counter++ << ".4x4";
+        niftk::Save4x4Matrix(*iter, fileName.str());
+      }
+    }
+
+    if (m_TrackingTransformNode.IsNotNull())
+    {
+      // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
+      niftk::Save4x4Matrix(m_HandEyeMatrices[0][0].inv(), m_OutputDirName
+        + "calib.left.eyehand.tsai.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[0][1].inv(), m_OutputDirName
+        + "calib.left.eyehand.shahidi.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[0][2].inv(), m_OutputDirName
+        + "calib.left.eyehand.malti.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[0][3].inv(), m_OutputDirName
+        + "calib.left.eyehand.allextrinsic.txt");
+      niftk::Save4x4Matrix(m_HandEyeMatrices[0][m_HandeyeMethod].inv(), m_OutputDirName
+        + "calib.left.eyehand.current.txt");
+
+      niftk::SaveRigidParams(m_HandEyeMatrices[0][0].inv(), m_OutputDirName
+        + "calib.left.eyehand.tsai.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[0][1].inv(), m_OutputDirName
+        + "calib.left.eyehand.shahidi.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[0][2].inv(), m_OutputDirName
+        + "calib.left.eyehand.malti.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[0][3].inv(), m_OutputDirName
+        + "calib.left.eyehand.allextrinsic.params.txt");
+      niftk::SaveRigidParams(m_HandEyeMatrices[0][m_HandeyeMethod].inv(), m_OutputDirName
+        + "calib.left.eyehand.current.params.txt");
+
+      if (m_ImageNode[1].IsNotNull())
+      {
+        // We deliberately output all hand-eye matrices, and additionally, whichever one was preferred method.
+        niftk::Save4x4Matrix(m_HandEyeMatrices[1][0].inv(), m_OutputDirName
+          + "calib.right.eyehand.tsai.txt");
+        niftk::Save4x4Matrix(m_HandEyeMatrices[1][1].inv(), m_OutputDirName
+          + "calib.right.eyehand.shahidi.txt");
+        niftk::Save4x4Matrix(m_HandEyeMatrices[1][2].inv(), m_OutputDirName
+          + "calib.right.eyehand.malti.txt");
+        niftk::Save4x4Matrix(m_HandEyeMatrices[1][3].inv(), m_OutputDirName
+          + "calib.right.eyehand.allextrinsic.txt");
+        niftk::Save4x4Matrix(m_HandEyeMatrices[1][m_HandeyeMethod].inv(), m_OutputDirName
+          + "calib.right.eyehand.current.txt");
+
+        niftk::SaveRigidParams(m_HandEyeMatrices[1][0].inv(), m_OutputDirName
+          + "calib.right.eyehand.tsai.params.txt");
+        niftk::SaveRigidParams(m_HandEyeMatrices[1][1].inv(), m_OutputDirName
+          + "calib.right.eyehand.shahidi.params.txt");
+        niftk::SaveRigidParams(m_HandEyeMatrices[1][2].inv(), m_OutputDirName
+          + "calib.right.eyehand.malti.params.txt");
+        niftk::SaveRigidParams(m_HandEyeMatrices[1][3].inv(), m_OutputDirName
+          + "calib.right.eyehand.allextrinsic.params.txt");
+        niftk::SaveRigidParams(m_HandEyeMatrices[1][m_HandeyeMethod].inv(), m_OutputDirName
+          + "calib.right.eyehand.current.params.txt");
+      }
+
+      niftk::Save4x4Matrix(m_ModelToWorld, m_OutputDirName + "calib.model2world.txt");
+
+    } // end if we have tracking info
+  } // end ifSuccessful
 }
 
 

@@ -101,9 +101,9 @@ private slots:
 private:
 
   bool RunGrab();
-  void Calibrate();
-  std::string RunCalibration();
+  bool RunCalibration();
 
+  void Calibrate();
   void SetButtonsEnabled(bool isEnabled);
 
   /**
@@ -120,8 +120,8 @@ private:
   niftk::NiftyCalVideoCalibrationManager::Pointer  m_Manager;
   QFuture<bool>                                    m_BackgroundGrabProcess;
   QFutureWatcher<bool>                             m_BackgroundGrabProcessWatcher;
-  QFuture<std::string>                             m_BackgroundCalibrateProcess;
-  QFutureWatcher<std::string>                      m_BackgroundCalibrateProcessWatcher;
+  QFuture<bool>                                    m_BackgroundCalibrateProcess;
+  QFutureWatcher<bool>                             m_BackgroundCalibrateProcessWatcher;
 };
 
 } // end namespace

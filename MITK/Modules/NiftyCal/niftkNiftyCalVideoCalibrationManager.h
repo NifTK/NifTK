@@ -168,6 +168,9 @@ public:
   void SetModelTransformFileName(const std::string& fileName);
   itkGetMacro(ModelTransformFileName, std::string);
 
+  itkGetMacro(CalibrationResult, std::string);
+  itkGetMacro(CalibrationErrorMessage, std::string);
+
   bool isStereo() const;
 
   unsigned int GetNumberOfSnapshots() const;
@@ -195,15 +198,17 @@ public:
    * This can be mono, stereo, iterative and include hand-eye,
    * depending on the configuration parameters stored in this class.
    *
-   * \return calibration message with all results in.
+   * \return bool true if it ran to completion, false otherwise. 
+   *
+   * Note that even if calibration ran to completion, it doesn't mean its a good calibration.
    */
-  std::string Calibrate();
+  bool Calibrate();
 
   /**
    * \brief Saves a bunch of standard (from a NifTK perspective)
    * calibration files to the output dir, overwriting existing files.
    */
-  void Save();
+  void Save(bool isSuccessful);
 
   /**
    * \brief To update the camera to world in mitk::DataStorage so
@@ -413,6 +418,7 @@ private:
   std::vector<cv::Matx44d>                       m_HandEyeMatrices[2];
   cv::Matx44d                                    m_ModelToWorld;
   std::string                                    m_CalibrationResult;
+  std::string                                    m_CalibrationErrorMessage;
 
 }; // end class
 

@@ -422,8 +422,8 @@ void CameraCalView::OnGrabButtonPressed()
 
   // If there is no model file, calibration will ultimately fail.
   // However, if the user just wants to grab data, and hence
-  // m_Manager->GetSaveOutputBeforeCalibration() is true, then we do NOT need this check.
-  // So, only do this check if m_Manager->GetSaveOutputBeforeCalibration() is false.
+  // m_Manager->GetSaveOutputRegardlessOfCalibration() is true, then we do NOT need this check.
+  // So, only do this check if m_Manager->GetSaveOutputRegardlessOfCalibration() is false.
   if (m_Manager->GetModelFileName().empty() && !m_Manager->GetSaveOutputRegardlessOfCalibration())
   {
     QMessageBox msgBox;
@@ -452,9 +452,7 @@ void CameraCalView::OnGrabButtonPressed()
 //-----------------------------------------------------------------------------
 bool CameraCalView::RunGrab()
 {
-
   bool isSuccessful = false;
-  std::string errorMessage = "";
 
   // This happens in a separate thread, so try to catch everything.
   // Even if we understand where NiftyCal exceptions come from,
@@ -467,28 +465,18 @@ bool CameraCalView::RunGrab()
   }
   catch (niftk::NiftyCalException& e)
   {
-    errorMessage = e.GetDescription();
+    std::string errorMessage = e.GetDescription();
     MITK_ERROR << "CameraCalView::RunGrab() failed:" << e.GetDescription();
   }
   catch (mitk::Exception& e)
   {
-    errorMessage = e.GetDescription();
+    std::string errorMessage = e.GetDescription();
     MITK_ERROR << "CameraCalView::RunGrab() failed:" << e.GetDescription();
   }
   catch (std::exception& e)
   {
-    errorMessage = e.what();
+    std::string errorMessage = e.what();
     MITK_ERROR << "CameraCalView::RunGrab() failed:" << e.what();
-  }
-
-  if (!errorMessage.empty())
-  {
-    QMessageBox msgBox;
-    msgBox.setText("An Error Occurred.");
-    msgBox.setInformativeText(QString::fromStdString(errorMessage));
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-    msgBox.exec();
   }
 
   return isSuccessful;
@@ -553,10 +541,9 @@ void CameraCalView::Calibrate()
 
 
 //-----------------------------------------------------------------------------
-std::string CameraCalView::RunCalibration()
+bool CameraCalView::RunCalibration()
 {
-  std::string outputMessage = "";
-  std::string errorMessage = "";
+  bool isSuccessful = false;
 
   // This happens in a separate thread, so try to catch everything.
   // Even if we understand where NiftyCal exceptions come from,
@@ -565,56 +552,47 @@ std::string CameraCalView::RunCalibration()
 
   try
   {
-    outputMessage = m_Manager->Calibrate();
+    isSuccessful = m_Manager->Calibrate();
   }
   catch (niftk::NiftyCalException& e)
   {
-    errorMessage = e.GetDescription();
+    std::string errorMessage = e.GetDescription();
     MITK_ERROR << "CameraCalView::RunCalibration() failed:" << e.GetDescription();
-    throw e;
   }
   catch (mitk::Exception& e)
   {
-    errorMessage = e.GetDescription();
+    std::string errorMessage = e.GetDescription();
     MITK_ERROR << "CameraCalView::RunCalibration() failed:" << e.GetDescription();
-    throw e;
   }
   catch (std::exception& e)
   {
-    errorMessage = e.what();
+    std::string errorMessage = e.what();
     MITK_ERROR << "CameraCalView::RunCalibration() failed:" << e.what();
-    throw e;
   }
 
-  return outputMessage;
+  return isSuccessful;
 }
 
 
 //-----------------------------------------------------------------------------
 void CameraCalView::OnBackgroundCalibrateProcessFinished()
 {
-  if (m_BackgroundCalibrateProcess.isCanceled()
-      || m_BackgroundCalibrateProcess.resultCount() == 0)
+  bool successfullyCalibrated = m_BackgroundCalibrateProcessWatcher.result();
+
+  if (successfullyCalibrated)
   {
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/thumb-down-300px.png");
+    m_Controls->m_ProjectionErrorValue->setText(QString::fromStdString(this->m_Manager->GetCalibrationResult()));
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
 
-    QMessageBox msgBox;
-    msgBox.setText("An Error Occurred.");
-    msgBox.setInformativeText("The calibration itself failed - check log.");
-    msgBox.setStandardButtons(QMessageBox::Ok);
-    msgBox.setDefaultButton(QMessageBox::Ok);
-    msgBox.exec();
+    m_Manager->UpdateCameraToWorldPosition();
+    m_Manager->UpdateVisualisedPoints();
   }
   else
   {
-    std::string calibrationMessage = m_BackgroundCalibrateProcessWatcher.result();
-    m_Controls->m_ProjectionErrorValue->setText(QString::fromStdString(calibrationMessage));
-    m_Manager->UpdateCameraToWorldPosition();
-    m_Manager->UpdateVisualisedPoints();
-
-    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/1465762629-300px.png");
+    m_Controls->m_ProjectionErrorValue->setText(QString::fromStdString(this->m_Manager->GetCalibrationErrorMessage()));
+    QPixmap image(":/uk.ac.ucl.cmic.igicameracal/thumb-down-300px.png");
     m_Controls->m_ImageLabel->setPixmap(image);
     m_Controls->m_ImageLabel->show();
   }
