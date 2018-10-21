@@ -52,8 +52,11 @@ signals:
 
 protected:
 
-  IGIDataSourcePlaybackControlsWidget(const IGIDataSourcePlaybackControlsWidget&); // Purposefully not implemented.
-  IGIDataSourcePlaybackControlsWidget& operator=(const IGIDataSourcePlaybackControlsWidget&); // Purposefully not implemented.
+  // Purposefully not implemented.
+  IGIDataSourcePlaybackControlsWidget(const IGIDataSourcePlaybackControlsWidget&);
+
+  // Purposefully not implemented.
+  IGIDataSourcePlaybackControlsWidget& operator=(const IGIDataSourcePlaybackControlsWidget&);
 
 private slots:
 

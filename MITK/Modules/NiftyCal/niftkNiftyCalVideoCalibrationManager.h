@@ -198,7 +198,7 @@ public:
    * This can be mono, stereo, iterative and include hand-eye,
    * depending on the configuration parameters stored in this class.
    *
-   * \return bool true if it ran to completion, false otherwise. 
+   * \return bool true if it ran to completion, false otherwise.
    *
    * Note that even if calibration ran to completion, it doesn't mean its a good calibration.
    */
