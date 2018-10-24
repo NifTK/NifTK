@@ -479,7 +479,8 @@ void IGIDataSourcePlaybackWidget::OnStartPushButtonClicked(bool /*isChecked*/)
 //-----------------------------------------------------------------------------
 void IGIDataSourcePlaybackWidget::OnSliderReleased()
 {
-  IGIDataSourceI::IGITimeType time = m_Manager->ComputeTimeFromSlider(m_PlaybackControlsWidget->m_PlaybackSlider->value());
+  IGIDataSourceI::IGITimeType time =
+    m_Manager->ComputeTimeFromSlider(m_PlaybackControlsWidget->m_PlaybackSlider->value());
   m_Manager->SetPlaybackTime(time);
 }
 
