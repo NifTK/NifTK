@@ -9,6 +9,8 @@
 # Eclipse config files:
 /.cproject
 /.project
+# PyCharm config files:
+/.idea
 # QtCreator config files:
 /*.config
 /*.creator
