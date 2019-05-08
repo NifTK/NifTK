@@ -29,7 +29,7 @@ if(MITK_USE_Qt4 OR MITK_USE_Qt5)
   # Note: If the CTK version changes, then you either clear the plugin cache
   # or change the deploy path by changing the patch level.
   set(version "910cec7415")
-  set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-CTK-${version}.tar.gz")
+  set(location "${NIFTK_EP_TARBALL_LOCATION}/NifTK-CTK-${version}-sources.tar.gz")
   set(depends VTK ITK DCMTK)
   if(MITK_USE_Python AND NOT MITK_USE_SYSTEM_PYTHON)
     list(APPEND depends Python)
