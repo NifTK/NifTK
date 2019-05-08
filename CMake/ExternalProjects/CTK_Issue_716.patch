@@ -1,0 +1,14 @@
+diff --git a/CMake/ctkMacroSetupQt.cmake b/CMake/ctkMacroSetupQt.cmake
+index 0b5d89c..a4b8751 100644
+--- a/CMake/ctkMacroSetupQt.cmake
++++ b/CMake/ctkMacroSetupQt.cmake
+@@ -72,9 +72,6 @@ macro(ctkMacroSetupQt)
+     else()
+       message(FATAL_ERROR "error: Qt4 was not found on your system. You probably need to set the QT_QMAKE_EXECUTABLE variable")
+     endif()
+-
+-  else()
+-    message(FATAL_ERROR "error: Qt4 was not found on your system. You probably need to set the QT_QMAKE_EXECUTABLE variable")
+   endif()
+ 
+   mark_as_superbuild(CTK_QT_VERSION)
