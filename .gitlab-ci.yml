@@ -316,35 +316,6 @@ Windows continuous clean up:
 # Release build jobs
 ##########################################
 
-Ubuntu 14.04 release build:
-
-  stage: build
-
-  script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-    - mkdir -p ${sb_dir}
-    - cd ${sb_dir}
-    - cmake -DBUILD_TESTING:BOOL=OFF
-          -DBUILD_DISPLAY_TESTING:BOOL=OFF
-          -DNIFTK_USE_CPPCHECK:BOOL=OFF
-          -DNIFTK_USE_KWSTYLE:BOOL=OFF
-          -DDESIRED_QT_VERSION:STRING=4
-          -DBUILD_Python:BOOL=ON
-          -DBUILD_Caffe:BOOL=ON
-          -DNIFTK_Apps/NiftyMITK:BOOL=ON
-          -DNIFTK_Apps/NiftyIGI:BOOL=ON
-          -DNIFTK_Apps/NiftyView:BOOL=ON
-          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
-          ${src_dir}
-    - make -j 8
-
-  only:
-    - tags
-
-  tags:
-    - linux, ubuntu-14.04, release
-
-
 #Ubuntu 16.04 release build:
 #
 #  stage: build
@@ -509,20 +480,6 @@ Windows 32 bit release build:
 
 # Dummy test jobs to prevent that deploy job is preceded by clean job.
 
-Ubuntu 14.04 release test:
-
-  stage: test
-
-  script:
-    - echo
-
-  only:
-    - tags
-
-  tags:
-    - linux, ubuntu-14.04, release
-
-
 #Ubuntu 16.04 release test:
 #
 #  stage: test
@@ -650,32 +607,6 @@ Release docs:
 
   tags:
     - linux, centos-7, release
-
-
-Ubuntu 14.04 release installer:
-
-  stage: deploy
-
-  script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-    - export pb_dir="${sb_dir}/NifTK-build"
-    - version=${CI_COMMIT_TAG}
-    - cd ${pb_dir}
-    - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
-    - source /etc/os-release
-    - os_version="${ID}-${VERSION_ID}"
-    - cpack --config CPackConfig.cmake
-    - installer_file="niftk-${version}-${os_version}-x64.tar.bz2"
-    - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
-    - "# Upload the tarball"
-    - ssh cmiclab "mkdir -p /cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version"
-    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version/
-
-  only:
-    - tags
-
-  tags:
-    - linux, ubuntu-14.04, release
 
 
 #Ubuntu 16.04 release installer:
@@ -864,23 +795,6 @@ Windows 32 bit release installer:
 ##########################################
 # Release clean up jobs
 ##########################################
-
-Ubuntu 14.04 release clean up:
-
-  stage: cleanup
-
-  script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-    - rm -rf ${sb_dir}
-
-  when: always
-
-  only:
-    - tags
-
-  tags:
-    - linux, ubuntu-14.04, release
-
 
 #Ubuntu 16.04 release clean up:
 #
