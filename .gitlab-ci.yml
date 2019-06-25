@@ -351,8 +351,8 @@ CentOS 7 release build:
 
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-    - export X264_DIR=/share/apps/cmic/niftk/x264
-    - export FFMPEG_DIR=/share/apps/cmic/niftk/ffmpeg-2.1.8
+    - export X264_DIR=/home/gitlab-runner/opt/x264
+    - export FFMPEG_DIR=/home/gitlab-runner/opt/ffmpeg-2.1.8
     - export PATH="${FFMPEG_DIR}/bin:${PATH}"
     - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
     - mkdir -p ${sb_dir}
