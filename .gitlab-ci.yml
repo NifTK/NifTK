@@ -351,6 +351,10 @@ CentOS 7 release build:
 
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export X264_DIR=/share/apps/cmic/niftk/x264
+    - export FFMPEG_DIR=/share/apps/cmic/niftk/ffmpeg-2.1.8
+    - export PATH="${FFMPEG_DIR}/bin:${PATH}"
+    - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - cmake -DBUILD_TESTING:BOOL=OFF
@@ -361,6 +365,7 @@ CentOS 7 release build:
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
           -DBUILD_Caffe:BOOL=ON
+          -DOPENCV_WITH_FFMPEG:BOOL=ON
           -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
           -DNIFTK_Apps/NiftyView:BOOL=ON
