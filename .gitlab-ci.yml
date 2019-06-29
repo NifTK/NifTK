@@ -1,4 +1,3 @@
-
 stages:
   - build
   - test
@@ -93,6 +92,10 @@ Windows continuous build:
   stage: build
 
   script:
+    - sb_dir=${sb_dir//\\//}
+    - ep_dir=${ep_dir//\\//}
+    - src_dir=${src_dir//\\//}
+    - pb_dir=${pb_dir//\\//}
     - mkdir -p ${sb_dir}
     - mkdir -p ${ep_dir}
     - cd ${sb_dir}
