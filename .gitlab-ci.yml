@@ -29,6 +29,12 @@ Linux continuous build:
   stage: build
 
   script:
+    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export X264_DIR=/opt/x264
+    - export FFMPEG_DIR=/opt/ffmpeg-2.1.8
+    - export PATH="${FFMPEG_DIR}/bin:${PATH}"
+    - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
+    - export PATH="/opt/cmake-3.14.5/bin:/opt/doxygen-1.8.7/bin:/opt/qt-4.8.7/bin/:${PATH}"
     - mkdir -p ${sb_dir}
     - mkdir -p ${ep_dir}
     - cd ${sb_dir}
@@ -38,6 +44,7 @@ Linux continuous build:
           -DBUILD_TESTING:BOOL=ON
           -DBUILD_DISPLAY_TESTING:BOOL=OFF
           -DBUILD_Caffe:BOOL=ON
+          -DOPENCV_WITH_FFMPEG:BOOL=ON
           -DBUILD_LEGACY_COMMAND_LINE_PROGRAMS:BOOL=ON
           -DNIFTK_USE_CPPCHECK:BOOL=ON
           -DNIFTK_USE_KWSTYLE:BOOL=ON
@@ -351,10 +358,11 @@ CentOS 7 release build:
 
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-    - export X264_DIR=/home/gitlab-runner/opt/x264
-    - export FFMPEG_DIR=/home/gitlab-runner/opt/ffmpeg-2.1.8
+    - export X264_DIR=/opt/x264
+    - export FFMPEG_DIR=/opt/ffmpeg-2.1.8
     - export PATH="${FFMPEG_DIR}/bin:${PATH}"
     - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
+    - export PATH="/opt/cmake-3.14.5/bin:/opt/doxygen-1.8.7/bin:/opt/qt-4.8.7/bin/:${PATH}"
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - cmake -DBUILD_TESTING:BOOL=OFF
