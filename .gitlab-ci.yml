@@ -29,6 +29,8 @@ Linux continuous build:
   stage: build
 
   script:
+    - export CC=/usr/bin/gcc
+    - export CXX=/usr/bin/g++
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export X264_DIR=/opt/x264
     - export FFMPEG_DIR=/opt/ffmpeg-2.1.8
@@ -354,6 +356,8 @@ CentOS 7 release build:
   stage: build
 
   script:
+    - export CC=/usr/bin/gcc
+    - export CXX=/usr/bin/g++
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export X264_DIR=/opt/x264
     - export FFMPEG_DIR=/opt/ffmpeg-2.1.8
