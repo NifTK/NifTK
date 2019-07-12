@@ -29,14 +29,10 @@ Linux continuous build:
   stage: build
 
   script:
-    - export CC=/usr/bin/gcc
-    - export CXX=/usr/bin/g++
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export X264_DIR=/opt/x264
     - export FFMPEG_DIR=/opt/ffmpeg-2.1.8
-    - export PATH="${FFMPEG_DIR}/bin:${PATH}"
     - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
-    - export PATH="/opt/cmake-3.14.5/bin:/opt/doxygen-1.8.7/bin:/opt/qt-4.8.7/bin/:${PATH}"
     - mkdir -p ${sb_dir}
     - mkdir -p ${ep_dir}
     - cd ${sb_dir}
@@ -356,14 +352,10 @@ CentOS 7 release build:
   stage: build
 
   script:
-    - export CC=/usr/bin/gcc
-    - export CXX=/usr/bin/g++
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export X264_DIR=/opt/x264
     - export FFMPEG_DIR=/opt/ffmpeg-2.1.8
-    - export PATH="${FFMPEG_DIR}/bin:${PATH}"
     - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
-    - export PATH="/opt/cmake-3.14.5/bin:/opt/doxygen-1.8.7/bin:/opt/qt-4.8.7/bin/:${PATH}"
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - cmake -DBUILD_TESTING:BOOL=OFF
