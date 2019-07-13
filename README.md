@@ -34,7 +34,7 @@ Useful Links
 License
 -----------
 
-Copyright (c) 2010 - 2018, [University College London][ucl].
+Copyright (c) 2010 - 2019, [University College London][ucl].
 
 This project is distributed under the conditions of the BSD 3-clause license.
 
