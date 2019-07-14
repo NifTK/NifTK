@@ -96,10 +96,10 @@ Windows continuous build:
   stage: build
 
   script:
-    - sb_dir=${sb_dir//\\//}
-    - ep_dir=${ep_dir//\\//}
-    - src_dir=${src_dir//\\//}
-    - pb_dir=${pb_dir//\\//}
+    - export sb_dir=${sb_dir//\\//}
+    - export ep_dir=${ep_dir//\\//}
+    - export src_dir=${src_dir//\\//}
+    - export pb_dir=${pb_dir//\\//}
     - mkdir -p ${sb_dir}
     - mkdir -p ${ep_dir}
     - cd ${sb_dir}
@@ -175,7 +175,7 @@ Windows continuous test:
   stage: test
 
   script:
-    - pb_dir=${pb_dir//\\//}
+    - export pb_dir=${pb_dir//\\//}
     - cd ${pb_dir}
     - ${src_dir}/Utilities/NifTKContinuousTest.bat
 
@@ -285,9 +285,9 @@ Windows continuous clean up:
   stage: cleanup
 
   script:
-    - ep_dir=${ep_dir//\\//}
-    - src_dir=${src_dir//\\//}
-    - sb_dir=${sb_dir//\\//}
+    - export ep_dir=${ep_dir//\\//}
+    - export src_dir=${src_dir//\\//}
+    - export sb_dir=${sb_dir//\\//}
     - rm -rf ${sb_dir}
     - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 
@@ -451,7 +451,7 @@ Windows release build:
   stage: build
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export sb_dir=${sb_dir//\\//}
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
@@ -469,7 +469,7 @@ Windows 32 bit release build:
   stage: build
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export sb_dir=${sb_dir//\\//}
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - export BTYPE=Win32
@@ -749,8 +749,9 @@ Windows release installer:
   stage: deploy
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-    - export pb_dir="${sb_dir}/NifTK-build"
+    - export src_dir=${src_dir//\\//}
+    - export sb_dir=${sb_dir//\\//}
+    - export pb_dir="${pb_dir//\\//}/NifTK-build"
     - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
@@ -772,8 +773,9 @@ Windows 32 bit release installer:
   stage: deploy
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-    - export pb_dir="${sb_dir}/NifTK-build"
+    - export src_dir=${src_dir//\\//}
+    - export sb_dir=${sb_dir//\\//}
+    - export pb_dir="${pb_dir//\\//}/NifTK-build"
     - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
@@ -867,7 +869,7 @@ Windows release clean up:
   stage: cleanup
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export sb_dir=${sb_dir//\\//}
     - rm -rf ${sb_dir}
 
   when: always
@@ -884,7 +886,7 @@ Windows 32 bit release clean up:
   stage: cleanup
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export sb_dir=${sb_dir//\\//}
     - rm -rf ${sb_dir}
 
   when: always
