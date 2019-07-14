@@ -29,7 +29,6 @@ Linux continuous build:
   stage: build
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
     - export X264_DIR=/opt/x264
     - export FFMPEG_DIR=/opt/ffmpeg-2.1.8
     - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
