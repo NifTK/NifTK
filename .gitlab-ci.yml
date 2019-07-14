@@ -175,6 +175,7 @@ Windows continuous test:
   stage: test
 
   script:
+    - pb_dir=${pb_dir//\\//}
     - cd ${pb_dir}
     - ${src_dir}/Utilities/NifTKContinuousTest.bat
 
@@ -284,6 +285,9 @@ Windows continuous clean up:
   stage: cleanup
 
   script:
+    - ep_dir=${ep_dir//\\//}
+    - src_dir=${src_dir//\\//}
+    - sb_dir=${sb_dir//\\//}
     - rm -rf ${sb_dir}
     - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 
