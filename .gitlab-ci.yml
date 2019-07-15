@@ -176,6 +176,7 @@ Windows continuous test:
 
   script:
     - export pb_dir=${pb_dir//\\//}
+    - export src_dir=${src_dir//\\//}
     - cd ${pb_dir}
     - ${src_dir}/Utilities/NifTKContinuousTest.bat
 
