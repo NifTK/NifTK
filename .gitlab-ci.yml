@@ -82,7 +82,7 @@ Mac continuous build:
           -DNIFTK_Apps/NiftyView:BOOL=ON
           -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
           ${src_dir}
-    - make -j 4
+    - make -j 2
 
   only:
     - branches
