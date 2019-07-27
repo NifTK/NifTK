@@ -1,0 +1,23 @@
+git clone https://code.videolan.org/videolan/x264.git
+cd x264/
+git checkout `git rev-list -1 --before="Apr 30 2015" master`
+./configure --disable-asm  --prefix=/opt/x264 --enable-shared 
+make -j 4 
+sudo make install 
+cd ..
+git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+cd ffmpeg/
+git checkout n2.1.8
+./configure --prefix=/o^C/ffmpeg-2.1.8 --enable-libx264 --enable-gpl  --enable-shared --disable-yasm  --extra-ldflags="-L/opt/x264/lib" --extra-cxxflags="-I/opt/x264/include"  --extra-cflags="-I/opt/x264/include"
+make -j 4 
+sudo make install
+cd ..
+git clone https://gitlab.kitware.com/cmake/cmake.git
+cd cmake/
+git tag
+git checkout v3.14.5
+./configure --help
+./configure --prefix=/opt/cmake-3.14.5 
+make -j 4
+sudo make install
+

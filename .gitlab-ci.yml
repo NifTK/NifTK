@@ -29,6 +29,9 @@ Linux continuous build:
   stage: build
 
   script:
+    - export X264_DIR=/opt/x264
+    - export FFMPEG_DIR=/opt/ffmpeg-2.1.8
+    - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
     - mkdir -p ${sb_dir}
     - mkdir -p ${ep_dir}
     - cd ${sb_dir}
@@ -38,6 +41,7 @@ Linux continuous build:
           -DBUILD_TESTING:BOOL=ON
           -DBUILD_DISPLAY_TESTING:BOOL=OFF
           -DBUILD_Caffe:BOOL=ON
+          -DOPENCV_WITH_FFMPEG:BOOL=ON
           -DBUILD_LEGACY_COMMAND_LINE_PROGRAMS:BOOL=ON
           -DNIFTK_USE_CPPCHECK:BOOL=ON
           -DNIFTK_USE_KWSTYLE:BOOL=ON
@@ -78,7 +82,7 @@ Mac continuous build:
           -DNIFTK_Apps/NiftyView:BOOL=ON
           -DNIFTK_Apps/NiftyMIDAS:BOOL=ON
           ${src_dir}
-    - make -j 4
+    - make -j 2
 
   only:
     - branches
@@ -92,10 +96,10 @@ Windows continuous build:
   stage: build
 
   script:
-    - sb_dir=${sb_dir//\\//}
-    - ep_dir=${ep_dir//\\//}
-    - src_dir=${src_dir//\\//}
-    - pb_dir=${pb_dir//\\//}
+    - export sb_dir=${sb_dir//\\//}
+    - export ep_dir=${ep_dir//\\//}
+    - export src_dir=${src_dir//\\//}
+    - export pb_dir=${pb_dir//\\//}
     - mkdir -p ${sb_dir}
     - mkdir -p ${ep_dir}
     - cd ${sb_dir}
@@ -171,6 +175,8 @@ Windows continuous test:
   stage: test
 
   script:
+    - export pb_dir=${pb_dir//\\//}
+    - export src_dir=${src_dir//\\//}
     - cd ${pb_dir}
     - ${src_dir}/Utilities/NifTKContinuousTest.bat
 
@@ -220,9 +226,7 @@ Continuous docs:
     - mv html niftk-${version}-docs
     - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
     - echo "API reference documentation generated:"
-    - "# Upload the tarball"
-    - scp niftk-${version}-docs.tar.bz2 jet:/cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/NifTK/docs 
-    - "# Extract the tarball and replace the old files"
+    - scp niftk-${version}-docs.tar.bz2 jet:/cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/NifTK/docs
     - ssh jet "cd /cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/NifTK/docs ;
           rm -rf niftk-master-docs.tar.bz2 master ;
           tar xfj niftk-${version}-docs.tar.bz2 ;
@@ -230,8 +234,7 @@ Continuous docs:
           mv niftk-${version}-docs.tar.bz2 niftk-master-docs.tar.bz2 ;
           find master -type f -exec chmod 644 {} \; ;
           find master -type d -exec chmod 755 {} \; ;
-          chmod 644 niftk-master-docs.tar.bz2 
-          "
+          chmod 644 niftk-master-docs.tar.bz2"
 
   only:
     - master
@@ -283,6 +286,9 @@ Windows continuous clean up:
   stage: cleanup
 
   script:
+    - export ep_dir=${ep_dir//\\//}
+    - export src_dir=${src_dir//\\//}
+    - export sb_dir=${sb_dir//\\//}
     - rm -rf ${sb_dir}
     - ${src_dir}/Utilities/niftk-ep-clean-up.sh ${src_dir} ${ep_dir} &
 
@@ -316,7 +322,7 @@ Windows continuous clean up:
 # Release build jobs
 ##########################################
 
-Ubuntu 14.04 release build:
+Ubuntu 18.04 release build:
 
   stage: build
 
@@ -336,42 +342,13 @@ Ubuntu 14.04 release build:
           -DNIFTK_Apps/NiftyView:BOOL=ON
           -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
           ${src_dir}
-    - make -j 8
+    - make -j 4
 
   only:
     - tags
 
   tags:
-    - linux, ubuntu-14.04, release
-
-
-#Ubuntu 16.04 release build:
-#
-#  stage: build
-#
-#  script:
-#    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-#    - mkdir -p ${sb_dir}
-#    - cd ${sb_dir}
-#    - cmake -DBUILD_TESTING:BOOL=OFF
-#          -DBUILD_DISPLAY_TESTING:BOOL=OFF
-#          -DNIFTK_USE_CPPCHECK:BOOL=OFF
-#          -DNIFTK_USE_KWSTYLE:BOOL=OFF
-#          -DDESIRED_QT_VERSION:STRING=4
-#          -DBUILD_Python:BOOL=ON
-#          -DBUILD_Caffe:BOOL=ON
-#          -DNIFTK_Apps/NiftyMITK:BOOL=ON
-#          -DNIFTK_Apps/NiftyIGI:BOOL=ON
-#          -DNIFTK_Apps/NiftyView:BOOL=ON
-#          -DNIFTK_Apps/NiftyMIDAS:BOOL=OFF
-#          ${src_dir}
-#    - make -j 8
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - linux, ubuntu-16.04, release
+    - linux, ubuntu-18.04, release
 
 
 CentOS 7 release build:
@@ -380,6 +357,9 @@ CentOS 7 release build:
 
   script:
     - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export X264_DIR=/opt/x264
+    - export FFMPEG_DIR=/opt/ffmpeg-2.1.8
+    - export LD_LIBRARY_PATH="${X264_DIR}/lib:${FFMPEG_DIR}/lib"
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - cmake -DBUILD_TESTING:BOOL=OFF
@@ -390,6 +370,7 @@ CentOS 7 release build:
           -DDESIRED_QT_VERSION:STRING=4
           -DBUILD_Python:BOOL=ON
           -DBUILD_Caffe:BOOL=ON
+          -DOPENCV_WITH_FFMPEG:BOOL=ON
           -DNIFTK_Apps/NiftyMITK:BOOL=ON
           -DNIFTK_Apps/NiftyIGI:BOOL=ON
           -DNIFTK_Apps/NiftyView:BOOL=ON
@@ -471,7 +452,7 @@ Windows release build:
   stage: build
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export sb_dir=${sb_dir//\\//}
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - /c/Multi-Runner/slowrunner.exe -v -2 -e "${src_dir}/Utilities/NifTKReleaseBuild.bat"
@@ -489,7 +470,7 @@ Windows 32 bit release build:
   stage: build
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export sb_dir=${sb_dir//\\//}
     - mkdir -p ${sb_dir}
     - cd ${sb_dir}
     - export BTYPE=Win32
@@ -509,7 +490,7 @@ Windows 32 bit release build:
 
 # Dummy test jobs to prevent that deploy job is preceded by clean job.
 
-Ubuntu 14.04 release test:
+Ubuntu 18.04 release test:
 
   stage: test
 
@@ -520,21 +501,7 @@ Ubuntu 14.04 release test:
     - tags
 
   tags:
-    - linux, ubuntu-14.04, release
-
-
-#Ubuntu 16.04 release test:
-#
-#  stage: test
-#
-#  script:
-#    - echo
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - linux, ubuntu-16.04, release
+    - linux, ubuntu-18.04, release
 
 
 CentOS 7 release test:
@@ -632,9 +599,7 @@ Release docs:
     - mv html niftk-${version}-docs
     - tar cfj niftk-${version}-docs.tar.bz2 niftk-${version}-docs
     - echo "API reference documentation generated:"
-    - "# Upload the tarball"
-    - scp niftk-${version}-docs.tar.bz2 jet:/cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/NifTK/docs 
-    - "# Extract the tarball and replace the old files"
+    - scp niftk-${version}-docs.tar.bz2 jet:/cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/NifTK/docs
     - ssh cmiclab "cd /cs/sys/www0/marine/html/cmic.cs.ucl.ac.uk/NifTK/docs ;
           rm niftk-latest-docs.tar.bz2 latest ;
           tar xfj niftk-${version}-docs.tar.bz2 ;
@@ -642,8 +607,7 @@ Release docs:
           find ${version}/ -type f -exec chmod 644 {} \; ;
           find ${version}/ -type d -exec chmod 755 {} \; ;
           ln -s niftk-${version}-docs.tar.bz2 niftk-latest-docs.tar.bz2 ;
-          ln -s ${version} latest 
-          "
+          ln -s ${version} latest"
 
   only:
     - tags
@@ -652,7 +616,7 @@ Release docs:
     - linux, centos-7, release
 
 
-Ubuntu 14.04 release installer:
+Ubuntu 18.04 release installer:
 
   stage: deploy
 
@@ -667,7 +631,6 @@ Ubuntu 14.04 release installer:
     - cpack --config CPackConfig.cmake
     - installer_file="niftk-${version}-${os_version}-x64.tar.bz2"
     - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
-    - "# Upload the tarball"
     - ssh cmiclab "mkdir -p /cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version"
     - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version/
 
@@ -675,33 +638,7 @@ Ubuntu 14.04 release installer:
     - tags
 
   tags:
-    - linux, ubuntu-14.04, release
-
-
-#Ubuntu 16.04 release installer:
-#
-#  stage: deploy
-#
-#  script:
-#    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-#    - export pb_dir="${sb_dir}/NifTK-build"
-#    - version=${CI_COMMIT_TAG}
-#    - cd ${pb_dir}
-#    - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
-#    - source /etc/os-release
-#    - os_version="${ID}-${VERSION_ID}"
-#    - cpack --config CPackConfig.cmake
-#    - installer_file="niftk-${version}-${os_version}-x64.tar.bz2"
-#    - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
-#    - "# Upload the tarball"
-#    - ssh cmiclab "mkdir -p /cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version"
-#    - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version/
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - linux, ubuntu-16.04, release
+    - linux, ubuntu-18.04, release
 
 
 CentOS 7 release installer:
@@ -719,10 +656,8 @@ CentOS 7 release installer:
     - cpack --config CPackConfig.cmake
     - installer_file="niftk-${version}-${os_version}-x64.tar.bz2"
     - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
-    - "# Upload the tarball"
     - ssh cmiclab "mkdir -p /cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version"
     - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version/
-    - "# Install on managed machines"
     - install_prefix=/cs/research/medic/common2/paramedic/share/cmic/niftk-scientific/niftk-${niftk_version_string}
     - install_tmp_dir="${install_prefix}-tmp"
     - ssh logno "mkdir ${install_tmp_dir} ;
@@ -764,10 +699,8 @@ CentOS 6 release installer:
     - cpack --config CPackConfig.cmake
     - installer_file="niftk-${version}-${os_version}-x64.tar.bz2"
     - mv niftk-${niftk_version_string}.tar.bz2 ${installer_file}
-    - "# Upload the tarball"
     - ssh cmiclab "mkdir -p /cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version"
     - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version/
-    - "# Install on cluster"
     - install_prefix=/share/apps/cmic/niftk/niftk-${niftk_version_string}
     - install_tmp_dir="${install_prefix}-tmp"
     - mkdir ${install_tmp_dir}
@@ -802,7 +735,6 @@ Mac release installer:
     - cpack --config CPackConfig.cmake
     - installer_file="niftk-${version}-mac-10.10.dmg"
     - mv niftk-${niftk_version_string}.dmg ${installer_file}
-    - "# Upload the installer image"
     - ssh cmiclab "mkdir -p /cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version"
     - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version/
 
@@ -818,15 +750,15 @@ Windows release installer:
   stage: deploy
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-    - export pb_dir="${sb_dir}/NifTK-build"
+    - export src_dir=${src_dir//\\//}
+    - export sb_dir=${sb_dir//\\//}
+    - export pb_dir="${pb_dir//\\//}/NifTK-build"
     - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
     - ${src_dir}/Utilities/NifTKReleaseDeploy.bat
     - installer_file="niftk-${version}-windows-7-x64.exe"
     - mv niftk-${niftk_version_string}.exe ${installer_file}
-    - "# Upload the installer image"
     - ssh cmiclab "mkdir -p /cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version"
     - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version/
 
@@ -842,15 +774,15 @@ Windows 32 bit release installer:
   stage: deploy
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-    - export pb_dir="${sb_dir}/NifTK-build"
+    - export src_dir=${src_dir//\\//}
+    - export sb_dir=${sb_dir//\\//}
+    - export pb_dir="${pb_dir//\\//}/NifTK-build"
     - version=${CI_COMMIT_TAG}
     - cd ${pb_dir}
     - niftk_version_string=`grep "NIFTK_VERSION_STRING:STRING" CMakeCache.txt | cut -c 29-`
     - ${src_dir}/Utilities/NifTKReleaseDeploy.bat
     - installer_file="niftk-${version}-windows-7-x86.exe"
     - mv niftk-${niftk_version_string}.exe ${installer_file}
-    - "# Upload the installer image"
     - ssh cmiclab "mkdir -p /cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version"
     - scp ${installer_file} cmiclab:/cs/research/medic/cmiclab/deploy/CMIC/NifTK/install/$version/
 
@@ -865,7 +797,7 @@ Windows 32 bit release installer:
 # Release clean up jobs
 ##########################################
 
-Ubuntu 14.04 release clean up:
+Ubuntu 18.04 release clean up:
 
   stage: cleanup
 
@@ -879,24 +811,7 @@ Ubuntu 14.04 release clean up:
     - tags
 
   tags:
-    - linux, ubuntu-14.04, release
-
-
-#Ubuntu 16.04 release clean up:
-#
-#  stage: cleanup
-#
-#  script:
-#    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
-#    - rm -rf ${sb_dir}
-#
-#  when: always
-#
-#  only:
-#    - tags
-#
-#  tags:
-#    - linux, ubuntu-16.04, release
+    - linux, ubuntu-18.04, release
 
 
 CentOS 7 release clean up:
@@ -955,7 +870,7 @@ Windows release clean up:
   stage: cleanup
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export sb_dir=${sb_dir//\\//}
     - rm -rf ${sb_dir}
 
   when: always
@@ -972,7 +887,7 @@ Windows 32 bit release clean up:
   stage: cleanup
 
   script:
-    - export sb_dir="${sb_dir:0:${#sb_dir}-1}R"
+    - export sb_dir=${sb_dir//\\//}
     - rm -rf ${sb_dir}
 
   when: always

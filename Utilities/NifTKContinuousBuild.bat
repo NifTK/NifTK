@@ -20,7 +20,7 @@ if "%BTYPE%" == "" (
 )
 
 set "VS_DIR=c:/Program Files (x86)/Microsoft Visual Studio 12.0"
-set "CMAKE_DIR=c:/CMake/CMake-3.7.2"
+set "CMAKE_DIR=C:\Program Files\CMake\bin"
 
 rem Possible CMake generator options are the following:
 rem NMake Makefiles             = Generates NMake makefiles.
