@@ -72,7 +72,7 @@ else()
   # Our version number. Edit this to generate a new version.
   # However, be warned, you need to set CMAKE_INSTALL_PREFIX manually.
   # Also, Trac 1592, version number must change if CTK changes significantly.
-  project(NIFTK VERSION 19.07.2)
+  project(NIFTK VERSION 99.99.99)
 endif()
 
 ######################################################################
